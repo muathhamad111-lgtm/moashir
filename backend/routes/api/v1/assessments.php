@@ -19,7 +19,7 @@ use Illuminate\Support\Facades\Route;
 
 $assessments = Assessment::class;
 
-Route::middleware(['auth:sanctum', 'session.timeouts', 'mfa', 'password.current'])
+Route::middleware(['auth:sanctum', 'session.timeouts', 'mfa', 'password.current', 'nda.current'])
     ->prefix('assessments')
     ->name('assessments.')
     ->group(function () use ($assessments): void {
@@ -54,6 +54,7 @@ Route::middleware(['auth:sanctum', 'session.timeouts', 'mfa', 'password.current'
             Route::put('{assessment}/review/scores', [AssessorReviewController::class, 'scores'])->middleware(['can:score,assessment', 'throttle:assessment-write'])->name('review.scores');
             Route::put('{assessment}/review/feedback', [AssessorReviewController::class, 'feedback'])->middleware(['can:score,assessment', 'throttle:assessment-write'])->name('review.feedback');
             Route::put('{assessment}/review/summary', [AssessorReviewController::class, 'summary'])->middleware(['can:score,assessment', 'throttle:assessment-write'])->name('review.summary');
+            Route::put('{assessment}/review-notes', [AssessorReviewController::class, 'notes'])->middleware(['can:writeReviewNotes,assessment', 'throttle:assessment-write'])->name('review.notes');
             Route::post('{assessment}/request-completion', [AssessorReviewController::class, 'requestCompletion'])->middleware(['can:score,assessment', 'throttle:sensitive'])->name('review.request-completion');
             Route::post('{assessment}/complete', [AssessorReviewController::class, 'complete'])->middleware(['can:score,assessment', 'throttle:sensitive'])->name('review.complete');
 

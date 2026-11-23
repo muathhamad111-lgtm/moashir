@@ -12,9 +12,11 @@ import CycleStatusBadge from '@/components/award/CycleStatusBadge.vue'
 import FilteringFilters from '@/components/award/FilteringFilters.vue'
 import FilteringTable from '@/components/award/FilteringTable.vue'
 import { useFilteringQueue } from '@/composables/useFilteringQueue'
-import { CYCLE_FILTERING_STATUSES } from '@/constants/advanced'
+import { FILTERING_STATUSES } from '@/constants/advanced'
+import { FILTERING_WINDOW, filteringWindowOf } from '@/utils/award/filteringWindow'
 import { ROUTE_NAMES } from '@/constants/routeNames'
 import { localizedText } from '@/utils/localizedText'
+import { linkedStatus } from '@/utils/award/linkedStatus'
 import AppIcon from '@/components/ui/AppIcon.vue'
 
 const { t, locale } = useI18n()
@@ -32,7 +34,7 @@ const {
   cycle,
   setFilter,
   setSort,
-} = useFilteringQueue(cycleId)
+} = useFilteringQueue(cycleId, { status: linkedStatus(route.query.status, FILTERING_STATUSES) })
 const { pagination, setPage } = paginator
 
 useHead({ title: () => t('filtering.queue.title') })
@@ -67,9 +69,7 @@ const statCards = computed(() => {
     },
   ]
 })
-const decisionsClosed = computed(
-  () => Boolean(cycle.value) && !CYCLE_FILTERING_STATUSES.includes(cycle.value.status),
-)
+const windowState = computed(() => filteringWindowOf(cycle.value?.status))
 const filterState = { filters: filters.filters, setFilter, sort: filters.sort, setSort }
 </script>
 
@@ -77,7 +77,10 @@ const filterState = { filters: filters.filters, setFilter, sort: filters.sort, s
   <section class="cycles-page">
     <header class="cycles-page__header">
       <div>
-        <RouterLink class="cycle-editor__back" :to="{ name: ROUTE_NAMES.AWARD_FILTERING }">
+        <RouterLink
+          class="cycle-editor__back"
+          :to="{ name: ROUTE_NAMES.AWARD_FILTERING, query: { list: 1 } }"
+        >
           <AppIcon name="arrow-left" />
           {{ t('filtering.queue.back') }}
         </RouterLink>
@@ -93,10 +96,10 @@ const filterState = { filters: filters.filters, setFilter, sort: filters.sort, s
       </p>
     </header>
     <AssessmentNotice
-      v-if="decisionsClosed"
+      v-if="windowState !== FILTERING_WINDOW.OPEN"
       variant="info"
-      :title="t('filtering.window.title')"
-      :message="t('filtering.window.message')"
+      :title="t(`filtering.window.${windowState}.title`)"
+      :message="t(`filtering.window.${windowState}.message`)"
     />
     <StatsCards :stats="statCards" :loading="!summary && status === 'loading'" />
     <Card>

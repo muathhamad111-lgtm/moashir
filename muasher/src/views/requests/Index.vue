@@ -109,6 +109,7 @@ const filterState = {
         :status="status"
         :error-message="errorMessage"
         :shows-region="path === ASSESSMENT_PATHS.ADVANCED"
+        :shows-cycle="path === ASSESSMENT_PATHS.ADVANCED"
         :can-assign="canAssign"
         @retry="load"
         @assign="openAssign"

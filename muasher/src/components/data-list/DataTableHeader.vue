@@ -29,7 +29,12 @@ function choose() {
 </script>
 
 <template>
-  <th class="table__cell" scope="col" :aria-sort="ariaSort">
+  <th
+    class="table__cell"
+    :class="{ 'table__cell--sortable': Boolean(column.sortKey) }"
+    scope="col"
+    :aria-sort="ariaSort"
+  >
     <button
       v-if="column.sortKey"
       type="button"

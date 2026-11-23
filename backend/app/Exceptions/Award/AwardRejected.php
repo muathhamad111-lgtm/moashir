@@ -10,11 +10,6 @@ use Illuminate\Http\Response;
 
 final class AwardRejected extends ApiException
 {
-    public static function anotherCycleRunning(int $cycleId): self
-    {
-        return new self(new ApiError(Response::HTTP_CONFLICT, 'cycle.another_open', [], [], ['award_cycle_id' => $cycleId]));
-    }
-
     public static function datesUnordered(): self
     {
         return self::fieldError('cycle.dates_unordered', 'submission_start');
@@ -114,6 +109,25 @@ final class AwardRejected extends ApiException
     public static function segregationConflictOnAction(): self
     {
         return new self(new ApiError(Response::HTTP_FORBIDDEN, 'sod_conflict'));
+    }
+
+    public static function thresholdLocked(): self
+    {
+        return new self(new ApiError(Response::HTTP_CONFLICT, 'cycle.threshold_locked', [
+            'disqualification_score' => [__('errors.cycle.threshold_locked')],
+        ]));
+    }
+
+    public static function noInitialAssessors(): self
+    {
+        return new self(new ApiError(Response::HTTP_UNPROCESSABLE_ENTITY, 'cycle.no_initial_assessors', [
+            'initial_assessor_ids' => [__('errors.cycle.no_initial_assessors')],
+        ]));
+    }
+
+    public static function paidDraft(): self
+    {
+        return new self(new ApiError(Response::HTTP_CONFLICT, 'award.paid_draft'));
     }
 
     public static function filteringNotOpen(): self

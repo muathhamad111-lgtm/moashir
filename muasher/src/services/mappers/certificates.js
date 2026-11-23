@@ -1,3 +1,5 @@
+import { toAwardFacts } from '@/utils/awardCertificate'
+
 export function toCertificateCard(raw = {}) {
   return {
     id: raw.id ?? null,
@@ -8,6 +10,7 @@ export function toCertificateCard(raw = {}) {
     status: raw.status ?? null,
     isTest: raw.isTest === true,
     percent: raw.percent ?? null,
+    award: toAwardFacts(raw.award),
     requestId: raw.request?.id ?? null,
     requestNumber: raw.request?.number ?? '',
     entityName: raw.entity?.name ?? null,
@@ -36,6 +39,7 @@ export function toVerification(raw = {}) {
           level: raw.certificate.level ?? null,
           levelLabel: raw.certificate.levelLabel ?? null,
           percent: raw.certificate.percent ?? null,
+          award: toAwardFacts(raw.certificate.award),
           entityName: raw.certificate.entityName ?? null,
           issuedAt: raw.certificate.issuedAt ?? null,
         }

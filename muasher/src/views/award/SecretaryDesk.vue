@@ -20,6 +20,7 @@ import {
 import { ROUTE_NAMES } from '@/constants/routeNames'
 import { localizedText } from '@/utils/localizedText'
 import { statusLabelKey } from '@/utils/canonicalStatus'
+import { linkedStatus } from '@/utils/award/linkedStatus'
 
 const { t, locale } = useI18n()
 const route = useRoute()
@@ -36,7 +37,7 @@ const {
   counts,
   setFilter,
   setSort,
-} = useSecretaryDesk(cycleId)
+} = useSecretaryDesk(cycleId, { status: linkedStatus(route.query.status, SECRETARY_STATUSES) })
 const { pagination, setPage } = paginator
 
 useHead({ title: () => t('award.secretary.title') })
@@ -96,7 +97,7 @@ const filterState = { filters: filters.filters, setFilter, sort: filters.sort, s
     <AwardPageHeader
       :title="t('award.secretary.title')"
       :cycle="cycle"
-      :back="{ name: ROUTE_NAMES.AWARD_SECRETARY }"
+      :back="{ name: ROUTE_NAMES.AWARD_SECRETARY, query: { list: 1 } }"
       :back-label="t('award.common.backToCycles')"
     />
     <StatsCards :stats="statCards" :loading="!counts && status === 'loading'" />

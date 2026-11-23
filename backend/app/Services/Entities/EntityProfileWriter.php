@@ -42,7 +42,7 @@ final readonly class EntityProfileWriter
         $this->save($entity);
         $this->writeConsent($entity, $write->marketingConsent);
 
-        $this->recordHistory($entity, $changes, $actor);
+        $this->recordHistory($entity, $changes, $actor, $write->changeRequestId);
 
         return $changes;
     }
@@ -75,7 +75,7 @@ final readonly class EntityProfileWriter
         }
     }
 
-    private function recordHistory(Entity $entity, EntityProfileChangeSet $changes, ?User $actor): void
+    private function recordHistory(Entity $entity, EntityProfileChangeSet $changes, ?User $actor, ?int $changeRequestId): void
     {
         foreach ($changes->after as $field => $newValue) {
             EntityProfileChange::query()->create([
@@ -84,6 +84,7 @@ final readonly class EntityProfileWriter
                 'field' => $field,
                 'old_value' => $changes->before[$field] ?? null,
                 'new_value' => $newValue,
+                'change_request_id' => $changeRequestId,
             ]);
         }
     }

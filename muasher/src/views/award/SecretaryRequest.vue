@@ -13,7 +13,7 @@ import SecretaryEvaluationTable from '@/components/committee/SecretaryEvaluation
 import SecretaryEvaluationDialog from '@/components/committee/SecretaryEvaluationDialog.vue'
 import SecretaryDecisionList from '@/components/committee/SecretaryDecisionList.vue'
 import SecretaryDiscussionPanel from '@/components/committee/SecretaryDiscussionPanel.vue'
-import SecretaryActionsCard from '@/components/committee/SecretaryActionsCard.vue'
+import SecretaryActionBar from '@/components/committee/SecretaryActionBar.vue'
 import SecretaryDecisionDialog from '@/components/committee/SecretaryDecisionDialog.vue'
 import { useSecretaryRequest } from '@/composables/useSecretaryRequest'
 import { useSecretaryActions } from '@/composables/useSecretaryActions'
@@ -70,38 +70,38 @@ onMounted(request.load)
       :title="t('award.secretary.unavailableTitle')"
       :message="errorMessage || t('award.secretary.unavailableMessage')"
     />
-    <div v-else-if="detail" class="request-detail__layout">
-      <div class="request-detail__main">
-        <Card :title="t('award.secretary.factsTitle')"><SecretaryFacts :detail="detail" /></Card>
-        <Card :title="t('award.secretary.evaluationsTitle')">
-          <SecretaryEvaluationTable
-            :evaluations="detail.evaluations"
-            :approves-substitution="approvesSubstitution"
-            @view="viewing = $event"
-            @approve-substitution="actions.open('approveSubstitution', $event)"
-          />
-        </Card>
-        <Card :title="t('award.secretary.discussionsTitle')">
-          <SecretaryDiscussionPanel
-            :discussions="detail.discussions"
-            :can-close="decides"
-            @close="actions.open('closeDiscussion', $event)"
-          />
-        </Card>
-      </div>
-      <aside class="request-detail__aside">
-        <SecretaryActionsCard
-          :flags="flags"
-          :decides="decides"
-          :recomputing="actions.recomputing.value"
-          :pending-substitutions="detail.pendingSubstitutionIds.length"
-          @recompute="actions.recompute"
-          @open="actions.open"
+    <div v-else-if="detail" class="award-detail__body">
+      <p v-if="!decides" class="secretary-request__read-only" role="note">
+        {{ t('award.secretary.readOnly') }}
+      </p>
+      <Card :title="t('award.secretary.factsTitle')"><SecretaryFacts :detail="detail" /></Card>
+      <Card :title="t('award.secretary.evaluationsTitle')">
+        <SecretaryEvaluationTable
+          :evaluations="detail.evaluations"
+          :approves-substitution="approvesSubstitution"
+          @view="viewing = $event"
+          @approve-substitution="actions.open('approveSubstitution', $event)"
         />
-        <Card :title="t('award.secretary.decisionsTitle')"
-          ><SecretaryDecisionList :decisions="detail.decisions"
-        /></Card>
-      </aside>
+      </Card>
+      <Card v-if="detail.discussions.length" :title="t('award.secretary.discussionsTitle')">
+        <SecretaryDiscussionPanel
+          :discussions="detail.discussions"
+          :can-close="decides"
+          @close="actions.open('closeDiscussion', $event)"
+        />
+      </Card>
+      <details v-if="detail.decisions.length" class="award-detail__history card">
+        <summary>{{ t('award.secretary.decisionsTitle') }} ({{ detail.decisions.length }})</summary>
+        <SecretaryDecisionList :decisions="detail.decisions" />
+      </details>
+      <SecretaryActionBar
+        v-if="decides"
+        :flags="flags"
+        :recomputing="actions.recomputing.value"
+        :pending-substitutions="detail.pendingSubstitutionIds.length"
+        @recompute="actions.recompute"
+        @open="actions.open"
+      />
     </div>
     <SecretaryEvaluationDialog
       v-if="viewing"

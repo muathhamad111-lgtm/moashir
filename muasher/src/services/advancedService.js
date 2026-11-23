@@ -9,9 +9,10 @@ function mapData(request, mapper) {
 }
 
 export const advancedService = {
-  getCurrent() {
+  getCurrent(cycleId = null) {
+    const params = cycleId ? { awardCycleId: cycleId } : {}
     return mapData(
-      read('getCurrent', () => apiClient.get('/assessments/advanced/current')),
+      read('getCurrent', () => apiClient.get('/assessments/advanced/current', { params }), params),
       toAdvancedCurrent,
     )
   },

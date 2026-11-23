@@ -6,7 +6,6 @@ import { useHead } from '@unhead/vue'
 import Card from '@/components/ui/Card.vue'
 import BaseButton from '@/components/ui/BaseButton.vue'
 import ReasonDialog from '@/components/modal/ReasonDialog.vue'
-import AssessmentNotice from '@/components/assessment/AssessmentNotice.vue'
 import AwardPageHeader from '@/components/committee/AwardPageHeader.vue'
 import CommitteeMemberTable from '@/components/committee/CommitteeMemberTable.vue'
 import CommitteeCandidateDialog from '@/components/committee/CommitteeCandidateDialog.vue'
@@ -45,24 +44,13 @@ function onSubstituted(member) {
     <AwardPageHeader
       :title="t('award.roster.title')"
       :cycle="cycle"
-      :back="{ name: ROUTE_NAMES.AWARD_COMMITTEE_MANAGEMENT }"
+      :back="{ name: ROUTE_NAMES.AWARD_COMMITTEE_MANAGEMENT, query: { list: 1 } }"
       :back-label="t('award.common.backToCycles')"
     >
       <BaseButton v-if="canManage" variant="primary" icon="user" @click="appointOpen = true">{{
         t('award.roster.actions.appoint')
       }}</BaseButton>
     </AwardPageHeader>
-    <AssessmentNotice
-      variant="info"
-      :title="t('award.roster.ruleTitle')"
-      :message="t('award.roster.ruleMessage')"
-    />
-    <AssessmentNotice
-      v-if="!canManage"
-      variant="info"
-      :title="t('award.roster.readOnlyTitle')"
-      :message="t('award.roster.readOnlyMessage')"
-    />
     <Card>
       <CommitteeMemberTable
         :members="members"

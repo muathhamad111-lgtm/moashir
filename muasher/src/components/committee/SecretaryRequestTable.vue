@@ -26,12 +26,13 @@ const columns = computed(() => [
   { key: 'status', label: t('award.secretary.columns.status') },
   { key: 'committee', label: t('award.secretary.columns.committee') },
   { key: 'average', label: t('award.secretary.columns.average') },
-  { key: 'open', label: t('award.secretary.columns.open') },
+  { key: 'open', label: t('award.secretary.columns.open'), action: true },
 ])
 </script>
 
 <template>
   <DataTable
+    stacked
     :columns="columns"
     :items="items"
     :status="status"

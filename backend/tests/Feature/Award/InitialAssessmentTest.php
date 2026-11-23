@@ -113,13 +113,6 @@ it('lets the initial assessor score the request and complete it for filtering', 
     switchTo($assessor)->postJson("/api/v1/assessments/{$assessment->id}/complete")->assertUnprocessable()->assertJsonPath('code', 'scores.incomplete');
     switchTo($assessor)->putJson("/api/v1/assessments/{$assessment->id}/review/scores", ['scores' => selfScores($version, ACCREDITED_FULL_MARKS)])->assertOk();
     switchTo($assessor)->putJson("/api/v1/assessments/{$assessment->id}/review/feedback", ['feedback' => accreditedFeedback($version)])->assertOk();
-    switchTo($assessor)->postJson("/api/v1/assessments/{$assessment->id}/request-completion", [
-        'notes' => RETURN_NOTES,
-        'items' => [['sub_criterion_id' => subOf($version, 'M1.1')->id, 'kind' => 'cv']],
-        'deadline_at' => '2026-11-10T08:00:00+00:00',
-        'expiry_outcome' => 'decline',
-    ])->assertConflict();
-
     switchTo($assessor)->postJson("/api/v1/assessments/{$assessment->id}/complete")->assertOk()
         ->assertJsonPath('data.status', 'awaiting_filtering')
         ->assertJsonPath('data.result', null);

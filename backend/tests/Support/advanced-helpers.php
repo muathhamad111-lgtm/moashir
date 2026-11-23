@@ -110,7 +110,7 @@ function submittedAdvancedRequest(AwardCycle $cycle, CriteriaVersion $version, ?
 {
     $draft = readyAdvancedDraft($cycle, $version, $entity);
 
-    switchTo(ownerOf($draft->entity))->postJson("/api/v1/assessments/{$draft->id}/submit")->assertOk()->assertJsonPath('data.status', 'awaiting_review_assignment');
+    switchTo(ownerOf($draft->entity))->postJson("/api/v1/assessments/{$draft->id}/submit")->assertOk()->assertJsonPath('data.status', 'under_review');
 
     return $draft->refresh();
 }

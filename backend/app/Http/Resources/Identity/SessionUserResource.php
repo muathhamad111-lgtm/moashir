@@ -39,6 +39,7 @@ final class SessionUserResource extends JsonResource
             'is_super_admin' => $user->isSuperAdmin(),
             'mfa_enabled' => $user->hasConfirmedTotp(),
             'password_change_required' => $user->password_change_required,
+            'nda_acceptance_required' => $this->resource->ndaAcceptanceRequired,
             ...($this->resource->completion?->toArray() ?? new AccountCompletion(new NationalIdStatus(false, null), false)->toArray()),
             'entity_id' => $user->entity_id,
             'entity' => $this->resource->entity?->toArray(),

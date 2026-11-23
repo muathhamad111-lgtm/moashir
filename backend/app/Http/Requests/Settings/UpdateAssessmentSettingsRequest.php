@@ -7,6 +7,7 @@ namespace App\Http\Requests\Settings;
 use App\Data\Assessments\UploadLimits;
 use App\Data\Settings\AdvancedSettingsUpdate;
 use App\Data\Settings\AssessmentSettingsUpdate;
+use App\Enums\Award\AwardCycleConcurrency;
 use App\Enums\Award\CommitteeEntityVisibility;
 use App\Enums\Criteria\ScaleKind;
 use App\Enums\Files\EvidenceFileType;
@@ -36,6 +37,7 @@ final class UpdateAssessmentSettingsRequest extends FormRequest
             'advanced_initial_review_sla_days' => ['sometimes', 'required', 'integer', 'between:'.$sla['min'].','.$sla['max']],
             'committee_entity_data_visibility' => ['sometimes', 'required', Rule::enum(CommitteeEntityVisibility::class)],
             'scale_kind' => ['sometimes', 'required', Rule::enum(ScaleKind::class)],
+            'advanced_cycle_concurrency' => ['sometimes', 'required', Rule::enum(AwardCycleConcurrency::class)],
             'reason' => ['nullable', 'string', 'min:10', 'max:1000'],
         ];
     }
@@ -56,6 +58,7 @@ final class UpdateAssessmentSettingsRequest extends FormRequest
             $this->enum('committee_entity_data_visibility', CommitteeEntityVisibility::class),
             $this->filled('general_upload_max_file_mb') ? $this->integer('general_upload_max_file_mb') : null,
             $this->enum('scale_kind', ScaleKind::class),
+            $this->enum('advanced_cycle_concurrency', AwardCycleConcurrency::class),
         );
     }
 

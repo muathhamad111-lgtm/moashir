@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Actions\Certificates;
 
 use App\Data\Certificates\CertificateListFilters;
+use App\Enums\Certificates\CertificateKind;
 use App\Enums\Certificates\CertificateLevel;
 use App\Enums\Certificates\CertificateStatus;
 use App\Enums\Identity\PermissionKey;
@@ -49,6 +50,7 @@ final readonly class ListCertificates
     {
         return $this->visibleTo($viewer)
             ->when($filters->level instanceof CertificateLevel, static fn (Builder $query): Builder => $query->where('level', $filters->level))
+            ->when($filters->kind instanceof CertificateKind, static fn (Builder $query): Builder => $query->where('kind', $filters->kind))
             ->when($filters->entityId !== null, static fn (Builder $query): Builder => $query->where('entity_id', $filters->entityId))
             ->when($filters->assessmentId !== null, static fn (Builder $query): Builder => $query->where('assessment_id', $filters->assessmentId))
             ->when($filters->number !== null, static fn (Builder $query): Builder => $query->where('number', 'like', '%'.str_replace(['%', '_'], ['\\%', '\\_'], (string) $filters->number).'%'));

@@ -1,5 +1,5 @@
 import { allAssessments, isOpen } from '../assessments/assessmentsStore'
-import { allCycles, runningCycle } from './cycleStore'
+import { allCycles, runningCycles } from './cycleStore'
 
 export const DRAFT_CYCLE_CHOICES = ['keep', 'move']
 
@@ -21,9 +21,10 @@ function draftCycles() {
 }
 
 export function cycleBindingsSummary() {
-  const running = runningCycle()
+  const running = runningCycles().map(bindingOf)
   return {
-    running: running ? bindingOf(running) : null,
+    running: running[0] ?? null,
+    runningCycles: running,
     requestsStayOnCycleVersion: true,
     drafts: draftCycles().map(bindingOf),
   }

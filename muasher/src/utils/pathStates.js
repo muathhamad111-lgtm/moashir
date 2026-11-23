@@ -1,4 +1,5 @@
 import { ACCREDITED_STATUSES as ACC } from '@/constants/accredited'
+import { ADVANCED_STATUSES } from '@/constants/advanced'
 import { AVAILABILITY, PERIOD_STATUSES, WINDOW_STATES } from '@/constants/entityPaths'
 
 const EDITABLE = [ACC.DRAFT, ACC.NEEDS_COMPLETION]
@@ -90,9 +91,19 @@ const WINDOW_TO_STATE = {
   [WINDOW_STATES.CLOSED]: AWARD_STATES.CLOSED,
 }
 
+// The API sends the entity's latest request of the cycle whatever its state (closed or rejected on its conditions
+// included), flagged with isOpen. Only an open, non-rejected request drives the header; otherwise the announcement,
+// eligibility and window states apply (AJ-21).
+function liveAwardRequest(award) {
+  const request = award.openRequest
+  return request?.isOpen && request.status !== ADVANCED_STATUSES.REJECTED_CONDITIONS
+    ? request
+    : null
+}
+
 export function awardStateOf(award) {
   if (isHidden(award)) return AWARD_STATES.HIDDEN
-  const request = award.openRequest
+  const request = liveAwardRequest(award)
   if (request && award.windowClosedBeforePayment) return AWARD_STATES.LATE_PAYMENT
   if (request?.status === ACC.DRAFT) return AWARD_STATES.DRAFT
   if (request?.status === ACC.NEEDS_COMPLETION) return AWARD_STATES.NEEDS_COMPLETION

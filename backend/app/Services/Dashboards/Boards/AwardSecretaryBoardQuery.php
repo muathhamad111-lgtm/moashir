@@ -42,9 +42,9 @@ final readonly class AwardSecretaryBoardQuery implements DashboardBoardQuery
         return new BoardContent([
             new DashboardCard('applicants', $counts['applicants'] ?? 0, link: Links::SECRETARY),
             new DashboardCard('qualified', $counts['qualified'] ?? 0, link: Links::SECRETARY),
-            new DashboardCard('not_qualified', $counts['not_qualified'] ?? 0),
-            new DashboardCard('in_committee', $counts['in_committee'] ?? 0, link: Links::SECRETARY),
-            new DashboardCard('awaiting_approval', $counts['awaiting_approval'] ?? 0, link: Links::SECRETARY),
+            new DashboardCard('not_qualified', $counts['not_qualified'] ?? 0, link: Links::awardListWithStatus(Links::FILTERING, Advanced::NotQualified->value)),
+            new DashboardCard('in_committee', $counts['in_committee'] ?? 0, link: Links::awardListWithStatus(Links::SECRETARY, Advanced::UnderCommitteeAssessment->value)),
+            new DashboardCard('awaiting_approval', $counts['awaiting_approval'] ?? 0, link: Links::awardListWithStatus(Links::SECRETARY, Advanced::AwaitingSecretaryApproval->value)),
             new DashboardCard('results_approved', $counts['results_approved'] ?? 0, link: Links::RESULTS),
             new DashboardCard('winners', $counts['winners'] ?? 0, link: Links::RESULTS),
             new DashboardCard('committee_progress', $this->committeeProgress($user), CardFormat::Percent),

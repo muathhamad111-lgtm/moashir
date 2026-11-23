@@ -58,7 +58,7 @@ function unchangedProfileOf(Entity $entity, array $overrides = []): array
  */
 function editOwnProfile(Entity $entity, array $overrides, ProfileSection $section = ProfileSection::Governance): void
 {
-    saveSection($entity, $section, $overrides)->assertOk();
+    saveAndApproveSection($entity, $section, $overrides)->assertOk();
 }
 
 it('lists the own profile changes newest first with bilingual labels and the names of the places', function (): void {

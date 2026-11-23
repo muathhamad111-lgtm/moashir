@@ -62,6 +62,7 @@ function onHint(label, element) {
     :class="{ 'sidebar--collapsed': sidebarCollapsed }"
     :aria-label="t('nav.sidebarLabel')"
   >
+    <span class="rail-glow" aria-hidden="true" />
     <SidebarIdentityCard :home-label="t('shell.brandHome')" :collapsed="sidebarCollapsed" />
 
     <div class="sidebar__scroll" @scroll.passive="tooltip.hide">

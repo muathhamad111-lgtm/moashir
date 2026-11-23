@@ -31,7 +31,7 @@ $versions = CriteriaVersion::class;
 
 Route::get('content/model-criteria', PublicModelCriteriaController::class)->middleware('throttle:public')->name('content.model-criteria');
 
-Route::middleware(['auth:sanctum', 'session.timeouts', 'mfa', 'password.current'])->group(function () use ($versions): void {
+Route::middleware(['auth:sanctum', 'session.timeouts', 'mfa', 'password.current', 'nda.current'])->group(function () use ($versions): void {
     Route::get('assessments/criteria', PublishedCriteriaController::class)->middleware("can:viewPublished,{$versions}")->name('assessments.criteria');
 
     Route::prefix('criteria')->name('criteria.')->group(function () use ($versions): void {

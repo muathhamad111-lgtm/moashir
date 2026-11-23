@@ -85,14 +85,6 @@
       "count": 1
     }
   },
-  "src/composables/useAdvancedIntro.js": {
-    "complexity": {
-      "count": 2
-    },
-    "max-lines-per-function": {
-      "count": 1
-    }
-  },
   "src/composables/useAiChat.js": {
     "max-lines-per-function": {
       "count": 1

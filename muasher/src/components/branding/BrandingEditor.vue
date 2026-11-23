@@ -14,7 +14,7 @@ import Skeleton from '@/components/feedback/Skeleton.vue'
 import ErrorState from '@/components/feedback/ErrorState.vue'
 import BrandColorField from '@/components/branding/BrandColorField.vue'
 import BrandDerivedColors from '@/components/branding/BrandDerivedColors.vue'
-import BrandFixedColors from '@/components/branding/BrandFixedColors.vue'
+import BrandRailColors from '@/components/branding/BrandRailColors.vue'
 import BrandPreview from '@/components/branding/BrandPreview.vue'
 import ReasonDialog from '@/components/modal/ReasonDialog.vue'
 
@@ -28,6 +28,12 @@ const {
   draftScheme,
   autoColors,
   isDefault,
+  draftRail,
+  autoRail,
+  setRailColor,
+  restoreAutoRail,
+  swapRail,
+  useRailPair,
   setColor,
   overrideColor,
   restoreAutoColor,
@@ -121,7 +127,16 @@ async function onReset() {
           @restore-auto="restoreAutoColor"
         />
 
-        <BrandFixedColors />
+        <BrandRailColors
+          :rail="draftRail"
+          :auto-rail="autoRail"
+          :scheme="draftScheme"
+          :disabled="busy"
+          @set="setRailColor"
+          @restore-auto="restoreAutoRail"
+          @swap="swapRail"
+          @use-pair="useRailPair"
+        />
 
         <Card :title="t('branding.logo.title')">
           <LogoVariantField

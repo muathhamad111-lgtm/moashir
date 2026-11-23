@@ -10,6 +10,8 @@ final class DashboardLinks
 
     public const string ENTITY_EMAIL_CHANGES = '/admin/entities/email-changes';
 
+    public const string ENTITY_PROFILE_CHANGES = '/admin/entities/profile-changes';
+
     public const string USERS = '/admin/settings/users';
 
     public const string CYCLES = '/admin/award/cycles';
@@ -61,6 +63,15 @@ final class DashboardLinks
     public static function requestsWithStatus(string ...$statuses): string
     {
         return self::REQUESTS.'?'.http_build_query(['status' => implode(',', $statuses)]);
+    }
+
+    /**
+     * An award list (filtering queue or secretary desk) opened on one status. The SPA cycle picker carries the query
+     * to the cycle it opens; a status the list does not offer is ignored there.
+     */
+    public static function awardListWithStatus(string $list, string $status): string
+    {
+        return $list.'?'.http_build_query(['status' => $status]);
     }
 
     public static function newContactMessages(): string

@@ -2,15 +2,27 @@
 
 declare(strict_types=1);
 
+use App\Actions\Assessments\BuildEvidenceBundle;
+use App\Actions\Assessments\GetAssessmentResult;
+use App\Actions\Assessments\GetSubmissionForm;
+use App\Actions\Assessments\RequestEvidenceBundle;
+use App\Actions\Assessments\ShowRequest;
 use App\Contracts\Assessments\AssessmentState;
 use App\Contracts\Assessments\ReviewedAssessmentState;
 use App\Contracts\Documents\PdfRenderer;
 use App\Contracts\Files\FileScanner;
+use App\Data\Assessments\ReviewNotesView;
 use App\Data\Integrations\ResolvedCredentials;
 use App\Enums\Assessments\AccreditedAssessmentStatus;
 use App\Enums\Assessments\AdvancedAssessmentStatus;
 use App\Enums\Assessments\SelfAssessmentStatus;
+use App\Http\Resources\Assessments\AssessmentFormResource;
+use App\Http\Resources\Assessments\AssessmentRecordResource;
 use App\Http\Resources\Assessments\AssessmentResource;
+use App\Http\Resources\Assessments\AssessmentResultResource;
+use App\Http\Resources\Assessments\AssessmentRowResource;
+use App\Http\Resources\Assessments\ReviewNotesResource;
+use App\Http\Resources\Assessments\SubmissionFormResource;
 use App\Http\Resources\Award\CommitteeAssignmentRowResource;
 use App\Http\Resources\Award\CommitteeEvaluationResource;
 use App\Http\Resources\Award\CommitteeScoresResource;
@@ -21,12 +33,22 @@ use App\Integrations\ClamAv\ClamAvFileScanner;
 use App\Integrations\Documents\UnavailablePdfRenderer;
 use App\Integrations\Fakes\FakeFileScanner;
 use App\Integrations\Fakes\FakePdfRenderer;
+use App\Jobs\Assessments\BuildEvidenceBundleJob;
 use App\Models\Assessments\AssessmentResultSnapshot;
+use App\Models\Assessments\AssessmentReviewNote;
 use App\Models\Award\CommitteeAverage;
 use App\Notifications\Messages\BrandedMailMessage;
 use App\Rules\PriceOrFreeBeforeVat;
 use App\Rules\VatRatePercent;
+use App\Services\Assessments\EvidenceBundleArchiver;
+use App\Services\Assessments\FeedbackSheetReader;
+use App\Services\Assessments\InitialResultReader;
+use App\Services\Assessments\ReviewedRequestEraser;
+use App\Services\Assessments\ReviewNoteSheetReader;
+use App\Services\Assessments\ReviewNoteSheetWriter;
+use App\Services\Assessments\ReviewNotesViewer;
 use App\Services\Identity\LocalBreachedPasswordChecker;
+use App\Services\Insights\InsightsSubjectLoader;
 use App\Support\FixedPoint;
 use App\Support\ValueObjects\EarnedScore;
 use App\Support\ValueObjects\Money;
@@ -271,3 +293,26 @@ arch('the excellence-tools calculators and presenters are final, pure and free o
 arch('excellence-tools percentages are never handled as floats')
     ->expect(['App\Support\Insights', 'App\Services\Insights', 'App\Data\Insights', 'App\Actions\Insights'])
     ->not->toUse(['floatval', 'round', 'floor', 'ceil', 'fdiv', 'bcdiv', 'number_format']);
+
+arch('only the review read and write paths reach the internal review notes')
+    ->expect('App')
+    ->not->toUse([AssessmentReviewNote::class, ReviewNoteSheetReader::class])
+    ->ignoring([
+        AssessmentReviewNote::class, ReviewNoteSheetReader::class, ReviewNoteSheetWriter::class, ReviewNotesViewer::class,
+        ReviewNotesView::class, ReviewNotesResource::class, ReviewedRequestEraser::class,
+    ]);
+
+arch('entity-facing code never reaches the internal review notes')
+    ->expect([
+        'App\Notifications', 'App\Listeners', 'App\Jobs', 'App\Services\Notifications',
+        'App\Services\Documents', 'App\Services\Reports', 'App\Services\Certificates', 'App\Services\Insights', 'App\Services\Dashboards',
+        'App\Actions\Reports', 'App\Actions\Insights', 'App\Actions\Certificates', 'App\Actions\Dashboards',
+        'App\Http\Resources\Reports', 'App\Http\Resources\Insights', 'App\Http\Resources\Certificates', 'App\Http\Resources\Entities',
+        'App\Http\Resources\Notifications', 'App\Http\Resources\Dashboards',
+        'App\Support\Reports', 'App\Support\Insights', 'App\Support\Certificates',
+        GetAssessmentResult::class, GetSubmissionForm::class, ShowRequest::class, InitialResultReader::class, FeedbackSheetReader::class,
+        InsightsSubjectLoader::class, EvidenceBundleArchiver::class, BuildEvidenceBundle::class, RequestEvidenceBundle::class, BuildEvidenceBundleJob::class,
+        AssessmentResultResource::class, AssessmentFormResource::class, SubmissionFormResource::class, AssessmentRecordResource::class,
+        AssessmentRowResource::class, AssessmentResource::class,
+    ])
+    ->not->toUse([AssessmentReviewNote::class, ReviewNoteSheetReader::class, ReviewNotesViewer::class, ReviewNotesResource::class, ReviewNotesView::class]);

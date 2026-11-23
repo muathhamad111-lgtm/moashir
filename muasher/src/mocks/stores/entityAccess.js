@@ -13,6 +13,7 @@ export const ENTITY_PERMISSIONS = {
   REACTIVATE: 'entities.reactivate',
   VERIFICATION_RESEND: 'entities.verification.resend',
   EMAIL_CHANGE_APPROVE: 'entities.email_change.approve',
+  PROFILE_CHANGE_APPROVE: 'entities.profile_change.approve',
   DELETE: 'entities.delete',
   EXPORT: 'entities.export',
 }

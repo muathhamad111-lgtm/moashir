@@ -43,9 +43,8 @@ function entityWithoutBilling(): Entity
 it('saves the billing section, stores the short address in upper case and records the history', function (): void {
     $entity = entityWithoutBilling();
 
-    saveSection($entity, ProfileSection::Billing, billingDetails())
+    saveAndApproveSection($entity, ProfileSection::Billing, billingDetails())
         ->assertOk()
-        ->assertJsonPath('meta.section', 'billing')
         ->assertJsonPath('data.address_building_number', '2154')
         ->assertJsonPath('data.address_city', 'جدة')
         ->assertJsonPath('data.address_short_code', 'JRDA2154')
@@ -58,7 +57,7 @@ it('saves the billing section, stores the short address in upper case and record
     $history = EntityProfileChange::query()->where('entity_id', $entity->id)->pluck('field')->map->value->all();
 
     expect($history)->toContain('address_building_number', 'address_short_code', 'vat_registered', 'vat_number')
-        ->and(Audit::query()->where('event', AuditEvent::EntityProfileUpdated->value)->sole()->new_values)->toMatchArray(['section' => 'billing', 'vat_number' => NAMAA_VAT_NUMBER]);
+        ->and(Audit::query()->where('event', AuditEvent::EntityProfileChangeDecided->value)->sole()->new_values)->toMatchArray(['status' => 'approved', 'vat_number' => NAMAA_VAT_NUMBER]);
 });
 
 it('lists the billing section with its fields in the profile catalog', function (): void {
@@ -82,7 +81,7 @@ it('lists the billing section with its fields in the profile catalog', function 
 it('completes the billing section without VAT data when the entity is not registered', function (): void {
     $entity = entityWithoutBilling();
 
-    saveSection($entity, ProfileSection::Billing, billingDetails(['vat_registered' => false, 'vat_number' => null, 'address_short_code' => null]))
+    saveAndApproveSection($entity, ProfileSection::Billing, billingDetails(['vat_registered' => false, 'vat_number' => null, 'address_short_code' => null]))
         ->assertOk()
         ->assertJsonPath('data.billing_complete', true)
         ->assertJsonPath('data.profile_completion.percent', 100)
@@ -100,7 +99,7 @@ it('counts the VAT number and certificate only after a «yes» answer', function
         ->assertJsonPath('data.profile_completion.percent', 68)
         ->assertJsonPath('data.profile_completed', false);
 
-    saveSection($entity, ProfileSection::Billing, billingDetails())->assertOk()
+    saveAndApproveSection($entity, ProfileSection::Billing, billingDetails())->assertOk()
         ->assertJsonPath('data.profile_completion.counted', 24)
         ->assertJsonPath('data.profile_completion.completed_count', 23)
         ->assertJsonPath('data.profile_completion.percent', 95);
@@ -158,7 +157,7 @@ it('rejects a stale billing save', function (): void {
     $entity = entityWithoutBilling();
     $body = sectionBody($entity, ProfileSection::Billing, billingDetails());
 
-    saveSection($entity, ProfileSection::Billing, billingDetails(['vat_registered' => false, 'vat_number' => null]))->assertOk();
+    saveAndApproveSection($entity, ProfileSection::Billing, billingDetails(['vat_registered' => false, 'vat_number' => null]))->assertOk();
 
     switchTo(ownerOf($entity))->patchJson('/api/v1/entities/me/profile/billing', $body)
         ->assertConflict()
@@ -180,7 +179,8 @@ it('writes only to the signed-in entity', function (): void {
     $entity = entityWithoutBilling();
     $other = entityWithoutBilling();
 
-    saveSection($entity, ProfileSection::Billing, billingDetails(), ownerOf($other))->assertOk();
+    saveSection($entity, ProfileSection::Billing, billingDetails(), ownerOf($other))->assertAccepted();
+    approveProfileChange($other)->assertOk();
 
     expect($entity->refresh()->address_building_number)->toBeNull()
         ->and($other->refresh()->address_building_number)->toBe('2154');

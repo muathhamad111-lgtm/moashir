@@ -16,6 +16,21 @@ function stubReducedMotion(reduce) {
   }))
 }
 
+function codePage() {
+  return defineComponent({
+    name: 'AuthPageCode',
+    render: () =>
+      h('section', { class: 'auth-form' }, [
+        h('h1', 'Code'),
+        h('div', { 'data-auth-autofocus': '', role: 'group' }, [
+          h('input', { class: 'code-box' }),
+          h('input', { class: 'code-box' }),
+        ]),
+        h(RouterLink, { to: { name: ROUTE_NAMES.AUTH_LOGIN }, class: 'switch-link' }, () => 'back'),
+      ]),
+  })
+}
+
 function authPage(title, linkTo) {
   return defineComponent({
     name: `AuthPage${title}`,
@@ -45,7 +60,7 @@ async function mountAuthFlow() {
       {
         path: '/auth/otp',
         name: ROUTE_NAMES.AUTH_OTP,
-        component: authPage('Code', ROUTE_NAMES.AUTH_LOGIN),
+        component: codePage(),
       },
       {
         path: '/',
@@ -80,7 +95,10 @@ describe('authSwitchStep', () => {
     [ROUTE_NAMES.AUTH_LOGIN, ROUTE_NAMES.AUTH_FORGOT_PASSWORD, 1],
     [ROUTE_NAMES.AUTH_REGISTER, ROUTE_NAMES.AUTH_LOGIN, -1],
     [ROUTE_NAMES.AUTH_FORGOT_PASSWORD, ROUTE_NAMES.AUTH_LOGIN, -1],
-    [ROUTE_NAMES.AUTH_LOGIN, ROUTE_NAMES.AUTH_OTP, 0],
+    [ROUTE_NAMES.AUTH_LOGIN, ROUTE_NAMES.AUTH_OTP, 1],
+    [ROUTE_NAMES.AUTH_OTP, ROUTE_NAMES.AUTH_LOGIN, -1],
+    [ROUTE_NAMES.AUTH_LOGIN, ROUTE_NAMES.AUTH_MFA, 1],
+    [ROUTE_NAMES.AUTH_MFA, ROUTE_NAMES.AUTH_LOGIN, -1],
     [ROUTE_NAMES.PUBLIC_HOME, ROUTE_NAMES.AUTH_LOGIN, 0],
   ])('moves from %s to %s with step %i', (from, to, step) => {
     stubReducedMotion(false)
@@ -112,6 +130,20 @@ describe('useAuthPageTransition in the auth layout', () => {
       expect(heading.text()).toBe('Register')
       expect(heading.attributes('tabindex')).toBe('-1')
       expect(document.activeElement).toBe(heading.element)
+      wrapper.unmount()
+    },
+  )
+
+  it.each([false, true])(
+    'moves focus to the first code box after a sign-in submit (reduced motion: %s)',
+    async (reduce) => {
+      stubReducedMotion(reduce)
+      const { wrapper, router } = await mountAuthFlow()
+      wrapper.find('.switch-link').element.focus()
+      await router.push({ name: ROUTE_NAMES.AUTH_OTP })
+      await flushPromises()
+      const boxes = wrapper.findAll('.code-box')
+      expect(document.activeElement).toBe(boxes[0].element)
       wrapper.unmount()
     },
   )

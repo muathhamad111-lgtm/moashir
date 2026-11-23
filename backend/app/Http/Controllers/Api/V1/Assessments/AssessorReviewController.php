@@ -11,6 +11,7 @@ use App\Actions\Assessments\GetReviewRounds;
 use App\Actions\Assessments\RequestCompletion;
 use App\Actions\Assessments\SaveAssessmentSummary;
 use App\Actions\Assessments\SaveFeedbackItems;
+use App\Actions\Assessments\SaveReviewNotes;
 use App\Actions\Assessments\SaveReviewScores;
 use App\Actions\Assessments\StartReview;
 use App\Http\Requests\Assessments\AssessmentActionRequest;
@@ -18,12 +19,14 @@ use App\Http\Requests\Assessments\CompleteReviewRequest;
 use App\Http\Requests\Assessments\RequestCompletionRequest;
 use App\Http\Requests\Assessments\SaveAssessmentSummaryRequest;
 use App\Http\Requests\Assessments\SaveFeedbackItemsRequest;
+use App\Http\Requests\Assessments\SaveReviewNotesRequest;
 use App\Http\Requests\Assessments\SaveReviewScoresRequest;
 use App\Http\Resources\Assessments\AssessmentResource;
 use App\Http\Resources\Assessments\AssessmentScoresResource;
 use App\Http\Resources\Assessments\AssessmentSummaryResource;
 use App\Http\Resources\Assessments\AssessorReviewResource;
 use App\Http\Resources\Assessments\FeedbackViewResource;
+use App\Http\Resources\Assessments\ReviewNotesResource;
 use App\Http\Resources\Assessments\ReviewRoundsResource;
 use App\Http\Responses\ApiResponse;
 use App\Models\Assessments\Assessment;
@@ -61,6 +64,11 @@ final class AssessorReviewController
     public function summary(SaveAssessmentSummaryRequest $request, Assessment $assessment, #[CurrentUser] User $actor, SaveAssessmentSummary $save): JsonResponse
     {
         return ApiResponse::resource(new AssessmentSummaryResource($save->handle($actor, $assessment, $request->summary(), $request->reason())));
+    }
+
+    public function notes(SaveReviewNotesRequest $request, Assessment $assessment, #[CurrentUser] User $actor, SaveReviewNotes $save): JsonResponse
+    {
+        return ApiResponse::resource(new ReviewNotesResource($save->handle($actor, $assessment, $request->changes(), $request->reason())));
     }
 
     public function requestCompletion(RequestCompletionRequest $request, Assessment $assessment, #[CurrentUser] User $actor, RequestCompletion $requestCompletion): JsonResponse

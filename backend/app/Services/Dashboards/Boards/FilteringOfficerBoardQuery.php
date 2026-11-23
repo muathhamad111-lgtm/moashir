@@ -36,13 +36,13 @@ final readonly class FilteringOfficerBoardQuery implements DashboardBoardQuery
         ]);
 
         return new BoardContent([
-            new DashboardCard('awaiting_filtering', $counts['awaiting_filtering'] ?? 0, link: Links::FILTERING),
-            new DashboardCard('qualified', $counts['qualified'] ?? 0, link: Links::FILTERING),
-            new DashboardCard('not_qualified', $counts['not_qualified'] ?? 0, link: Links::FILTERING),
+            new DashboardCard('awaiting_filtering', $counts['awaiting_filtering'] ?? 0, link: Links::awardListWithStatus(Links::FILTERING, Advanced::AwaitingFiltering->value)),
+            new DashboardCard('qualified', $counts['qualified'] ?? 0, link: Links::awardListWithStatus(Links::FILTERING, Advanced::QualifiedForCommittee->value)),
+            new DashboardCard('not_qualified', $counts['not_qualified'] ?? 0, link: Links::awardListWithStatus(Links::FILTERING, Advanced::NotQualified->value)),
             new DashboardCard('override_decisions', FilteringDecision::query()
                 ->whereIn('award_cycle_id', $this->requests->cycleIds($user, CycleMemberRole::FilteringOfficer))
                 ->where('is_override', true)
-                ->count()),
+                ->count(), link: Links::FILTERING),
         ], [
             new DashboardWidget('cycles', $this->requests->cycles($user, CycleMemberRole::FilteringOfficer)),
         ]);

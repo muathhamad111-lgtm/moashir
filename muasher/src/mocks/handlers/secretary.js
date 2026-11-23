@@ -6,6 +6,7 @@ import { normalizeSearchText } from '../stores/searchIndex'
 import {
   authorizeDecideSecretary,
   authorizeViewSecretary,
+  isCycleSecretary,
 } from '../stores/committee/committeeAccess'
 import {
   approveAverage,
@@ -58,8 +59,10 @@ export const secretaryHandlers = [
 
   http.get(
     REQUEST,
-    readRoute(({ cycle, params }) =>
-      envelope(secretaryDetail(deskRecord(cycle, params.assessment))),
+    readRoute(({ user, cycle, params }) =>
+      envelope(secretaryDetail(deskRecord(cycle, params.assessment)), {
+        isCycleSecretary: isCycleSecretary(user, cycle),
+      }),
     ),
   ),
 

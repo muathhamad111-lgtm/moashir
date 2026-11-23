@@ -119,6 +119,20 @@ export const NOTIFICATION_TYPE_CATALOG = [
     isMandatory: true,
   },
   {
+    code: 'REG-14',
+    channels: 'IE',
+    audiences: ['system_admin'],
+    category: 'action_required',
+    isMandatory: false,
+  },
+  {
+    code: 'REG-15',
+    channels: 'IE',
+    audiences: ['entity'],
+    category: 'informational',
+    isMandatory: true,
+  },
+  {
     code: 'SEC-01',
     channels: 'IE',
     audiences: ['super_admin'],
@@ -455,6 +469,13 @@ export const NOTIFICATION_TYPE_CATALOG = [
     isMandatory: false,
   },
   {
+    code: 'ADV-19',
+    channels: 'IE',
+    audiences: ['entity'],
+    category: 'informational',
+    isMandatory: false,
+  },
+  {
     code: 'ADV-20',
     channels: 'I',
     audiences: ['award_secretary', 'system_admin'],
@@ -539,6 +560,13 @@ export const NOTIFICATION_TYPE_CATALOG = [
     isMandatory: true,
   },
   {
+    code: 'ADV-32',
+    channels: 'IE',
+    audiences: ['entity'],
+    category: 'informational',
+    isMandatory: false,
+  },
+  {
     code: 'CYC-01',
     channels: 'I',
     audiences: ['system_admin', 'request_follower', 'award_secretary'],
@@ -550,6 +578,20 @@ export const NOTIFICATION_TYPE_CATALOG = [
     channels: 'I',
     audiences: ['system_admin', 'award_secretary'],
     category: 'informational',
+    isMandatory: false,
+  },
+  {
+    code: 'CYC-03',
+    channels: 'I',
+    audiences: ['system_admin', 'award_secretary'],
+    category: 'alert',
+    isMandatory: false,
+  },
+  {
+    code: 'CYC-04',
+    channels: 'I',
+    audiences: ['system_admin', 'award_secretary'],
+    category: 'alert',
     isMandatory: false,
   },
   {

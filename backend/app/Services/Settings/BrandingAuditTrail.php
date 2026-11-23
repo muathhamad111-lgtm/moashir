@@ -23,6 +23,8 @@ final readonly class BrandingAuditTrail
             'primary_color' => $theme->primary_color,
             'secondary_color' => $theme->secondary_color,
             'color_overrides' => $theme->colors()->overrides->toArray(),
+            'sidebar_top_color' => $theme->sidebar_top_color,
+            'sidebar_bottom_color' => $theme->sidebar_bottom_color,
         ];
 
         foreach (LogoVariant::columns() as $column) {

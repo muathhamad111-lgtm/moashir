@@ -9,6 +9,7 @@ import { useValidatedForm } from '@/composables/useValidatedForm'
 import { useUsers } from '@/composables/useUsers'
 import AppIcon from '@/components/ui/AppIcon.vue'
 import BaseRadio from '@/components/form/BaseRadio.vue'
+import NdaRoleWarning from '@/components/nda/NdaRoleWarning.vue'
 import { GENDER_VALUES } from '@/constants/identityChanges'
 import { NATIONAL_ID_LENGTH, nationalIdInput } from '@/utils/identity/nationalId'
 import {
@@ -22,6 +23,7 @@ const props = defineProps({
   modelValue: { type: Boolean, required: true },
   user: { type: Object, default: null },
   save: { type: Function, required: true },
+  ndaScopeRoles: { type: Array, default: () => [] },
 })
 
 const emit = defineEmits(['update:modelValue', 'saved'])
@@ -156,6 +158,13 @@ const capabilities = computed(() => {
         <p v-if="form.errors.value.roles" class="user-form__error" role="alert">
           {{ form.errors.value.roles }}
         </p>
+        <NdaRoleWarning
+          :scope-roles="ndaScopeRoles"
+          :initial-roles="user?.roles ?? []"
+          :selected-roles="roles"
+          :status="user?.ndaStatus ?? null"
+          :name="user?.name ?? ''"
+        />
       </div>
 
       <div v-if="capabilities.length" class="user-form__hint" role="note">

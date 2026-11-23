@@ -18,15 +18,12 @@ import { useResultsBoard } from '@/composables/useResultsBoard'
 import { usePermissions } from '@/composables/usePermissions'
 import { useConfirm } from '@/composables/useConfirm'
 import { PERMISSIONS } from '@/constants/permissionKeys'
-import { MEMBER_ROLES } from '@/constants/advanced'
-import { useAuthStore } from '@/stores/auth'
 import { ROUTE_NAMES } from '@/constants/routeNames'
 
 const { t } = useI18n()
 const route = useRoute()
 const { can } = usePermissions()
 const { confirm } = useConfirm()
-const auth = useAuthStore()
 const cycleId = computed(() => Number(route.params.id))
 const board = useResultsBoard(cycleId, 'national')
 const { cycle, status, errorMessage, rows, meta, national, busy, reasons } = board
@@ -38,14 +35,9 @@ const pendingRegions = computed(() =>
     (region) => region.pending > 0 || (region.total > 0 && !region.approved),
   ),
 )
-const announces = computed(
-  () =>
-    can(PERMISSIONS.AWARD_RESULTS_ANNOUNCE) &&
-    (auth.isSuperAdmin ||
-      (cycle.value?.members ?? []).some(
-        (member) => member.id === auth.user?.id && member.role === MEMBER_ROLES.AWARD_SECRETARY,
-      )),
-)
+// Only this cycle's own Award Secretaries act on its results; others read them (API meta).
+const actsForCycle = computed(() => meta.value?.isCycleSecretary === true)
+const announces = computed(() => actsForCycle.value && can(PERMISSIONS.AWARD_RESULTS_ANNOUNCE))
 const ranked = computed(() => rows.value.some((row) => row.nationalRank !== null))
 
 async function approve() {
@@ -66,7 +58,7 @@ async function approve() {
     <AwardPageHeader
       :title="t('award.national.title')"
       :cycle="cycle"
-      :back="{ name: ROUTE_NAMES.AWARD_RESULTS }"
+      :back="{ name: ROUTE_NAMES.AWARD_RESULTS, query: { list: 1 } }"
       :back-label="t('award.common.backToCycles')"
     />
     <ResultsTabs :cycle-id="cycleId" />
@@ -108,12 +100,17 @@ async function approve() {
           :rows="rows"
           rank-field="nationalRank"
           show-region
-          :can-rank="can(PERMISSIONS.AWARD_RESULTS_RANK) && !national.approved"
+          :can-rank="actsForCycle && can(PERMISSIONS.AWARD_RESULTS_RANK) && !national.approved"
           :busy="busy"
           @rank="board.setRank"
         />
         <div
-          v-if="can(PERMISSIONS.AWARD_RESULTS_APPROVE) && !national.approved && rows.length"
+          v-if="
+            actsForCycle &&
+            can(PERMISSIONS.AWARD_RESULTS_APPROVE) &&
+            !national.approved &&
+            rows.length
+          "
           class="region-results__actions"
         >
           <BaseButton

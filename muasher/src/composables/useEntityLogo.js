@@ -2,7 +2,6 @@ import { computed, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { entitiesService } from '@/services/entitiesService'
 import { useEntityStore } from '@/stores/entity'
-import { useAuthStore } from '@/stores/auth'
 import { useConfirm } from '@/composables/useConfirm'
 import { useToast } from '@/composables/useToast'
 import { imageDimensionsOf } from '@/utils/imageDimensions'
@@ -15,13 +14,15 @@ export function useEntityLogo() {
   const toast = useToast()
   const { confirm } = useConfirm()
   const entityStore = useEntityStore()
-  const auth = useAuthStore()
   const busy = ref(false)
   const error = ref('')
   let loadedAt = Date.now()
   let refreshing = false
 
   const logo = computed(() => entityStore.profile?.logo ?? null)
+  const pendingChange = computed(
+    () => entityStore.pendingChange?.changes?.find((change) => change.item === 'logo') ?? null,
+  )
 
   async function upload(file) {
     if (!file || busy.value) return
@@ -31,10 +32,9 @@ export function useEntityLogo() {
     busy.value = true
     try {
       const { data } = await entitiesService.uploadLogo(file)
-      entityStore.applyProfile(data)
+      await entityStore.applyProposal(data)
       loadedAt = Date.now()
-      auth.refreshAvatar()
-      toast.success(t('portal.profile.logo.uploaded'))
+      toast.success(t('portal.profile.logo.submitted'))
     } catch (failure) {
       error.value = fileUploadMessage(failure, t('errors.unexpected'))
     } finally {
@@ -55,8 +55,7 @@ export function useEntityLogo() {
     error.value = ''
     try {
       const { data } = await entitiesService.removeLogo()
-      entityStore.applyProfile(data)
-      auth.refreshAvatar()
+      await entityStore.applyProposal(data)
     } catch (failure) {
       error.value = fileUploadMessage(failure, t('errors.unexpected'))
     } finally {
@@ -72,5 +71,5 @@ export function useEntityLogo() {
     refreshing = false
   }
 
-  return { logo, busy, error, upload, remove, refreshExpiredLink }
+  return { logo, pendingChange, busy, error, upload, remove, refreshExpiredLink }
 }

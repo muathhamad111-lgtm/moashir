@@ -1,3 +1,4 @@
+import { hasFilteringDecisions } from './cycleEditing'
 import { findRegion } from '../regionsStore'
 import { staffNameOf } from '../accredited/staffDirectory'
 import { allAssessments } from '../assessments/assessmentsStore'
@@ -6,8 +7,10 @@ import { acceptsApplications } from './cycleStore'
 import { canManage, revealsStaff } from './cycleAccess'
 import { entryFeeOf } from './awardPricing'
 import { quoteOfPrice } from '../finance/priceVersions'
+import { openBlockOf } from './cycleConcurrency'
 
-const FEE_EDITABLE_STATUS = 'draft'
+const DRAFT_STATUS = 'draft'
+const FEE_EDITABLE_STATUS = DRAFT_STATUS
 
 function placeOf(regionId) {
   const region = findRegion(regionId)
@@ -59,7 +62,12 @@ export function cycleResource(cycle, { withCounts = false } = {}) {
 }
 
 export function cycleDetailResource(cycle, viewer) {
-  const detail = { ...cycleResource(cycle), canManage: canManage(viewer, cycle) }
+  const detail = {
+    ...cycleResource(cycle),
+    canManage: canManage(viewer, cycle),
+    thresholdLocked: hasFilteringDecisions(cycle),
+    openBlock: cycle.status === DRAFT_STATUS ? openBlockOf(cycle) : null,
+  }
   if (!revealsStaff(viewer, cycle)) return detail
   return {
     ...detail,

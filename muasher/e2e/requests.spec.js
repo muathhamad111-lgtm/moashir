@@ -301,8 +301,8 @@ test.describe('Assessor', () => {
       fullPage: true,
     })
     await fillEmptyScores(page, '8')
-    // The feedback is folded at the end of each card (UX-B1); the assessor opens it to write.
-    await page.locator('#review-sub-901 .review-feedback-fold__summary').click()
+    // The notes and feedback stay open at the end of each card while the review is editable.
+    await expect(page.locator('#review-sub-901 .review-feedback-fold')).toHaveAttribute('open', '')
     await page
       .locator('#review-sub-901 textarea')
       .first()

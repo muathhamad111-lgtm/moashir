@@ -9,6 +9,7 @@ use App\Enums\Assessments\AssessmentPath;
 use App\Models\Assessments\Assessment;
 use App\Models\Assessments\AssessmentCompletionRequest;
 use App\Models\Assessments\AssessmentCvEntry;
+use App\Models\Assessments\AssessmentReviewNote;
 use App\Models\Assessments\EvidenceBundle;
 use App\Models\Assessments\EvidenceFile;
 use App\Models\Award\FilteringDecision;
@@ -33,6 +34,7 @@ final class ReviewedRequestEraser implements EntityErasureStep
         EvidenceFile::query()->whereIn('assessment_id', $requestIds)->delete();
         EvidenceBundle::query()->whereIn('assessment_id', $requestIds)->delete();
         AssessmentCvEntry::query()->whereIn('assessment_id', $requestIds)->delete();
+        AssessmentReviewNote::query()->whereIn('assessment_id', $requestIds)->toBase()->delete();
         AssessmentCompletionRequest::query()->whereIn('assessment_id', $requestIds)->delete();
         FilteringDecision::query()->whereIn('assessment_id', (clone $requests)->open()->select('id'))->toBase()->delete();
 

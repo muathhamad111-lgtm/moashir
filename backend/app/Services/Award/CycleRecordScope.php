@@ -15,7 +15,7 @@ use Illuminate\Database\Eloquent\Builder;
 
 final readonly class CycleRecordScope
 {
-    private const array GLOBAL_READER_ROLES = [RoleKey::SystemAdmin, RoleKey::RequestFollower];
+    private const array GLOBAL_READER_ROLES = [RoleKey::SystemAdmin, RoleKey::RequestFollower, RoleKey::AwardSecretary];
 
     public function __construct(private CycleMembership $membership, private RequestPathScope $paths) {}
 

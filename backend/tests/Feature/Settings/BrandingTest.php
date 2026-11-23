@@ -35,8 +35,17 @@ it('shows the same theme with its derived readable colours to every signed-in us
             'primary_soft' => '#f5fbfb',
             'secondary' => '#0a2325',
             'on_secondary' => '#ffffff',
+            'rail_top' => '#0a2325',
+            'rail_bottom' => '#2b4d4d',
+            'rail_stops' => ['#0a2325', '#0e282a', '#122d2f', '#163233', '#1a3738', '#1e3d3d', '#224243', '#274748', '#2b4d4d'],
+            'on_rail' => '#ffffff',
+            'on_rail_muted' => '#ffffff',
+            'rail_accent' => '#fafdfd',
+            'rail_glow' => 34,
         ])
         ->assertJsonPath('data.color_overrides', [])
+        ->assertJsonPath('data.sidebar_top_color', null)
+        ->assertJsonPath('data.sidebar_bottom_color', null)
         ->assertJsonPath('data.default_colors', ['primary' => '#98d8d3', 'secondary' => '#0a2325'])
         ->assertJsonPath('data.logo_light', null)
         ->assertJsonMissingPath('data.palette');
@@ -304,4 +313,90 @@ it('resets the colours and the logos to the brand defaults and audits the reset'
     $this->get('/api/v1/content/files/'.$logo)->assertNotFound();
     expect(Audit::query()->where('event', AuditEvent::BrandingUpdated->value)->where('tags', 'reset')->sole()->old_values)
         ->toMatchArray(['primary_color' => '#a63d1f', 'color_overrides' => ['on_secondary' => '#f5f0ff']]);
+});
+
+it('saves the two sidebar colours, serves the gradient derived from them and audits the change', function (): void {
+    $admin = systemAdmin();
+
+    signIn($admin)->putJson(BRANDING, [
+        'primary_color' => '#98d8d3',
+        'secondary_color' => '#0a2325',
+        'sidebar_top_color' => '#1D2B4F',
+        'sidebar_bottom_color' => '#3c6e71',
+    ])
+        ->assertOk()
+        ->assertJsonPath('data.sidebar_top_color', '#1d2b4f')
+        ->assertJsonPath('data.sidebar_bottom_color', '#3c6e71')
+        ->assertJsonPath('data.scheme.rail_top', '#1d2b4f')
+        ->assertJsonPath('data.scheme.rail_bottom', '#3c6e71')
+        ->assertJsonCount(9, 'data.scheme.rail_stops')
+        ->assertJsonPath('data.scheme.on_rail', '#ffffff')
+        ->assertJsonPath('data.scheme.rail_glow', 16);
+
+    $audit = Audit::query()->where('event', AuditEvent::BrandingUpdated->value)->sole();
+    expect($audit->old_values)->toMatchArray(['sidebar_top_color' => null, 'sidebar_bottom_color' => null])
+        ->and($audit->new_values)->toMatchArray(['sidebar_top_color' => '#1d2b4f', 'sidebar_bottom_color' => '#3c6e71'])
+        ->and($audit->user_id)->toBe($admin->id);
+});
+
+it('returns a sidebar colour to automatic when a save leaves it out or sends null', function (): void {
+    $theme = BrandingTheme::current();
+    $theme->forceFill(['sidebar_top_color' => '#1d2b4f', 'sidebar_bottom_color' => '#3c6e71'])->save();
+
+    signIn(systemAdmin())->putJson(BRANDING, ['primary_color' => '#98d8d3', 'secondary_color' => '#0a2325', 'sidebar_bottom_color' => null])
+        ->assertOk()
+        ->assertJsonPath('data.sidebar_top_color', null)
+        ->assertJsonPath('data.sidebar_bottom_color', null)
+        ->assertJsonPath('data.scheme.rail_top', '#0a2325')
+        ->assertJsonPath('data.scheme.rail_bottom', '#2b4d4d');
+});
+
+it('saves any two sidebar colours, readable or not: the client owns the contrast', function (): void {
+    signIn(systemAdmin())->putJson(BRANDING, [
+        'primary_color' => '#98d8d3',
+        'secondary_color' => '#0a2325',
+        'sidebar_top_color' => '#2b1055',
+        'sidebar_bottom_color' => '#9fb8ec',
+    ])
+        ->assertOk()
+        ->assertJsonPath('data.sidebar_top_color', '#2b1055')
+        ->assertJsonPath('data.sidebar_bottom_color', '#9fb8ec')
+        ->assertJsonPath('data.scheme.rail_glow', 0);
+});
+
+it('refuses a sidebar colour that is not a six-digit hex value', function (string $value): void {
+    signIn(systemAdmin())->putJson(BRANDING, ['primary_color' => '#98d8d3', 'secondary_color' => '#0a2325', 'sidebar_top_color' => $value])
+        ->assertUnprocessable()
+        ->assertJsonValidationErrors(['sidebar_top_color']);
+
+    expect(BrandingTheme::current()->sidebar_top_color)->toBeNull();
+})->with([
+    'named colour' => ['navy'],
+    'short hex' => ['#123'],
+    'css injection' => ['#000000;}body{display:none'],
+]);
+
+it('keeps the sidebar colours to lower-case six-digit hex or null at the database level', function (string $value): void {
+    expect(fn () => DB::table('branding_themes')->where('id', BrandingTheme::SINGLETON_ID)->update(['sidebar_top_color' => $value]))
+        ->toThrow(QueryException::class);
+})->with([
+    'upper case' => ['#ABCDEF'],
+    'named colour' => ['red'],
+]);
+
+it('keeps the sidebar colours locked to the System Administrator', function (RoleKey $role): void {
+    signIn($role === RoleKey::Entity ? entityUser() : staffUser($role))
+        ->putJson(BRANDING, ['primary_color' => '#98d8d3', 'secondary_color' => '#0a2325', 'sidebar_top_color' => '#1d2b4f'])
+        ->assertForbidden();
+
+    expect(BrandingTheme::current()->sidebar_top_color)->toBeNull();
+})->with([RoleKey::Entity, RoleKey::Assessor, RoleKey::ContentOfficer]);
+
+it('returns the sidebar colours to automatic on reset', function (): void {
+    BrandingTheme::current()->forceFill(['sidebar_top_color' => '#1d2b4f', 'sidebar_bottom_color' => '#3c6e71'])->save();
+
+    signIn(systemAdmin())->postJson(BRANDING.'/reset')
+        ->assertOk()
+        ->assertJsonPath('data.sidebar_top_color', null)
+        ->assertJsonPath('data.sidebar_bottom_color', null);
 });

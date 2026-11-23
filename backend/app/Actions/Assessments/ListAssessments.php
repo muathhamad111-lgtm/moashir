@@ -17,7 +17,7 @@ final readonly class ListAssessments
 {
     public const array SORTABLE = ['created_at', '-created_at', 'submitted_at', '-submitted_at', 'completed_at', '-completed_at'];
 
-    public const array RELATIONS = ['entity', 'currentResult', 'awardCycle', 'period', 'payment.receipt', 'certificate'];
+    public const array RELATIONS = ['entity', 'currentResult', 'awardCycle', 'period', 'payment.receipt', 'certificate', 'awardCertificates'];
 
     public function __construct(private AssessmentListQuery $listQuery) {}
 

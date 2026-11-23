@@ -159,6 +159,19 @@ function assertRegionsKept(cycle, regionIds) {
   if (used) throw assessmentReject.coded(422, 'cycle.region_has_requests', 'regionIds')
 }
 
+export function hasFilteringDecisions(cycle) {
+  return allAssessments().some(
+    (record) => record.awardCycleId === cycle.id && (record.filteringDecisions ?? []).length > 0,
+  )
+}
+
+function assertThresholdOpen(cycle, attributes) {
+  const score = attributes.disqualificationScore
+  if (score === undefined || Number(score) === Number(cycle.disqualificationScore)) return
+  if (hasFilteringDecisions(cycle))
+    throw assessmentReject.coded(409, 'cycle.threshold_locked', 'disqualificationScore')
+}
+
 export function updateCycle(user, cycle, body) {
   throwIfErrors(cycleErrors(body, { required: false }))
   assertReason(user, body)
@@ -178,6 +191,7 @@ export function updateCycle(user, cycle, body) {
   if (!datesOrdered(dates, { submissionsOpen: cycle.status === 'submission-open' }))
     throw assessmentReject.coded(422, 'cycle.dates_unordered')
   if (attributes.regionIds) assertRegionsKept(cycle, attributes.regionIds)
+  assertThresholdOpen(cycle, attributes)
   if (changedFields(cycle, attributes).length)
     Object.assign(cycle, attributes, { updatedAt: nowIso() })
   return cycle

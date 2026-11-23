@@ -8,8 +8,8 @@ use App\Enums\Notifications\NotificationCode;
 use App\Events\Award\CommitteeRequestsDistributed;
 use App\Models\Award\AwardCycle;
 use App\Services\Award\AwardStaffNotifier;
-use App\Support\Award\AwardLinks;
 use App\Support\Award\AwardNotices;
+use App\Support\Award\CommitteeWorkLinks;
 use App\Support\ValueObjects\LocalizedText;
 
 final readonly class NotifyCommitteeAssigned
@@ -21,7 +21,7 @@ final readonly class NotifyCommitteeAssigned
         $cycle = AwardCycle::query()->findOrFail($event->distribution->cycleId);
 
         foreach ($event->distribution->countsByUser as $userId => $count) {
-            $this->notifier->assessor($userId, AwardNotices::for(NotificationCode::CommitteeAssigned, 'assessor', $cycle, AwardLinks::committeeWork(), ['entities' => LocalizedText::fromChoice('quantities.entities', $count)]));
+            $this->notifier->assessor($userId, AwardNotices::for(NotificationCode::CommitteeAssigned, 'assessor', $cycle, CommitteeWorkLinks::assignments(), ['entities' => LocalizedText::fromChoice('quantities.entities', $count)]));
         }
     }
 }

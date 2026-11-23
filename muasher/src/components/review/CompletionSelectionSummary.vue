@@ -1,5 +1,5 @@
 <script setup>
-import { ref } from 'vue'
+import { computed, reactive, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import AppIcon from '@/components/ui/AppIcon.vue'
 import BaseInput from '@/components/form/BaseInput.vue'
@@ -7,11 +7,14 @@ import BaseButton from '@/components/ui/BaseButton.vue'
 import { ACCREDITED_LIMITS } from '@/constants/accredited'
 import { localizedText } from '@/utils/localizedText'
 import { formatNumber } from '@/utils/formatNumber'
+import { ownNotesIndex, prefilledNote } from '@/utils/accredited/completionNotes'
 
 const props = defineProps({
   options: { type: Array, required: true },
   notes: { type: Object, required: true },
   error: { type: String, default: '' },
+  // The viewer's internal review notes: a chosen item starts with the matching one (operator 2026-11-22).
+  reviewNotes: { type: Array, default: null },
 })
 
 const emit = defineEmits(['remove', 'note'])
@@ -19,6 +22,25 @@ const { t, n, locale } = useI18n()
 // A note field shows only once asked for, or when the item already has a note.
 const noteRequested = ref(new Set())
 const showsNote = (key) => noteRequested.value.has(key) || Boolean(props.notes[key])
+
+const index = computed(() => ownNotesIndex(props.reviewNotes))
+const prefills = reactive({})
+const fromNotes = (key) => Boolean(prefills[key]) && props.notes[key] === prefills[key]
+
+watch(
+  () => props.options,
+  (options) => {
+    const selectedKeys = options.map((option) => option.key)
+    options
+      .filter((option) => props.notes[option.key] === undefined)
+      .forEach((option) => {
+        const text = prefilledNote(option, { index: index.value, selectedKeys })
+        prefills[option.key] = text
+        if (text) emit('note', option.key, text)
+      })
+  },
+  { immediate: true },
+)
 
 function requestNote(key) {
   noteRequested.value = new Set([...noteRequested.value, key])
@@ -47,6 +69,9 @@ function labelOf(option) {
       <li v-for="option in options" :key="option.key" class="completion-summary__item">
         <div class="completion-summary__chip">
           <span class="completion-summary__label">{{ labelOf(option) }}</span>
+          <span v-if="fromNotes(option.key)" class="completion-summary__from-notes">{{
+            t('review.completion.fromNotes')
+          }}</span>
           <button
             type="button"
             class="completion-summary__remove"

@@ -17,7 +17,7 @@ import AppIcon from '@/components/ui/AppIcon.vue'
 const props = defineProps({
   cycle: { type: Object, required: true },
   busy: { type: String, default: '' },
-  blockingCycle: { type: Object, default: null },
+  openBlock: { type: Object, default: null },
   blocked: { type: Object, default: null },
   canReopen: { type: Boolean, default: false },
 })
@@ -32,12 +32,36 @@ const showsFiltering = computed(
   () => can(PERMISSIONS.AWARD_FILTERING_VIEW) && ![CYCLE_STATUSES.DRAFT].includes(status.value),
 )
 const blockedOpen = computed(
-  () => status.value === CYCLE_STATUSES.DRAFT && Boolean(props.blockingCycle),
+  () => status.value === CYCLE_STATUSES.DRAFT && Boolean(props.openBlock?.cycle),
 )
+const blockedOpenMessage = computed(() => {
+  if (!blockedOpen.value) return ''
+  const key =
+    props.openBlock.code === AWARD_CODES.ANOTHER_OPEN_FOR_SUBMISSION
+      ? 'cycles.actions.blockedOpen.staggeredMessage'
+      : 'cycles.actions.blockedOpen.message'
+  const blocking = props.openBlock.cycle
+  return t(key, { name: localizedText(blocking.name, locale.value), year: blocking.year })
+})
 const blockedRequests = computed(() =>
   props.blocked?.code === AWARD_CODES.REQUESTS_PENDING ? props.blocked.requests : [],
 )
 const anotherOpen = computed(() => props.blocked?.code === AWARD_CODES.ANOTHER_OPEN)
+const anotherOpenForSubmission = computed(
+  () => props.blocked?.code === AWARD_CODES.ANOTHER_OPEN_FOR_SUBMISSION,
+)
+// A cycle opens only with a linked initial assessor, so its requests can be assigned (AJ-28). A cycle opened
+// before that rule, or whose links were later removed, is flagged too: its requests cannot be assigned.
+const ASSIGNING_STATUSES = [CYCLE_STATUSES.SUBMISSION_OPEN, CYCLE_STATUSES.SUBMISSION_CLOSED]
+const lacksAssessors = computed(
+  () =>
+    props.cycle.revealsStaff === true &&
+    !(props.cycle.initialAssessors ?? []).some((link) => link.isActive),
+)
+const needsAssessors = computed(() => status.value === CYCLE_STATUSES.DRAFT && lacksAssessors.value)
+const assigningBlocked = computed(
+  () => ASSIGNING_STATUSES.includes(status.value) && lacksAssessors.value,
+)
 const AFTER_SUBMISSIONS = [
   CYCLE_STATUSES.SUBMISSION_CLOSED,
   ...COMMITTEE_CYCLE_STATUSES,
@@ -75,12 +99,7 @@ const stageLinks = computed(() =>
       v-if="blockedOpen"
       variant="warning"
       :title="t('cycles.actions.blockedOpen.title')"
-      :message="
-        t('cycles.actions.blockedOpen.message', {
-          name: localizedText(blockingCycle.name, locale),
-          year: blockingCycle.year,
-        })
-      "
+      :message="blockedOpenMessage"
     />
     <AssessmentNotice
       v-if="anotherOpen"
@@ -88,6 +107,25 @@ const stageLinks = computed(() =>
       live
       :title="t('cycles.actions.anotherOpen.title')"
       :message="t('cycles.actions.anotherOpen.message')"
+    />
+    <AssessmentNotice
+      v-if="anotherOpenForSubmission"
+      variant="danger"
+      live
+      :title="t('cycles.actions.anotherOpen.staggeredTitle')"
+      :message="t('cycles.actions.anotherOpen.staggeredMessage')"
+    />
+    <AssessmentNotice
+      v-if="needsAssessors"
+      variant="warning"
+      :title="t('cycles.actions.needsAssessors.title')"
+      :message="t('cycles.actions.needsAssessors.message')"
+    />
+    <AssessmentNotice
+      v-if="assigningBlocked"
+      variant="danger"
+      :title="t('cycles.actions.assigningBlocked.title')"
+      :message="t('cycles.actions.assigningBlocked.message')"
     />
     <CycleBlockedRequests v-if="blockedRequests.length" :requests="blockedRequests" />
     <div class="cycle-actions__buttons">
@@ -97,7 +135,7 @@ const stageLinks = computed(() =>
           variant="primary"
           icon="door-open"
           :loading="busy === 'open'"
-          :disabled="blockedOpen"
+          :disabled="blockedOpen || needsAssessors"
           @click="emit('run', 'open')"
         >
           {{ t('cycles.actions.open.label') }}

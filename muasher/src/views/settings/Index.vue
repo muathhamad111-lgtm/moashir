@@ -36,6 +36,12 @@ const sections = computed(() => [
     group: 'platform',
   },
   {
+    key: 'nda',
+    to: ROUTE_NAMES.ADMIN_SETTINGS_NDA,
+    icon: 'lock',
+    group: 'platform',
+  },
+  {
     key: 'auditLog',
     to: ROUTE_NAMES.ADMIN_AUDIT_LOG,
     icon: 'shield-info',

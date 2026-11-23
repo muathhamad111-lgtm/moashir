@@ -15,6 +15,12 @@ use Illuminate\Auth\Access\Response;
 
 final readonly class CycleRoleScope
 {
+    /**
+     * Roles that READ every award cycle's committee work and results (operator decision 2026-11-22: an Award Secretary
+     * reviews any cycle, read-only); every action stays with the cycle's own Award Secretaries.
+     */
+    public const array AWARD_READER_ROLES = [RoleKey::SystemAdmin, RoleKey::AwardSecretary];
+
     public function __construct(private CycleMembership $membership, private CycleRecordScope $records, private RequestPathScope $paths) {}
 
     /**
@@ -38,6 +44,15 @@ final readonly class CycleRoleScope
         }
 
         return $memberRoles !== [] && $this->membership->isMember($user->id, $cycle->id, ...$memberRoles);
+    }
+
+    /**
+     * Whether the user acts for this cycle as one of its Award Secretaries; the SPA pairs it with the action permission
+     * to offer the actions only where the API accepts them.
+     */
+    public function isCycleSecretary(User $user, AwardCycle $cycle): bool
+    {
+        return $user->isSuperAdmin() || $this->membership->isMember($user->id, $cycle->id, CycleMemberRole::AwardSecretary);
     }
 
     public function respond(bool $allowed, User $user, AwardCycle $cycle, PermissionKey ...$permissions): Response

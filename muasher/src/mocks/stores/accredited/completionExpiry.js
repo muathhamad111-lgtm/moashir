@@ -24,7 +24,10 @@ const OUTCOMES = {
 
 function expire(record, completion, at) {
   const outcome = OUTCOMES[completion.expiryOutcome]
-  const status = isAdvanced(record) ? outcome.advanced : outcome.accredited
+  const advancedStatus = outcome.endsAssignment
+    ? outcome.advanced
+    : (completion.resumesTo ?? outcome.advanced)
+  const status = isAdvanced(record) ? advancedStatus : outcome.accredited
   Object.assign(completion, { status: outcome.completion, resolvedAt: at })
   if (outcome.endsAssignment)
     Object.assign(activeAssignment(record) ?? {}, {

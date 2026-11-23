@@ -11,9 +11,14 @@ import { success } from '@/composables/useSuccess'
 import { useAuthStore } from '@/stores/auth'
 import { ACCREDITED_LIMITS } from '@/constants/accredited'
 import { logger } from '@/utils/logger'
+import { ROUTE_NAMES } from '@/constants/routeNames'
+
+const AWARD_PATH = 'advanced'
 
 const LIST_MESSAGES = {
   empty: 'requests.assign.empty',
+  noMatch: 'requests.assign.noMatch',
+  cycleUnlinked: 'requests.assign.cycleUnlinked',
   outOfScope: 'requests.assign.outOfScope',
   error: 'requests.assign.loadFailed',
 }
@@ -31,9 +36,10 @@ const emit = defineEmits(['update:modelValue', 'done'])
 const { t } = useI18n()
 const toast = useToast()
 const auth = useAuthStore()
-const { assessors, status, search, reasonRules, loadAssessors, submit } = useAssignAssessor({
-  requestId: toRef(props, 'requestId'),
-})
+const { assessors, status, search, reasonRules, awardCycle, loadAssessors, submit } =
+  useAssignAssessor({
+    requestId: toRef(props, 'requestId'),
+  })
 const chosen = ref(null)
 const reason = ref('')
 const errors = ref({})
@@ -59,6 +65,16 @@ const options = computed(() =>
   })),
 )
 const listMessage = computed(() => LIST_MESSAGES[status.value] ?? '')
+const pathHint = computed(() =>
+  props.path === AWARD_PATH
+    ? t('requests.assign.qualifiedOnlyAward')
+    : t('requests.assign.qualifiedOnly'),
+)
+const cycleLink = computed(() =>
+  status.value === 'cycleUnlinked' && awardCycle.value?.cycleId
+    ? { name: ROUTE_NAMES.AWARD_CYCLE, params: { id: awardCycle.value.cycleId } }
+    : null,
+)
 const title = computed(() =>
   props.mode === 'reassign' ? t('requests.assign.reassignTitle') : t('requests.assign.title'),
 )
@@ -151,7 +167,7 @@ watch(
     <div class="assign-dialog">
       <p v-if="path" class="assign-dialog__path">
         <PathBadge :path="path" :label="pathLabel" />
-        <span>{{ t('requests.assign.qualifiedOnly') }}</span>
+        <span>{{ pathHint }}</span>
       </p>
       <AppCombobox
         v-model="chosen"
@@ -167,6 +183,9 @@ watch(
         required
         @search="search = $event"
       />
+      <p v-if="cycleLink" class="assign-dialog__cycle-link">
+        <RouterLink :to="cycleLink">{{ t('requests.assign.linkAssessors') }}</RouterLink>
+      </p>
       <BaseTextarea
         v-model="reason"
         name="reason"

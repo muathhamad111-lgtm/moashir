@@ -5,9 +5,13 @@ declare(strict_types=1);
 namespace App\Data\Assessments;
 
 use App\Data\Award\AdvancedEligibility;
+use App\Data\Award\OpenCycleOption;
 use App\Models\Assessments\Assessment;
 
 final readonly class AdvancedCurrent
 {
-    public function __construct(public AdvancedEligibility $eligibility, public ?Assessment $request, public ?Assessment $previous) {}
+    /**
+     * @param  list<OpenCycleOption>  $openCycles
+     */
+    public function __construct(public AdvancedEligibility $eligibility, public ?Assessment $request, public ?Assessment $previous, public array $openCycles) {}
 }

@@ -14,7 +14,7 @@ const BARS = [40, 65, 52, 88, 70]
       <span class="brand-sample__avatar" />
     </div>
     <div class="brand-sample__body">
-      <ul class="brand-sample__nav">
+      <ul class="brand-sample__nav brand-sample__nav--rail">
         <li
           v-for="item in NAV_ITEMS"
           :key="item"

@@ -9,7 +9,8 @@ const server = setupServer(...handlers)
 const SCENARIO_COOKIE = 'moashir_mock_scenario'
 const NAMAA = { id: 7601, roles: ['entity'], entityId: 6001 }
 const RUWAD = { id: 7605, roles: ['entity'], entityId: 6005 }
-const ISSUED = '/certificates?filter[status]=issued&per_page=1'
+// The entity also holds an award certificate, which has no level: read its accredited one, as the level card does.
+const ISSUED = '/certificates?filter[status]=issued&filter[kind]=accredited&per_page=1'
 
 async function levelCertificate() {
   const response = await wireFetch(`${MOCK_API_BASE}${ISSUED}`, {

@@ -51,9 +51,10 @@ final class DefaultPermissionMatrix
         return [
             P::NotificationsAuditView, P::DashboardExecutiveView,
             P::EntitiesView, P::EntitiesManage, P::EntitiesDeactivate, P::EntitiesReactivate,
-            P::EntitiesVerificationResend, P::EntitiesEmailChangeApprove, P::EntitiesDelete, P::EntitiesExport,
+            P::EntitiesVerificationResend, P::EntitiesEmailChangeApprove, P::EntitiesProfileChangeApprove, P::EntitiesDelete, P::EntitiesExport,
             P::AssessmentCriteriaView, P::AssessmentHistoryView, P::EvidenceView,
             P::RequestsQueueView, P::RequestsAssign, P::RequestsReviewRead, P::RequestsCompletionReturn,
+            P::RequestsNotesRead, P::RequestsNotesWrite,
             P::AssessmentContextView,
             P::AwardCyclesView, P::AwardCyclesManage, P::AwardCommitteeManage, P::AwardFilteringView,
             P::AwardSecretaryReview, P::AwardResultsView, P::AwardResultsAnnounce,
@@ -66,6 +67,7 @@ final class DefaultPermissionMatrix
             P::SettingsGeneralManage, P::SettingsBrandingManage, P::SettingsAuthManage, P::SettingsAssessmentManage,
             P::SettingsCertificatesManage, P::SettingsPaymentManage, P::SettingsSmsManage, P::SettingsEmailManage,
             P::SettingsNotificationsManage, P::SettingsPricesManage, P::MessagingCampaignsSend,
+            P::NdaManage,
             P::FinanceOperationsView, P::FinanceOperationsExport, P::FinanceRefundsManage,
         ];
     }
@@ -78,6 +80,7 @@ final class DefaultPermissionMatrix
         return [
             P::NotificationsAuditView, P::EntitiesView, P::AssessmentCriteriaView, P::AssessmentHistoryView, P::EvidenceView,
             P::RequestsQueueView, P::RequestsAssign, P::RequestsReviewRead, P::RequestsCompletionReturn,
+            P::RequestsNotesRead, P::RequestsNotesWrite,
             P::AwardCyclesView, P::AwardCommitteeManage, P::ReportsFeedbackView, P::ReportsInsightsView,
             P::BagRequestsView, P::BagRequestsAssign,
         ];
@@ -90,7 +93,7 @@ final class DefaultPermissionMatrix
     {
         return [
             P::EntitiesView, P::AssessmentCriteriaView, P::AssessmentHistoryView, P::EvidenceView,
-            P::RequestsAssignedView, P::AssessmentScoreManage, P::AssessmentContextView,
+            P::RequestsAssignedView, P::AssessmentScoreManage, P::AssessmentContextView, P::RequestsNotesRead, P::RequestsNotesWrite,
             P::AwardCyclesView, P::AwardCommitteeAssignedView, P::AwardCommitteeScore,
             P::ReportsFeedbackView, P::CertificatesIssueAccredited, P::BagAnalysisManage,
         ];
@@ -130,7 +133,7 @@ final class DefaultPermissionMatrix
         return [
             P::EntityProfileView, P::EntityProfileEdit, P::AssessmentCriteriaView, P::AssessmentHistoryView,
             P::AssessmentSelfManage, P::AssessmentAccreditedManage, P::AssessmentAdvancedManage,
-            P::EvidenceManage, P::EvidenceView, P::AwardResultsView, P::ReportsFeedbackView, P::ReportsInsightsOwnView,
+            P::EvidenceManage, P::EvidenceView, P::ReportsFeedbackView, P::ReportsInsightsOwnView,
             P::CertificatesOwnView, P::BagOwnView, P::BagOwnPurchase, P::PaymentsOwnView, P::PaymentsOwnCreate,
         ];
     }

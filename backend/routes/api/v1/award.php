@@ -16,6 +16,7 @@ use App\Http\Controllers\Api\V1\Award\FilteringDecisionController;
 use App\Http\Controllers\Api\V1\Award\MyCommitteeEvaluationController;
 use App\Http\Controllers\Api\V1\Award\MyCommitteeWorkController;
 use App\Http\Controllers\Api\V1\Award\PublicCycleController;
+use App\Http\Controllers\Api\V1\Award\PublicOpenCyclesController;
 use App\Http\Controllers\Api\V1\Award\SecretaryDecisionController;
 use App\Http\Controllers\Api\V1\Award\SecretaryDeskController;
 use App\Http\Controllers\Api\V1\Award\SecretaryDiscussionController;
@@ -25,8 +26,9 @@ use Illuminate\Support\Facades\Route;
 $cycles = AwardCycle::class;
 
 Route::get('award/cycles/current', PublicCycleController::class)->middleware('throttle:public')->name('award.cycles.current');
+Route::get('award/cycles/open', PublicOpenCyclesController::class)->middleware('throttle:public')->name('award.cycles.open-list');
 
-Route::middleware(['auth:sanctum', 'session.timeouts', 'mfa', 'password.current'])
+Route::middleware(['auth:sanctum', 'session.timeouts', 'mfa', 'password.current', 'nda.current'])
     ->prefix('award/cycles')
     ->name('award.cycles.')
     ->group(function () use ($cycles): void {
@@ -87,7 +89,7 @@ Route::middleware(['auth:sanctum', 'session.timeouts', 'mfa', 'password.current'
         });
     });
 
-Route::middleware(['auth:sanctum', 'session.timeouts', 'mfa', 'password.current'])
+Route::middleware(['auth:sanctum', 'session.timeouts', 'mfa', 'password.current', 'nda.current'])
     ->prefix('committee/me')
     ->name('committee.me.')
     ->whereNumber(['assignment', 'discussion'])

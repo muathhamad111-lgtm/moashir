@@ -17,6 +17,7 @@ import { profileLocaleOf } from './preferencesStore'
 import { nationalIdRequiredFor } from './authSettingsStore'
 import { genderMissingFor, maskNationalId, nationalIdOf, nationalIdStateOf } from './identityStore'
 import { DEFAULT_LOCALE } from '@/constants/locales'
+import { ndaRequiredFor } from './ndaCurrent'
 
 const HOUR_MS = 60 * 60 * 1000
 
@@ -102,6 +103,7 @@ export function sessionPayload(descriptor) {
     isSuperAdmin: descriptor.superAdmin === true,
     mfaEnabled: !entity,
     passwordChangeRequired: false,
+    ndaAcceptanceRequired: ndaRequiredFor({ ...descriptor, entityId: entity?.id ?? null }),
     nationalIdRequired: nationalIdRequiredFor(descriptor.roles, {
       superAdmin: descriptor.superAdmin === true,
     }),

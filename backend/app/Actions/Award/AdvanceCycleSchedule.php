@@ -5,8 +5,10 @@ declare(strict_types=1);
 namespace App\Actions\Award;
 
 use App\Enums\Award\AwardCycleStatus;
+use App\Events\Award\CycleOpenBlocked;
 use App\Exceptions\Award\AwardRejected;
 use App\Exceptions\Award\CommitteeRejected;
+use App\Exceptions\Award\CycleStartBlocked;
 use App\Models\Award\AwardCycle;
 use App\Services\Award\CycleStageSync;
 use App\Support\ScalarValue;
@@ -15,11 +17,14 @@ use Illuminate\Support\Facades\Log;
 
 final readonly class AdvanceCycleSchedule
 {
+    private const string NO_INITIAL_ASSESSORS = 'cycle.no_initial_assessors';
+
     public function __construct(
         private OpenCycleSubmissions $open,
         private CloseCycleSubmissions $close,
         private StartCommitteeAssessment $startCommittee,
         private CycleStageSync $stages,
+        private DeferScheduledCycleOpen $defer,
     ) {}
 
     /**
@@ -83,16 +88,27 @@ final readonly class AdvanceCycleSchedule
             ->orderBy('id')
             ->get();
 
+        $opened = 0;
+
         foreach ($due as $cycle) {
             try {
                 $this->open->handle(null, $cycle, null);
-
-                return 1;
+                $opened++;
+            } catch (CycleStartBlocked $blocked) {
+                $this->defer->handle($cycle, $blocked->block());
             } catch (AwardRejected $rejected) {
                 Log::warning('award.cycle_not_opened', ['award_cycle_id' => $cycle->id, 'code' => $rejected->error()->code]);
+                $this->alertWhenAssessorsMissing($cycle, $rejected);
             }
         }
 
-        return 0;
+        return $opened;
+    }
+
+    private function alertWhenAssessorsMissing(AwardCycle $cycle, AwardRejected $rejected): void
+    {
+        if ($rejected->error()->code === self::NO_INITIAL_ASSESSORS) {
+            CycleOpenBlocked::dispatch($cycle);
+        }
     }
 }

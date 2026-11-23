@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Enums\Settings;
 
+use App\Enums\Award\AwardCycleConcurrency;
 use App\Enums\Award\CommitteeEntityVisibility;
 use App\Enums\Certificates\CertificateIssuanceMode;
 use App\Enums\Certificates\CertificateLevel;
@@ -61,6 +62,7 @@ enum SettingKey: string
     case AdvancedDisqualificationScore = 'assessment.advanced_disqualification_score';
     case AdvancedInitialReviewSlaDays = 'assessment.advanced_initial_review_sla_days';
     case CommitteeEntityDataVisibility = 'assessment.committee_entity_data_visibility';
+    case AwardCycleConcurrency = 'assessment.advanced_cycle_concurrency';
     case AssessmentScaleKind = 'assessment.scale_kind';
     case AssignReasonRequired = 'assessment.assign_reason_required';
     case ReassignReasonRequired = 'assessment.reassign_reason_required';
@@ -87,6 +89,11 @@ enum SettingKey: string
     case SelfPathDescription = 'paths.self.description';
     case AccreditedPathDescription = 'paths.accredited.description';
     case AdvancedPathDescription = 'paths.advanced.description';
+    case NdaRoles = 'nda.roles';
+    case NdaReminderDays = 'nda.reminder_days';
+
+    // Staff roles that accept the agreement by default (operator decision, 2026-11-22); finance and content are out.
+    private const array NDA_DEFAULT_ROLES = ['system_admin', 'criteria_officer', 'request_follower', 'assessor', 'filtering_officer', 'award_secretary'];
 
     public function group(): SettingGroup
     {
@@ -97,14 +104,14 @@ enum SettingKey: string
     {
         return match ($this) {
             self::PaymentMode, self::PaymentCheckoutPattern, self::SmsMode, self::EmailMode, self::EmailTestAddress,
-            self::AiMode, self::AiPlacement, self::CommitteeEntityDataVisibility, self::AssessmentScaleKind, self::VatRegistrationNumber,
+            self::AiMode, self::AiPlacement, self::CommitteeEntityDataVisibility, self::AwardCycleConcurrency, self::AssessmentScaleKind, self::VatRegistrationNumber,
             self::PeriodicCadence, self::PeriodicAudience, self::PeriodicCertificateValidity, self::PeriodicRolloutFrom,
             self::AccreditedCertificateIssuanceMode => SettingType::String,
             self::PaymentOrderValidityMinutes, self::AbandonedCartAfterHours, self::FilesMaxSizeMb,
             self::AccreditedReviewSlaDays, self::AdvancedMinEntityAgeYears, self::AdvancedInitialReviewSlaDays,
             self::AccreditedUploadMaxFileMb, self::AccreditedEvidenceMaxFilesPerSub, self::AdvancedUploadMaxFileMb,
             self::AdvancedEvidenceMaxFilesPerSub, self::ContactRetentionMonths, self::PeriodicNoticeDaysBefore,
-            self::PeriodicPaidDraftReminderDays => SettingType::Integer,
+            self::PeriodicPaidDraftReminderDays, self::NdaReminderDays => SettingType::Integer,
             self::VatRate, self::AdvancedDisqualificationScore => SettingType::Decimal,
             self::GeneralEmailNotifications, self::EntityRegistrationReview,
             self::TwoFactorEnabled, self::NationalIdEnabled, self::AssignReasonRequired, self::ReassignReasonRequired => SettingType::Boolean,
@@ -124,20 +131,20 @@ enum SettingKey: string
             self::PaymentLinkedPaths => PaymentLinkedPath::values(),
             self::PaymentCheckoutPattern => CheckoutPattern::Intent->value,
             self::PaymentOrderValidityMinutes => 30,
-            self::SmsTestRecipients, self::SmsTemplates => [],
+            self::SmsTestRecipients, self::SmsTemplates, self::NationalIdRoles => [],
             self::AiPlacement => 'public_only',
             self::AiNotice => LocalizedText::fromTranslation('integrations.defaults.ai_notice')->toArray(),
             self::VatRate => '15.00',
             self::AbandonedCartAfterHours => 24,
             self::FilesMaxSizeMb, self::AccreditedUploadMaxFileMb, self::AdvancedUploadMaxFileMb => 20,
-            self::AccreditedReviewSlaDays => 14,
+            self::AccreditedReviewSlaDays, self::AdvancedInitialReviewSlaDays => 14,
             self::AccreditedEvidenceAllowedTypes, self::AdvancedEvidenceAllowedTypes => EvidenceFileType::values(),
             self::AccreditedEvidenceMaxFilesPerSub, self::AdvancedEvidenceMaxFilesPerSub => 10,
             self::AccreditedEntityTexts, self::AdvancedEntityTexts => PathEntityTexts::empty()->toArray(),
-            self::AdvancedMinEntityAgeYears => 3,
+            self::AdvancedMinEntityAgeYears, self::NdaReminderDays => 3,
             self::AdvancedDisqualificationScore => '60.00',
-            self::AdvancedInitialReviewSlaDays => 14,
             self::CommitteeEntityDataVisibility => CommitteeEntityVisibility::NameOnly->value,
+            self::AwardCycleConcurrency => AwardCycleConcurrency::Single->value,
             self::CertificateLevelThresholds => CertificateLevel::DEFAULT_THRESHOLDS,
             self::AccreditedCertificateIssuanceMode => CertificateIssuanceMode::Automatic->value,
             self::EntitySignInCodeChannels => [OtpChannel::Email->value],
@@ -145,7 +152,7 @@ enum SettingKey: string
             self::TwoFactorRoles => RoleKey::staffValues(),
             self::NationalIdEnabled, self::AssignReasonRequired => false,
             self::ReassignReasonRequired => true,
-            self::NationalIdRoles => [],
+            self::NdaRoles => self::NDA_DEFAULT_ROLES,
             self::ContactRetentionMonths => 24,
             self::InsightsGapThresholds => GapThresholds::DEFAULTS,
             self::InsightsMaturityBands => MaturityBounds::DEFAULTS,

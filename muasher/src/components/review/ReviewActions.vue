@@ -32,6 +32,33 @@ const isBusy = computed(() => Boolean(props.busy))
     <p class="review-actions__status" aria-live="polite">
       {{ dirty ? t('review.unsaved') : t('review.allSaved') }}
     </p>
+    <div v-if="canScore" class="review-actions__main">
+      <BaseButton
+        variant="secondary"
+        icon="save"
+        data-testid="review-save"
+        :loading="busy === 'save'"
+        :disabled="!dirty || isBusy"
+        @click="emit('save')"
+      >
+        {{ t('review.save') }}
+      </BaseButton>
+      <!-- Complete appears only once every item is answered; until then the bar counts what is left. -->
+      <span v-if="missing" class="review-actions__remaining" data-testid="review-remaining">{{
+        t('review.remaining', { count: missing })
+      }}</span>
+      <BaseButton
+        v-else
+        variant="primary"
+        icon="flag-checkered"
+        data-testid="review-complete"
+        :loading="busy === 'complete'"
+        :disabled="isBusy"
+        @click="emit('complete')"
+      >
+        {{ t('review.complete') }}
+      </BaseButton>
+    </div>
     <div class="review-actions__nav">
       <BaseButton
         v-if="!isFirst"
@@ -54,28 +81,6 @@ const isBusy = computed(() => Boolean(props.busy))
         <span class="review-actions__next" :title="nextName || undefined">{{
           nextName ? t('review.nextNamed', { name: nextName }) : t('components.steps.next')
         }}</span>
-      </BaseButton>
-    </div>
-    <div v-if="canScore" class="review-actions__main">
-      <BaseButton
-        variant="secondary"
-        icon="save"
-        data-testid="review-save"
-        :loading="busy === 'save'"
-        :disabled="!dirty || isBusy"
-        @click="emit('save')"
-      >
-        {{ t('review.save') }}
-      </BaseButton>
-      <BaseButton
-        variant="primary"
-        icon="flag-checkered"
-        data-testid="review-complete"
-        :loading="busy === 'complete'"
-        :disabled="isBusy"
-        @click="emit('complete')"
-      >
-        {{ missing ? t('review.completeMissing', { count: missing }) : t('review.complete') }}
       </BaseButton>
     </div>
   </div>

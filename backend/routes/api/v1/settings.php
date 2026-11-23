@@ -37,7 +37,7 @@ $paymentChannels = 'can:'.Ability::ManagePaymentIntegration->value;
 $prices = 'can:'.Ability::ManagePathPrices->value;
 $bankAccounts = 'can:manage,'.BankAccount::class;
 
-Route::middleware(['auth:sanctum', 'session.timeouts', 'mfa', 'password.current'])->prefix('settings')->name('settings.')->group(function () use ($finance, $assessment, $certificates, $auth, $viewBranding, $manageBranding, $paymentChannels, $bankAccounts, $prices): void {
+Route::middleware(['auth:sanctum', 'session.timeouts', 'mfa', 'password.current', 'nda.current'])->prefix('settings')->name('settings.')->group(function () use ($finance, $assessment, $certificates, $auth, $viewBranding, $manageBranding, $paymentChannels, $bankAccounts, $prices): void {
     Route::get('finance', [FinanceSettingsController::class, 'show'])->middleware($finance)->name('finance.show');
     Route::put('finance', [FinanceSettingsController::class, 'update'])->middleware([$finance, 'throttle:sensitive'])->name('finance.update');
     Route::get('assessment', [AssessmentSettingsController::class, 'show'])->middleware($assessment)->name('assessment.show');

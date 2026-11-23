@@ -148,6 +148,47 @@ function verificationUrl(code) {
   return `${window.location.origin}/verify/${code}`
 }
 
+// An award participation certificate: issued once the initial assessment is complete; it shows no score.
+const AWARD_CERTIFICATES = [
+  {
+    id: '7f3b1c92-4e8a-4d05-9a61-2c8e00009204',
+    entityId: LEVEL_ENTITIES.ruwad.id,
+    number: 'CRT-2026-000031',
+    kind: 'advanced_participation',
+    level: null,
+    levelLabel: null,
+    status: 'issued',
+    isTest: false,
+    percent: null,
+    award: {
+      cycleName: {
+        ar: 'دورة جائزة مؤشر للتميز المؤسسي',
+        en: 'Moashir Institutional Excellence Award',
+      },
+      cycleYear: 2026,
+      region: null,
+      regionalRank: null,
+      nationalRank: null,
+    },
+    request: {
+      id: 9204,
+      number: 'ADV-2026-000004',
+      path: 'advanced',
+      pathLabel: { ar: 'الجائزة', en: 'Award' },
+    },
+    entity: LEVEL_ENTITIES.ruwad,
+    verificationCode: 'P7RW-3KDM-9XTQ-H2VN-6ZCA-4BGE-8JFY',
+    issuedAt: '2026-10-20T08:00:00+00:00',
+    validUntil: null,
+    revokedAt: null,
+    revokedReason: null,
+    supersededAt: null,
+    suspendedAt: null,
+    replaces: null,
+    hasPdf: true,
+  },
+]
+
 export const certificatesFixture = [
   {
     id: '2c9e7a41-0b5d-4f63-8e21-7d4a00009102',
@@ -227,6 +268,7 @@ export const certificatesFixture = [
     hasPdf: true,
   },
   ...LEVEL_CERTIFICATES,
+  ...AWARD_CERTIFICATES,
 ].map((certificate) => ({
   ...certificate,
   verificationUrl: verificationUrl(certificate.verificationCode),

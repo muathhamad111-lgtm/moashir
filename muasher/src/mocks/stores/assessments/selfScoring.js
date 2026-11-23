@@ -1,6 +1,7 @@
 import { EVALUATION_TYPES } from '@/constants/criteria'
 import { SCALE_KINDS, SCORE_LEVELS } from '@/constants/assessment'
 import { toHundredths } from '@/utils/weight'
+import { unitScoringType } from '@/utils/assessments/scoringTypes'
 
 export const PERCENT_HUNDRED = 1000000
 const EARNED_DISPLAY_DIVISOR = 1000000
@@ -81,6 +82,7 @@ function scoredUnit(level, node, sheet, scaleKind) {
   return {
     id: node.id,
     code: node.code,
+    scoringType: unitScoringType(node, { kind: scaleKind }),
     weight,
     raw,
     percent,
@@ -112,6 +114,7 @@ function subResult(sub, sheet, scaleKind) {
   return {
     id: sub.id,
     code: sub.code,
+    scoringType: sub.scoringType ?? null,
     weight,
     evaluationType: sub.evaluationType,
     raw: null,

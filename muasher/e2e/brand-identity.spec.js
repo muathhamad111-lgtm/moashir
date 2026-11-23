@@ -185,7 +185,7 @@ test('the favicon and app icons follow the identity', async ({ page }) => {
   expect(manifest.theme_color).toBe('#0a2325')
 })
 
-test('dark mode: the public pages stay dark while the back office is always light, with the on-light logo at the top of its sidebar', async ({
+test('dark mode: the public pages stay dark while the back office is always light, with the on-dark logo on its gradient sidebar rail', async ({
   page,
 }, testInfo) => {
   await seedPreferences(page, { locale: localeOf(testInfo), theme: 'dark' })
@@ -201,7 +201,7 @@ test('dark mode: the public pages stay dark while the back office is always ligh
   await expect(page.locator('html')).toHaveAttribute('data-theme', 'light')
   await expect(page.locator('.sidebar .identity-card__logo')).toHaveAttribute(
     'src',
-    /moashir-logo-on-light/,
+    /moashir-logo-on-dark/,
   )
   expect(await contrastOf(page, '.sidebar__item:not(.is-active):visible')).toBeGreaterThanOrEqual(
     AA_TEXT,

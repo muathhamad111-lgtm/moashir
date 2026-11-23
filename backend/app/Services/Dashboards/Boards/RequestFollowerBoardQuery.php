@@ -44,7 +44,7 @@ final readonly class RequestFollowerBoardQuery implements DashboardBoardQuery
             new DashboardCard('assigned', $counts['assigned'], link: Links::requestsWithStatus(Accredited::Assigned->value)),
             new DashboardCard('in_review', $counts['in_review'], link: Links::requestsWithStatus(Accredited::UnderReview->value, Advanced::UnderInitialAssessment->value)),
             new DashboardCard('needs_completion', $counts['needs_completion'], link: Links::requestsWithStatus(Accredited::NeedsCompletion->value)),
-            new DashboardCard('completed', $completed, link: Links::requestsWithStatus(Accredited::Completed->value)),
+            new DashboardCard('completed', $completed, link: Links::requestsWithStatus(Accredited::Completed->value, ...Advanced::valuesOf(...Advanced::filteringVisibleStates()))),
             new DashboardCard('overdue', $counts['overdue'], link: Links::overdueRequests()),
             new DashboardCard('completion_rate', Ratio::percent($completed, $counts['total']), CardFormat::Percent),
         ], [

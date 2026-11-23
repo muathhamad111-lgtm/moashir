@@ -35,6 +35,7 @@ const props = defineProps({
   activeMainId: { type: Number, default: null },
   // The saved scores: items not achieved or below 50% are suggested.
   scores: { type: Object, default: null },
+  reviewNotes: { type: Array, default: null },
 })
 
 const STEPS = ['items', 'message', 'review']
@@ -173,6 +174,7 @@ watch(
       <CompletionSelectionSummary
         :options="selectedOptions"
         :notes="notes"
+        :review-notes="reviewNotes"
         :error="itemsError"
         @remove="toggle($event, false)"
         @note="(key, value) => (notes[key] = value)"

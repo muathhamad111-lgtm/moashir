@@ -25,6 +25,7 @@ final class TermsVersionSnapshot
                 'ar' => mb_strlen($version->body->ar),
                 'en' => mb_strlen($version->body->en),
             ],
+            ...($version->change_summary === null ? [] : ['change_summary' => $version->change_summary->toArray()]),
         ];
     }
 }

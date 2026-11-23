@@ -10,6 +10,7 @@ import ReviewEvidenceRows from './ReviewEvidenceRows.vue'
 import ReviewRoundRows from './ReviewRoundRows.vue'
 import ReviewFoldedText from './ReviewFoldedText.vue'
 import ReviewFeedbackFold from './ReviewFeedbackFold.vue'
+import ReviewInternalNote from './ReviewInternalNote.vue'
 import { EVALUATION_TYPES } from '@/constants/criteria'
 import { SCORE_LEVELS } from '@/constants/assessment'
 import { savedScoreOf, scoreFieldName } from '@/utils/assessments/scoreSheet'
@@ -17,6 +18,7 @@ import { evidenceOfSub } from '@/utils/accredited/evidenceRules'
 import {
   isUnitScored,
   scoredCount,
+  subStateBadge,
   subEvidenceOf,
   subUnits,
   unitOf,
@@ -80,10 +82,7 @@ const text = (content) => localizedText(content, locale.value)
 const typeOf = (node) => props.workspace.scoreSheet.typeOf(node)
 const pointUnit = (point) => unitOf(SCORE_LEVELS.POINT, point)
 const subRound = computed(() => roundOf(subUnit.value))
-const badge = computed(() => {
-  if (anyAwaiting.value) return { variant: 'warning', key: 'awaiting' }
-  return done.value ? { variant: 'success', key: 'scored' } : { variant: 'muted', key: 'pending' }
-})
+const badge = computed(() => subStateBadge({ awaiting: anyAwaiting.value, done: done.value }))
 const confirm = (unit) => props.workspace.actions.confirmScore(unit)
 </script>
 
@@ -184,7 +183,9 @@ const confirm = (unit) => props.workspace.actions.confirmScore(unit)
             :changed="overrideRows.isChanged(pointUnit(point))"
             @download="emit('download', $event)"
             @confirm="confirm(pointUnit(point))"
-          />
+          >
+            <ReviewInternalNote :workspace="workspace" :main="main" :sub="sub" :point="point" />
+          </ReviewIndicatorRow>
         </ul>
       </section>
       <ReviewDescriptiveIndicators
@@ -195,6 +196,7 @@ const confirm = (unit) => props.workspace.actions.confirmScore(unit)
         :new-ids="newIds"
         @download="emit('download', $event)"
       />
+      <ReviewInternalNote :workspace="workspace" :main="main" :sub="sub" />
       <ReviewFeedbackFold
         :sub-id="sub.id"
         :fields="workspace.feedback.fieldsOf(sub.id)"

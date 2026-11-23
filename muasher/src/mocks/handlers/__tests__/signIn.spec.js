@@ -10,6 +10,7 @@ import { resetIntegrationsState, smsState } from '@/mocks/stores/integrations/in
 import { DEV_OTP_CODE, MOCK_PASSWORD } from '@/mocks/fixtures/auth'
 import { FIXTURE_VERIFIED_PHONE } from '@/mocks/fixtures/entities'
 import { MOCK_API_BASE, clearMockSession, seedMockSession, wireFetch } from '@/test-utils/mockApi'
+import { approvePendingChange } from './profileChangeSupport'
 
 vi.mock('msw', async (importOriginal) => ({
   ...(await importOriginal()),
@@ -466,7 +467,10 @@ describe('mobile verification mock', () => {
       website_url: null,
       marketing_consent: false,
     })
-    expect(saved.body.data).toMatchObject({ phone: '+966500006001', phone_verified: false })
+    expect(saved.status).toBe(202)
+    approvePendingChange(6001)
+    const approved = (await call('GET', '/entities/me')).body.data
+    expect(approved).toMatchObject({ phone: '+966500006001', phone_verified: false })
     const started = await call('POST', '/me/phone/verification')
     expect(started.body.data).toMatchObject({ channel: 'sms', length: 6 })
     const wrong = await call('POST', '/me/phone/verification/confirm', {

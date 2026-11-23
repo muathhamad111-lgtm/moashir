@@ -15,4 +15,10 @@ interface ReviewedAssessmentState extends AssessmentState
     public function acceptsEntityContent(): bool;
 
     public function hasAssessor(): bool;
+
+    /**
+     * Whether the follower may hand the request to another assessor in this state. The request still needs an
+     * active assignment to hand over.
+     */
+    public function acceptsReassignment(): bool;
 }

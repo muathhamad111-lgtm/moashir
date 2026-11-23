@@ -19,6 +19,7 @@ const props = defineProps({
   regions: { type: Array, required: true },
   published: { type: Object, default: null },
   canSetParticipation: { type: Boolean, default: false },
+  thresholdLocked: { type: Boolean, default: false },
   editable: { type: Boolean, default: true },
   reasonExtra: { type: Function, required: true },
   feeQuote: { type: Object, default: null },
@@ -100,6 +101,7 @@ const versionId = computed(() =>
       :published="published"
       :version-id="versionId"
       :can-set-participation="canSetParticipation && editable"
+      :threshold-locked="thresholdLocked"
     />
     <CycleFeeFields :locked="allLocked" :quote="feeQuote" :is-new="!cycleId" />
     <div v-if="editable" class="cycle-form__actions">

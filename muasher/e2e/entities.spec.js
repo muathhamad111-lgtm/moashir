@@ -3,6 +3,7 @@ import { seedLocale, seedSignedIn } from './support/session'
 import { clearMockFault, forceMockFault } from './support/mockFaults'
 import { namedSelect } from './support/dropdown'
 import { fillRegistrationEntityStep, goToRegistrationAccountStep } from './support/registration'
+import { approvePendingProfileChange } from './support/profileChanges'
 
 const DEV_OTP_CODE = '482913'
 const ENTITY = {
@@ -90,7 +91,7 @@ test('an entity proves its e-mail inside the form, registers and is told it is u
   await expect(page).toHaveURL(/\/auth\/register/)
 })
 
-test('the entity edits one profile section and sees the change in the section history', async ({
+test('the entity edits one profile section, staff approve it and it shows in the section history', async ({
   page,
 }, testInfo) => {
   await seedSignedIn(page, ENTITY, { locale: localeOf(testInfo) })
@@ -111,6 +112,12 @@ test('the entity edits one profile section and sees the change in the section hi
   await expect(governance.locator('.field--error [name="governanceGrade"]')).toHaveCount(0)
   await governance.locator('button[type="submit"]').click()
   await expect(governance.locator('.profile-section__status-text--success')).toBeVisible()
+  await expect(governance.getByTestId('section-pending')).toBeVisible()
+  await expect(governance).toContainText('86.50')
+
+  await approvePendingProfileChange(page, localeOf(testInfo))
+  await seedSignedIn(page, ENTITY, { locale: localeOf(testInfo) })
+  await page.goto('/entity/profile')
   await expect(governance).toContainText('91.25')
   await governance.locator('.profile-section__history').click()
   await expect(page.getByTestId('profile-history-entry').first()).toContainText('91.25')

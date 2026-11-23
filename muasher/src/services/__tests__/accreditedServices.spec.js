@@ -96,6 +96,18 @@ describe('accreditedService', () => {
     expect(data.missing.missingCv).toHaveLength(1)
   })
 
+  it('marks a form whose request carries a payment as paid, so its draft cannot be deleted', async () => {
+    apiClient.get.mockResolvedValue(
+      answer({ assessment: { ...assessment, payment: { id: 'p-1' } } }),
+    )
+    const paid = await submissionService.getForm(9106)
+    expect(paid.data.assessment.isPaid).toBe(true)
+
+    apiClient.get.mockResolvedValue(answer({ assessment: { ...assessment, payment: null } }))
+    const unpaid = await submissionService.getForm(9106)
+    expect(unpaid.data.assessment.isPaid).toBe(false)
+  })
+
   it('saves CV entries and submits, treating 409 and 422 as expected answers', async () => {
     apiClient.put.mockResolvedValue(answer({ assessment, cv: { 802: 'x' } }))
     await submissionService.saveCv(9101, { cv: { 802: 'x' } })
@@ -289,6 +301,8 @@ describe('assessor review, overrides, settings and prices', () => {
       advancedMinEntityAgeYears: 3,
       advancedDisqualificationScore: null,
       committeeEntityDataVisibility: null,
+      advancedCycleConcurrency: null,
+      runningCycles: null,
       scaleKind: null,
       publishedScaleKind: null,
     })

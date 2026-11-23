@@ -13,6 +13,7 @@ import {
   sectionPayload,
 } from '@/utils/entityProfile/formValues'
 import { profileSectionSchema } from '@/utils/entityProfile/schema'
+import { withProposedValues } from '@/utils/entityProfile/proposedValues'
 import { PROFILE_SAVE_STATES as S, PROFILE_STALE_CODE } from '@/constants/entityProfile'
 
 const VALIDATION_STATUS = 422
@@ -44,7 +45,9 @@ export function useProfileSectionForm(section, { onSaved }) {
   const editable = editableFieldsOf(names)
   const required = section.value.fields.filter((field) => field.required).map((field) => field.name)
   const action = `entities.profile.${section.value.key}.save`
-  const saved = ref(sectionFormValues(store.profile, names))
+  const currentValues = () =>
+    sectionFormValues(withProposedValues(store.profile, store.pendingChange), names)
+  const saved = ref(currentValues())
   const status = ref(S.IDLE)
 
   const form = useForm({
@@ -61,7 +64,7 @@ export function useProfileSectionForm(section, { onSaved }) {
 
   async function reloadFresh() {
     await store.loadProfile({ force: true })
-    saved.value = sectionFormValues(store.profile, names)
+    saved.value = currentValues()
     form.resetForm({ values: copyOf(saved.value) })
   }
 
@@ -98,8 +101,9 @@ export function useProfileSectionForm(section, { onSaved }) {
       status.value = S.SAVING
       logger.breadcrumb('form', action, { fields: payloadShape(payload) })
       try {
-        await store.saveSection(section.value.key, payload)
+        const { data } = await store.saveSection(section.value.key, payload)
         status.value = S.SAVED
+        if (data.pendingProfileChange) toast.success(t('portal.profile.pendingChange.submitted'))
         onSaved()
       } catch (error) {
         await onFailure(error)

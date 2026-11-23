@@ -108,14 +108,15 @@ it('lists the cycles within the record scope of the reader', function (): void {
         ->assertJsonPath('meta.pagination.total', 2)
         ->assertJsonPath('meta.stats.by_status.draft', 2);
     switchTo(requestFollower())->getJson('/api/v1/award/cycles')->assertOk()->assertJsonPath('meta.pagination.total', 2);
-    switchTo($secretary)->getJson('/api/v1/award/cycles')->assertOk()->assertJsonPath('meta.pagination.total', 1)->assertJsonPath('data.0.id', $mine->id);
+    // Every Award Secretary reads every cycle (operator 2026-11-22: «الدورات والنتائج»); membership only scopes actions.
+    switchTo($secretary)->getJson('/api/v1/award/cycles')->assertOk()->assertJsonPath('meta.pagination.total', 2);
     switchTo($officer)->getJson('/api/v1/award/cycles')->assertOk()->assertJsonPath('meta.pagination.total', 1)->assertJsonPath('data.0.id', $other->id);
     switchTo($assessor)->getJson('/api/v1/award/cycles')->assertOk()->assertJsonPath('meta.pagination.total', 1);
-    switchTo(awardSecretary())->getJson('/api/v1/award/cycles')->assertOk()->assertJsonPath('meta.pagination.total', 0);
+    switchTo(awardSecretary())->getJson('/api/v1/award/cycles')->assertOk()->assertJsonPath('meta.pagination.total', 2);
     switchTo(systemAdmin())->getJson('/api/v1/award/cycles?filter[status]=closed')->assertOk()->assertJsonPath('meta.pagination.total', 0);
     test()->getJson('/api/v1/award/cycles?sort=name')->assertUnprocessable();
 
-    switchTo($secretary)->getJson("/api/v1/award/cycles/{$other->id}")->assertNotFound();
+    switchTo($secretary)->getJson("/api/v1/award/cycles/{$other->id}")->assertOk()->assertJsonPath('data.can_manage', false);
     switchTo($officer)->getJson("/api/v1/award/cycles/{$other->id}")->assertOk()->assertJsonPath('data.can_manage', false)->assertJsonMissingPath('data.members');
     switchTo(requestFollower())->getJson("/api/v1/award/cycles/{$other->id}")->assertOk()->assertJsonPath('data.members.0.id', $officer->id)->assertJsonPath('data.initial_assessors.0.id', $assessor->id);
 });
@@ -168,7 +169,8 @@ it('lets a secretary manage only the cycles they belong to', function (): void {
     $officer = filteringOfficer();
     addCycleMember($cycle, $officer, CycleMemberRole::FilteringOfficer);
 
-    switchTo(awardSecretary())->putJson("/api/v1/award/cycles/{$cycle->id}", ['year' => 2027])->assertNotFound();
+    // Operator 2026-11-22: every Award Secretary reads every cycle; only the cycle's own secretaries act (403, not 404).
+    switchTo(awardSecretary())->putJson("/api/v1/award/cycles/{$cycle->id}", ['year' => 2027])->assertForbidden();
     switchTo($officer)->putJson("/api/v1/award/cycles/{$cycle->id}", ['year' => 2027])->assertForbidden();
     switchTo($member)->putJson("/api/v1/award/cycles/{$cycle->id}", ['year' => 2027])->assertOk()->assertJsonPath('data.year', 2027);
 });

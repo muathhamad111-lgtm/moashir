@@ -74,7 +74,8 @@ it('lists the committee requests with the initial result, every evaluation and t
 
     switchTo(systemAdmin())->getJson(secretaryPath($cycle, $assessment))->assertOk();
     switchTo($scenario['officer'])->getJson(secretaryPath($cycle))->assertForbidden();
-    switchTo(awardSecretary())->getJson(secretaryPath($cycle))->assertNotFound();
+    // Operator 2026-11-22: every Award Secretary reviews every cycle's desk, read-only.
+    switchTo(awardSecretary())->getJson(secretaryPath($cycle))->assertOk();
     switchTo($first)->getJson(secretaryPath($cycle))->assertForbidden();
     switchTo(ownerOf($assessment->entity))->getJson(secretaryPath($cycle))->assertForbidden();
 });

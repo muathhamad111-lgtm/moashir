@@ -10,9 +10,9 @@ it('is idempotent', function (): void {
     app(SyncPermissionCatalog::class)->handle();
     app(SyncPermissionCatalog::class)->handle();
 
-    expect(Permission::query()->count())->toBe(90)
+    expect(Permission::query()->count())->toBe(94)
         ->and(Role::query()->count())->toBe(9)
-        ->and(Role::query()->where('name', 'system_admin')->firstOrFail()->permissions()->count())->toBe(66);
+        ->and(Role::query()->where('name', 'system_admin')->firstOrFail()->permissions()->count())->toBe(70);
 });
 
 it('keeps the labels and matrix changes made by administrators', function (): void {
@@ -44,6 +44,17 @@ it('always restores the code-defined entity permissions', function (): void {
     app(SyncPermissionCatalog::class)->handle();
 
     expect($entity->refresh()->permissionKeys())->not->toContain('users.manage');
+});
+
+it('takes the staff results key away from an entity role that still holds it (AJ-23)', function (): void {
+    $entity = Role::query()->where('name', 'entity')->firstOrFail();
+    $entity->givePermissionTo('award.results.view');
+
+    app(SyncPermissionCatalog::class)->handle();
+
+    expect($entity->refresh()->permissionKeys())->not->toContain('award.results.view')
+        ->and(Role::query()->where('name', 'award_secretary')->firstOrFail()->permissionKeys())->toContain('award.results.view')
+        ->and(Role::query()->where('name', 'system_admin')->firstOrFail()->permissionKeys())->toContain('award.results.view');
 });
 
 it('seeds the bilingual labels of every key from the translation files', function (): void {

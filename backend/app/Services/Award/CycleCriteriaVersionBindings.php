@@ -25,11 +25,11 @@ final readonly class CycleCriteriaVersionBindings implements CycleCriteriaBindin
     {
         $running = AwardCycle::query()->running()->withCount([
             'requests as open_requests_count' => static fn (Builder $request): Builder => $request->whereIn('status', AssessmentPath::Advanced->openStateValues()),
-        ])->first();
+        ])->latest('submission_start')->orderByDesc('id')->get();
         $drafts = AwardCycle::query()->where('status', AwardCycleStatus::Draft)->orderBy('id')->get();
 
         return new CycleBindingSummary(
-            $running instanceof AwardCycle ? $this->bindingOf($running, ScalarValue::int($running->getAttribute('open_requests_count'))) : null,
+            array_values($running->map(fn (AwardCycle $cycle): CycleBinding => $this->bindingOf($cycle, ScalarValue::int($cycle->getAttribute('open_requests_count'))))->all()),
             array_values($drafts->map(fn (AwardCycle $draft): CycleBinding => $this->bindingOf($draft, 0))->all()),
         );
     }

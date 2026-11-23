@@ -32,7 +32,7 @@ function signIn(page, testInfo, user) {
 
 const billing = (page) => page.locator('[data-section="billing"]')
 
-test('the entity answers «yes» to VAT, sees the number and certificate fields and saves', async ({
+test('the entity answers «yes» to VAT, sees the number and certificate fields and sends them for approval', async ({
   page,
 }, testInfo) => {
   await signIn(page, testInfo, USERS.albirr)
@@ -55,8 +55,9 @@ test('the entity answers «yes» to VAT, sees the number and certificate fields 
   await vatNumber.fill('٣٠٠٠٥٠٠١٠٠٠٠٠٠٣')
   await billing(page).locator('button[type="submit"]').click()
   await expect(billing(page).locator('.profile-section__status-text--success')).toBeVisible()
-  await expect(billing(page).locator('[data-field="vatCertificate"]')).toBeVisible()
-  await expect(billing(page).getByTestId('profile-section-state')).not.toHaveClass(/--complete/)
+  await expect(billing(page).getByTestId('section-pending')).toBeVisible()
+  await expect(billing(page).locator('[data-field="vatNumber"]')).toHaveCount(0)
+  await expect(billing(page).getByTestId('profile-section-state')).toHaveClass(/--complete/)
 })
 
 test('the payment page warns about incomplete billing details and links to the profile', async ({

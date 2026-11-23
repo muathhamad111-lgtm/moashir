@@ -16,6 +16,7 @@ use App\Services\Assessments\AssessmentContextReader;
 use App\Services\Assessments\AssessmentSummaryReader;
 use App\Services\Assessments\CriteriaMoveSummaryReader;
 use App\Services\Assessments\FeedbackSheetReader;
+use App\Services\Assessments\ReviewNotesViewer;
 use App\Services\Assessments\ScoreSheetReader;
 use App\Services\Assessments\ScoringTreeBuilder;
 use App\Services\Assessments\SubmissionContentReader;
@@ -32,6 +33,7 @@ final readonly class GetAssessorReview
         private AssessmentContextReader $context,
         private AssessmentSummaryReader $summaries,
         private CriteriaMoveSummaryReader $criteriaMoves,
+        private ReviewNotesViewer $notes,
     ) {}
 
     public function handle(User $viewer, Assessment $assessment): AssessorReview
@@ -50,6 +52,7 @@ final readonly class GetAssessorReview
             $this->feedback->read($assessment),
             $assessment->openCompletionRequest,
             $this->context->for($viewer, $assessment),
+            $this->notes->for($viewer, $assessment),
             $this->summaries->currentOf($assessment),
             $this->criteriaMoves->latestFor($assessment),
         );

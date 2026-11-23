@@ -22,6 +22,17 @@
   font-size: var(--fs-3xl);
 }
 
+.logo-dialog__pending {
+  margin: 0;
+  padding-block: var(--space-2);
+  padding-inline: var(--space-3);
+  border-radius: var(--radius-md);
+  background-color: color-mix(in srgb, var(--theme-info-text) 10%, transparent);
+  color: var(--theme-info-text);
+  font-size: var(--fs-sm);
+  font-weight: var(--fw-semibold);
+}
+
 .logo-dialog__rules,
 .logo-dialog__note {
   margin: 0;

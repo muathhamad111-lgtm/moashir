@@ -334,6 +334,7 @@ function toRegionBoard(raw = {}) {
 export function toResultsMeta(raw = {}) {
   return {
     cycleStatus: raw.cycleStatus ?? null,
+    isCycleSecretary: raw.isCycleSecretary === true,
     regions: (raw.regions ?? []).map(toRegionBoard),
     national: {
       approved: raw.national?.approved === true,

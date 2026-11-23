@@ -87,7 +87,7 @@ it('never holds an advanced draft after the entity is restored', function (): vo
 
     expect($draft->refresh()->awaitsCriteriaUpdate())->toBeFalse()
         ->and($draft->criteria_version_id)->toBe($version->id);
-    switchTo(ownerOf($draft->entity))->postJson("/api/v1/assessments/{$draft->id}/submit")->assertOk()->assertJsonPath('data.status', 'awaiting_review_assignment');
+    switchTo(ownerOf($draft->entity))->postJson("/api/v1/assessments/{$draft->id}/submit")->assertOk()->assertJsonPath('data.status', 'under_review');
 });
 
 it('records every advanced transition in the status history with the staff names for staff readers only', function (): void {
@@ -103,8 +103,9 @@ it('records every advanced transition in the status history with the staff names
 
     $entityHistory = switchTo(ownerOf($assessment->entity))->getJson("/api/v1/assessments/{$assessment->id}")->assertOk()->json('data.status_history');
 
-    expect(array_column($entityHistory, 'verb'))->toBe(['start', 'submit', 'assign', 'start_review'])
-        ->and($entityHistory[2])->not->toHaveKey('actor_staff');
+    expect(array_column($entityHistory, 'verb'))->toBe(['start', 'submit'])
+        ->and($entityHistory[1]['to'])->toBe('under_review')
+        ->and($entityHistory[1])->not->toHaveKey('actor_staff');
 });
 
 it('erases the open advanced requests on permanent deletion and keeps the closed ones', function (): void {

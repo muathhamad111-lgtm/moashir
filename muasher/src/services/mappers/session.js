@@ -34,6 +34,7 @@ export function toSessionUser(raw = {}) {
     isSuperAdmin: raw.isSuperAdmin === true,
     mfaEnabled: raw.mfaEnabled === true,
     passwordChangeRequired: raw.passwordChangeRequired === true,
+    ndaAcceptanceRequired: raw.ndaAcceptanceRequired === true,
     nationalIdRequired: raw.nationalIdRequired === true,
     hasNationalId: raw.hasNationalId === true,
     nationalIdMasked: raw.nationalIdMasked ?? null,

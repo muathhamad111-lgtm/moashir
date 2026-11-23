@@ -4,6 +4,7 @@ import { useI18n } from 'vue-i18n'
 import Badge from '@/components/ui/Badge.vue'
 import ReviewSubPanel from './ReviewSubPanel.vue'
 import MainEvidenceReview from './MainEvidenceReview.vue'
+import ReviewInternalNote from './ReviewInternalNote.vue'
 import { localizedText } from '@/utils/localizedText'
 import { formatShare, shareOf } from '@/utils/weight'
 import { scoredCount, subUnits } from '@/utils/assessments/reviewRows'
@@ -47,6 +48,7 @@ const variant = computed(() => {
         {{ t('review.itemsScored', { scored, total: units.length }) }}
       </Badge>
     </header>
+    <ReviewInternalNote :workspace="workspace" :main="main" />
     <MainEvidenceReview
       v-if="main.attachments?.length"
       :main="main"

@@ -14,7 +14,7 @@ use App\Http\Middleware\ValidateDownloadSignature;
 use App\Models\Certificates\Certificate;
 use Illuminate\Support\Facades\Route;
 
-$signedIn = ['auth:sanctum', 'session.timeouts', 'mfa', 'password.current'];
+$signedIn = ['auth:sanctum', 'session.timeouts', 'mfa', 'password.current', 'nda.current'];
 $viewReport = 'can:'.Ability::ViewFeedbackReport->value.',assessment';
 
 Route::get('verify/{code}', CertificateVerificationController::class)

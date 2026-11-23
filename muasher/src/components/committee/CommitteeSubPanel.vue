@@ -113,6 +113,7 @@ function text(content) {
       :prior="evaluation.prior"
       :units="units"
       :sub-id="sub.id"
+      :type-of="typeOf"
     />
   </li>
 </template>

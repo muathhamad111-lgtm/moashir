@@ -182,6 +182,26 @@ function toCycle(raw) {
   }
 }
 
+export function toOpenCycleOption(raw = {}) {
+  const request = raw.request
+  return {
+    ...toCycle(raw),
+    year: raw.year ?? null,
+    eligibility: {
+      eligible: raw.eligibility?.eligible === true,
+      reason: raw.eligibility?.reason ?? null,
+    },
+    request: request
+      ? {
+          id: request.id ?? null,
+          number: request.number ?? '',
+          status: toRequestStatus(request.status),
+          isOpen: request.isOpen === true,
+        }
+      : null,
+  }
+}
+
 function toAwardPath(raw) {
   if (!raw) return null
   const open = raw.openRequest
@@ -223,6 +243,7 @@ function toAwardPath(raw) {
           announcedAt: result.announcedAt ?? null,
         }
       : null,
+    openCycles: (raw.openCycles ?? []).map(toOpenCycleOption),
   }
 }
 

@@ -10,6 +10,7 @@ use Illuminate\Support\Facades\Schedule;
 Schedule::command('moashir:expire-invitations')->everyFiveMinutes()->withoutOverlapping();
 Schedule::command('moashir:prune-otp-codes')->hourly()->withoutOverlapping();
 Schedule::command('moashir:prune-password-reset-links')->hourly()->withoutOverlapping();
+Schedule::command('moashir:send-nda-reminders')->hourly()->withoutOverlapping()->onOneServer();
 Schedule::command('moashir:assessments:sweep-criteria-update-holds')->everyTenMinutes()->withoutOverlapping();
 Schedule::command('moashir:assessments:open-paid-requests')->everyTenMinutes()->withoutOverlapping();
 Schedule::command('moashir:assessments:flag-overdue')->hourly()->withoutOverlapping();

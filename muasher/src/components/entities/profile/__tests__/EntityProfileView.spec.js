@@ -80,10 +80,11 @@ function profileWith(overrides = {}) {
 
 const CERTIFICATE = { id: 'c-1', number: 'CRT-2026-000003', validUntil: '2027-09-04' }
 
-async function factory(profile = profileWith(), certificate = CERTIFICATE) {
+async function factory(profile = profileWith(), certificate = CERTIFICATE, pendingChange = null) {
   const globals = createTestGlobals({ locale: 'ar' })
   setActivePinia(globals.pinia)
   useEntityStore().profile = profile
+  useEntityStore().pendingChange = pendingChange
   await globals.router.push('/entity/profile')
   const wrapper = mount(EntityProfileView, {
     global: { ...globals, stubs: { teleport: true } },
@@ -120,6 +121,62 @@ beforeEach(() => {
 })
 
 describe('EntityProfileView', () => {
+  it('shows the approval notice and marks the section that holds a pending change', async () => {
+    const pending = {
+      id: 'r-1',
+      revision: 1,
+      changes: [
+        {
+          item: 'website_url',
+          kind: 'field',
+          section: 'contact',
+          label: { ar: 'الموقع الإلكتروني', en: 'Website' },
+          oldValue: null,
+          newValue: 'https://namaa.example.sa',
+        },
+      ],
+    }
+    const profile = profileWith({
+      pendingProfileChange: { id: 'r-1', revision: 1, items: ['website_url'] },
+    })
+    const wrapper = await factory(profile, CERTIFICATE, pending)
+    expect(wrapper.find('[data-testid="pending-profile-change"]').text()).toContain(
+      'بانتظار اعتماد الإدارة',
+    )
+    expect(wrapper.find('[data-section="contact"] [data-testid="section-pending"]').exists()).toBe(
+      true,
+    )
+    expect(wrapper.find('[data-section="identity"] [data-testid="section-pending"]').exists()).toBe(
+      false,
+    )
+    wrapper.unmount()
+  })
+
+  it('opens the section form on the proposed values', async () => {
+    const pending = {
+      id: 'r-1',
+      revision: 1,
+      changes: [
+        {
+          item: 'license_number',
+          kind: 'field',
+          section: 'identity',
+          label: { ar: 'رقم الترخيص', en: 'Licence number' },
+          oldValue: '000123',
+          newValue: '000777',
+        },
+      ],
+    }
+    const profile = profileWith({
+      pendingProfileChange: { id: 'r-1', revision: 1, items: ['license_number'] },
+    })
+    const wrapper = await factory(profile, CERTIFICATE, pending)
+    await wrapper.find('[data-section="identity"] .profile-section__edit').trigger('click')
+    await flushPromises()
+    expect(wrapper.find('[name="licenseNumber"]').element.value).toBe('000777')
+    wrapper.unmount()
+  })
+
   it('shows the identity header with the compact facts and the eye button', async () => {
     const wrapper = await factory()
     expect(wrapper.find('.profile-header__name').text()).toBe('مؤسسة نماء للتنمية')

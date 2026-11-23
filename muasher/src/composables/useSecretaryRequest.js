@@ -23,7 +23,9 @@ export function useSecretaryRequest(cycleId, assessmentId) {
   const errorMessage = ref('')
   const detail = shallowRef(null)
 
-  const decides = computed(() => can(PERMISSIONS.AWARD_SECRETARY_DECIDE))
+  // Only this cycle's own Award Secretaries decide; another Award Secretary reviews read-only (API meta).
+  const isCycleSecretary = ref(false)
+  const decides = computed(() => can(PERMISSIONS.AWARD_SECRETARY_DECIDE) && isCycleSecretary.value)
   const state = computed(() => detail.value?.status ?? null)
   const openDiscussion = computed(
     () =>
@@ -60,7 +62,9 @@ export function useSecretaryRequest(cycleId, assessmentId) {
     if (!silent) status.value = 'loading'
     errorMessage.value = ''
     try {
-      detail.value = (await secretaryService.get(cycleId.value, assessmentId.value)).data
+      const envelope = await secretaryService.get(cycleId.value, assessmentId.value)
+      detail.value = envelope.data
+      isCycleSecretary.value = envelope.meta?.isCycleSecretary === true
       status.value = 'ready'
     } catch (error) {
       if (silent) return

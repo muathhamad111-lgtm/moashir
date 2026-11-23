@@ -1,4 +1,6 @@
+@use 'sass:list';
 @use 'sass:map';
+@use 'sass:math';
 
 $tts-neutral: (
   0: #fafafa,
@@ -52,11 +54,22 @@ $tts-default-on-primary: #100f10;
 $tts-default-primary-text: #547774;
 $tts-default-secondary: #0a2325;
 $tts-default-on-secondary: #ffffff;
+// The sidebar gradient derived from the default brand colours (BrandRailDeriver). They paint
+// the rail until the saved scheme arrives through CSSOM (useBrandSchemeStyle).
+$tts-default-rail-stops:
+  #0a2325, #0e282a, #122d2f, #163233, #1a3738, #1e3d3d, #224243, #274748, #2b4d4d;
+$tts-default-rail-top: #0a2325;
+$tts-default-rail-bottom: #2b4d4d;
+$tts-default-on-rail: #ffffff;
+$tts-default-on-rail-muted: #ffffff;
+$tts-default-rail-accent: #fafdfd;
+$tts-default-rail-glow: 34%;
 
 $tts-radius-control: 12px;
 $tts-radius-menu-item: 12px;
 $tts-radius-header: 14px;
 $tts-radius-card: 16px;
+$tts-radius-rail: 26px;
 $tts-radius-icon-tile: 10px;
 
 $tts-header-height: 3.875rem;
@@ -119,6 +132,17 @@ $tts-checkbox-size: 1.125rem;
 
 @function tts-status($name, $role) {
   @return map.get(map.get($tts-status, $name), $role);
+}
+
+// A top-to-bottom CSS gradient through evenly spread stops (the sidebar rail).
+@function tts-rail-gradient($stops) {
+  $last: list.length($stops) - 1;
+  $parts: ();
+  @for $index from 1 through list.length($stops) {
+    $at: math.percentage(math.div($index - 1, $last));
+    $parts: list.append($parts, list.nth($stops, $index) $at, $separator: comma);
+  }
+  @return linear-gradient(180deg, $parts);
 }
 
 // Data-viz palette (validated with the dataviz checks on white): categorical slots in a

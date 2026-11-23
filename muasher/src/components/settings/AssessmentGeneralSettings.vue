@@ -5,16 +5,19 @@ import Skeleton from '@/components/feedback/Skeleton.vue'
 import ErrorState from '@/components/feedback/ErrorState.vue'
 import FieldInput from '@/components/form/FieldInput.vue'
 import FieldSelect from '@/components/form/FieldSelect.vue'
+import FieldRadio from '@/components/form/FieldRadio.vue'
 import BaseButton from '@/components/ui/BaseButton.vue'
 import ReasonDialog from '@/components/modal/ReasonDialog.vue'
 import { useAssessmentSettings } from '@/composables/useAssessmentSettings'
 import { ADVANCED_BOUNDS, UPLOAD_BOUNDS } from '@/utils/accredited/assessmentSettingsForm'
 import { ENTITY_VISIBILITY_LIST } from '@/constants/committee'
 import { SCALE_KINDS } from '@/constants/assessment'
+import { CYCLE_CONCURRENCY_LIST } from '@/constants/advanced'
+import { exceedsConcurrency } from '@/utils/award/cycleConcurrency'
 import AppIcon from '@/components/ui/AppIcon.vue'
 
 const { t } = useI18n()
-const { status, errorMessage, settings, saving, reasonOpen, load, submit, confirmReason } =
+const { status, errorMessage, settings, form, saving, reasonOpen, load, submit, confirmReason } =
   useAssessmentSettings()
 
 const visibilityOptions = computed(() =>
@@ -22,6 +25,23 @@ const visibilityOptions = computed(() =>
     value,
     label: t(`settings.assessment.visibility.${value}`),
   })),
+)
+
+const concurrencyOptions = computed(() =>
+  CYCLE_CONCURRENCY_LIST.map((value) => ({
+    value,
+    label: t(`settings.assessment.cycleConcurrencyOptions.${value}`),
+  })),
+)
+const concurrencyHint = computed(() => {
+  const value = form.values.advancedCycleConcurrency
+  return CYCLE_CONCURRENCY_LIST.includes(value)
+    ? t(`settings.assessment.cycleConcurrencyHints.${value}`)
+    : ''
+})
+
+const appliesToNewCyclesOnly = computed(() =>
+  exceedsConcurrency(form.values.advancedCycleConcurrency, settings.value?.runningCycles),
 )
 
 const SCALE_LABELS = {
@@ -110,6 +130,28 @@ onMounted(load)
           :hint="t('settings.assessment.committeeVisibilityHint')"
           required
         />
+        <FieldRadio
+          name="advancedCycleConcurrency"
+          :label="t('settings.assessment.cycleConcurrency')"
+          :options="concurrencyOptions"
+          required
+        />
+        <p v-if="concurrencyHint" class="field__hint" data-testid="cycle-concurrency-hint">
+          {{ concurrencyHint }}
+        </p>
+        <p
+          v-if="appliesToNewCyclesOnly"
+          class="settings-form__note"
+          role="note"
+          data-testid="cycle-concurrency-future-only"
+        >
+          <AppIcon name="info-circle" />
+          {{ t('settings.assessment.cycleConcurrencyFutureOnly') }}
+        </p>
+        <p class="settings-form__note" role="note">
+          <AppIcon name="info-circle" />
+          {{ t('settings.assessment.cycleConcurrencyNote') }}
+        </p>
       </fieldset>
       <div class="path-settings__actions">
         <BaseButton type="submit" variant="primary" :loading="saving" icon="save">{{

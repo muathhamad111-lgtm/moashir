@@ -6,7 +6,7 @@ use App\Http\Controllers\Api\V1\Periods\AssessmentPeriodController;
 use App\Models\Assessments\AssessmentPeriod;
 use Illuminate\Support\Facades\Route;
 
-Route::middleware(['auth:sanctum', 'session.timeouts', 'mfa', 'password.current'])
+Route::middleware(['auth:sanctum', 'session.timeouts', 'mfa', 'password.current', 'nda.current'])
     ->prefix('assessment-periods')
     ->name('assessment-periods.')
     ->group(function (): void {

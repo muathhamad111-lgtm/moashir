@@ -16,8 +16,10 @@ export function conditionsRejection(failures) {
 }
 
 export const awardReject = {
-  anotherOpen: (cycleId) =>
-    new MockRejection(409, 'cycle.another_open', { meta: { awardCycleId: cycleId } }),
+  startBlocked: (block) =>
+    new MockRejection(409, block.code, {
+      meta: { awardCycleId: block.cycle.id, concurrency: block.concurrency },
+    }),
   fieldsLocked: (fields) =>
     new MockRejection(409, 'cycle.field_locked', {
       fields: Object.fromEntries(

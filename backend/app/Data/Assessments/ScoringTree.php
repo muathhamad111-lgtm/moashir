@@ -54,6 +54,11 @@ final readonly class ScoringTree
         return $units;
     }
 
+    public function main(int $id): ?ScoringMain
+    {
+        return array_find($this->mains, static fn (ScoringMain $main): bool => $main->id === $id);
+    }
+
     public function unit(ScoreLevel $level, int $id): ?ScorableUnit
     {
         return $this->unitsByKey[ScorableUnit::keyFor($level, $id)] ?? null;

@@ -36,7 +36,9 @@ function placeOf(region) {
 
 function cycleSummaryOf(record) {
   const cycle = record.awardCycleId ? findCycle(record.awardCycleId) : null
-  return cycle ? { id: cycle.id, name: { ...cycle.name }, status: cycle.status } : null
+  return cycle
+    ? { id: cycle.id, name: { ...cycle.name }, year: cycle.year, status: cycle.status }
+    : null
 }
 
 const FEEDBACK_FIELDS = ['strengths', 'improvementPoints', 'notes']

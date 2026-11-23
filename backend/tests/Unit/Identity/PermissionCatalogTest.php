@@ -7,9 +7,9 @@ use App\Enums\Identity\PermissionModule;
 use App\Enums\Identity\RoleKey;
 use App\Services\Identity\DefaultPermissionMatrix;
 
-it('defines 90 unique permission keys in the module.resource.action format', function (): void {
-    expect(PermissionKey::values())->toHaveCount(90)
-        ->and(array_unique(PermissionKey::values()))->toHaveCount(90);
+it('defines 94 unique permission keys in the module.resource.action format', function (): void {
+    expect(PermissionKey::values())->toHaveCount(94)
+        ->and(array_unique(PermissionKey::values()))->toHaveCount(94);
 
     foreach (PermissionKey::cases() as $key) {
         expect($key->value)->toMatch('/^[a-z_]+(\.[a-z_]+){1,3}$/');
@@ -29,10 +29,10 @@ it('places the keys in their catalog modules', function (PermissionKey $key, Per
     [PermissionKey::PaymentsOwnCreate, PermissionModule::Finance],
 ]);
 
-it('marks exactly the thirteen independent grantable keys', function (): void {
+it('marks exactly the fourteen independent grantable keys', function (): void {
     $grantable = array_values(array_filter(PermissionKey::cases(), static fn (PermissionKey $key): bool => $key->isGrantable()));
 
-    expect($grantable)->toHaveCount(13)
+    expect($grantable)->toHaveCount(14)
         ->and($grantable)->toContain(PermissionKey::BagPlanApprove, PermissionKey::EntitiesDelete, PermissionKey::DashboardExecutiveView, PermissionKey::ContactMessagesManage, PermissionKey::FinanceTransfersReview, PermissionKey::SettingsPricesManage, PermissionKey::UsersIdentityChangesReview);
 });
 
@@ -94,4 +94,20 @@ it('marks only the entity role as not assignable and the award roles as cycle sc
         ->and(RoleKey::FilteringOfficer->isCycleScoped())->toBeTrue()
         ->and(RoleKey::Assessor->isCycleScoped())->toBeFalse()
         ->and(RoleKey::values())->not->toContain('super_admin');
+});
+
+it('grants the internal review notes to the assessor, the requests follower and the system administrator only', function (): void {
+    $matrix = new DefaultPermissionMatrix;
+    $notes = ['requests.notes.read', 'requests.notes.write'];
+
+    foreach (RoleKey::cases() as $role) {
+        $granted = array_values(array_intersect(array_map(static fn (PermissionKey $key): string => $key->value, $matrix->for($role)), $notes));
+        $expected = in_array($role, [RoleKey::Assessor, RoleKey::RequestFollower, RoleKey::SystemAdmin], true) ? $notes : [];
+
+        expect($granted)->toBe($expected);
+    }
+
+    expect(PermissionKey::RequestsNotesRead->module())->toBe(PermissionModule::Requests)
+        ->and(PermissionKey::RequestsNotesWrite->isConfidential())->toBeTrue()
+        ->and(PermissionKey::RequestsNotesWrite->isGrantable())->toBeFalse();
 });

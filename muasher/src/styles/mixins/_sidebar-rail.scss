@@ -1,0 +1,8 @@
+// The look 3 rail shared by the back-office sidebar and the portal side nav: the brand gradient
+// as the background, and a stacking context so the decorative .rail-glow sits above it but below
+// the menu. Shells without the tokens keep their plain sidebar background.
+@mixin sidebar-rail {
+  isolation: isolate;
+  background-image: var(--sidebar-gradient, none);
+  box-shadow: var(--sidebar-shadow, none);
+}

@@ -19,6 +19,7 @@ export const STATUS_VARIANTS = {
   'under-committee-assessment': 'info',
   'awaiting-secretary-approval': 'warning',
   approved: 'success',
+  'partially-approved': 'warning',
   announced: 'success',
   'certificate-issued': 'success',
   'rejected-conditions': 'danger',

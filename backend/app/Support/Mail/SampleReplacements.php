@@ -42,6 +42,7 @@ final class SampleReplacements
     private const array LOCALIZED = [
         'entity' => ['جمعية الأمل الخيرية للتنمية الأسرية', 'Al-Amal Family Development Charity'],
         'cycle' => ['دورة جائزة التميز 2026', 'Excellence Award 2026 cycle'],
+        'blocking' => ['دورة جائزة التميز 2025', 'Excellence Award 2025 cycle'],
         'assessor' => ['خالد المطيري', 'Khalid Al-Mutairi'],
         'replaced' => ['نورة القحطاني', 'Noura Al-Qahtani'],
         'user' => ['سارة العتيبي', 'Sara Al-Otaibi'],
@@ -53,6 +54,7 @@ final class SampleReplacements
         'reason' => ['أُعيد فتح التقييم لمراجعة شواهد المعيار الفرعي 2.3.', 'The assessment was reopened to review the evidence of sub-criterion 2.3.'],
         'bank' => ['بنك المثال (مثال)', 'Example Bank (example)'],
         'period' => ['الربع الثاني 2027', 'Q2 2027'],
+        'changes' => ['إضافة بند يمنع تصوير الشاشة والشواهد.', 'A clause that forbids screenshots of screens and evidence was added.'],
         'note' => ['يرجى مراجعة درجة المعيار الفرعي 2.3 في ضوء الشواهد المرفقة.', 'Please review the score of sub-criterion 2.3 against the attached evidence.'],
     ];
 

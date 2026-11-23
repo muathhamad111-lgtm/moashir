@@ -8,6 +8,7 @@ use App\Data\Audit\AuditEntry;
 use App\Enums\Assessments\AdvancedAssessmentStatus;
 use App\Enums\Assessments\AssessmentVerb;
 use App\Enums\Audit\AuditEvent;
+use App\Exceptions\Award\AwardRejected;
 use App\Exceptions\IllegalStateTransition;
 use App\Models\Assessments\Assessment;
 use App\Models\Identity\User;
@@ -38,6 +39,12 @@ final readonly class DeleteAdvancedDraft
 
             if ($locked->status !== AdvancedAssessmentStatus::Draft) {
                 throw IllegalStateTransition::from((string) $locked->status->value, AssessmentVerb::SaveDraft->value);
+            }
+
+            // A paid draft ends only by submission or by a recorded refund (03 §8.1, §16.3): deleting it would
+            // strand the paid fee, and the entity could never apply again in the cycle (AJ-01).
+            if ($locked->payment_id !== null) {
+                throw AwardRejected::paidDraft();
             }
 
             $this->audit->record(new AuditEntry(AuditEvent::AwardDraftDeleted, $locked, ['status' => AdvancedAssessmentStatus::Draft->value], [

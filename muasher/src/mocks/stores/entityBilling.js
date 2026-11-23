@@ -90,8 +90,8 @@ function refuse(code) {
   return entityReject.validation({ file: [fieldError(code)] })
 }
 
-export async function storeVatCertificate(entity, file) {
-  if (entity.vatRegistered !== true) throw entityReject.vatNotRegistered()
+/** Checks and stores an uploaded VAT certificate; the caller decides where it goes (a pending change request). */
+export async function acceptVatCertificate(file) {
   if (!file || typeof file === 'string') throw refuse('field.required')
   if (file.type !== 'application/pdf') throw refuse('field.vat_certificate_type')
   if (file.size > VAT_CERTIFICATE_MAX_BYTES) throw refuse('field.vat_certificate_size')
@@ -102,18 +102,12 @@ export async function storeVatCertificate(entity, file) {
     sizeBytes: file.size,
     content: await file.arrayBuffer(),
   })
-  entity.vatCertificate = {
+  return {
     id: stored.id,
     name: stored.name,
     sizeBytes: stored.sizeBytes,
     uploadedAt: nowIso(),
   }
-  return entity
-}
-
-export function removeVatCertificate(entity) {
-  entity.vatCertificate = null
-  return entity
 }
 
 export function vatCertificateFileOf(entity, findFile) {

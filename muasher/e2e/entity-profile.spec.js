@@ -5,6 +5,7 @@ import { closeSuccess, decisionAction } from './support/dialogs'
 import { AA_TEXT, contrastOf } from './support/contrast'
 import { settleFonts } from './support/screenshots'
 import { DEV_OTP_CODE } from './support/signIn'
+import { approvePendingProfileChange } from './support/profileChanges'
 
 const SHOTS = '../agents/tasks/reports/Task-82b'
 const DESKTOP = { width: 1440, height: 900 }
@@ -57,7 +58,9 @@ async function shoot(page, testInfo, name) {
   await page.setViewportSize(viewport)
 }
 
-test('reads the incomplete profile, edits one section and saves it', async ({ page }, testInfo) => {
+test('reads the incomplete profile, edits one section and sends it for approval', async ({
+  page,
+}, testInfo) => {
   await openProfile(page, testInfo, NAMAA, { incomplete: true })
   await expect(page.getByTestId('portal-page-title')).toHaveText(
     localeOf(testInfo) === 'en' ? 'Entity profile' : 'ملف الجهة',
@@ -79,8 +82,10 @@ test('reads the incomplete profile, edits one section and saves it', async ({ pa
 
   await expect(governance.locator('.profile-section__status-text--success')).toBeVisible()
   await expect(governance.locator('.profile-section__edit')).toBeFocused()
-  await expect(governance.getByTestId('profile-section-state')).toHaveClass(/--complete/)
-  await expect(page.getByTestId('profile-completeness')).toContainText('87')
+  await expect(governance.getByTestId('section-pending')).toBeVisible()
+  await expect(page.getByTestId('pending-profile-change')).toBeVisible()
+  await expect(governance.getByTestId('profile-section-state')).not.toHaveClass(/--complete/)
+  await expect(page.getByTestId('profile-completeness')).toContainText('75')
   await shoot(page, testInfo, '03-desktop-saved')
 })
 
@@ -156,15 +161,19 @@ test('the entity cancels its pending e-mail change', async ({ page }, testInfo) 
   await expect(email.getByTestId('email-change-open')).toBeVisible()
 })
 
-test('a new mobile number is saved, then verified inline with a code', async ({
+test('a new mobile number waits for approval, then is verified inline with a code', async ({
   page,
 }, testInfo) => {
   await openProfile(page, testInfo, NAMAA)
-  const contact = section(page, 'contact')
+  let contact = section(page, 'contact')
   await contact.getByTestId('profile-phone').locator('.profile-field__action').click()
   await expect(contact.locator('[name="phone"]')).toBeFocused()
   await contact.locator('[name="phone"]').fill('0501234567')
   await contact.locator('button[type="submit"]').click()
+  await expect(contact.getByTestId('section-pending')).toBeVisible()
+  await approvePendingProfileChange(page, localeOf(testInfo))
+  await openProfile(page, testInfo, NAMAA)
+  contact = section(page, 'contact')
   const phone = contact.getByTestId('profile-phone')
   await expect(phone.locator('.badge')).toBeVisible()
   await phone.locator('.profile-field__action').click()

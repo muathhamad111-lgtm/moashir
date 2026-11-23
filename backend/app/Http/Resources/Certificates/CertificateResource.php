@@ -37,7 +37,8 @@ final class CertificateResource extends JsonResource
             'level_label' => $certificate->level === null ? null : LocalizedText::fromTranslation('certificates.levels.'.$certificate->level->value)->toArray(),
             'status' => $certificate->status->value,
             'is_test' => $certificate->is_test,
-            'percent' => ScalarValue::string($snapshot['percent'] ?? null),
+            'percent' => isset($snapshot['percent']) ? ScalarValue::string($snapshot['percent']) : null,
+            'award' => is_array($snapshot['award'] ?? null) ? $snapshot['award'] : null,
             'request' => [
                 'id' => $certificate->assessment_id,
                 'number' => ScalarValue::string($snapshot['request_number'] ?? null),

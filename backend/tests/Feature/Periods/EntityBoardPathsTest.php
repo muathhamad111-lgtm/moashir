@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use App\Enums\Award\AwardCycleStatus;
 use App\Enums\Finance\PaymentChannel;
 use App\Enums\Finance\PaymentStatus;
 use App\Models\Entities\Entity;
@@ -189,4 +190,50 @@ it('describes an open award cycle and invites an eligible entity before the roll
     closeCycleSubmissions($cycle);
     expect(pathsOf($entity)['award']['window_state'])->toBe('closed')
         ->and(pathsOf($entity)['award']['eligibility']['reason'])->toBe('window_closed');
+});
+
+it('sends a conditions rejection as a closed request and lets the entity apply once it meets them (AJ-21)', function (): void {
+    $cycle = openAwardCycle(publishedAccreditedCriteria());
+    $young = cycleEntity($cycle, 2025);
+    applyForCycle(ownerOf($young), $cycle)->assertUnprocessable();
+
+    $award = pathsOf($young)['award'];
+    expect($award['open_request'])->toMatchArray(['status' => 'rejected_conditions', 'is_open' => false])
+        ->and($award['eligibility'])->toBe(['eligible' => false, 'reason' => 'min_entity_age']);
+
+    $young->forceFill(['founding_year' => 2010, 'founded_on' => '2010-03-01'])->save();
+
+    $award = pathsOf($young)['award'];
+    expect($award['open_request'])->toMatchArray(['status' => 'rejected_conditions', 'is_open' => false])
+        ->and($award['eligibility'])->toBe(['eligible' => true, 'reason' => null]);
+});
+
+it('masks an award request under filtering as open and sends it closed after a withdrawal (AJ-21)', function (): void {
+    $version = publishedAccreditedCriteria();
+    $assessment = initiallyAssessedRequest(openAwardCycle($version), $version, assessorUser());
+
+    expect(pathsOf($assessment->entity)['award']['open_request'])
+        ->toMatchArray(['id' => $assessment->id, 'status' => 'under_review', 'is_open' => true]);
+
+    switchTo(requestFollower())->postJson("/api/v1/requests/{$assessment->id}/withdraw", ['reason' => WITHDRAWAL_REASON])->assertOk();
+
+    expect(pathsOf($assessment->entity)['award']['open_request'])
+        ->toMatchArray(['id' => $assessment->id, 'status' => 'withdrawn', 'is_open' => false]);
+});
+
+it('keeps sending the closed request after the announcement, next to the announced flag (AJ-21)', function (): void {
+    [$cycle, $version, , $officer] = committeeCycle();
+    $assessment = initiallyAssessedRequest($cycle, $version, assessorUser());
+    closeCycleSubmissions($cycle);
+    switchTo($officer)->postJson("/api/v1/award/cycles/{$cycle->id}/filtering/{$assessment->id}/disqualify", ['reason' => DISQUALIFY_REASON])->assertOk();
+
+    $award = pathsOf($assessment->entity)['award'];
+    expect($award['announced'])->toBeFalse()
+        ->and($award['open_request'])->toMatchArray(['status' => 'under_review', 'is_open' => true]);
+
+    $cycle->forceFill(['status' => AwardCycleStatus::Announced, 'national_approved_at' => Date::now(), 'announced_at' => Date::now()])->save();
+
+    $award = pathsOf($assessment->entity)['award'];
+    expect($award['announced'])->toBeTrue()
+        ->and($award['open_request'])->toMatchArray(['status' => 'not_qualified', 'is_open' => false]);
 });

@@ -6,6 +6,7 @@ import { VERIFICATION_RESULTS } from '@/constants/certificates'
 import { isoDate } from '@/utils/datetime'
 import { localizedText } from '@/utils/localizedText'
 import { percentText } from '@/utils/percentText'
+import { awardFactRows, isAwardCertificate } from '@/utils/awardCertificate'
 import AppIcon from '@/components/ui/AppIcon.vue'
 
 const ICONS = {
@@ -33,6 +34,14 @@ const issuedOn = computed(() => isoDate(certificate.value?.issuedAt))
 const percent = computed(() =>
   certificate.value?.percent ? percentText(n, t, Number(certificate.value.percent)) : '',
 )
+const awardKind = computed(() =>
+  isAwardCertificate(certificate.value)
+    ? t(`certificates.award.kinds.${certificate.value.kind}`)
+    : '',
+)
+const awardRows = computed(() =>
+  awardFactRows(certificate.value?.award, { t, locale: locale.value }),
+)
 </script>
 
 <template>
@@ -57,6 +66,14 @@ const percent = computed(() =>
         <div v-if="entityName">
           <dt>{{ t('verify.fields.entity') }}</dt>
           <dd>{{ entityName }}</dd>
+        </div>
+        <div v-if="awardKind">
+          <dt>{{ t('certificates.award.fields.kind') }}</dt>
+          <dd>{{ awardKind }}</dd>
+        </div>
+        <div v-for="row in awardRows" :key="row.key">
+          <dt>{{ row.label }}</dt>
+          <dd>{{ row.value }}</dd>
         </div>
         <div v-if="level">
           <dt>{{ t('verify.fields.level') }}</dt>

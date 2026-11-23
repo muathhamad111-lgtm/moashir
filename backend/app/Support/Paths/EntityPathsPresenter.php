@@ -17,6 +17,7 @@ use App\Models\Entities\Region;
 use App\Models\Finance\Payment;
 use App\Support\Assessments\RequestPaymentPresenter;
 use App\Support\Assessments\StatusMask;
+use App\Support\Award\OpenCycleOptionPresenter;
 use App\Support\Certificates\CertificateSummaryPresenter;
 use App\Support\Entities\EntityPresenter;
 use App\Support\Finance\PriceQuotePresenter;
@@ -32,7 +33,7 @@ final class EntityPathsPresenter
         return [
             'self' => self::self($paths->self),
             'accredited' => self::accredited($paths->accredited),
-            'award' => self::award($paths->award, $viewer),
+            'award' => [...self::award($paths->award, $viewer), 'open_cycles' => OpenCycleOptionPresenter::presentAll($paths->awardOpenCycles, $viewer)],
         ];
     }
 

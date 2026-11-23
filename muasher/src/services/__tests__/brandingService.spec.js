@@ -19,12 +19,21 @@ const scheme = {
   primaryHover: '#bc097d',
   primarySoft: '#fbe6f4',
   onSecondary: '#ffffff',
+  railTop: '#4a2a7d',
+  railBottom: '#1d2b4f',
+  railStops: ['#4a2a7d', '#1d2b4f'],
+  onRail: '#ffffff',
+  onRailMuted: '#d1c4db',
+  railAccent: '#f9b8d6',
+  railGlow: 40,
 }
 
 const resource = {
   primaryColor: '#d4088c',
   secondaryColor: '#4a2a7d',
   colorOverrides: { onSecondary: '#ffffff', navbar: '#000000' },
+  sidebarTopColor: null,
+  sidebarBottomColor: '#1d2b4f',
   scheme,
   defaultColors: { primary: '#98d8d3', secondary: '#0a2325' },
   logoLight: { fileId: 6, url: 'data:image/png;base64,LIGHT' },
@@ -44,6 +53,7 @@ describe('brandingService', () => {
     expect(data).toEqual({
       colors: { primary: '#d4088c', secondary: '#4a2a7d' },
       overrides: { onSecondary: '#ffffff' },
+      rail: { top: null, bottom: '#1d2b4f' },
       scheme,
       defaultColors: { primary: '#98d8d3', secondary: '#0a2325' },
       logos: { dark: 'data:image/png;base64,LIGHT', favicon: null, site: null },
@@ -57,11 +67,14 @@ describe('brandingService', () => {
       primaryColor: '#d4088c',
       secondaryColor: '#4a2a7d',
       colorOverrides: { primarySoft: '#fbe6f4' },
+      sidebarTopColor: '#1d2b4f',
     })
     expect(apiClient.put).toHaveBeenCalledWith('/settings/branding', {
       primaryColor: '#d4088c',
       secondaryColor: '#4a2a7d',
       colorOverrides: { primarySoft: '#fbe6f4' },
+      sidebarTopColor: '#1d2b4f',
+      sidebarBottomColor: null,
     })
     expect(logger.breadcrumb).toHaveBeenCalledWith(
       'service',
@@ -127,6 +140,8 @@ describe('brandingService', () => {
       primaryColor: '#d4088c',
       secondaryColor: '#4a2a7d',
       colorOverrides: {},
+      sidebarTopColor: null,
+      sidebarBottomColor: null,
       reason,
     })
     expect(apiClient.post).toHaveBeenNthCalledWith(1, '/settings/branding/reset', { reason })

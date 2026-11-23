@@ -13,13 +13,14 @@ use App\Models\Assessments\EvidenceBundle;
 use App\Models\Assessments\EvidenceFile;
 use App\Models\Identity\User;
 use App\Services\Assessments\AssessmentRecordScope;
+use App\Services\Assessments\ReviewNoteAccess;
 use App\Services\Award\CommitteeSeating;
 use App\Services\Identity\RequestPathScope;
 use Illuminate\Auth\Access\Response;
 
 final readonly class AssessmentPolicy
 {
-    public function __construct(private AssessmentRecordScope $scope, private CommitteeSeating $committee, private RequestPathScope $paths) {}
+    public function __construct(private AssessmentRecordScope $scope, private CommitteeSeating $committee, private RequestPathScope $paths, private ReviewNoteAccess $notes) {}
 
     public function viewAny(User $actor): bool
     {
@@ -232,6 +233,16 @@ final readonly class AssessmentPolicy
     public function reviewRounds(User $actor, Assessment $assessment): Response
     {
         return $this->committee->sitsOn($actor, $assessment) ? Response::deny() : $this->review($actor, $assessment);
+    }
+
+    public function readReviewNotes(User $actor, Assessment $assessment): Response
+    {
+        return $this->notes->read($actor, $this->review($actor, $assessment));
+    }
+
+    public function writeReviewNotes(User $actor, Assessment $assessment): Response
+    {
+        return $this->notes->write($actor, $assessment, $this->readReviewNotes($actor, $assessment));
     }
 
     public function score(User $actor, Assessment $assessment): Response

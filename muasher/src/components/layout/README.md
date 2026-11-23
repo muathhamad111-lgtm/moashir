@@ -32,11 +32,19 @@ route keeps its path for both audiences:
   pattern, logo on dark and the floating trophy). The aside sits at the inline start through CSS `order`; below `lg`
   it is a compact logo band; from `lg` its inner column is sticky. Also hosts the maintenance page.
   `App.vue` hands the routed page to the layout through the `router-view` slot, so the layout wraps it in a
-  `<Transition mode="out-in">` driven by `useAuthPageTransition`: sign-in, register and forgot password slide along
-  the reading direction (forward from sign-in, back to it), the card viewport eases its height, focus moves to the
-  new `h1` when it was in the card, and reduced motion swaps pages with no motion. The layout warms the chunks of
-  those three pages when idle and, through `useRouteIntentPrefetch`, the register data when the pointer, focus or a
-  touch lands on a link to it (`LandingLayout` does the same).
+  `<Transition mode="out-in">` driven by `useAuthPageTransition`: sign-in, register, forgot password, the
+  verification code (`/auth/otp`) and the authenticator code (`/auth/mfa`) slide along the reading direction
+  (forward from sign-in, back to it), the card viewport eases its height (`useAuthViewport`), and reduced motion
+  swaps pages with no motion. When focus was in the card it moves to the field the new page marks with
+  `data-auth-autofocus` (the first code box, or the password when the identifier is known), else to the new `h1`.
+  In `SignInMethodTabs` a highlighted pill slides under the tabs like a switch knob, and the password and code
+  forms swipe past each other in step with it (`useAuthPanelTransition`; the leaving form lifts out of the flow
+  and is `inert`), keeping focus on the chosen tab. On the code step the boxes arrive in sequence
+  (`OtpInput` `entrance`), a wrong code shakes the row once, a ring beside the resend link drains with the
+  cooldown (`OtpResendRing`), and an accepted code turns the boxes green with a tick for `verifiedHoldMs` before
+  the next screen opens (none of it under reduced motion). The slide and focus rules live in `composables/auth/authSlide.js` and `authFocus.js`. The layout
+  warms the chunks of those pages when idle and, through `useRouteIntentPrefetch`, the register data when the
+  pointer, focus or a touch lands on a link to it (`LandingLayout` does the same).
 - `AuthBrandPanel` — the brand `<aside>`. On the split layout it adds the landing hero dot field: it reuses
   `useHeroDots` (the lens follows the cursor, the pattern drifts, the logo stays shielded); below `lg` it draws no
   canvas.

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Data\Settings;
 
 use App\Data\Assessments\UploadLimits;
+use App\Data\Award\CycleConcurrencyState;
 use App\Data\Award\CycleDefaults;
 use App\Enums\Award\CommitteeEntityVisibility;
 use App\Enums\Criteria\ScaleKind;
@@ -23,5 +24,6 @@ final readonly class AssessmentSettingsView
         public CommitteeEntityVisibility $committeeVisibility,
         public ScaleKind $scaleKind,
         public ?ScaleKind $publishedScaleKind,
+        public CycleConcurrencyState $cycleConcurrency,
     ) {}
 }

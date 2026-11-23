@@ -9,6 +9,7 @@ import { ROUTE_NAMES } from '@/constants/routeNames'
 import { isoDate } from '@/utils/datetime'
 import { localizedText } from '@/utils/localizedText'
 import { riyadhYear } from '@/utils/riyadhYear'
+import { awardFactRows, isAwardCertificate } from '@/utils/awardCertificate'
 import AppIcon from '@/components/ui/AppIcon.vue'
 
 const ISSUED = 'issued'
@@ -26,10 +27,15 @@ const { t, locale } = useI18n()
 
 const seal = computed(() => CERTIFICATE_SEALS[props.certificate.level] ?? null)
 const level = computed(() => localizedText(props.certificate.levelLabel, locale.value))
-const title = computed(() =>
-  level.value
+const title = computed(() => {
+  if (isAwardCertificate(props.certificate))
+    return t(`certificates.award.kinds.${props.certificate.kind}`)
+  return level.value
     ? t('portal.certificates.cardTitle', { level: level.value })
-    : t('portal.certificates.cardTitlePlain'),
+    : t('portal.certificates.cardTitlePlain')
+})
+const awardRows = computed(() =>
+  awardFactRows(props.certificate.award, { t, locale: locale.value }),
 )
 const entityName = computed(() => localizedText(props.certificate.entityName, locale.value))
 const issuedOn = computed(() => isoDate(props.certificate.issuedAt))
@@ -75,6 +81,10 @@ const endedOn = computed(() =>
           <dd>
             <bdi dir="ltr">{{ issuedOn }}</bdi>
           </dd>
+        </div>
+        <div v-for="row in awardRows" :key="row.key">
+          <dt>{{ row.label }}</dt>
+          <dd>{{ row.value }}</dd>
         </div>
         <div v-if="certificate.requestNumber">
           <dt>{{ t('portal.certificates.assessment') }}</dt>

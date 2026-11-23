@@ -12,7 +12,7 @@ use Illuminate\Support\Facades\Route;
 
 $assessments = Assessment::class;
 
-Route::middleware(['auth:sanctum', 'session.timeouts', 'mfa', 'password.current'])
+Route::middleware(['auth:sanctum', 'session.timeouts', 'mfa', 'password.current', 'nda.current'])
     ->prefix('requests')
     ->name('requests.')
     ->group(function () use ($assessments): void {

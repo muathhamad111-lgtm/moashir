@@ -18,9 +18,6 @@ const { t } = useI18n()
 
 <template>
   <div class="secretary-discussions">
-    <p v-if="!discussions.length" class="filtering-decisions__empty">
-      {{ t('award.secretary.noDiscussions') }}
-    </p>
     <article
       v-for="discussion in discussions"
       :key="discussion.id"

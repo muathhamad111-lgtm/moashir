@@ -49,6 +49,13 @@ export const awardCycleService = {
     )
   },
 
+  listOpen() {
+    return read('listOpen', () => apiClient.get('/award/cycles/open')).then((envelope) => ({
+      ...envelope,
+      data: (envelope.data ?? []).map(toPublicCycle),
+    }))
+  },
+
   getDefaultConditions() {
     return mapData(
       read('getDefaultConditions', () => apiClient.get('/award/cycles/default-conditions')),

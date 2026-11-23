@@ -28,6 +28,11 @@ final readonly class ScoringSub
         return $this->evaluationType->scoresGuidingPoints();
     }
 
+    public function scoresPoint(int $pointId): bool
+    {
+        return $this->scoresPoints() && array_any($this->points, static fn (ScoringPoint $point): bool => $point->id === $pointId);
+    }
+
     public function unit(): ScorableUnit
     {
         return new ScorableUnit(ScoreLevel::Sub, $this->id, $this->code, $this->scoringType);

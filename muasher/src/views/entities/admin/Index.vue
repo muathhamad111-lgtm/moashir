@@ -79,6 +79,14 @@ onMounted(regions.load)
       <h1 class="entities-admin__title">{{ t('entities.admin.title') }}</h1>
       <div class="entities-admin__links">
         <BaseButton
+          v-if="canOpen(ROUTE_NAMES.ADMIN_ENTITY_PROFILE_CHANGES)"
+          variant="secondary"
+          icon="pen-line"
+          :to="{ name: ROUTE_NAMES.ADMIN_ENTITY_PROFILE_CHANGES }"
+        >
+          {{ t('nav.entityProfileChanges') }}
+        </BaseButton>
+        <BaseButton
           v-if="canOpen(ROUTE_NAMES.ADMIN_ENTITY_EMAIL_CHANGES)"
           variant="secondary"
           icon="envelope"

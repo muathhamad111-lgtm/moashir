@@ -58,6 +58,8 @@ function submit() {
     <template v-else>
       <OtpInput
         v-model="code"
+        data-auth-autofocus
+        entrance
         :length="TOTP_LENGTH"
         :label="t('auth.mfa.challenge.inputLabel')"
         :invalid="Boolean(shownError || error)"

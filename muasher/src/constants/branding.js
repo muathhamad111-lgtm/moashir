@@ -26,12 +26,20 @@ export const DERIVED_BRAND_COLORS = Object.freeze([
 export const BRAND_HOVER_SHARE = 0.88
 export const BRAND_SOFT_SHARE = 0.1
 
-// Colours with a fixed meaning; the screen shows them read only (swatches come from the styles).
-export const FIXED_COLOR_GROUPS = Object.freeze([
-  Object.freeze({ key: 'states', items: Object.freeze(['success', 'warning', 'danger', 'info']) }),
-  Object.freeze({ key: 'levels', items: Object.freeze(['diamond', 'gold', 'silver', 'bronze']) }),
-  Object.freeze({ key: 'charts', items: Object.freeze(['series1', 'series2', 'series3']) }),
-])
+// The sidebar gradient, as config('moashir.branding.rail_*'): the two colours blend in OKLab over
+// `stops` + 1 stops; each derived share is a whole percent stepped until its text reads at AA.
+export const BRAND_RAIL = Object.freeze({
+  stops: 8,
+  autoBottomShare: 0.26,
+  glowMaxPercent: 40,
+  glowStepPercent: 2,
+  mutedMaxPercent: 28,
+  mutedStepPercent: 2,
+  accentStepPercent: 5,
+})
+
+// The two sidebar colours the client may choose; null follows the brand colours.
+export const BRAND_RAIL_ROLES = Object.freeze(['top', 'bottom'])
 
 export const BRAND_PREVIEW_SURFACES = Object.freeze(['backOffice', 'portal'])
 

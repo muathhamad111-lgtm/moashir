@@ -23,6 +23,10 @@ function toOverrides(overrides) {
   )
 }
 
+function toRail(data) {
+  return { top: data.sidebarTopColor ?? null, bottom: data.sidebarBottomColor ?? null }
+}
+
 function toColors(colors) {
   return colors ? { primary: colors.primary, secondary: colors.secondary } : null
 }
@@ -40,6 +44,7 @@ function toTheme(data) {
   return {
     colors: { primary: data.primaryColor, secondary: data.secondaryColor },
     overrides: toOverrides(data.colorOverrides),
+    rail: toRail(data),
     scheme: toScheme(data.scheme),
     defaultColors: toColors(data.defaultColors),
     logos: toLogos(data),
@@ -69,8 +74,18 @@ export const brandingService = {
   get() {
     return themeRequest('branding.get', () => apiClient.get('/settings/branding'))
   },
-  update({ primaryColor, secondaryColor, colorOverrides = {}, reason = null }) {
-    const payload = withReason({ primaryColor, secondaryColor, colorOverrides }, reason)
+  update({
+    primaryColor,
+    secondaryColor,
+    colorOverrides = {},
+    sidebarTopColor = null,
+    sidebarBottomColor = null,
+    reason = null,
+  }) {
+    const payload = withReason(
+      { primaryColor, secondaryColor, colorOverrides, sidebarTopColor, sidebarBottomColor },
+      reason,
+    )
     return themeRequest('branding.update', () => apiClient.put('/settings/branding', payload), {
       payloadShape: payloadShape(payload),
     })

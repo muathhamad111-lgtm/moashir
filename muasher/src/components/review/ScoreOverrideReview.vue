@@ -9,6 +9,7 @@ import { normalizedRawValue, scoreFieldName } from '@/utils/assessments/scoreShe
 import { overrideSummaryParts } from '@/utils/assessments/overrideSummary'
 import { localizedText } from '@/utils/localizedText'
 import { compactDecimal, twoDecimals } from '@/utils/percentText'
+import { achievementKeyOf, isAchievement } from '@/utils/assessments/scoringTypes'
 import { logger } from '@/utils/logger'
 
 // The confirmation of a score override (design §B.3.5): only the changed items, before → after,
@@ -17,6 +18,8 @@ const props = defineProps({
   modelValue: { type: Boolean, required: true },
   override: { type: Object, required: true },
   values: { type: Object, required: true },
+  // The scoring type of a unit in this request (the score sheet's typeOf).
+  typeOf: { type: Function, required: true },
 })
 
 const emit = defineEmits(['update:modelValue', 'done'])
@@ -26,18 +29,33 @@ const reason = ref('')
 const error = ref('')
 const busy = ref(false)
 
+// An achievement item reads «غير متحقق → متحقق» with no numeric delta; other items show their values.
+function achievementChange(before, after) {
+  const stateOf = (raw) => t(`assessment.self.achievement.${achievementKeyOf(raw)}`)
+  return { before: before === null ? '' : stateOf(before), after: stateOf(after), delta: '—' }
+}
+
+function numericChange(before, after) {
+  const delta = Number(after) - Number(before ?? 0)
+  return {
+    before: compactDecimal(before),
+    after: compactDecimal(after),
+    delta: `${delta > 0 ? '+' : ''}${compactDecimal(delta)}`,
+  }
+}
+
 const rows = computed(() =>
   props.override.changedUnits.value.map((unit) => {
     const before = props.override.saved(unit)?.rawValue ?? null
     const after = normalizedRawValue(props.values[scoreFieldName(unit)])
-    const delta = Number(after) - Number(before ?? 0)
+    const change = isAchievement(props.typeOf(unit))
+      ? achievementChange(before, after)
+      : numericChange(before, after)
     return {
       key: scoreFieldName(unit),
       code: unit.code,
       name: localizedText(unit.label, locale.value),
-      before: compactDecimal(before),
-      after: compactDecimal(after),
-      delta: `${delta > 0 ? '+' : ''}${compactDecimal(delta)}`,
+      ...change,
     }
   }),
 )

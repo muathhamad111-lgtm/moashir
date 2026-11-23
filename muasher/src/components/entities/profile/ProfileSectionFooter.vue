@@ -8,6 +8,7 @@ defineProps({
   dirty: { type: Boolean, default: false },
   editing: { type: Boolean, default: false },
   saved: { type: Boolean, default: false },
+  pending: { type: Boolean, default: false },
 })
 
 const emit = defineEmits(['history'])
@@ -29,7 +30,9 @@ const { t } = useI18n()
       </template>
       <template v-else-if="saved">
         <span class="profile-section__status-text profile-section__status-text--success">
-          <AppIcon name="check-circle" />{{ t('portal.profile.footer.saved') }}
+          <AppIcon name="check-circle" />{{
+            t(pending ? 'portal.profile.footer.submitted' : 'portal.profile.footer.saved')
+          }}
         </span>
       </template>
     </p>

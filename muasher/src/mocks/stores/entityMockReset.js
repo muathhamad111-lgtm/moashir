@@ -3,6 +3,7 @@ import { resetRegionsStore } from './regionsStore'
 import { resetEmailChanges } from './entityEmailChanges'
 import { resetTermsStore } from './termsStore'
 import { resetProfileChanges } from './profileChangesStore'
+import { resetProfileChangeRequests } from './profileChangeRequests'
 import { resetAuthSettings } from './authSettingsStore'
 
 export function resetEntitiesMock() {
@@ -11,5 +12,6 @@ export function resetEntitiesMock() {
   resetEmailChanges()
   resetTermsStore()
   resetProfileChanges()
+  resetProfileChangeRequests()
   resetAuthSettings()
 }

@@ -156,7 +156,8 @@ test.describe('Journeys — Notes 8a/8b/8c', () => {
   test('Note 8c: the advanced Intro renders CMS-managed award brief + winners', async ({
     page,
   }, testInfo) => {
-    await seedEntity(page, isEn(testInfo) ? 'en' : 'ar')
+    // The public intro serves visitors; a signed-in entity is sent to its award path page (AJ-04).
+    await seedLocale(page, isEn(testInfo) ? 'en' : 'ar')
     await gotoWithRetry(page, '/assessment/advanced', '.advanced-intro__layout')
     await expect(page.locator('.advanced-intro__title')).toBeVisible()
     await expect(page.locator('.advanced-content__item').first()).toBeVisible({ timeout: 15000 })

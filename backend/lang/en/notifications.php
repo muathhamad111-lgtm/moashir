@@ -9,6 +9,7 @@ return [
     'staff_invited' => [
         'subject' => 'Invitation to join the platform team',
         'line' => 'The System Administrator has created an account for you on the Moashir platform. Use the button below to set your password and set up two-factor authentication.',
+        'nda' => 'Accepting the invitation includes accepting the non-disclosure agreement.',
         'action' => 'Accept the invitation',
         'expiry' => 'This invitation is valid for :duration and can be used once.',
     ],
@@ -126,6 +127,22 @@ return [
             ],
         ],
     ],
+    'nda' => [
+        'NDA-01' => [
+            'staff' => [
+                'title' => 'New version of the non-disclosure agreement',
+                'body' => 'Version :version of the non-disclosure agreement was published and must be accepted at your next sign-in. Summary of changes: :changes',
+                'action' => 'Read the agreement',
+            ],
+        ],
+        'NDA-02' => [
+            'staff' => [
+                'title' => 'Reminder to accept the non-disclosure agreement',
+                'body' => 'You have not accepted version :version of the non-disclosure agreement yet. You cannot continue working on the platform until you accept it.',
+                'action' => 'Read the agreement',
+            ],
+        ],
+    ],
     'entities' => [
         'open_platform' => 'Open the platform',
         'REG-01' => [
@@ -234,6 +251,26 @@ return [
             'entity' => [
                 'title' => 'Entity registration rejected',
                 'body' => 'The registration of :entity on the Moashir platform was rejected. You can contact the platform team for details. Reason for rejection: :reason',
+            ],
+        ],
+        'REG-14' => [
+            'approver' => [
+                'title' => 'Entity profile change awaiting approval',
+                'body' => ':entity (:reference) changed its profile on the platform. Review the changes and approve or reject them.',
+            ],
+        ],
+        'REG-15' => [
+            'approved' => [
+                'title' => 'Profile change approved',
+                'body' => 'The platform team approved the profile changes of :entity. They are now in effect.',
+            ],
+            'partially_approved' => [
+                'title' => 'Profile change partly approved',
+                'body' => 'The platform team approved part of the profile changes of :entity and rejected the change to: :fields. Reason for rejection: :reason',
+            ],
+            'rejected' => [
+                'title' => 'Profile change rejected',
+                'body' => 'The platform team rejected the profile changes of :entity. The approved details stay in effect. Reason for rejection: :reason',
             ],
         ],
     ],
@@ -541,6 +578,10 @@ return [
                     'title' => 'An award request was reassigned',
                     'body' => 'The award request :number of :entity was reassigned to another initial assessor. It no longer appears in your assigned requests.',
                 ],
+                'resubmitted' => [
+                    'title' => 'Completed award request back with you',
+                    'body' => ':entity completed the requested items of the award request :number. The request is back with you for the initial assessment.',
+                ],
             ],
             'ADV-06' => [
                 'staff' => [
@@ -588,7 +629,7 @@ return [
                     ],
                     'staff' => [
                         'title' => 'Completion deadline passed, the request continues',
-                        'body' => 'The completion deadline of the award request :number of :entity passed. The request is back in the queue with the data already submitted.',
+                        'body' => 'The completion deadline of the award request :number of :entity passed. The request continues with the data already submitted: back to the assignment queue, or to its assessor if it was assigned.',
                     ],
                 ],
                 'declined' => [
@@ -764,6 +805,18 @@ return [
                 'body' => 'The Award Secretary announced the results of :cycle.',
             ],
         ],
+        'ADV-19' => [
+            'entity' => [
+                'title' => 'Your award certificate is issued',
+                'body' => 'Certificate :certificate for your award request :number in :cycle is issued. Download it from Certificates.',
+            ],
+        ],
+        'ADV-32' => [
+            'entity' => [
+                'title' => 'Your award participation certificate is issued',
+                'body' => 'Participation certificate :certificate for your award request :number in :cycle is issued. Download it from Certificates.',
+            ],
+        ],
         'ADV-20' => [
             'staff' => [
                 'title' => 'Regional results approved',
@@ -858,6 +911,18 @@ return [
             'staff' => [
                 'title' => 'Award cycle closed',
                 'body' => 'The award cycle :cycle was closed.',
+            ],
+        ],
+        'CYC-03' => [
+            'staff' => [
+                'title' => 'The award cycle could not open',
+                'body' => 'The submission start of the award cycle :cycle has passed, but it did not open because it links no initial assessor. Link the initial assessors on the cycle page and it will open automatically.',
+            ],
+        ],
+        'CYC-04' => [
+            'staff' => [
+                'title' => 'Award cycle not opened on schedule',
+                'body' => 'The submission period of the award cycle :cycle was due to open, but :blocking is still running and the award cycle setting does not allow both at the same time. The cycle stays a draft until it can open.',
             ],
         ],
     ],

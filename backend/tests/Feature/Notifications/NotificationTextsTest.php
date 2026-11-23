@@ -56,7 +56,7 @@ it('marks every shipped variable of a core type as required and its button as fi
 
     expect($invitation['variant'])->toBe('staff_invited')
         ->and($invitation['required_variables'])->toBe(['duration'])
-        ->and(array_keys($invitation['parts']))->toBe(['subject', 'line', 'action', 'expiry'])
+        ->and(array_keys($invitation['parts']))->toBe(['subject', 'line', 'nda', 'action', 'expiry'])
         ->and($invitation['parts']['action']['is_fixed'])->toBeTrue()
         ->and($invitation['parts']['subject']['is_fixed'])->toBeFalse()
         ->and(collect($invitation['parts'])->pluck('channel')->unique()->all())->toBe(['email']);

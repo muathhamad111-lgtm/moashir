@@ -11,6 +11,7 @@ use App\Enums\Assessments\AdvancedAssessmentStatus;
 use App\Enums\Assessments\AssessmentPath;
 use App\Enums\Assessments\AssignmentStatus;
 use App\Enums\Certificates\CertificateKind;
+use App\Enums\Certificates\CertificateStatus;
 use App\Enums\Criteria\ScaleKind;
 use App\Models\Award\AwardCycle;
 use App\Models\Award\AwardRanking;
@@ -165,6 +166,18 @@ final class Assessment extends Model
                 $certificates->where('kind', CertificateKind::Accredited);
             },
         );
+    }
+
+    /**
+     * The award certificates in force: winner or qualified, and participation (both may exist).
+     *
+     * @return HasMany<Certificate, $this>
+     */
+    public function awardCertificates(): HasMany
+    {
+        return $this->hasMany(Certificate::class)
+            ->whereIn('kind', CertificateKind::award())
+            ->where('status', CertificateStatus::Issued);
     }
 
     /**
@@ -435,6 +448,16 @@ final class Assessment extends Model
     public function isFrozen(): bool
     {
         return $this->entity->trashed();
+    }
+
+    public function acceptsReviewNotes(): bool
+    {
+        return $this->isOpen() && ! $this->isFrozen();
+    }
+
+    public function isActivelyAssignedTo(int $userId): bool
+    {
+        return $this->loadMissing('activeAssignment')->activeAssignment?->isHeldBy($userId) === true;
     }
 
     public function awaitsCriteriaUpdate(): bool

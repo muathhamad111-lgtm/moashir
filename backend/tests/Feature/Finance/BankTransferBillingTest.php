@@ -17,7 +17,7 @@ it('shows Finance the payer billing data and flags it when it is incomplete', fu
     $payment = submittedTransfer($owner, $account);
     $entity = Entity::query()->findOrFail($owner->entity_id);
 
-    saveSection($entity, ProfileSection::Billing, ['vat_registered' => true, 'vat_number' => '310123456700003'])->assertOk();
+    saveAndApproveSection($entity, ProfileSection::Billing, ['vat_registered' => true, 'vat_number' => '310123456700003'])->assertOk();
 
     switchTo(transferReviewer())->getJson(bankTransferUrl($payment))->assertOk()
         ->assertJsonPath('data.billing.address_building_number', '7421')
@@ -36,8 +36,8 @@ it('reports complete billing data and lets Finance download the certificate', fu
     ['owner' => $owner, 'account' => $account] = transferPayingEntity();
     $payment = submittedTransfer($owner, $account);
     $entity = Entity::query()->findOrFail($owner->entity_id);
-    saveSection($entity, ProfileSection::Billing, ['vat_registered' => true, 'vat_number' => '310123456700003'])->assertOk();
-    switchTo($owner)->post('/api/v1/entities/me/vat-certificate', ['file' => transferReceipt('vat-certificate.pdf')], ['Accept' => 'application/json'])->assertCreated();
+    saveAndApproveSection($entity, ProfileSection::Billing, ['vat_registered' => true, 'vat_number' => '310123456700003'])->assertOk();
+    uploadAndApproveVatCertificate($owner, transferReceipt('vat-certificate.pdf'))->assertOk();
 
     $reviewer = transferReviewer();
     switchTo($reviewer)->getJson(bankTransferUrl($payment))->assertOk()

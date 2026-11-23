@@ -6,6 +6,7 @@ import {
   DERIVED_BRAND_COLORS,
 } from '@/constants/branding'
 import { darken, mix } from './brandColorMath'
+import { deriveRail } from './brandRail'
 import { contrastRatio, meetsAA } from './contrast'
 
 // Mirrors App\Services\Settings\BrandColorDeriver for the live preview: the auto colours are
@@ -18,10 +19,39 @@ export function isHexColor(value) {
   return typeof value === 'string' && HEX_COLOR.test(value)
 }
 
-export const BRAND_SCHEME_KEYS = Object.freeze(['primary', 'secondary', ...DERIVED_BRAND_COLORS])
+const BRAND_COLOR_KEYS = Object.freeze(['primary', 'secondary', ...DERIVED_BRAND_COLORS])
+const RAIL_COLOR_KEYS = Object.freeze([
+  'railTop',
+  'railBottom',
+  'onRail',
+  'onRailMuted',
+  'railAccent',
+])
+
+export const BRAND_SCHEME_KEYS = Object.freeze([
+  ...BRAND_COLOR_KEYS,
+  ...RAIL_COLOR_KEYS,
+  'railStops',
+  'railGlow',
+])
+
+function isRailShape(scheme) {
+  return (
+    Array.isArray(scheme.railStops) &&
+    scheme.railStops.length > 1 &&
+    scheme.railStops.every(isHexColor) &&
+    Number.isInteger(scheme.railGlow) &&
+    scheme.railGlow >= 0 &&
+    scheme.railGlow <= 100
+  )
+}
 
 export function isBrandScheme(scheme) {
-  return Boolean(scheme) && BRAND_SCHEME_KEYS.every((key) => isHexColor(scheme[key]))
+  return (
+    Boolean(scheme) &&
+    [...BRAND_COLOR_KEYS, ...RAIL_COLOR_KEYS].every((key) => isHexColor(scheme[key])) &&
+    isRailShape(scheme)
+  )
 }
 
 export function normalizeHex(value) {
@@ -61,7 +91,11 @@ function validOverrides(overrides) {
   )
 }
 
-export function deriveBrandScheme({ primary, secondary }, overrides = {}) {
+function validRail(rail) {
+  return { top: normalizeHex(rail?.top), bottom: normalizeHex(rail?.bottom) }
+}
+
+export function deriveBrandScheme({ primary, secondary }, overrides = {}, rail = {}) {
   const primaryHex = normalizeHex(primary)
   const secondaryHex = normalizeHex(secondary)
   if (!primaryHex || !secondaryHex) return null
@@ -76,5 +110,6 @@ export function deriveBrandScheme({ primary, secondary }, overrides = {}) {
     primarySoft,
     secondary: secondaryHex,
     onSecondary: chosen.onSecondary ?? readableOn(secondaryHex),
+    ...deriveRail({ primary: primaryHex, secondary: secondaryHex }, validRail(rail)),
   }
 }

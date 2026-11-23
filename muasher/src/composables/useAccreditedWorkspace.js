@@ -7,6 +7,7 @@ import { useEvidenceUploads } from '@/composables/useEvidenceUploads'
 import { useAccreditedSubmit } from '@/composables/useAccreditedSubmit'
 import { usePassedStations } from '@/composables/usePassedStations'
 import { useConfirm } from '@/composables/useConfirm'
+import { hasEntityInput } from '@/utils/accredited/submissionProgress'
 
 export function useAccreditedWorkspace({ assessmentId, onSubmitted }) {
   const { t } = useI18n()
@@ -21,12 +22,16 @@ export function useAccreditedWorkspace({ assessmentId, onSubmitted }) {
     formState,
     onRejected: rejection.handle,
   })
+  const submitBlocked = ref(false)
   const submitter = useAccreditedSubmit({
     formState,
     cvDrafts,
     onRejected: rejection.handle,
     onSubmitted,
-    onIncomplete: () => revealFirstMissing(),
+    onIncomplete: () => {
+      submitBlocked.value = true
+      return revealFirstMissing()
+    },
   })
   const activeMainId = ref(null)
   const refreshing = ref(false)
@@ -39,6 +44,13 @@ export function useAccreditedWorkspace({ assessmentId, onSubmitted }) {
   const activeIndex = computed(() => mains.value.indexOf(activeMain.value))
   const previousMain = computed(() => mains.value[activeIndex.value - 1] ?? null)
   const nextMain = computed(() => mains.value[activeIndex.value + 1] ?? null)
+  // A fresh draft lacks everything by definition, so the checklist waits for the entity's first
+  // input, a blocked submit or a completion request rather than greeting it with every item.
+  const showsChecklist = computed(
+    () =>
+      Boolean(form.value) &&
+      (hasEntityInput(form.value) || Boolean(form.value.completionRequest) || submitBlocked.value),
+  )
 
   watch(
     () => form.value?.cv,
@@ -118,6 +130,7 @@ export function useAccreditedWorkspace({ assessmentId, onSubmitted }) {
     previousMain,
     nextMain,
     refreshing,
+    showsChecklist,
     selectMain,
     revealSub,
     revealMain,

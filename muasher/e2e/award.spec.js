@@ -26,6 +26,12 @@ const USERS = {
     entityId: 6005,
     name: { ar: 'خالد بن عبدالعزيز السبيعي', en: 'Khalid Abdulaziz Al-Subaie' },
   },
+  reviewed: {
+    id: 6002,
+    roles: ['entity'],
+    entityId: 6002,
+    name: { ar: 'فهد بن ناصر الدوسري', en: 'Fahad Nasser Al-Dosari' },
+  },
   tamkeen: {
     id: 6006,
     roles: ['entity'],
@@ -112,20 +118,29 @@ test.describe('Award public intro and entity path', () => {
     expect(errors).toEqual([])
   })
 
+  // AJ-04: a signed-in entity follows the award from its path page, never from the public intro.
+  test('a signed-in entity opening the public intro lands on its award path page', async ({
+    page,
+  }, testInfo) => {
+    await signIn(page, testInfo, USERS.albirr)
+    await page.goto('/assessment/advanced')
+    await expect(page).toHaveURL(/\/paths\/award$/)
+    await expect(page.locator('[data-testid="path-status-card"]')).toBeVisible()
+  })
+
   test('an eligible entity applies, sees the server completeness on submit and deletes its draft', async ({
     page,
   }, testInfo) => {
     const errors = trackConsole(page)
     await signIn(page, testInfo, USERS.albirr)
-    await page.goto('/assessment/advanced')
-    const eligibility = page.locator('.advanced-entity .eligibility-list__item')
-    await expect(eligibility).toHaveCount(3)
-    await expect(page.locator('.advanced-entity .eligibility-list__item--failed')).toHaveCount(0)
-    await expect(page.locator('.advanced-entity__previous')).toBeVisible()
+    await page.goto('/paths/award')
+    const status = page.locator('[data-testid="path-status-card"]')
+    await expect(status).toHaveAttribute('data-state', 'eligible')
     await shot(page, 'award-entity-eligibility', testInfo)
-    await page.locator('.advanced-request__actions .btn--primary').click()
+    await page.locator('[data-testid="path-primary-action"]').click()
     await expect(page).toHaveURL(/\/assessment\/advanced\/form\/\d+$/)
-    await expect(page.locator('.accredited-completeness')).toBeVisible()
+    await expect(page.locator('.station-row__button, .review-strip__step').first()).toBeVisible()
+    await expect(page.locator('.accredited-completeness')).toHaveCount(0)
     await shot(page, 'award-entity-draft', testInfo)
     await page.locator('.station-row__button, .review-strip__step').last().click()
     await page.locator('[data-testid="accredited-submit"]').click()
@@ -133,35 +148,46 @@ test.describe('Award public intro and entity path', () => {
     await expect(page.locator('.modal')).toHaveCount(0)
     await page.locator('.accredited-actions .btn--danger').click()
     await page.locator('.modal .btn--danger').click()
-    await expect(page).toHaveURL(/\/assessment\/advanced$/)
-    await expect(page.locator('.advanced-request__actions .btn--primary')).toContainText(
-      text(testInfo, 'Apply for the award', 'التقديم على الجائزة'),
+    await expect(page).toHaveURL(/\/paths\/award$/)
+    await expect(page.locator('[data-testid="path-primary-action"]')).toContainText(
+      text(testInfo, 'Apply for the award', 'قدّم على الجائزة'),
     )
     expect(errors).toEqual([])
   })
 
-  test('an entity outside the cycle regions sees the recorded conditions rejection', async ({
+  test('an entity outside the cycle regions sees why it cannot apply', async ({
     page,
   }, testInfo) => {
     await signIn(page, testInfo, USERS.tamkeen)
-    await page.goto('/assessment/advanced')
-    const request = page.locator('.advanced-request')
-    await expect(request.locator('.status-badge, .badge').first()).toBeVisible()
-    await expect(request).toContainText(
-      text(testInfo, 'did not meet the entry conditions', 'لم يستوفِ طلبك شروط الدخول'),
+    await page.goto('/paths/award')
+    await expect(page.locator('[data-testid="path-status-card"]')).toHaveAttribute(
+      'data-state',
+      'notEligible',
     )
-    await expect(request.locator('.eligibility-list__item--failed')).toHaveCount(1)
-    await expect(request.locator('.advanced-request__actions .btn--primary')).toHaveCount(0)
+    await expect(page.locator('[data-testid="path-primary-action"]')).toHaveCount(0)
   })
 
   test('the entity sees "under review" while its request waits for filtering', async ({
     page,
   }, testInfo) => {
     await signIn(page, testInfo, USERS.ruwad)
-    await page.goto('/assessment/advanced')
-    const request = page.locator('.advanced-request')
-    await expect(request).toContainText(text(testInfo, 'Under review', 'قيد المراجعة'))
-    await expect(request).not.toContainText(text(testInfo, 'filtering', 'التصفية'))
+    await page.goto('/paths/award')
+    const status = page.locator('[data-testid="path-status-card"]')
+    await expect(status).toContainText(text(testInfo, 'Under review', 'قيد المراجعة'))
+    await expect(status).not.toContainText(text(testInfo, 'filtering', 'التصفية'))
+  })
+
+  test('the award path shows "under review" while the initial assessor works', async ({
+    page,
+  }, testInfo) => {
+    await signIn(page, testInfo, USERS.reviewed)
+    await page.goto('/paths/award')
+    const underReview = text(testInfo, 'Under review', 'قيد المراجعة')
+    await expect(page.getByTestId('path-status-card')).toContainText(underReview)
+    await expect(page.getByTestId('path-requests')).toContainText(underReview)
+    await expect(page.locator('main')).not.toContainText(
+      text(testInfo, 'Under initial assessment', 'قيد التقييم الأولي'),
+    )
   })
 
   test('a returned request lets the entity edit only the listed items and resubmit', async ({
@@ -169,11 +195,12 @@ test.describe('Award public intro and entity path', () => {
   }, testInfo) => {
     const errors = trackConsole(page)
     await signIn(page, testInfo, USERS.namaa)
-    await page.goto('/assessment/advanced')
-    await expect(page.locator('.advanced-request')).toContainText(
-      text(testInfo, 'returned for completion', 'أُعيد طلبك للاستكمال'),
+    await page.goto('/paths/award')
+    await expect(page.locator('[data-testid="path-status-card"]')).toHaveAttribute(
+      'data-state',
+      'needsCompletion',
     )
-    await page.locator('.advanced-request__link').click()
+    await page.locator('[data-testid="path-primary-action"]').click()
     await expect(page.locator('.completion-card')).toBeVisible()
     await expect(page.locator('.completion-card__item')).toHaveCount(2)
     await page.locator('.station-row__button, .review-strip__step').nth(1).click()
@@ -194,9 +221,10 @@ test.describe('Award public intro and entity path', () => {
     await page.locator('.station-row__button, .review-strip__step').last().click()
     await page.locator('[data-testid="accredited-submit"]').click()
     await page.locator('.modal .btn--primary').click()
-    await expect(page).toHaveURL(/\/assessment\/advanced$/)
-    await expect(page.locator('.advanced-request')).toContainText(
-      text(testInfo, 'under review', 'قيد المراجعة'),
+    await expect(page).toHaveURL(/\/paths\/award$/)
+    // A resubmitted request returns to the assignment queue, which the entity reads as under review.
+    await expect(page.locator('[data-testid="path-status-card"]')).toContainText(
+      text(testInfo, 'Under review', 'قيد المراجعة'),
     )
     expect(errors).toEqual([])
   })
@@ -255,7 +283,8 @@ test.describe('Award staff screens', () => {
     await expect(page.locator('.table__row', { hasText: 'ADV-' }).first()).toBeVisible()
     await page.goto('/admin/requests/9202/review')
     await expect(page.locator('.review-actions')).toBeVisible()
-    await expect(page.locator('[data-testid="review-request-completion"]')).toHaveCount(0)
+    // The initial assessor may ask for completion too, once every item is scored (UX-1).
+    await expect(page.locator('[data-testid="review-request-completion"]')).toBeDisabled()
     await fillEmptyScores(page, '7')
     await page.locator('.review-actions .btn--primary').click()
     await page.locator('.modal .btn--primary').click()
@@ -346,26 +375,26 @@ test.describe('Award staff screens', () => {
     const errors = trackConsole(page)
     await signIn(page, testInfo, USERS.filteringOfficer)
     await page.goto('/admin/award/filtering')
-    await page.locator('.cycle-table__link').first().click()
+    // One cycle in progress: the picker opens it directly (phase 1).
+    await expect(page).toHaveURL(/\/admin\/award\/cycles\/31\/filtering/)
     await expect(page).toHaveURL(/\/admin\/award\/cycles\/31\/filtering$/)
     const rows = page.locator('.table:not(.table--loading) tbody .table__row')
     await expect(rows).toHaveCount(2)
     await expect(page.locator('.filtering-threshold')).toContainText('60.00')
-    await expect(page.locator('.assessment-notice').first()).toContainText(
-      text(
-        testInfo,
-        'Decisions open after the submission period',
-        'تُتاح القرارات بعد فترة التقديم',
-      ),
-    )
+    // Decisions are open while submissions are open (operator, 2026-11-22): no window notice.
+    await expect(page.locator('.assessment-notice')).toHaveCount(0)
     await shot(page, 'award-filtering-queue', testInfo)
     await rows.last().locator('.cycle-table__link').click()
     await expect(page.locator('.request-facts')).toBeVisible()
     await expect(
       page.locator('.accredited-feedback, .feedback-list, .accredited-result').first(),
     ).toBeVisible()
-    await expect(page.locator('.filtering-actions .btn--primary')).toBeDisabled()
+    await expect(page.locator('.filtering-actions .btn--primary')).toBeEnabled()
     await shot(page, 'award-filtering-detail', testInfo)
+    await page.goto('/admin/award/cycles/30/filtering')
+    await expect(page.locator('.assessment-notice').first()).toContainText(
+      text(testInfo, 'Filtering has ended', 'انتهت مرحلة التصفية'),
+    )
     expect(errors).toEqual([])
   })
 

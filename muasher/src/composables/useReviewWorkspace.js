@@ -5,6 +5,7 @@ import { useAssessorReview } from '@/composables/useAssessorReview'
 import { useCompleteMessageKey } from '@/composables/useCertificateIssuanceMode'
 import { useSelfScoreSheet } from '@/composables/useSelfScoreSheet'
 import { useReviewFeedback } from '@/composables/useReviewFeedback'
+import { useReviewNotes } from '@/composables/useReviewNotes'
 import { useReviewActions } from '@/composables/useReviewActions'
 import { useReasonPrompt } from '@/composables/useReasonPrompt'
 import { useSignedDownload } from '@/composables/useSignedDownload'
@@ -24,13 +25,23 @@ function workspaceParts(props) {
   const reviewState = useAssessorReview(toRef(props, 'assessmentId'))
   const scoreSheet = useSelfScoreSheet({ form: reviewState.review, units: reviewState.units })
   const feedback = useReviewFeedback({ reviewState })
+  const notes = useReviewNotes({ reviewState })
   const reasonPrompt = useReasonPrompt()
   const askReason = () => (auth.isSuperAdmin ? reasonPrompt.prompt() : Promise.resolve(null))
-  const actions = useReviewActions({ reviewState, scoreSheet, feedback, askReason })
+  const actions = useReviewActions({ reviewState, scoreSheet, feedback, notes, askReason })
   const downloads = useSignedDownload()
   const rounds = useReviewRounds(reviewState)
   const override = useScoreOverride({ reviewState, scoreSheet })
-  const workspace = { reviewState, scoreSheet, feedback, actions, downloads, rounds, override }
+  const workspace = {
+    reviewState,
+    scoreSheet,
+    feedback,
+    notes,
+    actions,
+    downloads,
+    rounds,
+    override,
+  }
   return { auth, reasonPrompt, askReason, workspace }
 }
 
@@ -75,14 +86,14 @@ function useStepScroll() {
 export function useReviewWorkspace(props, emit) {
   const parts = workspaceParts(props)
   useOverrideFromQuery(parts)
-  const { reviewState, scoreSheet, feedback, actions, downloads, rounds } = parts.workspace
+  const { reviewState, scoreSheet, feedback, notes, actions, downloads, rounds } = parts.workspace
   const review = reviewState.review
   const dialogs = reactive({ complete: false, completion: false, override: false })
   const mains = computed(() => review.value?.criteria?.mains ?? [])
   const steps = useCriterionSteps(mains)
   const units = reviewState.units
   const progress = useReviewProgress({ mains, units, scoreSheet, steps, rounds: rounds.rounds })
-  const dirty = computed(() => scoreSheet.dirty.value || feedback.dirty.value)
+  const dirty = computed(() => scoreSheet.dirty.value || feedback.dirty.value || notes.dirty.value)
   // The server checks the saved scores before a completion request (UX-1), so the button does too.
   const savedMissing = computed(() =>
     review.value ? review.value.progress.required - review.value.progress.scored : 0,
@@ -93,6 +104,7 @@ export function useReviewWorkspace(props, emit) {
     emit('loaded', current.assessment.number)
     if (!scoreSheet.dirty.value) scoreSheet.resetFrom(current.scores)
     if (!feedback.dirty.value) feedback.resetFrom(current.feedback)
+    if (!notes.dirty.value) notes.resetFrom()
   })
 
   const download = (file) =>

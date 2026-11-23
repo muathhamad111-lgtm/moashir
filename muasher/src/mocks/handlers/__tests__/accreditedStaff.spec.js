@@ -46,6 +46,7 @@ const ROW_KEYS = [
 const LIST_ROW_KEYS = [...ROW_KEYS, 'last_activity_at', 'opened_at', 'payment', 'progress'].sort()
 const REVIEW_KEYS = [
   'assessment',
+  'can_write_review_notes',
   'completed_at',
   'completion_request',
   'context',
@@ -60,6 +61,7 @@ const REVIEW_KEYS = [
   'late_attachment_keys',
   'mode',
   'progress',
+  'review_notes',
   'scale',
   'scores',
   'submitted_at',
@@ -576,6 +578,7 @@ describe('accredited mock — Super Admin overrides and settings', () => {
     expect(keys(body.data)).toEqual([
       'accredited_review_sla_days',
       'accredited_review_sla_limits',
+      'advanced_cycle_concurrency',
       'advanced_disqualification_score',
       'advanced_initial_review_sla_days',
       'advanced_min_entity_age_years',
@@ -585,6 +588,7 @@ describe('accredited mock — Super Admin overrides and settings', () => {
       'evidence_type_catalog',
       'general_upload_max_file_mb',
       'published_version',
+      'running_cycles',
       'scale_kind',
       'upload_max_file_mb',
     ])

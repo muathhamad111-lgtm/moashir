@@ -11,6 +11,7 @@ use App\Enums\Entities\EntityProfileField;
 use App\Enums\Entities\ProfileSection;
 use App\Enums\Identity\Locale;
 use App\Models\Entities\Entity;
+use App\Models\Entities\EntityProfileChange;
 use App\Services\Entities\EntityEraser;
 use App\Support\ValueObjects\EmailAddress;
 use App\Support\ValueObjects\UnifiedNumber;
@@ -69,7 +70,7 @@ it('updates the number from the identity section with a history entry', function
     $entity = entityWithOwner(static fn ($factory) => $factory->state(['unified_number' => '7001111111']));
     $owner = ownerOf($entity);
 
-    saveSection($entity, ProfileSection::Identity, ['unified_number' => '7002222222'])->assertOk()
+    saveAndApproveSection($entity, ProfileSection::Identity, ['unified_number' => '7002222222'])->assertOk()
         ->assertJsonPath('data.unified_number', '7002222222');
 
     $history = collect(switchTo($owner)->getJson('/api/v1/entities/me/profile-changes')->assertOk()->json('data'))->keyBy('field');
@@ -94,7 +95,7 @@ it('accepts the entity own number and refuses one held by another entity on upda
     entityWithOwner(static fn ($factory) => $factory->state(['unified_number' => '7009999999']));
     $entity = entityWithOwner(static fn ($factory) => $factory->state(['unified_number' => '7001111111']));
 
-    saveSection($entity, ProfileSection::Identity, ['unified_number' => '7001111111'])->assertOk();
+    saveSection($entity, ProfileSection::Identity, ['unified_number' => '7001111111'])->assertAccepted();
     saveSection($entity, ProfileSection::Identity, ['unified_number' => '7009999999'])
         ->assertUnprocessable()
         ->assertJsonPath('errors.unified_number.0', __('validation.custom.unified_number.unique'));
@@ -115,7 +116,7 @@ it('asks a legacy entity without the number for it before its identity section c
     $entity = entityWithOwner(static fn ($factory) => $factory->state(['unified_number' => null]));
 
     saveSection($entity, ProfileSection::Identity, ['license_number' => '770000123'])->assertUnprocessable()->assertJsonValidationErrors('unified_number');
-    saveSection($entity, ProfileSection::Governance, ['employees_count' => 12])->assertOk();
+    saveSection($entity, ProfileSection::Governance, ['employees_count' => 12])->assertAccepted();
 });
 
 it('lets staff read and correct the number with the reason recorded in the history', function (): void {
@@ -127,7 +128,7 @@ it('lets staff read and correct the number with the reason recorded in the histo
     switchTo($admin)->getJson("/api/v1/entities/{$entity->id}")->assertOk()->assertJsonPath('data.unified_number', '7003333333');
 
     expect($entity->refresh()->unified_number)->toBe('7003333333')
-        ->and($entity->profileChanges()->where('field', 'unified_number')->sole()->changed_by_user_id)->toBe($admin->id);
+        ->and(EntityProfileChange::query()->where('entity_id', $entity->id)->where('field', 'unified_number')->sole()->changed_by_user_id)->toBe($admin->id);
 });
 
 it('lets the database refuse a malformed or duplicate number written directly', function (string $value): void {

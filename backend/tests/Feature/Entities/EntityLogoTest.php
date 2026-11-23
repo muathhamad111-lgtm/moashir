@@ -39,8 +39,8 @@ function corruptPng(): string
 it('re-encodes an uploaded PNG logo, keeps it private under a random name and returns a short-lived link', function (): void {
     $entity = entityWithOwner();
 
-    $response = uploadEntityLogo(ownerOf($entity), logoUpload(logoImageBytes()))
-        ->assertCreated()
+    $response = uploadAndApproveLogo(ownerOf($entity), logoUpload(logoImageBytes()))
+        ->assertOk()
         ->assertJsonPath('data.profile_completion.percent', 100);
 
     $logo = currentLogoOf($entity);
@@ -64,7 +64,7 @@ it('strips hidden metadata from PNG and JPEG logos', function (string $name, Clo
     $entity = entityWithOwner();
     $original = $contents();
 
-    uploadEntityLogo(ownerOf($entity), logoUpload($original, $name))->assertCreated();
+    uploadAndApproveLogo(ownerOf($entity), logoUpload($original, $name))->assertOk();
 
     $logo = currentLogoOf($entity);
     $stored = storedFileBytes($logo->id);
@@ -131,7 +131,7 @@ it('refuses the logo while the file scanner is unavailable', function (): void {
 
 it('audits the logo upload without the file content', function (): void {
     $entity = entityWithOwner();
-    uploadEntityLogo(ownerOf($entity), logoUpload(logoImageBytes()))->assertCreated();
+    uploadAndApproveLogo(ownerOf($entity), logoUpload(logoImageBytes()))->assertOk();
 
     $audit = Audit::query()->where('event', AuditEvent::EntityLogoUploaded->value)->sole();
     $logo = currentLogoOf($entity);
@@ -143,10 +143,10 @@ it('audits the logo upload without the file content', function (): void {
 it('replaces the logo and removes the previous file that no certificate keeps', function (): void {
     $entity = entityWithOwner();
     $owner = ownerOf($entity);
-    $firstUrl = (string) uploadEntityLogo($owner, logoUpload(logoImageBytes()))->json('data.logo.url');
+    $firstUrl = (string) uploadAndApproveLogo($owner, logoUpload(logoImageBytes()))->json('data.logo.url');
     $first = currentLogoOf($entity);
 
-    uploadEntityLogo($owner, logoUpload(logoImageBytes('jpeg'), 'شعار-محدث.jpg'))->assertCreated()->assertJsonPath('data.logo.id', currentLogoOf($entity)->public_id);
+    uploadAndApproveLogo($owner, logoUpload(logoImageBytes('jpeg'), 'شعار-محدث.jpg'))->assertOk()->assertJsonPath('data.logo.id', currentLogoOf($entity)->public_id);
 
     $removed = StoredFile::withTrashed()->findOrFail($first->id);
     expect(currentLogoOf($entity)->mime_type)->toBe('image/jpeg')
@@ -159,13 +159,13 @@ it('replaces the logo and removes the previous file that no certificate keeps', 
 it('removes the logo idempotently and audits only a real removal', function (): void {
     $entity = entityWithOwner();
     $owner = ownerOf($entity);
-    uploadEntityLogo($owner, logoUpload(logoImageBytes()))->assertCreated();
+    uploadAndApproveLogo($owner, logoUpload(logoImageBytes()))->assertOk();
     $logo = currentLogoOf($entity);
 
-    switchTo($owner)->deleteJson('/api/v1/entities/me/logo')->assertOk()
+    removeAndApproveLogo($owner)->assertOk()
         ->assertJsonPath('data.logo', null)
         ->assertJsonPath('data.profile_completion.percent', 100);
-    switchTo($owner)->deleteJson('/api/v1/entities/me/logo')->assertOk()->assertJsonPath('data.logo', null);
+    removeAndApproveLogo($owner)->assertOk()->assertJsonPath('data.logo', null);
 
     expect($entity->refresh()->logo_file_id)->toBeNull()
         ->and(StoredFile::withTrashed()->findOrFail($logo->id)->trashed())->toBeTrue()
@@ -195,7 +195,7 @@ it('refuses the logo endpoints to staff and to an entity account without the pro
 
 it('serves the logo only to its own entity and to staff with the full entity view', function (): void {
     $entity = entityWithOwner();
-    uploadEntityLogo(ownerOf($entity), logoUpload(logoImageBytes()))->assertCreated();
+    uploadAndApproveLogo(ownerOf($entity), logoUpload(logoImageBytes()))->assertOk();
     $logo = currentLogoOf($entity);
     $otherOwner = ownerOf(entityWithOwner());
 
@@ -215,7 +215,7 @@ it('serves the logo only to its own entity and to staff with the full entity vie
 
 it('releases the logo files on permanent deletion unless a certificate keeps one', function (): void {
     $entity = entityWithOwner();
-    uploadEntityLogo(ownerOf($entity), logoUpload(logoImageBytes()))->assertCreated();
+    uploadAndApproveLogo(ownerOf($entity), logoUpload(logoImageBytes()))->assertOk();
     $logo = currentLogoOf($entity);
     $entity->delete();
 

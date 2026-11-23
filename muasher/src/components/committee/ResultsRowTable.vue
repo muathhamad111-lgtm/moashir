@@ -33,6 +33,7 @@ const columns = computed(() => [
 
 <template>
   <DataTable
+    stacked
     :columns="columns"
     :items="rows"
     status="success"

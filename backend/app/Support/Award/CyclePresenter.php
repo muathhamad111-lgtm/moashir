@@ -13,6 +13,6 @@ final class CyclePresenter
      */
     public static function summary(?AwardCycle $cycle): ?array
     {
-        return $cycle instanceof AwardCycle ? ['id' => $cycle->id, 'name' => $cycle->name->toArray(), 'status' => $cycle->status->value] : null;
+        return $cycle instanceof AwardCycle ? ['id' => $cycle->id, 'name' => $cycle->name->toArray(), 'year' => $cycle->year, 'status' => $cycle->status->value] : null;
     }
 }

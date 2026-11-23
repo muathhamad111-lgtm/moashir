@@ -80,6 +80,20 @@ enum AdvancedAssessmentStatus: string implements ReviewedAssessmentState
         return $this === self::Assigned || $this === self::UnderInitialAssessment;
     }
 
+    /**
+     * Operator decision 2026-11-23 («السماح في المسارين»): a request the entity is completing may change assessor
+     * too; the resubmission then resumes with the new one.
+     */
+    public function acceptsReassignment(): bool
+    {
+        return $this->hasAssessor() || $this === self::NeedsCompletion;
+    }
+
+    public function acceptsCompletionReturn(): bool
+    {
+        return $this === self::AwaitingReviewAssignment || $this->hasAssessor();
+    }
+
     public function isWithdrawable(): bool
     {
         return $this->isInRequestQueue() && $this->isOpen() && ! $this->isResult();
@@ -115,6 +129,20 @@ enum AdvancedAssessmentStatus: string implements ReviewedAssessmentState
         return $this->isInFiltering();
     }
 
+    public function isInInitialReview(): bool
+    {
+        return in_array($this, [self::AwaitingReviewAssignment, self::Assigned, self::UnderInitialAssessment], true);
+    }
+
+    /**
+     * The owning entity reads "under review" from submission until the announcement. Needs-completion and the
+     * closures it must know about (declined, withdrawn, refunded) stay visible, since they ask or tell it something.
+     */
+    public function isHiddenFromOwnerUntilAnnouncement(): bool
+    {
+        return $this->isInInitialReview() || $this->isHiddenFromEntityUntilAnnouncement();
+    }
+
     public function precedesSecretaryReview(): bool
     {
         return in_array($this, [
@@ -137,6 +165,14 @@ enum AdvancedAssessmentStatus: string implements ReviewedAssessmentState
     public static function filteringVisibleStates(): array
     {
         return array_values(array_filter(self::cases(), static fn (self $status): bool => $status->isInFiltering()));
+    }
+
+    /**
+     * @return list<self>
+     */
+    public static function ownerHiddenStates(): array
+    {
+        return array_values(array_filter(self::cases(), static fn (self $status): bool => $status->isHiddenFromOwnerUntilAnnouncement()));
     }
 
     /**
@@ -205,9 +241,9 @@ enum AdvancedAssessmentStatus: string implements ReviewedAssessmentState
         return match ($this) {
             self::Draft => [self::Draft, self::AwaitingReviewAssignment, self::Expired],
             self::AwaitingReviewAssignment => [self::NeedsCompletion, self::Assigned, self::Withdrawn],
-            self::NeedsCompletion => [self::NeedsCompletion, self::AwaitingReviewAssignment, self::DeclinedIncomplete, self::Withdrawn],
-            self::Assigned => [self::Assigned, self::UnderInitialAssessment, self::Withdrawn],
-            self::UnderInitialAssessment => [self::UnderInitialAssessment, self::AwaitingFiltering, self::Withdrawn],
+            self::NeedsCompletion => [self::NeedsCompletion, self::AwaitingReviewAssignment, self::Assigned, self::UnderInitialAssessment, self::DeclinedIncomplete, self::Withdrawn],
+            self::Assigned => [self::Assigned, self::NeedsCompletion, self::UnderInitialAssessment, self::Withdrawn],
+            self::UnderInitialAssessment => [self::UnderInitialAssessment, self::NeedsCompletion, self::AwaitingFiltering, self::Withdrawn],
             self::AwaitingFiltering => [self::QualifiedForCommittee, self::NotQualified, self::Withdrawn],
             self::QualifiedForCommittee => [self::UnderCommitteeAssessment, self::Withdrawn],
             self::UnderCommitteeAssessment => [self::AwaitingSecretaryApproval, self::Withdrawn],

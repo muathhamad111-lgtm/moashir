@@ -70,9 +70,12 @@ export const CYCLE_CLOSABLE_STATUSES = [
   CYCLE_STATUSES.ANNOUNCED,
 ]
 
+// Filtering decisions run from the opening of submissions until the results are approved (operator, 2026-11-22).
 export const CYCLE_FILTERING_STATUSES = [
+  CYCLE_STATUSES.SUBMISSION_OPEN,
   CYCLE_STATUSES.SUBMISSION_CLOSED,
   CYCLE_STATUSES.COMMITTEE_ASSESSMENT,
+  CYCLE_STATUSES.AWAITING_SECRETARY,
 ]
 
 export const CYCLE_FIELD_GROUPS = {
@@ -147,8 +150,17 @@ export const AWARD_LIMITS = {
   CANDIDATES_MAX: 100,
 }
 
+export const CYCLE_CONCURRENCY = {
+  SINGLE: 'single',
+  STAGGERED: 'staggered',
+  CONCURRENT: 'concurrent',
+}
+
+export const CYCLE_CONCURRENCY_LIST = Object.values(CYCLE_CONCURRENCY)
+
 export const AWARD_CODES = {
   ANOTHER_OPEN: 'cycle.another_open',
+  ANOTHER_OPEN_FOR_SUBMISSION: 'cycle.another_open_for_submission',
   DATES_UNORDERED: 'cycle.dates_unordered',
   FIELD_LOCKED: 'cycle.field_locked',
   REGION_HAS_REQUESTS: 'cycle.region_has_requests',

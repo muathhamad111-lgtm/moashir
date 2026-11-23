@@ -4,7 +4,12 @@ import { accreditedService } from '@/services/accreditedService'
 import { LEVEL_CERTIFICATE_STATUS } from '@/constants/levels'
 import { currentLevelCertificate } from '@/utils/levelTier'
 
-const CERTIFICATE_QUERY = { 'filter[status]': LEVEL_CERTIFICATE_STATUS, perPage: 1 }
+// The level comes from accredited certificates only; award certificates carry no level.
+const CERTIFICATE_QUERY = {
+  'filter[status]': LEVEL_CERTIFICATE_STATUS,
+  'filter[kind]': 'accredited',
+  perPage: 1,
+}
 
 export const useEntityLevelStore = defineStore('entityLevel', {
   state: () => ({ certificate: null, accredited: null, status: 'idle' }),

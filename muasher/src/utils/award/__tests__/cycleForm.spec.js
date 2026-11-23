@@ -115,8 +115,27 @@ describe('review stages per path', () => {
     expect(stagesFor('accredited').awaiting).toBe('submitted')
     expect(isAssignable({ path: 'advanced', status: 'awaiting-review-assignment' })).toBe(true)
     expect(isAssignable({ path: 'accredited', status: 'awaiting-review-assignment' })).toBe(false)
-    expect(isReassignable({ path: 'advanced', status: 'under-initial-assessment' })).toBe(true)
+    const withAssessor = { assessor: { id: 10 } }
+    expect(
+      isReassignable({ path: 'advanced', status: 'under-initial-assessment', ...withAssessor }),
+    ).toBe(true)
+    // Operator 2026-11-23: also while the entity completes it, when there is an assessor to hand over.
+    expect(isReassignable({ path: 'advanced', status: 'needs-completion', ...withAssessor })).toBe(
+      true,
+    )
+    expect(
+      isReassignable({
+        path: 'advanced',
+        status: 'needs-completion',
+        assignmentHistory: [{ status: 'active' }],
+      }),
+    ).toBe(true)
+    expect(isReassignable({ path: 'advanced', status: 'needs-completion' })).toBe(false)
     expect(isReturnable({ path: 'advanced', status: 'awaiting-review-assignment' })).toBe(true)
+    // After assignment too, back to the same assessor (operator 2026-11-22).
+    expect(isReturnable({ path: 'advanced', status: 'assigned' })).toBe(true)
+    expect(isReturnable({ path: 'advanced', status: 'under-initial-assessment' })).toBe(true)
+    expect(isReturnable({ path: 'advanced', status: 'awaiting-filtering' })).toBe(false)
     expect(isReturnable({ path: 'accredited', status: 'submitted' })).toBe(false)
     expect(isWithdrawable({ path: 'advanced', status: 'qualified-for-committee' })).toBe(true)
     expect(isWithdrawable({ path: 'advanced', status: 'not-qualified' })).toBe(false)

@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use App\Enums\Cms\CmsPageKey;
+use App\Enums\Cms\LegalDocument;
 use App\Enums\Identity\TermsKind;
 use App\Models\Cms\CmsPage;
 use App\Models\Identity\TermsVersion;
@@ -39,6 +40,15 @@ it('stores the legal drafts unpublished outside the demo and keeps the published
     $this->getJson('/api/v1/content/legal/terms')->assertOk()->assertJsonPath('data.version', '2026-11');
     $this->getJson('/api/v1/content/legal/privacy')->assertNotFound();
     $this->getJson('/api/v1/content/pages/accessibility')->assertNotFound()->assertJsonPath('code', 'cms.page_not_published');
+});
+
+it('seeds the accessibility statement without claiming that the colours chosen for the interface are contrast-tested', function (): void {
+    $statement = new LegalDocumentSource()->read(LegalDocument::AccessibilityStatement)->body;
+
+    expect($statement->ar)->not->toContain('لوحة ألوان مختبرة')
+        ->and($statement->ar)->toContain('- تباين ألوان بين النص والخلفية لا يقل عن المستوى AA في ألوان المنصة الافتراضية.')
+        ->and($statement->en)->not->toContain('palette tested')
+        ->and($statement->en)->toContain("- Colour contrast between text and background of at least Level AA in the platform's default colours.");
 });
 
 it('is idempotent and never replaces a draft or page content prepared by the client', function (): void {

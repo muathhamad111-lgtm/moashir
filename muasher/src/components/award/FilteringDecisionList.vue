@@ -12,7 +12,7 @@ const { t } = useI18n()
 </script>
 
 <template>
-  <ol v-if="decisions.length" class="filtering-decisions">
+  <ol class="filtering-decisions">
     <li v-for="decision in decisions" :key="decision.id" class="filtering-decisions__item">
       <div class="filtering-decisions__head">
         <Badge
@@ -41,5 +41,4 @@ const { t } = useI18n()
       </p>
     </li>
   </ol>
-  <p v-else class="filtering-decisions__empty">{{ t('filtering.decisions.empty') }}</p>
 </template>

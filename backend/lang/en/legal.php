@@ -6,6 +6,7 @@ return [
     'titles' => [
         'terms' => 'Terms of use',
         'privacy' => 'Privacy policy',
+        'nda' => 'Non-disclosure agreement',
     ],
     'attributes' => [
         'version' => 'version label',

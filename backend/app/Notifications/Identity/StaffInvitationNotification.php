@@ -12,7 +12,10 @@ use App\Support\FrontendUrl;
 
 final class StaffInvitationNotification extends QueuedNotification
 {
-    public function __construct(private readonly string $token, private readonly int $validMinutes)
+    /**
+     * @param  bool  $asksNda  whether accepting includes the staff non-disclosure agreement (the roles are in its scope)
+     */
+    public function __construct(private readonly string $token, private readonly int $validMinutes, private readonly bool $asksNda = false)
     {
         parent::__construct();
     }
@@ -27,10 +30,15 @@ final class StaffInvitationNotification extends QueuedNotification
 
     public function toMail(User $notifiable): BrandedMailMessage
     {
-        return BrandedMailMessage::make($notifiable, MailReason::Invitation)
+        $mail = BrandedMailMessage::make($notifiable, MailReason::Invitation)
             ->subject(__('notifications.staff_invited.subject'))
-            ->line(__('notifications.staff_invited.line'))
-            ->action(__('notifications.staff_invited.action'), FrontendUrl::to('auth/invitations/'.$this->token))
+            ->line(__('notifications.staff_invited.line'));
+
+        if ($this->asksNda) {
+            $mail->line(__('notifications.staff_invited.nda'));
+        }
+
+        return $mail->action(__('notifications.staff_invited.action'), FrontendUrl::to('auth/invitations/'.$this->token))
             ->line(__('notifications.staff_invited.expiry', ['duration' => trans_choice('quantities.minutes', $this->validMinutes)]));
     }
 }

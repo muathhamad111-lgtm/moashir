@@ -84,8 +84,22 @@ export function isRunning(cycle) {
   return !RUNNING_EXCLUDED.includes(cycle.status)
 }
 
-export function runningCycle(exceptId = null) {
-  return state.cycles.find((cycle) => isRunning(cycle) && cycle.id !== exceptId) ?? null
+function newestFirst(left, right) {
+  return Date.parse(right.submissionStart) - Date.parse(left.submissionStart) || right.id - left.id
+}
+
+export function runningCycles() {
+  return state.cycles.filter(isRunning).sort(newestFirst)
+}
+
+export function openCycles(now = Date.now()) {
+  return state.cycles
+    .filter((cycle) => acceptsApplications(cycle, now) && Date.parse(cycle.submissionStart) <= now)
+    .sort(newestFirst)
+}
+
+export function currentCycle(now = Date.now()) {
+  return openCycles(now)[0] ?? runningCycles()[0] ?? null
 }
 
 export function acceptsApplications(cycle, now = Date.now()) {

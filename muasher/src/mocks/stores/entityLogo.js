@@ -8,7 +8,8 @@ function refuse(code) {
   return entityReject.validation({ file: [fieldError(code)] })
 }
 
-export async function storeEntityLogo(user, entity, file) {
+/** Checks and stores an uploaded logo; the caller decides where it goes (a pending change request). */
+export async function acceptEntityLogo(user, file) {
   if (!file || typeof file === 'string') throw refuse('field.required')
   if (!LOGO_TYPES.includes(file.type)) throw refuse('field.logo_type')
   if (file.size > LOGO_MAX_BYTES) throw refuse('field.logo_size')
@@ -19,15 +20,10 @@ export async function storeEntityLogo(user, entity, file) {
     sizeBytes: file.size,
     content: await file.arrayBuffer(),
   })
-  entity.logo = {
+  return {
     id: stored.id,
+    name: stored.name,
     url: signedDownloadOf(user, stored).url,
     uploadedAt: new Date().toISOString(),
   }
-  return entity
-}
-
-export function removeEntityLogo(entity) {
-  entity.logo = null
-  return entity
 }

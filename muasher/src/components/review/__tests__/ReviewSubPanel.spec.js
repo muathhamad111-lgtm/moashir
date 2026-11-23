@@ -3,6 +3,7 @@ import { defineComponent, h, ref } from 'vue'
 import { flushPromises, mount } from '@vue/test-utils'
 import { useForm } from 'vee-validate'
 import ReviewSubPanel from '@/components/review/ReviewSubPanel.vue'
+import { useReviewNotes } from '@/composables/useReviewNotes'
 import { createTestGlobals } from '@/test-utils'
 
 const MAIN = { id: 11, weight: '1000.00' }
@@ -59,7 +60,7 @@ function evidence(subId, id, attachmentKey) {
   }
 }
 
-function mountSub(sub, { values = {}, canScore = true } = {}) {
+function mountSub(sub, { values = {}, canScore = true, reviewNotes = null } = {}) {
   const setField = vi.fn()
   const Host = defineComponent({
     setup() {
@@ -71,6 +72,8 @@ function mountSub(sub, { values = {}, canScore = true } = {}) {
             cv: { 21: 'The board adopted the vision in 2024.' },
             evidence: [evidence(21, 1, 'plan'), evidence(21, 2, 'page')],
             lateAttachmentKeys: [],
+            reviewNotes,
+            canWriteReviewNotes: reviewNotes !== null,
           }),
           canScore: ref(canScore),
         },
@@ -79,6 +82,7 @@ function mountSub(sub, { values = {}, canScore = true } = {}) {
         downloads: { busy: {} },
         feedback: { fieldsOf: () => ({ strengths: '', improvements: '', notes: '' }), setField },
       }
+      workspace.notes = useReviewNotes({ reviewState: workspace.reviewState })
       return () => h(ReviewSubPanel, { sub, main: MAIN, workspace })
     },
   })
@@ -146,5 +150,50 @@ describe('ReviewSubPanel', () => {
     expect(
       wrapper.findAll('input').every((input) => input.attributes('disabled') !== undefined),
     ).toBe(true)
+  })
+
+  it('shows no internal notes to a viewer who may not read them', () => {
+    const wrapper = mountSub(POINTS_SUB)
+    expect(wrapper.find('.review-note').exists()).toBe(false)
+  })
+
+  // Operator 2026-11-22: internal notes on the sub-criterion and on every indicator.
+  it('offers an internal note on the sub-criterion and on each indicator', async () => {
+    const mine = {
+      id: 1,
+      level: 'point',
+      mainCriterionId: 11,
+      subCriterionId: 21,
+      guidingPointId: 31,
+      body: 'Check the 2024 board minutes.',
+      author: { id: 7001, name: 'Me', role: 'assessor' },
+      isMine: true,
+      updatedAt: '2026-11-22T10:00:00Z',
+    }
+    const wrapper = mountSub(POINTS_SUB, { reviewNotes: [mine] })
+    await flushPromises()
+    const items = wrapper.findAll('.review-item')
+    expect(items[0].find('textarea').element.value).toBe('Check the 2024 board minutes.')
+    expect(items[1].find('[data-testid="review-note-toggle-point-11-21-32"]').exists()).toBe(true)
+    expect(wrapper.find('[data-testid="review-note-toggle-sub-11-21-0"]').text()).toBe(
+      'Add an internal note',
+    )
+  })
+
+  it('opens the note of an item marked «not achieved» for the reason, and folds it when achieved', async () => {
+    const sub = { ...DIRECT_SUB, scoringType: 'achievement' }
+    const notAchieved = mountSub(sub, { values: { 'sub-22': '0' }, reviewNotes: [] })
+    await flushPromises()
+    expect(notAchieved.find('.review-note.is-reason textarea').exists()).toBe(true)
+    expect(notAchieved.find('.review-note label').text()).toContain('Why it is not achieved')
+    const achieved = mountSub(sub, { values: { 'sub-22': '1' }, reviewNotes: [] })
+    await flushPromises()
+    expect(achieved.find('.review-note textarea').exists()).toBe(false)
+  })
+
+  it('keeps the notes and feedback open while the assessor can score', () => {
+    const wrapper = mountSub(POINTS_SUB)
+    expect(wrapper.find('details.review-feedback-fold').attributes('open')).toBeDefined()
+    expect(wrapper.find('textarea').attributes('disabled')).toBeUndefined()
   })
 })

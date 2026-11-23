@@ -89,6 +89,7 @@ function ownProfileWrites(): array
         'e-mail change request' => static fn (Entity $entity): TestResponse => switchTo(ownerOf($entity))->postJson('/api/v1/entities/me/email/change', ['new_email' => 'office@alamal.example.sa']),
         'e-mail change confirmation' => static fn (Entity $entity): TestResponse => switchTo(ownerOf($entity))->postJson('/api/v1/entities/me/email/confirm', ['challenge_id' => '9b1e0c4e-2d7a-4f0e-8b3a-5c6d7e8f9a0b', 'code' => '123456']),
         'e-mail change cancellation' => static fn (Entity $entity): TestResponse => switchTo(ownerOf($entity))->postJson('/api/v1/entities/me/email/cancel'),
+        'profile change cancellation' => static fn (Entity $entity): TestResponse => switchTo(ownerOf($entity))->postJson('/api/v1/entities/me/profile-change/cancel'),
     ];
 }
 
@@ -126,7 +127,7 @@ it('answers an unknown section with not found', function (): void {
 
 it('keeps the change history append-only', function (): void {
     $entity = entityWithOwner();
-    saveSection($entity, ProfileSection::Governance, ['employees_count' => 999])->assertOk();
+    saveAndApproveSection($entity, ProfileSection::Governance, ['employees_count' => 999])->assertOk();
 
     $change = EntityProfileChange::query()->firstOrFail();
 

@@ -83,6 +83,12 @@ export function submissionProgressOf(form) {
   return { total, complete, remaining: total - complete }
 }
 
+// True once the entity saved any CV text or uploaded any file, to a sub or to a main criterion.
+export function hasEntityInput(form) {
+  const hasCv = Object.values(form?.cv ?? {}).some((text) => Boolean(String(text ?? '').trim()))
+  return hasCv || (form?.evidence ?? []).length > 0
+}
+
 export function isSubComplete(form, subId) {
   const main = (form?.criteria?.mains ?? []).find((item) =>
     item.subs.some((sub) => sub.id === subId),

@@ -241,6 +241,7 @@ describe('self assessment mock — reads', () => {
       'name',
       'percent',
       'raw_value',
+      'scoring_type',
       'sub_id',
       'weight',
     ])
@@ -251,6 +252,7 @@ describe('self assessment mock — reads', () => {
       'percent',
       'point_id',
       'raw_value',
+      'scoring_type',
       'sub_criterion_id',
       'weight',
     ])

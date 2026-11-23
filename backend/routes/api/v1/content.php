@@ -26,14 +26,14 @@ use Laravel\Sanctum\Http\Middleware\EnsureFrontendRequestsAreStateful;
 
 $manage = 'can:manage,'.CmsPage::class;
 $manageLegal = 'can:manage,'.TermsVersion::class;
-$signedIn = ['auth:sanctum', 'session.timeouts', 'mfa', 'password.current'];
+$signedIn = ['auth:sanctum', 'session.timeouts', 'mfa', 'password.current', 'nda.current'];
 
 Route::prefix('content')->name('content.')->middleware('throttle:public')->group(function (): void {
     Route::get('status', [PublicContentController::class, 'status'])->name('status');
     Route::get('home', [PublicContentController::class, 'home'])->name('home');
     Route::get('landing', [PublicContentController::class, 'landing'])->name('landing');
     Route::get('pages/{page}', [PublicContentController::class, 'page'])->name('pages.show');
-    Route::get('legal/{kind}', [PublicContentController::class, 'legal'])->whereIn('kind', TermsKind::cases())->name('legal.show');
+    Route::get('legal/{kind}', [PublicContentController::class, 'legal'])->whereIn('kind', TermsKind::legal())->name('legal.show');
 });
 
 Route::get('content/files/{asset}', PublicImageController::class)
@@ -80,12 +80,12 @@ Route::middleware([...$signedIn, $manageLegal])
     ->prefix('admin/content/legal')
     ->name('admin.content.legal.')
     ->group(function (): void {
-        Route::whereIn('kind', TermsKind::cases())->group(function (): void {
+        Route::whereIn('kind', TermsKind::legal())->group(function (): void {
             Route::get('{kind}/versions', [LegalVersionController::class, 'index'])->name('versions.index');
             Route::post('{kind}/versions', [LegalVersionController::class, 'store'])->middleware('throttle:content-write')->name('versions.store');
         });
 
-        Route::whereNumber('termsVersion')->group(function (): void {
+        Route::whereNumber('termsVersion')->middleware('can:manage,termsVersion')->group(function (): void {
             Route::get('versions/{termsVersion}', [LegalVersionController::class, 'show'])->name('versions.show');
             Route::put('versions/{termsVersion}', [LegalVersionController::class, 'update'])->middleware('throttle:content-write')->name('versions.update');
             Route::delete('versions/{termsVersion}', [LegalVersionController::class, 'destroy'])->middleware('throttle:content-write')->name('versions.destroy');

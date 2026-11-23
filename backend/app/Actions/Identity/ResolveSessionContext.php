@@ -15,6 +15,7 @@ use App\Services\Identity\AccountAvatarResolver;
 use App\Services\Identity\AccountCompletionResolver;
 use App\Services\Identity\SessionClock;
 use App\Services\Identity\SessionTimeouts;
+use App\Services\Nda\NdaAcceptanceCheck;
 use Illuminate\Database\Eloquent\Collection;
 
 final readonly class ResolveSessionContext
@@ -26,6 +27,7 @@ final readonly class ResolveSessionContext
         private CommitteeAppointmentsReader $committeeAppointments,
         private AccountAvatarResolver $avatars,
         private AccountCompletionResolver $completion,
+        private NdaAcceptanceCheck $nda,
     ) {}
 
     public function handle(User $user): SessionContext
@@ -43,6 +45,7 @@ final readonly class ResolveSessionContext
             $this->committeeAppointments->of($user),
             $this->avatars->of($user),
             $this->completion->of($user),
+            $this->nda->isRequiredFor($user),
         );
     }
 

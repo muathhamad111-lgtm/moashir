@@ -2,6 +2,8 @@
 import { percentText } from '@/utils/percentText'
 import { useI18n } from 'vue-i18n'
 import Badge from '@/components/ui/Badge.vue'
+import Tooltip from '@/components/ui/Tooltip.vue'
+import AppIcon from '@/components/ui/AppIcon.vue'
 import StatusBadge from '@/components/ui/StatusBadge.vue'
 import DateStamp from '@/components/accredited/DateStamp.vue'
 import { localizedText } from '@/utils/localizedText'
@@ -36,7 +38,21 @@ const { t, locale, n } = useI18n()
       </dd>
     </div>
     <div class="request-facts__item secretary-facts__average">
-      <dt>{{ t('award.secretary.columns.average') }}</dt>
+      <dt>
+        {{ t('award.secretary.columns.average') }}
+        <Tooltip :text="t('award.secretary.averageNote')">
+          <template #default="{ describedBy }">
+            <button
+              type="button"
+              class="secretary-facts__hint"
+              :aria-label="t('award.secretary.averageHint')"
+              :aria-describedby="describedBy"
+            >
+              <AppIcon name="info-circle" />
+            </button>
+          </template>
+        </Tooltip>
+      </dt>
       <dd v-if="detail.average">
         <bdi class="u-ltr secretary-facts__percent">{{
           percentText(n, t, detail.average.percent)

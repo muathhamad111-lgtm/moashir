@@ -256,12 +256,20 @@ export const assessmentMessages = {
     en: 'The completion deadline cannot be later than the committee assessment start of the cycle (:date).',
   },
   'cycle.another_open': {
-    ar: 'توجد دورة جائزة أخرى قيد التشغيل. أغلقها قبل فتح دورة جديدة.',
-    en: 'Another award cycle is already running. Close it before opening a new one.',
+    ar: 'توجد دورة جائزة أخرى قائمة، ولا يسمح إعداد دورات الجائزة إلا بدورة قائمة واحدة. أغلقها قبل فتح هذه الدورة أو إعادة فتحها.',
+    en: 'Another award cycle is already running, and the award cycle setting allows one running cycle at a time. Close it before opening or reopening this one.',
+  },
+  'cycle.another_open_for_submission': {
+    ar: 'التقديم مفتوح في دورة جائزة أخرى، ولا يسمح إعداد دورات الجائزة إلا بدورة واحدة مفتوحة للتقديم. افتحوا هذه الدورة بعد انتهاء فترة التقديم في تلك الدورة.',
+    en: 'Submissions are already open in another award cycle, and the award cycle setting allows one cycle open for submission at a time. Open this cycle after that submission period closes.',
   },
   'cycle.dates_unordered': {
     ar: 'يجب أن تتتابع تواريخ الدورة: بداية التقديم ثم نهايته ثم بداية تقييم اللجنة ثم نهايته ثم موعد الإعلان. وأثناء فتح التقديم يجب أن تكون نهاية التقديم في المستقبل.',
     en: 'The cycle dates must follow each other: submission start, submission end, committee assessment start, committee assessment end, then the announcement date. While submissions are open, the submission end must be in the future.',
+  },
+  'cycle.no_initial_assessors': {
+    ar: 'اربط مقيّمًا أوليًا واحدًا على الأقل بالدورة قبل فتحها، حتى يمكن إسناد طلباتها.',
+    en: 'Link at least one initial assessor to the cycle before opening it, so its requests can be assigned.',
   },
   'cycle.field_locked': {
     ar: 'لم يعد بالإمكان تعديل هذا الحقل في المرحلة الحالية من الدورة.',
@@ -304,8 +312,12 @@ export const assessmentMessages = {
     en: 'Choose active assessor accounts.',
   },
   'cycle.filtering_not_open': {
-    ar: 'لا يمكن اتخاذ قرارات التصفية إلا بعد إغلاق فترة التقديم في الدورة.',
-    en: 'Filtering decisions can be taken only after the submission period of the cycle has closed.',
+    ar: 'تُتخذ قرارات التصفية من فتح التقديم في الدورة حتى اعتماد نتائجها.',
+    en: 'Filtering decisions can be taken from the opening of submissions until the results of the cycle are approved.',
+  },
+  'cycle.threshold_locked': {
+    ar: 'لا يمكن تغيير حد التأهل بعد صدور قرارات تصفية في الدورة.',
+    en: 'The qualification threshold cannot change once the cycle has filtering decisions.',
   },
   'advanced.request_exists': {
     ar: 'لدى جهتك طلب في دورة الجائزة هذه.',

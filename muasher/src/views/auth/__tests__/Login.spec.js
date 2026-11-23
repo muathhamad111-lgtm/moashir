@@ -92,6 +92,16 @@ describe('Login view: method tabs', () => {
     expect(wrapper.find('[name="identifier"]').element.value).toBe('info@alamal.example.sa')
   })
 
+  it('marks the password as the next field only when the identifier is already known', async () => {
+    await mountLogin('en', '/auth/login', 'info@alamal.example.sa')
+    const marked = wrapper.findAll('[data-auth-autofocus]')
+    expect(marked).toHaveLength(1)
+    expect(marked[0].find('[name="password"]').exists()).toBe(true)
+    wrapper.unmount()
+    await mountLogin()
+    expect(wrapper.find('[data-auth-autofocus]').exists()).toBe(false)
+  })
+
   it('keeps the identifier when switching tabs and drops the password', async () => {
     await mountLogin()
     await wrapper.find('[name="identifier"]').setValue('0551234567')

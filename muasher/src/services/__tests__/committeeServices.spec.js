@@ -265,11 +265,14 @@ describe('secretary and results services', () => {
           cycleStatus: 'awaiting-secretary',
           regions: [{ id: 1, code: 'riyadh', approved: false, total: 1, ranked: 0, pending: 0 }],
           national: { approved: false },
+          isCycleSecretary: true,
         },
       ),
     )
     const board = await awardResultsService.listRegional(31)
     expect(board.data[0].averagePercent).toBe('84.20')
+    // The boards act only for this cycle's own secretaries: the flag must survive the mapper.
+    expect(board.meta.isCycleSecretary).toBe(true)
     expect(board.meta.regions[0]).toMatchObject({ id: 1, approved: false, pending: 0 })
     expect(board.meta.national.announcedAt).toBeNull()
     apiClient.put.mockResolvedValue(answer({ assessmentId: 9204, regionalRank: 1 }))

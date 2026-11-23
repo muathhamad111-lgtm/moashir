@@ -18,6 +18,7 @@ import CompleteReviewDialog from './CompleteReviewDialog.vue'
 import ReviewSummaryCard from './ReviewSummaryCard.vue'
 import ReviewCriteriaStrip from './ReviewCriteriaStrip.vue'
 import ReviewCompletionAction from './ReviewCompletionAction.vue'
+import ReviewNotesSaveAction from './ReviewNotesSaveAction.vue'
 import { useReviewWorkspace } from '@/composables/useReviewWorkspace'
 
 const props = defineProps({
@@ -31,7 +32,7 @@ const { t } = useI18n()
 const page = useReviewWorkspace(props, emit)
 const { reviewState, workspace, dialogs, panelTop, steps, progress } = page
 const { status, errorMessage, review, assessment, canScore, canStart } = reviewState
-const { actions, override } = workspace
+const { actions, override, notes } = workspace
 const activeMain = steps.current
 const { stations, missing, nextName } = progress
 
@@ -56,6 +57,12 @@ onMounted(reviewState.load)
         v-if="reviewState.canRequestCompletion.value"
         :missing="page.savedMissing.value"
         @open="dialogs.completion = true"
+      />
+      <ReviewNotesSaveAction
+        v-if="notes.canWrite.value && !canScore"
+        :dirty="notes.dirty.value"
+        :busy="actions.busy.value === 'notes'"
+        @save="actions.saveNotes"
       />
       <ReviewNotices
         :review="review"
@@ -129,6 +136,7 @@ onMounted(reviewState.load)
         :assessment-id="assessment.id"
         :criteria="review.criteria"
         :scores="review.scores"
+        :review-notes="review.reviewNotes"
         :ask-reason="page.askReason"
         @done="reviewState.load({ silent: true })"
       />
@@ -136,6 +144,7 @@ onMounted(reviewState.load)
         v-model="dialogs.override"
         :override="override"
         :values="workspace.scoreSheet.sheet.values"
+        :type-of="workspace.scoreSheet.typeOf"
       />
       <ReasonDialog
         v-model="page.reasonPrompt.open.value"

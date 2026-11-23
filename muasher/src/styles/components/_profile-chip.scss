@@ -20,6 +20,11 @@
     color: var(--theme-warning-text);
   }
 
+  &--pending {
+    background-color: color-mix(in srgb, var(--theme-info-text) 12%, transparent);
+    color: var(--theme-info-text);
+  }
+
   &--editing {
     align-self: flex-start;
     background-color: var(--theme-accent-soft);

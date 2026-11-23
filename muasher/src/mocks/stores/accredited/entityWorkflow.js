@@ -172,24 +172,20 @@ function advancedSubmission(user, record, at) {
   const entity = entityOf(record)
   const completion = openCompletionOf(record)
   if (completion) Object.assign(completion, { status: 'resubmitted', resolvedAt: at })
+  // A completion asked for after assignment goes back to the same assessor (operator 2026-11-22).
+  const to = completion?.resumesTo ?? ADVANCED_STATES.AWAITING_ASSIGNMENT
   Object.assign(record, {
-    status: ADVANCED_STATES.AWAITING_ASSIGNMENT,
+    status: to,
     submittedAt: from === STATES.DRAFT ? at : record.submittedAt,
     regionId: entity.regionId,
     updatedAt: at,
   })
   const verb = from === STATES.DRAFT ? 'submit' : 'resubmit'
   record.transitions.push(
-    transition(
-      from,
-      ADVANCED_STATES.AWAITING_ASSIGNMENT,
-      verb,
-      at,
-      actorOf(user, record),
-      visibleActorId(user),
-    ),
+    transition(from, to, verb, at, actorOf(user, record), visibleActorId(user)),
   )
-  announceSubmitted(record, { resubmission: from !== STATES.DRAFT })
+  if (to === ADVANCED_STATES.AWAITING_ASSIGNMENT)
+    announceSubmitted(record, { resubmission: from !== STATES.DRAFT })
 }
 
 function assertAdvancedConditions(record) {

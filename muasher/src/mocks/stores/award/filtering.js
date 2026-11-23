@@ -32,7 +32,12 @@ const SORTABLE = {
   initialPercent: (record) => percentOf(record),
   submittedAt: (record) => record.submittedAt,
 }
-const OPEN_FOR_DECISIONS = ['submission-closed', 'committee-assessment']
+const OPEN_FOR_DECISIONS = [
+  'submission-open',
+  'submission-closed',
+  'committee-assessment',
+  'awaiting-secretary',
+]
 const NOTE_MAX = 1000
 const OVERRIDE_MIN = 20
 const REASON = { MIN: 10, MAX: 1000 }

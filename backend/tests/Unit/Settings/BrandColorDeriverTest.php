@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use App\Data\Settings\BrandColorOverrides;
 use App\Data\Settings\BrandColors;
+use App\Data\Settings\BrandRailColors;
 use App\Services\Settings\BrandColorDeriver;
 use App\Services\Settings\DefaultBrandColors;
 use App\Support\Branding\ColorShade;
@@ -68,7 +69,12 @@ it('mixes two colours in sRGB like CSS color-mix', function (): void {
 });
 
 it('derives the same schemes as the shared test vectors the SPA preview is checked against', function (array $vector): void {
-    $colors = new BrandColors($vector['primary'], $vector['secondary'], new BrandColorOverrides($vector['overrides']));
+    $colors = new BrandColors(
+        $vector['primary'],
+        $vector['secondary'],
+        new BrandColorOverrides($vector['overrides']),
+        new BrandRailColors($vector['sidebar_top_color'] ?? null, $vector['sidebar_bottom_color'] ?? null),
+    );
 
     expect(app(BrandColorDeriver::class)->scheme($colors)->toArray())->toBe($vector['scheme']);
 })->with(function (): array {

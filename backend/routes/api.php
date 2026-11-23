@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 require __DIR__.'/api/v1/platform.php';
 require __DIR__.'/api/v1/identity.php';
+require __DIR__.'/api/v1/nda.php';
 require __DIR__.'/api/v1/search.php';
 require __DIR__.'/api/v1/criteria.php';
 require __DIR__.'/api/v1/entities.php';

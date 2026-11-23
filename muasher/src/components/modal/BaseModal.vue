@@ -15,6 +15,8 @@ const props = defineProps({
     validator: (value) => ['sm', 'md', 'lg', 'xl'].includes(value),
   },
   closeOnBackdrop: { type: Boolean, default: true },
+  // A mandatory step (the staff agreement): no close button, and Esc and the backdrop do nothing.
+  dismissible: { type: Boolean, default: true },
   role: {
     type: String,
     default: MODAL_ROLES.DIALOG,
@@ -45,6 +47,7 @@ const isCentered = computed(() => Boolean(props.icon))
 const description = computed(() => props.describedBy || (props.subtitle ? subtitleId : undefined))
 
 function close() {
+  if (!props.dismissible) return
   emit('update:modelValue', false)
   emit('close')
 }
@@ -99,6 +102,7 @@ function onBackdropClick() {
             </div>
           </slot>
           <button
+            v-if="dismissible"
             type="button"
             class="modal__close"
             :aria-label="t('actions.close')"

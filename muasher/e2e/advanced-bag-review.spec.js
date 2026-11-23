@@ -164,11 +164,12 @@ test.describe('Bag', () => {
 })
 
 test.describe('Advanced — entity', () => {
-  test('advanced intro renders clean', async ({ page }, testInfo) => {
+  // A signed-in entity follows the award from its path page (AJ-04); the public intro is for visitors.
+  test('award path page renders clean', async ({ page }, testInfo) => {
     await reviewPage(page, testInfo, {
-      path: '/assessment/advanced',
-      titleSelector: '.advanced-intro__title',
-      name: 'advanced-intro',
+      path: '/paths/award',
+      titleSelector: '[data-testid="path-status-card"]',
+      name: 'advanced-path',
       session: ENTITY,
     })
   })

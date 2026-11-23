@@ -1,7 +1,7 @@
 <script setup>
-import { computed } from 'vue'
+import { computed, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { RouterLink, useRoute } from 'vue-router'
+import { RouterLink, useRoute, useRouter } from 'vue-router'
 import { useHead } from '@unhead/vue'
 import Card from '@/components/ui/Card.vue'
 import DataTable from '@/components/data-list/DataTable.vue'
@@ -12,17 +12,43 @@ import { localizedText } from '@/utils/localizedText'
 
 const { t, locale } = useI18n()
 const route = useRoute()
+const router = useRouter()
 const picker = computed(() => route.meta.picker)
-const { status, errorMessage, cycles, load } = useAwardCyclePicker(picker.value.key)
+const { status, errorMessage, cycles, openCycles, remember, load } = useAwardCyclePicker(
+  picker.value.key,
+)
 const text = (key) => t(`award.picker.${picker.value.key}.${key}`)
 
 useHead({ title: () => text('title') })
+
+// One cycle in progress: open it straight away, keeping the link's filters. `?list=1` (the back links of the
+// cycle pages) always shows the list, so going back never loops.
+function targetOf(cycleId) {
+  const query = Object.fromEntries(Object.entries(route.query).filter(([key]) => key !== 'list'))
+  return { name: picker.value.target, params: { id: cycleId }, query }
+}
+
+// The redirect is decided before the list renders (pre-flush watcher) and the table stays in its loading state
+// until the navigation ends, so the list never flashes and cannot be clicked mid-redirect.
+const redirecting = ref(false)
+const tableStatus = computed(() => (redirecting.value ? 'loading' : status.value))
+
+watch(status, async (value) => {
+  if (value !== 'success' || route.query.list || openCycles.value.length !== 1) return
+  redirecting.value = true
+  remember(openCycles.value[0].id)
+  try {
+    await router.replace(targetOf(openCycles.value[0].id))
+  } finally {
+    redirecting.value = false
+  }
+})
 
 const columns = computed(() => [
   { key: 'name', label: t('cycles.columns.name') },
   { key: 'status', label: t('cycles.columns.status') },
   { key: 'committeeEnd', label: t('award.picker.committeeEnd') },
-  { key: 'open', label: t('award.picker.open') },
+  { key: 'open', label: t('award.picker.open'), action: true },
 ])
 </script>
 
@@ -37,9 +63,10 @@ const columns = computed(() => [
     </header>
     <Card>
       <DataTable
+        stacked
         :columns="columns"
         :items="cycles"
-        :status="status"
+        :status="tableStatus"
         :error-message="errorMessage"
         :empty-title="t('award.picker.emptyTitle')"
         :empty-message="t('award.picker.emptyMessage')"
@@ -55,7 +82,8 @@ const columns = computed(() => [
         <template #cell-open="{ item }">
           <RouterLink
             class="cycle-table__link"
-            :to="{ name: picker.target, params: { id: item.id } }"
+            :to="targetOf(item.id)"
+            @click="remember(item.id)"
             >{{ text('open') }}</RouterLink
           >
         </template>

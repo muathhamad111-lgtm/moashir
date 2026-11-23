@@ -8,6 +8,7 @@ enum DocumentTemplate: string
 {
     case PaymentReceipt = 'payment_receipt';
     case AccreditedCertificate = 'accredited_certificate';
+    case AwardCertificate = 'award_certificate';
     case FeedbackReport = 'feedback_report';
     case BoardReport = 'board_report';
 }

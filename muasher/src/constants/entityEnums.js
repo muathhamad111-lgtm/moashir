@@ -37,6 +37,24 @@ export const EMAIL_CHANGE_STATUSES = {
   EXPIRED: 'expired',
 }
 
+export const PROFILE_CHANGE_STATUSES = {
+  PENDING: 'pending',
+  APPROVED: 'approved',
+  PARTIALLY_APPROVED: 'partially-approved',
+  REJECTED: 'rejected',
+  CANCELLED: 'cancelled',
+}
+
+export const PROFILE_CHANGE_VERDICTS = { APPROVED: 'approved', REJECTED: 'rejected' }
+
+export const PROFILE_CHANGE_FILES = { LOGO: 'logo', VAT_CERTIFICATE: 'vat_certificate' }
+
+/** Fields that only make sense together: a city belongs to its region, a VAT number to a registration. */
+export const PROFILE_CHANGE_COUPLED = Object.freeze([
+  ['region_id', 'city_id'],
+  ['vat_registered', 'vat_number'],
+])
+
 export const EMAIL_CHANGE_POLICIES = {
   REQUIRES_APPROVAL: 'requires_approval',
   IMMEDIATE_NOTIFY: 'immediate_notify',

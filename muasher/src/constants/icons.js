@@ -7,6 +7,7 @@ export const RTL_MIRRORED_ICONS = Object.freeze([
   'chevron-right',
   'chevron-sm-left',
   'chevron-sm-right',
+  'list-check',
   'send',
   'login',
   'logout',

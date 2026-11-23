@@ -19,6 +19,8 @@ const P = COMMITTEE_PERMISSIONS
 const GLOBAL_MANAGERS = ['system_admin', 'request_follower']
 const SYSTEM_ADMIN = 'system_admin'
 const SECRETARY = ['award_secretary']
+// Mirrors CycleRoleScope::AWARD_READER_ROLES: any Award Secretary reads every cycle; only its own ones act.
+const AWARD_READERS = [SYSTEM_ADMIN, ...SECRETARY]
 
 function holds(user, roles) {
   return roles.some((role) => user.roles.includes(role))
@@ -26,6 +28,10 @@ function holds(user, roles) {
 
 function isSecretaryOf(user, cycle) {
   return isMember(cycle, user.id, SECRETARY)
+}
+
+export function isCycleSecretary(user, cycle) {
+  return Boolean(user.superAdmin) || isSecretaryOf(user, cycle)
 }
 
 export function managesRoster(user, cycle) {
@@ -36,7 +42,7 @@ export function managesRoster(user, cycle) {
 function readsSecretaryDesk(user, cycle) {
   if (user.superAdmin) return true
   return (
-    sessionCan(P.SECRETARY_REVIEW) && (holds(user, [SYSTEM_ADMIN]) || isSecretaryOf(user, cycle))
+    sessionCan(P.SECRETARY_REVIEW) && (holds(user, AWARD_READERS) || isSecretaryOf(user, cycle))
   )
 }
 
@@ -46,7 +52,7 @@ export function decidesSecretaryDesk(user, cycle) {
 
 function readsResults(user, cycle) {
   if (user.superAdmin) return true
-  return sessionCan(P.RESULTS_VIEW) && (holds(user, [SYSTEM_ADMIN]) || isSecretaryOf(user, cycle))
+  return sessionCan(P.RESULTS_VIEW) && (holds(user, AWARD_READERS) || isSecretaryOf(user, cycle))
 }
 
 function denyOrHide(user, cycle) {

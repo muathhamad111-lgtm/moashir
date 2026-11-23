@@ -5,6 +5,7 @@ import { useAuthFlowStore } from '@/stores/authFlow'
 import { useOtpChallenge } from '@/composables/useOtpChallenge'
 import { useLoginOutcome } from '@/composables/useLoginOutcome'
 import { useToast } from '@/composables/useToast'
+import { holdVerified } from '@/composables/auth/authSlide'
 import { logger } from '@/utils/logger'
 import {
   codeFailureOf,
@@ -29,6 +30,7 @@ export function useOtpStep() {
   const codeError = ref('')
   const failure = ref(null)
   const submitting = ref(false)
+  const verified = ref(false)
   const resending = ref(false)
 
   const isCode = computed(() => authFlow.intent === AUTH_FLOW_INTENTS.CODE)
@@ -75,6 +77,8 @@ export function useOtpStep() {
     try {
       const outcome = await auth.verifyOtp({ challengeId: otp.challengeId.value, code: value })
       otp.stop()
+      verified.value = true
+      await holdVerified()
       await continueAfter(outcome)
     } catch (error) {
       reject(error)
@@ -108,6 +112,7 @@ export function useOtpStep() {
     codeError,
     failure,
     submitting,
+    verified,
     resending,
     isCode,
     destination,

@@ -20,9 +20,9 @@ enum CompletionExpiryOutcome: string
         };
     }
 
-    public function assessmentStatusOn(AssessmentPath $path): ReviewedAssessmentState
+    public function assessmentStatusOn(AssessmentPath $path, ?ReviewedAssessmentState $resumesTo = null): ReviewedAssessmentState
     {
-        return $path->reviewStages()->afterCompletionExpiry($this);
+        return $path->reviewStages()->afterCompletionExpiry($this, $resumesTo);
     }
 
     public function auditEvent(): AuditEvent

@@ -1,7 +1,7 @@
 import { computed, ref, shallowRef } from 'vue'
 import { assessorReviewService } from '@/services/assessorReviewService'
 import { REVIEW_MODES } from '@/constants/accredited'
-import { isAdvancedPath, stagesFor } from '@/utils/assessments/reviewStages'
+import { stagesFor } from '@/utils/assessments/reviewStages'
 import { scorableUnits } from '@/utils/assessments/scoreSheet'
 
 const NOT_FOUND = 404
@@ -24,9 +24,8 @@ export function useAssessorReview(assessmentId) {
   const canStart = computed(
     () => isEditMode.value && assessment.value?.status === stages.value.assigned,
   )
-  const canRequestCompletion = computed(
-    () => canScore.value && !isAdvancedPath(assessment.value?.path),
-  )
+  // Both paths ask for completion from the review once it is finished (operator 2026-11-22).
+  const canRequestCompletion = computed(() => canScore.value)
 
   async function load({ silent = false } = {}) {
     if (!silent) status.value = 'loading'

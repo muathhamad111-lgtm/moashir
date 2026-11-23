@@ -95,13 +95,6 @@ it('shows the full initial assessment read only with the report data', function 
     test()->postJson("/api/v1/assessments/{$assessment->id}/evidence/{$evidenceId}/download")->assertOk()->assertJsonStructure(['data' => ['url', 'expires_at']]);
 });
 
-it('waits for the end of the submission period before filtering decisions', function (): void {
-    [$cycle, $version, $officer] = filteringCycle();
-    $assessment = initiallyAssessedRequest($cycle, $version, assessorUser());
-
-    switchTo($officer)->postJson(filteringPath($cycle, $assessment, 'qualify'))->assertConflict()->assertJsonPath('code', 'cycle.filtering_not_open');
-});
-
 it('qualifies a request that meets the disqualification score', function (): void {
     [$cycle, $version, $officer] = filteringCycle();
     $assessment = initiallyAssessedRequest($cycle, $version, assessorUser());

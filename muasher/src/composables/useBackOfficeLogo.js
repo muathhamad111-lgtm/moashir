@@ -22,13 +22,14 @@ export function logoForSurface(logos, surface) {
   return logos?.[surface] || DEFAULT_BACK_OFFICE_LOGOS[surface]
 }
 
+// The logo drawn for light text on a dark fill, or the one for a light background.
 export function useBackOfficeLogo() {
   const { logos, scheme } = storeToRefs(useBrandingStore())
-  const sidebarLogo = computed(() => logoForSurface(logos.value, SITE_LOGO_SURFACE))
-  const topBarLogo = computed(() =>
-    scheme.value.onSecondary === BRAND_SURFACES.paper
+  const logoOn = (text) =>
+    text === BRAND_SURFACES.paper
       ? logoForSurface(logos.value, SIDEBAR_LOGO_SURFACE)
-      : sidebarLogo.value,
-  )
+      : logoForSurface(logos.value, SITE_LOGO_SURFACE)
+  const sidebarLogo = computed(() => logoOn(scheme.value.onRail))
+  const topBarLogo = computed(() => logoOn(scheme.value.onSecondary))
   return { sidebarLogo, topBarLogo }
 }

@@ -56,20 +56,20 @@ it('reports the design mock at 72 percent by section', function (): void {
 it('follows each section save and keeps the completion timestamp on 100 percent only', function (): void {
     $entity = entityWithOwner(static fn (EntityFactory $factory): EntityFactory => $factory->incompleteProfile());
 
-    saveSection($entity, ProfileSection::Governance, ['governance_grade' => '82.50'])->assertOk()
+    saveAndApproveSection($entity, ProfileSection::Governance, ['governance_grade' => '82.50'])->assertOk()
         ->assertJsonPath('data.profile_completion.percent', 90)
         ->assertJsonPath('data.profile_completed', false);
     expect($entity->refresh()->profile_completed_at)->toBeNull();
 
-    saveSection($entity, ProfileSection::Governance, ['employees_count' => 14, 'annual_beneficiaries_count' => 3200])->assertOk()
+    saveAndApproveSection($entity, ProfileSection::Governance, ['employees_count' => 14, 'annual_beneficiaries_count' => 3200])->assertOk()
         ->assertJsonPath('data.profile_completion.percent', 100)
         ->assertJsonPath('data.profile_completed', true);
     expect($entity->refresh()->profile_completed_at)->not->toBeNull();
 
-    saveSection($entity, ProfileSection::Contact, ['phone' => null, 'website_url' => null])->assertOk()
+    saveAndApproveSection($entity, ProfileSection::Contact, ['phone' => null, 'website_url' => null])->assertOk()
         ->assertJsonPath('data.profile_completion.percent', 100);
 
-    saveSection($entity, ProfileSection::Identity, ['license_number' => null])->assertOk()
+    saveAndApproveSection($entity, ProfileSection::Identity, ['license_number' => null])->assertOk()
         ->assertJsonPath('data.profile_completion.percent', 95)
         ->assertJsonPath('data.profile_completion.sections.0.missing_fields', ['license_number']);
     expect($entity->refresh()->profile_completed_at)->toBeNull();

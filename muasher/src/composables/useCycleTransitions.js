@@ -5,6 +5,8 @@ import { useToast } from '@/composables/useToast'
 import { useConfirm } from '@/composables/useConfirm'
 import { AWARD_CODES } from '@/constants/advanced'
 
+const START_BLOCKED = [AWARD_CODES.ANOTHER_OPEN, AWARD_CODES.ANOTHER_OPEN_FOR_SUBMISSION]
+
 const TRANSITIONS = {
   open: { call: 'open', variant: 'confirm', line: false },
   closeSubmissions: { call: 'closeSubmissions', variant: 'warning', line: true },
@@ -23,7 +25,7 @@ export function useCycleTransitions({ editor, reasonExtra }) {
     const normalized = error?.normalized ?? {}
     if (normalized.code === AWARD_CODES.REQUESTS_PENDING)
       blocked.value = { code: normalized.code, requests: normalized.meta?.openRequests ?? [] }
-    else if (normalized.code === AWARD_CODES.ANOTHER_OPEN)
+    else if (START_BLOCKED.includes(normalized.code))
       blocked.value = { code: normalized.code, cycleId: normalized.meta?.awardCycleId ?? null }
     else blocked.value = null
     toast.error(normalized.message || t('errors.unexpected'))
@@ -70,9 +72,9 @@ export function useCycleTransitions({ editor, reasonExtra }) {
       toast.success(t('cycles.actions.reopen.done'))
       return data
     } catch (error) {
-      if (error?.normalized?.code === AWARD_CODES.ANOTHER_OPEN)
+      if (START_BLOCKED.includes(error?.normalized?.code))
         blocked.value = {
-          code: AWARD_CODES.ANOTHER_OPEN,
+          code: error.normalized.code,
           cycleId: error.normalized.meta?.awardCycleId ?? null,
         }
       throw error

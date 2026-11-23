@@ -2,6 +2,7 @@ import { ASSESSMENT_PATHS } from '@/constants/assessment'
 import {
   ACCREDITED_STATUSES,
   ASSIGNMENT_MODES,
+  ASSIGNMENT_STATUSES,
   REASSIGNABLE_STATUSES,
 } from '@/constants/accredited'
 import { ADVANCED_STATUSES, ADVANCED_WITHDRAWABLE_STATUSES } from '@/constants/advanced'
@@ -19,7 +20,12 @@ const STAGES = {
     assigned: ADVANCED_STATUSES.ASSIGNED,
     reviewing: ADVANCED_STATUSES.UNDER_INITIAL_ASSESSMENT,
     done: ADVANCED_STATUSES.AWAITING_FILTERING,
-    reassignable: [ADVANCED_STATUSES.ASSIGNED, ADVANCED_STATUSES.UNDER_INITIAL_ASSESSMENT],
+    // Operator 2026-11-23: also while the entity completes the request, when it has an assessor.
+    reassignable: [
+      ADVANCED_STATUSES.ASSIGNED,
+      ADVANCED_STATUSES.UNDER_INITIAL_ASSESSMENT,
+      ADVANCED_STATUSES.NEEDS_COMPLETION,
+    ],
   },
 }
 
@@ -35,8 +41,17 @@ export function isAssignable(request) {
   return request.status === stagesFor(request.path).awaiting
 }
 
+// A queue row names its assessor; the request page lists the assignment history.
+const hasActiveAssessor = (request) =>
+  Boolean(request.assessor) ||
+  (request.assignmentHistory ?? []).some(
+    (assignment) => assignment.status === ASSIGNMENT_STATUSES.ACTIVE,
+  )
+
+// A request the entity is completing may have been returned before it had an assessor to hand over.
 export function isReassignable(request) {
-  return stagesFor(request.path).reassignable.includes(request.status)
+  if (!stagesFor(request.path).reassignable.includes(request.status)) return false
+  return request.status !== ADVANCED_STATUSES.NEEDS_COMPLETION || hasActiveAssessor(request)
 }
 
 export function assignmentModeOf(request) {
@@ -46,8 +61,16 @@ export function assignmentModeOf(request) {
   return null
 }
 
+// The follower returns an advanced request for completion before or after it is assigned
+// (operator 2026-11-22); after assignment the resubmission goes back to the same assessor.
+const RETURNABLE_STATUSES = [
+  ADVANCED_STATUSES.AWAITING_ASSIGNMENT,
+  ADVANCED_STATUSES.ASSIGNED,
+  ADVANCED_STATUSES.UNDER_INITIAL_ASSESSMENT,
+]
+
 export function isReturnable(request) {
-  return isAdvancedPath(request.path) && request.status === ADVANCED_STATUSES.AWAITING_ASSIGNMENT
+  return isAdvancedPath(request.path) && RETURNABLE_STATUSES.includes(request.status)
 }
 
 export function isWithdrawable(request) {

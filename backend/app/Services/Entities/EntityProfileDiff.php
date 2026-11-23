@@ -9,10 +9,8 @@ use App\Data\Entities\EntityProfileChangeSet;
 use App\Enums\Entities\EntityProfileField;
 use App\Models\Entities\Entity;
 use App\Models\Identity\User;
-use App\Support\ValueObjects\EntityName;
+use App\Support\Entities\ComparableProfileValue;
 use App\Support\ValueObjects\PhoneNumber;
-use BackedEnum;
-use Carbon\CarbonInterface;
 
 final class EntityProfileDiff
 {
@@ -24,7 +22,7 @@ final class EntityProfileDiff
         $changes = new EntityProfileChangeSet;
 
         foreach ($attributes as $field => $value) {
-            $changes = $changes->merge($this->change($field, $this->comparable($entity->getAttribute($field)), $this->comparable($value)));
+            $changes = $changes->merge($this->change($field, ComparableProfileValue::of($entity->getAttribute($field)), ComparableProfileValue::of($value)));
         }
 
         return $changes;
@@ -62,15 +60,5 @@ final class EntityProfileDiff
         $masked = $previous === null ? null : PhoneNumber::tryFromSaudiInput($previous)?->masked();
 
         return new EntityProfileChangeSet([$field => $masked], [$field => $next?->masked()]);
-    }
-
-    private function comparable(mixed $value): mixed
-    {
-        return match (true) {
-            $value instanceof EntityName => $value->toArray(),
-            $value instanceof BackedEnum => $value->value,
-            $value instanceof CarbonInterface => $value->toDateString(),
-            default => $value,
-        };
     }
 }

@@ -8,6 +8,7 @@ use App\Http\Middleware\AssignRequestId;
 use App\Http\Middleware\EnforceSessionTimeouts;
 use App\Http\Middleware\EnsureJsonRequest;
 use App\Http\Middleware\EnsureMfaSatisfied;
+use App\Http\Middleware\EnsureNdaAccepted;
 use App\Http\Middleware\EnsurePasswordChangeNotRequired;
 use App\Http\Middleware\RejectOversizedPayload;
 use App\Http\Middleware\SetLocale;
@@ -41,6 +42,7 @@ return Application::configure(basePath: dirname(__DIR__))
             'session.timeouts' => EnforceSessionTimeouts::class,
             'mfa' => EnsureMfaSatisfied::class,
             'password.current' => EnsurePasswordChangeNotRequired::class,
+            'nda.current' => EnsureNdaAccepted::class,
             'payload.limit' => RejectOversizedPayload::class,
         ]);
         $middleware->redirectGuestsTo(fn (): ?string => null);

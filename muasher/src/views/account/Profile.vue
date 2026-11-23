@@ -12,6 +12,7 @@ import AppIcon from '@/components/ui/AppIcon.vue'
 import ProfilePhotoCard from '@/components/account/ProfilePhotoCard.vue'
 import NationalIdentityCard from '@/components/account/NationalIdentityCard.vue'
 import ChangePasswordCard from '@/components/account/ChangePasswordCard.vue'
+import MyAgreementsCard from '@/components/account/MyAgreementsCard.vue'
 
 const { t, locale } = useI18n()
 const auth = useAuthStore()
@@ -81,5 +82,6 @@ const committeeSeats = computed(() => auth.committeeAppointments)
     </div>
 
     <ChangePasswordCard />
+    <MyAgreementsCard v-if="!isEntityAccount" />
   </section>
 </template>

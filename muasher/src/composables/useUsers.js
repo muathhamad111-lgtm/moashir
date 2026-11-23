@@ -47,6 +47,11 @@ export function useUsers() {
     ...USER_STATUS_LIST.map((status) => ({ value: status, label: t(`users.statuses.${status}`) })),
   ])
 
+  const ndaFilterOptions = computed(() => [
+    { value: '', label: t('dataList.filter.all') },
+    { value: 'pending', label: t('nda.statuses.pending') },
+  ])
+
   function roleCapabilities(role) {
     const keys = ROLE_CAPABILITY_KEYS[role] ?? []
     return keys.map((key) => t(`users.capabilities.${key}`))
@@ -57,6 +62,7 @@ export function useUsers() {
     roleOptions,
     roleFilterOptions,
     statusFilterOptions,
+    ndaFilterOptions,
     roleCapabilities,
   }
 }

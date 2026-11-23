@@ -16,7 +16,7 @@ We are committed to making Moashir usable by all beneficiaries, including people
 
 - Full keyboard navigation with a visible focus indicator.
 - A "Skip to content" link at the top of pages to move directly to the main content.
-- Colour contrast between text and background of at least Level AA; the colours the System Administrator may choose for the interface are limited to a palette tested for this contrast.
+- Colour contrast between text and background of at least Level AA in the platform's default colours.
 - Statuses shown with written text next to the colour, never by colour alone.
 - Respect for the operating system's "reduce motion" setting, and buttons to pause motion and autoplay on the home page.
 - The exact value of animated numbers is available to screen readers.

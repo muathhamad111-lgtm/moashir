@@ -8,16 +8,15 @@ use App\Data\Audit\AuditEntry;
 use App\Enums\Assessments\AdvancedAssessmentStatus;
 use App\Enums\Assessments\AssessmentVerb;
 use App\Enums\Audit\AuditEvent;
-use App\Events\Assessments\AdvancedRequestResubmitted;
 use App\Events\Assessments\AdvancedRequestSubmitted;
 use App\Exceptions\Assessments\AssessmentRejected;
 use App\Exceptions\Award\AwardRejected;
 use App\Models\Assessments\Assessment;
 use App\Models\Award\AwardCycle;
 use App\Models\Identity\User;
+use App\Services\Assessments\AdvancedResubmission;
 use App\Services\Assessments\AssessmentStateMachine;
 use App\Services\Assessments\BoundSubCriteriaReader;
-use App\Services\Assessments\CompletionRequestCloser;
 use App\Services\Assessments\EntityContentGate;
 use App\Services\Assessments\SubmissionGapsReader;
 use App\Services\Audit\AuditRecorder;
@@ -35,7 +34,7 @@ final readonly class SubmitAdvancedRequest
         private AdvancedEligibilityChecker $eligibility,
         private ConditionFailureMessages $messages,
         private AssessmentStateMachine $stateMachine,
-        private CompletionRequestCloser $completionRequests,
+        private AdvancedResubmission $resubmission,
         private AuditRecorder $audit,
     ) {}
 
@@ -49,7 +48,7 @@ final readonly class SubmitAdvancedRequest
                 throw AssessmentRejected::submissionIncomplete($gaps->fieldErrors(), $gaps->toArray());
             }
 
-            return $locked->status === AdvancedAssessmentStatus::Draft ? $this->submit($actor, $locked) : $this->resubmit($actor, $locked);
+            return $locked->status === AdvancedAssessmentStatus::Draft ? $this->submit($actor, $locked) : $this->resubmission->resubmit($actor, $locked);
         });
     }
 
@@ -67,20 +66,6 @@ final readonly class SubmitAdvancedRequest
         ]));
 
         AdvancedRequestSubmitted::dispatch($locked, $actor->id);
-
-        return $locked;
-    }
-
-    private function resubmit(User $actor, Assessment $locked): Assessment
-    {
-        $this->stateMachine->transition($locked, AdvancedAssessmentStatus::AwaitingReviewAssignment, AssessmentVerb::Resubmit, $actor->id);
-        $resolved = $this->completionRequests->resolve($locked);
-        $this->audit->record(new AuditEntry(AuditEvent::AwardResubmitted, $locked, ['status' => AdvancedAssessmentStatus::NeedsCompletion->value], [
-            'status' => AdvancedAssessmentStatus::AwaitingReviewAssignment->value,
-            'completion_request_id' => $resolved?->id,
-        ]));
-
-        AdvancedRequestResubmitted::dispatch($locked, $actor->id);
 
         return $locked;
     }

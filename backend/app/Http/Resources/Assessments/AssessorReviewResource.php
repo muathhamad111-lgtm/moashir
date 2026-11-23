@@ -41,6 +41,7 @@ final class AssessorReviewResource extends JsonResource
             'late_attachment_keys' => $review->evidence->lateAttachmentKeys,
             'feedback' => (object) new FeedbackView($assessment, $review->feedback, $subs)->bySubId(),
             'summary' => AssessmentSummaryPresenter::present($review->summary),
+            ...new ReviewNotesResource($review->notes)->toArray($request),
             'criteria_update' => $review->criteriaUpdate === null ? null : new CriteriaMoveSummaryResource($review->criteriaUpdate)->toArray($request),
             'completion_request' => CompletionRequestPresenter::present($review->completionRequest, $subs),
             'context' => array_map(static fn (Assessment $other): array => [

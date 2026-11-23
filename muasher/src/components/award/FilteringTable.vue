@@ -39,6 +39,7 @@ function detailRoute(item) {
 
 <template>
   <DataTable
+    stacked
     :columns="columns"
     :items="items"
     :status="status"

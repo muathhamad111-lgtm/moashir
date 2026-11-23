@@ -43,6 +43,7 @@
 @use 'components/notifications';
 @use 'components/sidebar';
 @use 'components/identity-card';
+@use 'components/rail-glow';
 @use 'components/navbar';
 @use 'components/global-search';
 @use 'components/app-layout';
@@ -160,6 +161,8 @@
 @use 'components/mobile-tab-bar';
 @use 'components/mobile-action-bar';
 @use 'components/profile-banner';
+@use 'components/pending-change';
+@use 'components/profile-change-review';
 @use 'components/area-tabs';
 @use 'components/journey-home';
 @use 'components/next-step';
@@ -187,6 +190,7 @@
 @use 'components/review-sub';
 @use 'components/review-card';
 @use 'components/review-rounds';
+@use 'components/review-notes';
 @use 'components/error-page';
 @use 'components/gap-card';
 @use 'components/bag';
@@ -226,6 +230,7 @@
 @use 'components/proof-upload';
 @use 'components/transfer-status';
 @use 'components/advanced-intro';
+@use 'components/award-cycle-choices';
 @use 'components/cycles';
 @use 'components/filtering';
 @use 'components/staff-dashboard';
@@ -237,7 +242,7 @@
 @use 'components/branding';
 @use 'components/brand-colors';
 @use 'components/brand-derived';
-@use 'components/brand-fixed';
+@use 'components/brand-rail';
 @use 'components/brand-preview';
 @use 'components/logo-variant';
 @use 'components/account';
@@ -282,6 +287,7 @@
 @use 'components/complete-review';
 @use 'components/contact-inbox';
 @use 'components/legal-admin';
+@use 'components/nda';
 @use 'components/audit-log';
 @use 'components/level-tone';
 @use 'components/level-emblem';

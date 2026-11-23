@@ -13,6 +13,7 @@ import {
 } from './support/signIn'
 import { AA_NON_TEXT, contrastOf } from './support/contrast'
 import { fillRegistrationEntityStep, goToRegistrationAccountStep } from './support/registration'
+import { approvePendingProfileChange } from './support/profileChanges'
 
 const SHOTS = 'e2e/__screenshots__/signin'
 const VIEWPORTS = {
@@ -136,12 +137,13 @@ test.describe('entity sign-in: password or code', () => {
       await page.keyboard.press(isEn(testInfo) ? 'ArrowRight' : 'ArrowLeft')
       await expect(signInTab(page, 'code')).toHaveAttribute('aria-selected', 'true')
       await expect(signInTab(page, 'code')).toBeFocused()
-      await expect(page.locator('[name="identifier"]')).toHaveValue(ALBIRR.unifiedNumber)
+      // Both forms are on screen while they swipe past each other; read the field once one is left.
       await expect(page.locator('[name="password"]')).toHaveCount(0)
-      const selected = '[role="tab"][aria-selected="true"]'
-      // The indicator fades in from transparent; measuring mid-transition reads a blank border.
-      await settleTransitions(page.locator(selected))
-      const indicator = await contrastOf(page, selected, {
+      await expect(page.locator('[name="identifier"]')).toHaveValue(ALBIRR.unifiedNumber)
+      // The selected tab is marked by the pill sliding under it; measure it once it has arrived.
+      const pill = '.sign-in-methods__indicator'
+      await settleTransitions(page.locator(pill))
+      const indicator = await contrastOf(page, pill, {
         property: 'borderTopColor',
         behind: true,
       })
@@ -306,13 +308,18 @@ test.describe('unified national number and mobile verification', () => {
     await identity.locator('[name="unifiedNumber"]').fill('7000006001')
     await identity.locator('button[type="submit"]').click()
     await expect(identity.locator('.profile-section__status-text--success')).toBeVisible()
-    await expect(identity.locator('[data-field="unifiedNumber"]')).toContainText('7000006001')
     const contact = page.locator('[data-section="contact"]')
     const card = contact.getByTestId('profile-phone')
     await expect(card.locator('.profile-field__action')).toHaveText(text(testInfo, 'Add', 'أضِف'))
     await card.locator('.profile-field__action').click()
     await contact.locator('[name="phone"]').fill('0500006001')
     await contact.locator('button[type="submit"]').click()
+    await expect(contact.getByTestId('section-pending')).toBeVisible()
+
+    await approvePendingProfileChange(page, localeOf(testInfo))
+    await seedSignedIn(page, USERS.namaa, { locale: localeOf(testInfo) })
+    await open(page, '/entity/profile', '[data-section="identity"]')
+    await expect(identity.locator('[data-field="unifiedNumber"]')).toContainText('7000006001')
     await expect(card.locator('.badge--warning')).toBeVisible()
     await card.locator('.profile-field__action').click()
     await expect(card.locator('.otp-input__box')).toHaveCount(6)
@@ -440,11 +447,15 @@ const CAPTURES = [
     path: '/entity/profile',
     ready: '[data-testid="profile-phone"]',
     settled: '[data-testid="phone-otp"]',
-    async prepare(page) {
+    async prepare(page, { locale, theme }) {
       const contact = page.locator('[data-section="contact"]')
       await contact.locator('.profile-section__edit').click()
       await contact.locator('[name="phone"]').fill('0500006001')
       await contact.locator('button[type="submit"]').click()
+      await contact.getByTestId('section-pending').waitFor()
+      await approvePendingProfileChange(page, locale)
+      await seedSignedIn(page, USERS.namaa, { locale, theme })
+      await open(page, '/entity/profile', '[data-testid="profile-phone"]')
       await contact.locator('[data-testid="profile-phone"] .badge--warning').waitFor()
       await contact.locator('[data-testid="profile-phone"] .profile-field__action').click()
     },
@@ -472,7 +483,7 @@ test.describe('sign-in and security screenshots', () => {
           await page.setViewportSize(size)
           await prepareShot(page, testInfo, shot, theme)
           await open(page, shot.path, shot.ready)
-          await (shot.prepare ?? NOTHING_TO_PREPARE)(page)
+          await (shot.prepare ?? NOTHING_TO_PREPARE)(page, { locale: localeOf(testInfo), theme })
           await expect(page.locator(shot.settled ?? shot.ready).first()).toBeVisible()
           const backOffice = (await page.locator('html').getAttribute('data-shell')) === 'tts'
           await expect(page.locator('html')).toHaveAttribute(

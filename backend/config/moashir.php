@@ -88,6 +88,7 @@ return [
         'cv_max_chars' => 10000,
         'feedback_max_chars' => 5000,
         'summary_max_chars' => 2000,
+        'review_note_max_chars' => 500,
         'completion_deadline_max_days' => 60,
         'evidence_bundle_sync_max_bytes' => 20 * 1024 * 1024,
         'evidence_bundle_ttl_hours' => 2,
@@ -229,6 +230,16 @@ return [
         // Hover = this share of the primary mixed with ink; soft = this share of the primary on paper.
         'hover_share' => 0.88,
         'soft_share' => 0.10,
+        // Sidebar gradient: the two colours blend in OKLab over `rail_stops` + 1 stops. The bottom
+        // defaults to the secondary moved this share toward the primary. Each derived share below
+        // is a whole percent, stepped down (or up, for the accent) until its text reads at AA.
+        'rail_stops' => 8,
+        'rail_auto_bottom_share' => 0.26,
+        'rail_glow_max_percent' => 40,
+        'rail_glow_step_percent' => 2,
+        'rail_muted_max_percent' => 28,
+        'rail_muted_step_percent' => 2,
+        'rail_accent_step_percent' => 5,
     ],
 
     'integrations' => [

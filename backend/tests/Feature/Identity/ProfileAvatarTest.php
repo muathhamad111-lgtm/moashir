@@ -182,7 +182,7 @@ it('uses the entity logo as the avatar of an entity account and falls back to no
     switchTo($owner)->getJson('/api/v1/auth/session')->assertOk()->assertJsonPath('data.avatar', null);
     switchTo($owner)->get('/api/v1/me/avatar')->assertNotFound();
 
-    uploadEntityLogo($owner, logoUpload(logoImageBytes()))->assertCreated();
+    uploadAndApproveLogo($owner, logoUpload(logoImageBytes()))->assertOk();
     $logo = StoredFile::query()->findOrFail($entity->refresh()->logo_file_id);
 
     $url = (string) switchTo($owner)->getJson('/api/v1/auth/session')->assertOk()

@@ -11,6 +11,7 @@ const props = defineProps({
   canEdit: { type: Boolean, default: false },
   editing: { type: Boolean, default: false },
   saved: { type: Boolean, default: false },
+  pending: { type: Boolean, default: false },
   focusField: { type: String, default: null },
   regionOptions: { type: Array, default: () => [] },
   cityOptionsFor: { type: Function, required: true },
@@ -43,6 +44,7 @@ watch(
       :title-id="titleId"
       :editing="editing"
       :can-edit="canEdit"
+      :pending="pending"
       @edit="emit('edit', null)"
     />
     <ProfileSectionForm
@@ -64,7 +66,7 @@ watch(
         @add="emit('edit', $event)"
         @refresh="emit('refresh')"
       />
-      <ProfileSectionFooter :saved="saved" @history="emit('history')" />
+      <ProfileSectionFooter :saved="saved" :pending="pending" @history="emit('history')" />
     </template>
   </section>
 </template>

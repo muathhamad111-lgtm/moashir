@@ -16,6 +16,7 @@ import ProfileChangeHistory from '@/components/entities/ProfileChangeHistory.vue
 import EntityAssessmentsCard from '@/components/entities/admin/EntityAssessmentsCard.vue'
 import EntityLogoPreview from '@/components/entities/admin/EntityLogoPreview.vue'
 import EntityLevelCard from '@/components/entities/admin/EntityLevelCard.vue'
+import EntityPendingChangeCard from '@/components/entities/admin/EntityPendingChangeCard.vue'
 import LevelBadge from '@/components/level/LevelBadge.vue'
 import { displayTierOf, reassessmentOf } from '@/utils/levelTier'
 import EntityInsightsPanel from '@/components/insights/EntityInsightsPanel.vue'
@@ -27,41 +28,18 @@ import { useEntityDisplay } from '@/composables/useEntityDisplay'
 import { useBillingRows } from '@/composables/useBillingRows'
 import { ENTITY_ACTIONS } from '@/composables/useEntityActions'
 import { ROUTE_NAMES } from '@/constants/routeNames'
+import {
+  CONTACT_ONLY_ROWS,
+  CONTACT_ROWS,
+  DELETION_ROWS,
+  DETAIL_ROWS,
+  LIFECYCLE_ROWS,
+} from '@/constants/entityRecordRows'
 import AppIcon from '@/components/ui/AppIcon.vue'
 
 const props = defineProps({
   id: { type: String, required: true },
 })
-
-const DETAIL_ROWS = [
-  'nameAr',
-  'nameEn',
-  'unifiedNumber',
-  'entityType',
-  'developmentSector',
-  'orgSize',
-  'licenseNumber',
-  'foundedOn',
-  'foundingYear',
-  'region',
-  'city',
-  'governanceGrade',
-  'employeesCount',
-  'annualBeneficiariesCount',
-  'hasStrategicPlan',
-]
-const CONTACT_ROWS = ['authorizedPersonName', 'officialEmail', 'phone', 'websiteUrl']
-const CONTACT_ONLY_ROWS = ['authorizedPersonName', 'officialEmail', 'phone']
-const LIFECYCLE_ROWS = [
-  'createdAt',
-  'verifiedAt',
-  'marketingConsent',
-  'verificationRemindedAt',
-  'deactivatedAt',
-  'deactivationReason',
-  'restoredAt',
-]
-const DELETION_ROWS = ['deletedAt', 'deletionReason']
 
 const { t } = useI18n()
 const router = useRouter()
@@ -176,6 +154,12 @@ onMounted(load)
         >
           <EntityDetailsList :rows="section.rows" />
         </Card>
+        <EntityPendingChangeCard
+          v-if="can(PERMISSIONS.ENTITIES_PROFILE_CHANGE_APPROVE)"
+          :key="`pending-${historyVersion}`"
+          :entity-id="entity.id"
+          @decided="onDone({ key: 'profile_change' })"
+        />
         <EntityLogoPreview
           v-if="isFullRecord"
           :logo="entity.logo ?? null"

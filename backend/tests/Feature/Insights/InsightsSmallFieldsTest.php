@@ -27,7 +27,7 @@ function executiveSummaryUrl(Assessment $assessment): string
 
 function withCleanLogo(Entity $entity): StoredFile
 {
-    uploadEntityLogo(ownerOf($entity), logoUpload(logoImageBytes()))->assertCreated();
+    uploadAndApproveLogo(ownerOf($entity), logoUpload(logoImageBytes()))->assertOk();
 
     return StoredFile::query()->findOrFail(Entity::query()->findOrFail($entity->id)->logo_file_id);
 }

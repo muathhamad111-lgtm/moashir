@@ -1,147 +1,436 @@
 {
-  "note": "Shared brand-scheme test vectors: BrandColorDeriver (Pest) and deriveBrandScheme (Vitest) must both produce these schemes.",
-  "vectors": [
-    {
-      "label": "brand default",
-      "primary": "#98d8d3",
-      "secondary": "#0a2325",
-      "overrides": {},
-      "scheme": {
-        "primary": "#98d8d3",
-        "on_primary": "#100f10",
-        "primary_text": "#547774",
-        "primary_hover": "#88c0bc",
-        "primary_soft": "#f5fbfb",
-        "secondary": "#0a2325",
-        "on_secondary": "#ffffff"
-      }
-    },
-    {
-      "label": "TTS default",
-      "primary": "#d4088c",
-      "secondary": "#4a2a7d",
-      "overrides": {},
-      "scheme": {
-        "primary": "#d4088c",
-        "on_primary": "#ffffff",
-        "primary_text": "#c90885",
-        "primary_hover": "#bc097d",
-        "primary_soft": "#fbe6f4",
-        "secondary": "#4a2a7d",
-        "on_secondary": "#ffffff"
-      }
-    },
-    {
-      "label": "light yellow",
-      "primary": "#ffe066",
-      "secondary": "#0a2325",
-      "overrides": {},
-      "scheme": {
-        "primary": "#ffe066",
-        "on_primary": "#100f10",
-        "primary_text": "#807033",
-        "primary_hover": "#e2c75c",
-        "primary_soft": "#fffcf0",
-        "secondary": "#0a2325",
-        "on_secondary": "#ffffff"
-      }
-    },
-    {
-      "label": "very light",
-      "primary": "#fff8e1",
-      "secondary": "#f0f0f0",
-      "overrides": {},
-      "scheme": {
-        "primary": "#fff8e1",
-        "on_primary": "#100f10",
-        "primary_text": "#737065",
-        "primary_hover": "#e2dcc8",
-        "primary_soft": "#fffefc",
-        "secondary": "#f0f0f0",
-        "on_secondary": "#100f10"
-      }
-    },
-    {
-      "label": "very dark",
-      "primary": "#050505",
-      "secondary": "#101010",
-      "overrides": {},
-      "scheme": {
-        "primary": "#050505",
-        "on_primary": "#ffffff",
-        "primary_text": "#050505",
-        "primary_hover": "#060606",
-        "primary_soft": "#e6e6e6",
-        "secondary": "#101010",
-        "on_secondary": "#ffffff"
-      }
-    },
-    {
-      "label": "mid tone",
-      "primary": "#777777",
-      "secondary": "#0a2325",
-      "overrides": {},
-      "scheme": {
-        "primary": "#777777",
-        "on_primary": "#ffffff",
-        "primary_text": "#6b6b6b",
-        "primary_hover": "#6b6b6b",
-        "primary_soft": "#f1f1f1",
-        "secondary": "#0a2325",
-        "on_secondary": "#ffffff"
-      }
-    },
-    {
-      "label": "blue",
-      "primary": "#1c5f9a",
-      "secondary": "#12263a",
-      "overrides": {},
-      "scheme": {
-        "primary": "#1c5f9a",
-        "on_primary": "#ffffff",
-        "primary_text": "#1c5f9a",
-        "primary_hover": "#1b5589",
-        "primary_soft": "#e8eff5",
-        "secondary": "#12263a",
-        "on_secondary": "#ffffff"
-      }
-    },
-    {
-      "label": "overridden hover and soft",
-      "primary": "#98d8d3",
-      "secondary": "#0a2325",
-      "overrides": {
-        "primary_hover": "#7cc5bf",
-        "primary_soft": "#e6f4f3"
-      },
-      "scheme": {
-        "primary": "#98d8d3",
-        "on_primary": "#100f10",
-        "primary_text": "#4c6c6a",
-        "primary_hover": "#7cc5bf",
-        "primary_soft": "#e6f4f3",
-        "secondary": "#0a2325",
-        "on_secondary": "#ffffff"
-      }
-    },
-    {
-      "label": "overridden text colours",
-      "primary": "#1c5f9a",
-      "secondary": "#12263a",
-      "overrides": {
-        "on_primary": "#fffbe6",
-        "primary_text": "#0f3a60",
-        "on_secondary": "#d9f7f7"
-      },
-      "scheme": {
-        "primary": "#1c5f9a",
-        "on_primary": "#fffbe6",
-        "primary_text": "#0f3a60",
-        "primary_hover": "#1b5589",
-        "primary_soft": "#e8eff5",
-        "secondary": "#12263a",
-        "on_secondary": "#d9f7f7"
-      }
-    }
-  ]
+    "note": "Shared brand-scheme test vectors: BrandColorDeriver (Pest) and deriveBrandScheme (Vitest) must both produce these schemes.",
+    "vectors": [
+        {
+            "label": "brand default",
+            "primary": "#98d8d3",
+            "secondary": "#0a2325",
+            "overrides": [],
+            "scheme": {
+                "primary": "#98d8d3",
+                "on_primary": "#100f10",
+                "primary_text": "#547774",
+                "primary_hover": "#88c0bc",
+                "primary_soft": "#f5fbfb",
+                "secondary": "#0a2325",
+                "on_secondary": "#ffffff",
+                "rail_top": "#0a2325",
+                "rail_bottom": "#2b4d4d",
+                "rail_stops": [
+                    "#0a2325",
+                    "#0e282a",
+                    "#122d2f",
+                    "#163233",
+                    "#1a3738",
+                    "#1e3d3d",
+                    "#224243",
+                    "#274748",
+                    "#2b4d4d"
+                ],
+                "on_rail": "#ffffff",
+                "on_rail_muted": "#ffffff",
+                "rail_accent": "#fafdfd",
+                "rail_glow": 34
+            }
+        },
+        {
+            "label": "TTS default",
+            "primary": "#d4088c",
+            "secondary": "#4a2a7d",
+            "overrides": [],
+            "scheme": {
+                "primary": "#d4088c",
+                "on_primary": "#ffffff",
+                "primary_text": "#c90885",
+                "primary_hover": "#bc097d",
+                "primary_soft": "#fbe6f4",
+                "secondary": "#4a2a7d",
+                "on_secondary": "#ffffff",
+                "rail_top": "#4a2a7d",
+                "rail_bottom": "#6d2d82",
+                "rail_stops": [
+                    "#4a2a7d",
+                    "#4e2b7e",
+                    "#532b7e",
+                    "#572c7f",
+                    "#5c2c80",
+                    "#602c80",
+                    "#642d81",
+                    "#692d81",
+                    "#6d2d82"
+                ],
+                "on_rail": "#ffffff",
+                "on_rail_muted": "#d5c8de",
+                "rail_accent": "#f9b8d6",
+                "rail_glow": 40
+            }
+        },
+        {
+            "label": "light yellow",
+            "primary": "#ffe066",
+            "secondary": "#0a2325",
+            "overrides": [],
+            "scheme": {
+                "primary": "#ffe066",
+                "on_primary": "#100f10",
+                "primary_text": "#807033",
+                "primary_hover": "#e2c75c",
+                "primary_soft": "#fffcf0",
+                "secondary": "#0a2325",
+                "on_secondary": "#ffffff",
+                "rail_top": "#0a2325",
+                "rail_bottom": "#444f3a",
+                "rail_stops": [
+                    "#0a2325",
+                    "#122828",
+                    "#192e2b",
+                    "#20332d",
+                    "#273930",
+                    "#2e3e32",
+                    "#354435",
+                    "#3d4938",
+                    "#444f3a"
+                ],
+                "on_rail": "#ffffff",
+                "on_rail_muted": "#ffffff",
+                "rail_accent": "#fffef8",
+                "rail_glow": 28
+            }
+        },
+        {
+            "label": "very light",
+            "primary": "#fff8e1",
+            "secondary": "#f0f0f0",
+            "overrides": [],
+            "scheme": {
+                "primary": "#fff8e1",
+                "on_primary": "#100f10",
+                "primary_text": "#737065",
+                "primary_hover": "#e2dcc8",
+                "primary_soft": "#fffefc",
+                "secondary": "#f0f0f0",
+                "on_secondary": "#100f10",
+                "rail_top": "#f0f0f0",
+                "rail_bottom": "#f4f2ec",
+                "rail_stops": [
+                    "#f0f0f0",
+                    "#f0f0f0",
+                    "#f1f1ef",
+                    "#f1f1ef",
+                    "#f2f1ee",
+                    "#f2f1ee",
+                    "#f3f2ed",
+                    "#f3f2ed",
+                    "#f4f2ec"
+                ],
+                "on_rail": "#100f10",
+                "on_rail_muted": "#4f4e4e",
+                "rail_accent": "#706d64",
+                "rail_glow": 40
+            }
+        },
+        {
+            "label": "very dark",
+            "primary": "#050505",
+            "secondary": "#101010",
+            "overrides": [],
+            "scheme": {
+                "primary": "#050505",
+                "on_primary": "#ffffff",
+                "primary_text": "#050505",
+                "primary_hover": "#060606",
+                "primary_soft": "#e6e6e6",
+                "secondary": "#101010",
+                "on_secondary": "#ffffff",
+                "rail_top": "#101010",
+                "rail_bottom": "#0d0d0d",
+                "rail_stops": [
+                    "#101010",
+                    "#101010",
+                    "#0f0f0f",
+                    "#0f0f0f",
+                    "#0e0e0e",
+                    "#0e0e0e",
+                    "#0e0e0e",
+                    "#0d0d0d",
+                    "#0d0d0d"
+                ],
+                "on_rail": "#ffffff",
+                "on_rail_muted": "#bcbcbc",
+                "rail_accent": "#818181",
+                "rail_glow": 40
+            }
+        },
+        {
+            "label": "mid tone",
+            "primary": "#777777",
+            "secondary": "#0a2325",
+            "overrides": [],
+            "scheme": {
+                "primary": "#777777",
+                "on_primary": "#ffffff",
+                "primary_text": "#6b6b6b",
+                "primary_hover": "#6b6b6b",
+                "primary_soft": "#f1f1f1",
+                "secondary": "#0a2325",
+                "on_secondary": "#ffffff",
+                "rail_top": "#0a2325",
+                "rail_bottom": "#263739",
+                "rail_stops": [
+                    "#0a2325",
+                    "#0e2527",
+                    "#11282a",
+                    "#152a2c",
+                    "#182d2f",
+                    "#1c2f31",
+                    "#1f3234",
+                    "#233436",
+                    "#263739"
+                ],
+                "on_rail": "#ffffff",
+                "on_rail_muted": "#bec4c5",
+                "rail_accent": "#c6c6c6",
+                "rail_glow": 40
+            }
+        },
+        {
+            "label": "blue",
+            "primary": "#1c5f9a",
+            "secondary": "#12263a",
+            "overrides": [],
+            "scheme": {
+                "primary": "#1c5f9a",
+                "on_primary": "#ffffff",
+                "primary_text": "#1c5f9a",
+                "primary_hover": "#1b5589",
+                "primary_soft": "#e8eff5",
+                "secondary": "#12263a",
+                "on_secondary": "#ffffff",
+                "rail_top": "#12263a",
+                "rail_bottom": "#163451",
+                "rail_stops": [
+                    "#12263a",
+                    "#13283d",
+                    "#132940",
+                    "#142b42",
+                    "#142d45",
+                    "#152f48",
+                    "#15304b",
+                    "#16324e",
+                    "#163451"
+                ],
+                "on_rail": "#ffffff",
+                "on_rail_muted": "#bdc4cb",
+                "rail_accent": "#9ab6d3",
+                "rail_glow": 40
+            }
+        },
+        {
+            "label": "overridden hover and soft",
+            "primary": "#98d8d3",
+            "secondary": "#0a2325",
+            "overrides": {
+                "primary_hover": "#7cc5bf",
+                "primary_soft": "#e6f4f3"
+            },
+            "scheme": {
+                "primary": "#98d8d3",
+                "on_primary": "#100f10",
+                "primary_text": "#4c6c6a",
+                "primary_hover": "#7cc5bf",
+                "primary_soft": "#e6f4f3",
+                "secondary": "#0a2325",
+                "on_secondary": "#ffffff",
+                "rail_top": "#0a2325",
+                "rail_bottom": "#2b4d4d",
+                "rail_stops": [
+                    "#0a2325",
+                    "#0e282a",
+                    "#122d2f",
+                    "#163233",
+                    "#1a3738",
+                    "#1e3d3d",
+                    "#224243",
+                    "#274748",
+                    "#2b4d4d"
+                ],
+                "on_rail": "#ffffff",
+                "on_rail_muted": "#ffffff",
+                "rail_accent": "#fafdfd",
+                "rail_glow": 34
+            }
+        },
+        {
+            "label": "overridden text colours",
+            "primary": "#1c5f9a",
+            "secondary": "#12263a",
+            "overrides": {
+                "on_primary": "#fffbe6",
+                "primary_text": "#0f3a60",
+                "on_secondary": "#d9f7f7"
+            },
+            "scheme": {
+                "primary": "#1c5f9a",
+                "on_primary": "#fffbe6",
+                "primary_text": "#0f3a60",
+                "primary_hover": "#1b5589",
+                "primary_soft": "#e8eff5",
+                "secondary": "#12263a",
+                "on_secondary": "#d9f7f7",
+                "rail_top": "#12263a",
+                "rail_bottom": "#163451",
+                "rail_stops": [
+                    "#12263a",
+                    "#13283d",
+                    "#132940",
+                    "#142b42",
+                    "#142d45",
+                    "#152f48",
+                    "#15304b",
+                    "#16324e",
+                    "#163451"
+                ],
+                "on_rail": "#ffffff",
+                "on_rail_muted": "#bdc4cb",
+                "rail_accent": "#9ab6d3",
+                "rail_glow": 40
+            }
+        },
+        {
+            "label": "sidebar navy to teal",
+            "primary": "#98d8d3",
+            "secondary": "#0a2325",
+            "overrides": [],
+            "sidebar_top_color": "#1d2b4f",
+            "sidebar_bottom_color": "#3c6e71",
+            "scheme": {
+                "primary": "#98d8d3",
+                "on_primary": "#100f10",
+                "primary_text": "#547774",
+                "primary_hover": "#88c0bc",
+                "primary_soft": "#f5fbfb",
+                "secondary": "#0a2325",
+                "on_secondary": "#ffffff",
+                "rail_top": "#1d2b4f",
+                "rail_bottom": "#3c6e71",
+                "rail_stops": [
+                    "#1d2b4f",
+                    "#203353",
+                    "#243b58",
+                    "#28445c",
+                    "#2c4c60",
+                    "#305465",
+                    "#345d69",
+                    "#38656d",
+                    "#3c6e71"
+                ],
+                "on_rail": "#ffffff",
+                "on_rail_muted": "#ffffff",
+                "rail_accent": "#ffffff",
+                "rail_glow": 16
+            }
+        },
+        {
+            "label": "sidebar light pair",
+            "primary": "#98d8d3",
+            "secondary": "#0a2325",
+            "overrides": [],
+            "sidebar_top_color": "#f3f6f4",
+            "sidebar_bottom_color": "#cfe7e4",
+            "scheme": {
+                "primary": "#98d8d3",
+                "on_primary": "#100f10",
+                "primary_text": "#547774",
+                "primary_hover": "#88c0bc",
+                "primary_soft": "#f5fbfb",
+                "secondary": "#0a2325",
+                "on_secondary": "#ffffff",
+                "rail_top": "#f3f6f4",
+                "rail_bottom": "#cfe7e4",
+                "rail_stops": [
+                    "#f3f6f4",
+                    "#eff4f2",
+                    "#eaf2f0",
+                    "#e6f0ee",
+                    "#e1efec",
+                    "#ddedea",
+                    "#d8ebe8",
+                    "#d4e9e6",
+                    "#cfe7e4"
+                ],
+                "on_rail": "#100f10",
+                "on_rail_muted": "#4b4e4e",
+                "rail_accent": "#49605f",
+                "rail_glow": 40
+            }
+        },
+        {
+            "label": "sidebar dark and light, unreadable",
+            "primary": "#98d8d3",
+            "secondary": "#0a2325",
+            "overrides": [],
+            "sidebar_top_color": "#2b1055",
+            "sidebar_bottom_color": "#9fb8ec",
+            "scheme": {
+                "primary": "#98d8d3",
+                "on_primary": "#100f10",
+                "primary_text": "#547774",
+                "primary_hover": "#88c0bc",
+                "primary_soft": "#f5fbfb",
+                "secondary": "#0a2325",
+                "on_secondary": "#ffffff",
+                "rail_top": "#2b1055",
+                "rail_bottom": "#9fb8ec",
+                "rail_stops": [
+                    "#2b1055",
+                    "#382567",
+                    "#463979",
+                    "#544e8c",
+                    "#62629e",
+                    "#7177b1",
+                    "#808cc5",
+                    "#8fa2d8",
+                    "#9fb8ec"
+                ],
+                "on_rail": "#ffffff",
+                "on_rail_muted": "#ffffff",
+                "rail_accent": "#ffffff",
+                "rail_glow": 0
+            }
+        },
+        {
+            "label": "sidebar custom top only",
+            "primary": "#d9b44a",
+            "secondary": "#1d2b4f",
+            "overrides": [],
+            "sidebar_top_color": "#192138",
+            "sidebar_bottom_color": null,
+            "scheme": {
+                "primary": "#d9b44a",
+                "on_primary": "#100f10",
+                "primary_text": "#826c2c",
+                "primary_hover": "#c1a043",
+                "primary_soft": "#fbf8ed",
+                "secondary": "#1d2b4f",
+                "on_secondary": "#ffffff",
+                "rail_top": "#192138",
+                "rail_bottom": "#494e57",
+                "rail_stops": [
+                    "#192138",
+                    "#1f263c",
+                    "#242c40",
+                    "#2a3144",
+                    "#303748",
+                    "#363d4b",
+                    "#3c424f",
+                    "#434853",
+                    "#494e57"
+                ],
+                "on_rail": "#ffffff",
+                "on_rail_muted": "#ffffff",
+                "rail_accent": "#ffffff",
+                "rail_glow": 38
+            }
+        }
+    ]
 }

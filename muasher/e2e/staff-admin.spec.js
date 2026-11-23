@@ -4,6 +4,7 @@ import { seedSignedIn, seedScenario } from './support/session'
 import { settleFonts } from './support/screenshots'
 import { chooseNamed } from './support/dropdown'
 import { searchList } from './support/listFilters'
+import { scoreAndSaveEveryItem } from './support/reviewWork'
 
 const SHOTS = 'e2e/__screenshots__/37d'
 const VIEWPORTS = {
@@ -414,6 +415,8 @@ test.describe('staff certificate and review completion', () => {
   }, testInfo) => {
     await signIn(page, testInfo, USERS.assessor)
     await open(page, '/admin/requests/9108/review', '.review-header')
+    // «إكمال التقييم» shows only once every item is answered (operator, 2026-11-22).
+    await scoreAndSaveEveryItem(page)
     await page.locator('.station-row__button, .review-strip__step').last().click()
     await page.locator('[data-testid="review-complete"]').click()
     const dialog = page.getByRole('alertdialog')

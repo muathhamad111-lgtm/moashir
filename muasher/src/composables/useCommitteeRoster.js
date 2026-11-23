@@ -20,13 +20,19 @@ export function useCommitteeRoster(cycleId) {
   const isOpen = computed(
     () => !cycle.value || ROSTER_OPEN_CYCLE_STATUSES.includes(cycle.value.status),
   )
-  const canManage = computed(() => can(PERMISSIONS.AWARD_COMMITTEE_MANAGE) && isOpen.value)
+  // The API says whether this user manages THIS cycle's roster; an Award Secretary reads other cycles read-only.
+  const managesCycle = ref(false)
+  const canManage = computed(
+    () => can(PERMISSIONS.AWARD_COMMITTEE_MANAGE) && managesCycle.value && isOpen.value,
+  )
 
   async function load() {
     status.value = 'loading'
     errorMessage.value = ''
     try {
-      members.value = (await committeeService.listMembers(cycleId.value)).data
+      const envelope = await committeeService.listMembers(cycleId.value)
+      members.value = envelope.data
+      managesCycle.value = envelope.meta?.canManage === true
       status.value = members.value.length ? 'success' : 'empty'
     } catch (error) {
       errorMessage.value = errorMessageOf(error)

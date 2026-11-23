@@ -53,6 +53,7 @@ function isActive(item) {
     :aria-label="t('portal.nav.label')"
     data-testid="portal-side-nav"
   >
+    <span class="rail-glow" aria-hidden="true" />
     <SidebarIdentityCard :home-label="t('portal.brandHome')" :collapsed="collapsed" />
 
     <ul class="side-nav__list">

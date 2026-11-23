@@ -5,9 +5,15 @@ import { ACTORS, transition } from '../assessments/statusHistory'
 import { nowIso } from '../accredited/accreditedRecords'
 import { optionalReason, reasonError, trimmed } from '../accredited/accreditedValidation'
 import { ADVANCED_STATES, isAdvancedOpen } from './advancedStates'
-import { allCycles, runningCycle } from './cycleStore'
+import { allCycles } from './cycleStore'
 import { awardReject } from './awardRejection'
-import { announceCycleClosed, announceCycleOpened, announceSubmissionsClosed } from './awardNotices'
+import { assertMayStart, openBlockOf } from './cycleConcurrency'
+import {
+  announceCycleClosed,
+  announceCycleOpenDeferred,
+  announceCycleOpened,
+  announceSubmissionsClosed,
+} from './awardNotices'
 
 const CLOSABLE = [
   'submission-closed',
@@ -73,13 +79,18 @@ function closeWindow(cycle, at) {
   announceSubmissionsClosed(cycle)
 }
 
+function hasActiveAssessor(cycle) {
+  return cycle.initialAssessors.some((link) => link.isActive)
+}
+
 export function openCycle(user, cycle, body) {
   actionReason(user, body)
   assertStatus(cycle, ['draft'], 'open')
-  const other = runningCycle(cycle.id)
-  if (other) throw awardReject.anotherOpen(other.id)
   if (Date.parse(cycle.submissionEnd) <= Date.now())
     throw assessmentReject.coded(409, 'cycle.submission_window_passed')
+  if (!hasActiveAssessor(cycle))
+    throw assessmentReject.coded(422, 'cycle.no_initial_assessors', 'initialAssessorIds')
+  assertMayStart(cycle, 'submission-open')
   openSubmissions(cycle, nowIso())
   return cycle
 }
@@ -116,10 +127,10 @@ export function reopenCycle(user, cycle, body) {
   const error = reasonError(body.reason, { required: true, min: REOPEN_REASON_MIN })
   if (error) throw assessmentReject.validation({ reason: error })
   assertStatus(cycle, ['closed'], 'reopen')
-  const other = runningCycle(cycle.id)
-  if (other) throw awardReject.anotherOpen(other.id)
+  const target = cycle.closedFromStatus ?? 'submission-closed'
+  assertMayStart(cycle, target)
   Object.assign(cycle, {
-    status: cycle.closedFromStatus ?? 'submission-closed',
+    status: target,
     closedAt: null,
     updatedAt: nowIso(),
     reopenReason: trimmed(body.reason),
@@ -139,6 +150,10 @@ export function runAwardSchedule(now = Date.now()) {
         Date.parse(cycle.submissionStart) <= now &&
         Date.parse(cycle.submissionEnd) > now,
     )
-    .filter((cycle) => !runningCycle(cycle.id))
-    .forEach((cycle) => openSubmissions(cycle, at))
+    .filter(hasActiveAssessor)
+    .sort((a, b) => Date.parse(a.submissionStart) - Date.parse(b.submissionStart) || a.id - b.id)
+    .forEach((cycle) => {
+      if (openBlockOf(cycle)) announceCycleOpenDeferred(cycle, at)
+      else openSubmissions(cycle, at)
+    })
 }

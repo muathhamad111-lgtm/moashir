@@ -2,7 +2,7 @@ import { toAssessment, toEntitySummary } from './assessments'
 import { toAccreditedResult } from './accredited'
 import { toAssessorReview } from './review'
 import { toPlace } from './requests'
-import { toPriceQuote } from './paths'
+import { toOpenCycleOption, toPriceQuote } from './paths'
 
 function toPerson(raw) {
   if (!raw) return null
@@ -54,8 +54,27 @@ function toLinkedAssessor(raw) {
   return { id: raw.id ?? null, name: raw.name ?? null, isActive: raw.isActive === true }
 }
 
+function toOpenBlock(raw) {
+  if (!raw?.cycle) return null
+  return {
+    code: raw.code ?? null,
+    concurrency: raw.concurrency ?? null,
+    cycle: {
+      id: raw.cycle.id ?? null,
+      name: raw.cycle.name ?? null,
+      year: raw.cycle.year ?? null,
+      status: raw.cycle.status ?? null,
+    },
+  }
+}
+
 export function toCycleDetail(raw = {}) {
-  const detail = { ...toCycle(raw), canManage: raw.canManage === true }
+  const detail = {
+    ...toCycle(raw),
+    canManage: raw.canManage === true,
+    thresholdLocked: raw.thresholdLocked === true,
+    openBlock: toOpenBlock(raw.openBlock),
+  }
   if (!Object.hasOwn(raw, 'members'))
     return { ...detail, revealsStaff: false, members: [], initialAssessors: [] }
   return {
@@ -130,6 +149,7 @@ export function toAdvancedCurrent(raw = {}) {
     },
     request: toAdvancedRequest(raw.request),
     previous: toAdvancedRequest(raw.previous),
+    openCycles: (raw.openCycles ?? []).map(toOpenCycleOption),
   }
 }
 

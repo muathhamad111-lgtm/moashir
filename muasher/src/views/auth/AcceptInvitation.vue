@@ -11,6 +11,8 @@ import PasswordPolicyHints from '@/components/auth/PasswordPolicyHints.vue'
 import InvitationTokenState from '@/components/auth/InvitationTokenState.vue'
 import LegalConsentNote from '@/components/legal/LegalConsentNote.vue'
 import NationalIdField from '@/components/identity/NationalIdField.vue'
+import InvitationSteps from '@/components/auth/InvitationSteps.vue'
+import InvitationNdaStep from '@/components/auth/InvitationNdaStep.vue'
 import { useInvitationAcceptance } from '@/composables/useInvitationAcceptance'
 import { ROUTE_NAMES } from '@/constants/routeNames'
 
@@ -19,9 +21,8 @@ const props = defineProps({
 })
 
 const { t } = useI18n()
-const { form, status, terms, termsRequired, presetNationalId, load } = useInvitationAcceptance(
-  toRef(props, 'token'),
-)
+const { form, status, terms, termsRequired, presetNationalId, nda, onNdaStep, load } =
+  useInvitationAcceptance(toRef(props, 'token'))
 
 const isTokenState = computed(() => ['invalid', 'expired'].includes(status.value))
 
@@ -45,7 +46,20 @@ useHead({ title: () => t('auth.invitation.title') })
     />
     <InvitationTokenState v-else-if="isTokenState" :state="status" />
 
-    <form v-else class="auth-form__body" novalidate @submit.prevent="form.onSubmit">
+    <InvitationSteps v-if="nda && status === 'ready'" :current="onNdaStep ? 'nda' : 'password'" />
+    <InvitationNdaStep
+      v-if="nda && onNdaStep && status === 'ready'"
+      :agreement="nda"
+      :busy="form.submitting.value"
+      @accept="form.onSubmit"
+      @back="onNdaStep = false"
+    />
+    <form
+      v-else-if="status === 'ready'"
+      class="auth-form__body"
+      novalidate
+      @submit.prevent="form.onSubmit"
+    >
       <fieldset class="auth-form__group" :disabled="form.submitting.value">
         <FieldInput
           name="password"
@@ -96,7 +110,7 @@ useHead({ title: () => t('auth.invitation.title') })
       </fieldset>
       <div class="auth-form__actions">
         <BaseButton type="submit" variant="primary" :loading="form.submitting.value">
-          {{ t('auth.invitation.submit') }}
+          {{ t(nda ? 'nda.invitation.next' : 'auth.invitation.submit') }}
         </BaseButton>
       </div>
     </form>

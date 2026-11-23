@@ -42,7 +42,7 @@ function scoredRequestWithLogo(): array
     $assessor = assessorUser();
     $assessment = scoredAccreditedReview(publishedAccreditedCriteria(), $assessor);
     $owner = ownerOf($assessment->entity);
-    uploadEntityLogo($owner, logoUpload(logoImageBytes()))->assertCreated();
+    uploadAndApproveLogo($owner, logoUpload(logoImageBytes()))->assertOk();
 
     return ['assessment' => $assessment, 'assessor' => $assessor, 'owner' => $owner, 'logo_id' => (int) Entity::query()->findOrFail($assessment->entity_id)->logo_file_id];
 }
@@ -54,7 +54,8 @@ function completeReview(Assessment $assessment, User $assessor): Certificate
     return Certificate::query()->where('assessment_id', $assessment->id)->latest('id')->firstOrFail();
 }
 
-it('prints the entity logo beside the entity name of a certificate issued after the upload', function (): void {
+// Operator 2026-11-22: the certificate shows only the entity name; the logo kept at issue stays on record.
+it('keeps the entity logo on record at issue but never prints it on the certificate', function (): void {
     ['assessment' => $assessment, 'assessor' => $assessor, 'logo_id' => $logoId] = scoredRequestWithLogo();
 
     $certificate = completeReview($assessment, $assessor);
@@ -62,21 +63,21 @@ it('prints the entity logo beside the entity name of a certificate issued after 
     $html = app(DocumentHtmlComposer::class)->compose($document);
 
     expect($certificate->entity_logo_file_id)->toBe($logoId)
-        ->and($document->data['entity_logo'])->toBe(logoDataUri($logoId))
-        ->and($html)->toContain('<div class="certificate__entity-row">')
-        ->and($html)->toContain('<img class="certificate__entity-logo" src="'.logoDataUri($logoId).'"')
+        ->and($document->data)->not->toHaveKey('entity_logo')
+        ->and($html)->not->toContain(logoDataUri($logoId))
+        ->and($html)->not->toContain('certificate__entity-logo')
+        ->and($html)->toContain('<p class="certificate__entity">')
         ->and($html)->toContain('<img class="certificate__logo" src="data:image/svg+xml;base64,');
 });
 
-it('keeps the certificate layout unchanged when the entity has no logo', function (): void {
+it('prints the same layout when the entity has no logo', function (): void {
     ['certificate' => $certificate] = certifiedAccreditedRequest();
     $document = lastRenderedCertificate();
     $html = app(DocumentHtmlComposer::class)->compose($document);
 
     expect($certificate->entity_logo_file_id)->toBeNull()
-        ->and($document->data['entity_logo'])->toBeNull()
-        ->and($html)->not->toContain('<img class="certificate__entity-logo"')
-        ->and($html)->not->toContain('<div class="certificate__entity-row">')
+        ->and($document->data)->not->toHaveKey('entity_logo')
+        ->and($html)->not->toContain('certificate__entity-logo')
         ->and($html)->toContain('<p class="certificate__entity">');
 });
 
@@ -86,22 +87,21 @@ it('never changes a stored certificate PDF when the logo changes later', functio
     $pdfFileId = $certificate->pdf_file_id;
     $pdf = storedFileBytes((int) $pdfFileId);
 
-    uploadEntityLogo($owner, logoUpload(logoImageBytes('jpeg'), 'شعار-محدث.jpg'))->assertCreated();
+    uploadAndApproveLogo($owner, logoUpload(logoImageBytes('jpeg'), 'شعار-محدث.jpg'))->assertOk();
 
     expect($certificate->refresh()->pdf_file_id)->toBe($pdfFileId)
         ->and(storedFileBytes((int) $pdfFileId))->toBe($pdf)
-        ->and($pdf)->toContain(trim((string) json_encode(base64_encode(storedFileBytes($logoId))), '"'))
         ->and($certificate->entity_logo_file_id)->toBe($logoId);
 });
 
-it('renders a deferred certificate PDF with the logo kept at issue after the logo was replaced and removed', function (): void {
+it('renders a deferred certificate PDF without any entity logo after the logo was replaced and removed', function (): void {
     $fake = app(FakePdfRenderer::class);
     app()->instance(PdfRenderer::class, new UnavailablePdfRenderer);
     ['assessment' => $assessment, 'assessor' => $assessor, 'owner' => $owner, 'logo_id' => $logoId] = scoredRequestWithLogo();
     $certificate = completeReview($assessment, $assessor);
 
-    uploadEntityLogo($owner, logoUpload(logoImageBytes('jpeg'), 'شعار-محدث.jpg'))->assertCreated();
-    switchTo($owner)->deleteJson('/api/v1/entities/me/logo')->assertOk()->assertJsonPath('data.logo', null);
+    uploadAndApproveLogo($owner, logoUpload(logoImageBytes('jpeg'), 'شعار-محدث.jpg'))->assertOk();
+    removeAndApproveLogo($owner)->assertOk()->assertJsonPath('data.logo', null);
 
     $kept = StoredFile::query()->findOrFail($logoId);
     expect($certificate->refresh()->pdf_file_id)->toBeNull()
@@ -111,13 +111,13 @@ it('renders a deferred certificate PDF with the logo kept at issue after the log
     app()->instance(PdfRenderer::class, $fake);
     switchTo($owner)->postJson("/api/v1/certificates/{$certificate->public_id}/download")->assertOk();
 
-    expect(lastRenderedCertificate()->data['entity_logo'])->toBe(logoDataUri($logoId));
+    expect(lastRenderedCertificate()->data)->not->toHaveKey('entity_logo');
 });
 
 it('re-issues the certificate with the current logo and keeps the previous one on the superseded certificate', function (): void {
     ['assessment' => $assessment, 'assessor' => $assessor, 'owner' => $owner, 'logo_id' => $firstLogoId] = scoredRequestWithLogo();
     $first = completeReview($assessment, $assessor);
-    uploadEntityLogo($owner, logoUpload(logoImageBytes('jpeg'), 'شعار-محدث.jpg'))->assertCreated();
+    uploadAndApproveLogo($owner, logoUpload(logoImageBytes('jpeg'), 'شعار-محدث.jpg'))->assertOk();
     $currentLogoId = (int) Entity::query()->findOrFail($assessment->entity_id)->logo_file_id;
 
     $reissuedId = switchTo(systemAdmin())->postJson("/api/v1/certificates/{$first->public_id}/reissue", ['reason' => CERTIFICATE_REASON])
@@ -127,8 +127,7 @@ it('re-issues the certificate with the current logo and keeps the previous one o
 
     expect($reissued->entity_logo_file_id)->toBe($currentLogoId)
         ->and($first->refresh()->entity_logo_file_id)->toBe($firstLogoId)
-        ->and(StoredFile::query()->whereKey($firstLogoId)->exists())->toBeTrue()
-        ->and(lastRenderedCertificate()->data['entity_logo'])->toBe(logoDataUri($currentLogoId, 'image/jpeg'));
+        ->and(StoredFile::query()->whereKey($firstLogoId)->exists())->toBeTrue();
 });
 
 it('refuses to change the logo kept by an issued certificate in the database', function (): void {

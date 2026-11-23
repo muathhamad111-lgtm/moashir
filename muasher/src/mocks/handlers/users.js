@@ -27,6 +27,8 @@ import {
   updateStaffUser,
   userResource,
 } from '../stores/staffUsers'
+import { currentNda } from '../stores/ndaCurrent'
+import { ndaScopeRoles, ndaStatusOf } from '../stores/ndaStore'
 
 const USERS = '/api/v1/users'
 const USER = `${USERS}/:user`
@@ -75,8 +77,21 @@ export const usersHandlers = [
       actorWith(PERMISSIONS.VIEW)
       const query = new URL(request.url).searchParams
       const { rows, stats } = listStaffUsers(query)
-      const { items, pagination } = paginate(rows, query)
-      return envelope(items.map(userResource), { pagination, stats })
+      const current = currentNda()
+      const visible =
+        query.get('filter[nda]') === 'pending'
+          ? rows.filter((user) => ndaStatusOf(user, current) === 'pending')
+          : rows
+      const { items, pagination } = paginate(visible, query)
+      return envelope(
+        items.map((user) => ({ ...userResource(user), ndaStatus: ndaStatusOf(user, current) })),
+        {
+          pagination,
+          stats,
+          ndaScopeRoles: ndaScopeRoles(),
+          ndaCurrentVersion: current?.version ?? null,
+        },
+      )
     }),
   ),
 

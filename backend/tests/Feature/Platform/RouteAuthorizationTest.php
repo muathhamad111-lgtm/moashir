@@ -31,6 +31,7 @@ const PUBLIC_API_ROUTES = [
     'webhooks.moyasar',
     'content.prices',
     'award.cycles.current',
+    'award.cycles.open-list',
     'content.status',
     'content.home',
     'content.landing',

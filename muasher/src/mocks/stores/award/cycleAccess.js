@@ -15,7 +15,7 @@ export const AWARD_PERMISSIONS = {
   ADVANCED_MANAGE: 'assessment.advanced.manage',
 }
 
-const GLOBAL_READERS = ['system_admin', 'request_follower']
+const GLOBAL_READERS = ['system_admin', 'request_follower', 'award_secretary']
 const SYSTEM_ADMIN = 'system_admin'
 
 function holds(user, roles) {

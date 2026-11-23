@@ -61,6 +61,15 @@ export default defineConfig([
   },
 
   {
+    // Live bug 2026-11-22: a template handler that the component never defined threw on click and did nothing.
+    name: 'app/template-defined-properties',
+    files: ['src/**/*.vue'],
+    rules: {
+      'vue/no-undef-properties': 'error',
+    },
+  },
+
+  {
     name: 'app/complexity-limits',
     files: ['src/**/*.{js,vue}'],
     ignores: ['src/mocks/**', 'src/test-utils/**', 'src/**/__tests__/**'],

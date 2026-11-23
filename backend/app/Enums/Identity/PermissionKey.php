@@ -19,6 +19,7 @@ enum PermissionKey: string
     case EntitiesReactivate = 'entities.reactivate';
     case EntitiesVerificationResend = 'entities.verification.resend';
     case EntitiesEmailChangeApprove = 'entities.email_change.approve';
+    case EntitiesProfileChangeApprove = 'entities.profile_change.approve';
     case EntitiesDelete = 'entities.delete';
     case EntitiesExport = 'entities.export';
 
@@ -35,6 +36,8 @@ enum PermissionKey: string
     case RequestsAssignedView = 'requests.assigned.view';
     case RequestsReviewRead = 'requests.review.read';
     case RequestsCompletionReturn = 'requests.completion.return';
+    case RequestsNotesRead = 'requests.notes.read';
+    case RequestsNotesWrite = 'requests.notes.write';
     case AssessmentScoreManage = 'assessment.score.manage';
     case AssessmentContextView = 'assessment.context.view';
 
@@ -109,6 +112,8 @@ enum PermissionKey: string
     case FinanceReceiptsManage = 'finance.receipts.manage';
     case FinanceTransfersReview = 'finance.transfers.review';
 
+    case NdaManage = 'nda.manage';
+
     private const array SYSTEM_ADMIN_ONLY = [
         self::SettingsAuthManage,
         self::SettingsBrandingManage,
@@ -116,6 +121,7 @@ enum PermissionKey: string
         self::SettingsSmsManage,
         self::SettingsEmailManage,
         self::AiProviderManage,
+        self::NdaManage,
     ];
 
     private const array GRANTABLE = [
@@ -124,6 +130,7 @@ enum PermissionKey: string
         'entities.reactivate',
         'entities.verification.resend',
         'entities.email_change.approve',
+        'entities.profile_change.approve',
         'users.identity_changes.review',
         'entities.delete',
         'bag.plan.approve',
@@ -197,6 +204,7 @@ enum PermissionKey: string
         'audit.' => PermissionModule::Admin,
         'settings.' => PermissionModule::Settings,
         'messaging.' => PermissionModule::Settings,
+        'nda.' => PermissionModule::Settings,
         'payments.' => PermissionModule::Finance,
         'finance.' => PermissionModule::Finance,
     ];

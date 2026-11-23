@@ -10,9 +10,10 @@
   padding: var(--space-5) var(--space-4);
   overflow-y: auto;
   border: var(--border-width) solid var(--sidebar-border);
-  border-radius: var(--card-radius);
+  border-radius: var(--sidebar-radius, var(--card-radius));
   background-color: var(--sidebar-bg);
   color: var(--sidebar-text);
+  @include sidebar-rail;
 
   &--collapsed {
     align-items: center;
@@ -90,6 +91,13 @@
     background-color: var(--sidebar-active-bg);
     color: var(--sidebar-active-text);
     font-weight: var(--fw-bold);
+    box-shadow: var(--sidebar-active-shadow, none);
+  }
+
+  // The light pill of the current page takes a dark ring drawn inside it.
+  &.is-active:focus-visible {
+    outline-color: var(--sidebar-active-text);
+    outline-offset: calc(-1 * var(--focus-ring-width));
   }
 
   &--collapsed {
@@ -114,7 +122,7 @@
   inline-size: var(--size-nav-dot);
   block-size: var(--size-nav-dot);
   border-radius: var(--radius-circle);
-  background-color: var(--brand-primary-text);
+  background-color: var(--sidebar-accent, var(--brand-primary-text));
 }
 
 .side-nav-item__label,

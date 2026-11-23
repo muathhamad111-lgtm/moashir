@@ -15,7 +15,7 @@ use App\Http\Middleware\ValidateDownloadSignature;
 use App\Models\Insights\MaturityInterpretation;
 use Illuminate\Support\Facades\Route;
 
-$signedIn = ['auth:sanctum', 'session.timeouts', 'mfa', 'password.current'];
+$signedIn = ['auth:sanctum', 'session.timeouts', 'mfa', 'password.current', 'nda.current'];
 $viewOwn = 'can:'.Ability::ViewOwnInsights->value;
 $viewEntity = 'can:'.Ability::ViewEntityInsights->value.',entity';
 $viewResult = 'can:'.Ability::ViewAssessmentInsights->value.',assessment';

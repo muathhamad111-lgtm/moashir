@@ -16,6 +16,9 @@ import { currentTerms } from '../stores/termsStore'
 import { findStaffUser } from '../stores/staffUsers'
 import { readJson } from '../stores/entityRejection'
 import { currentSessionUser } from '../stores/sessionStore'
+import { invitationNda, invitationNdaErrors } from '../stores/ndaInvitation'
+import { currentNda } from '../stores/ndaCurrent'
+import { recordNdaAcceptance } from '../stores/ndaStore'
 
 const EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 const LATENCY_MS = 200
@@ -159,6 +162,7 @@ export function passwordRecoveryHandlers({ continueSignIn }) {
       return envelope({
         usable: true,
         nationalIdMasked: maskNationalId(nationalIdOf(found.user.id)),
+        nda: invitationNda(found.user),
       })
     }),
 
@@ -170,6 +174,7 @@ export function passwordRecoveryHandlers({ continueSignIn }) {
       const fields = {
         ...passwordErrors(request, body, { withHistory: false }),
         ...termsErrors(request, body),
+        ...invitationNdaErrors(request, found.user, body),
       }
       const problem = body.nationalId ? nationalIdProblem(body.nationalId) : null
       if (problem)
@@ -178,6 +183,7 @@ export function passwordRecoveryHandlers({ continueSignIn }) {
         ]
       if (Object.keys(fields).length) return validationFailure(request, fields)
       if (body.nationalId) recordInviteeNationalId(found.user, normalizeNationalId(body.nationalId))
+      if (body.ndaVersionId) recordNdaAcceptance(found.user, currentNda(), body.ndaVersionId)
       found.user.status = 'active'
       return continueSignIn({ kind: 'staff', record: { ...found.user, mfaEnrolled: false } })
     }),

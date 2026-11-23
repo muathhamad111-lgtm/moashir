@@ -13,5 +13,6 @@ final readonly class InvitationAcceptance
         public string $password,
         public ?TermsVersion $terms,
         public ?NationalId $nationalId,
+        public ?TermsVersion $nda = null,
     ) {}
 }

@@ -1,5 +1,6 @@
 import { financeState } from './finance/financeState'
 import { findCycle } from './award/cycleStore'
+import { listRequests } from './profileChangeRequests'
 const ROLE_ITEMS = {
   system_admin: [
     {
@@ -60,6 +61,12 @@ const ROLE_ITEMS = {
       severity: 'warning',
       link: '/admin/award/secretary',
     },
+    {
+      key: 'close_committee_discussions',
+      count: 1,
+      severity: 'info',
+      link: '/admin/award/secretary?status=committee_discussion',
+    },
   ],
   filtering_officer: [
     { key: 'decide_filtering', count: 4, severity: 'warning', link: '/admin/award/filtering' },
@@ -92,11 +99,28 @@ function lateAwardItems(roles) {
     : []
 }
 
+const PROFILE_CHANGES_LINK = '/admin/entities/profile-changes'
+
+function profileChangeItems(roles) {
+  if (!roles.includes('system_admin')) return []
+  const count = listRequests({ status: 'pending' }).length
+  return count
+    ? [
+        {
+          key: 'review_entity_profile_changes',
+          count,
+          severity: 'warning',
+          link: PROFILE_CHANGES_LINK,
+        },
+      ]
+    : []
+}
+
 export function staffActionItems(roles) {
   const byKey = new Map()
   roles
     .flatMap((role) => ROLE_ITEMS[role] ?? [])
-    .concat(lateAwardItems(roles))
+    .concat(lateAwardItems(roles), profileChangeItems(roles))
     .forEach((raw) => byKey.set(raw.key, staffItem(raw)))
   return [...byKey.values()].sort(
     (left, right) => SEVERITY_RANK[left.severity] - SEVERITY_RANK[right.severity],

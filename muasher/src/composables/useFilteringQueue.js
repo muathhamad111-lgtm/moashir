@@ -4,11 +4,11 @@ import { awardCycleService } from '@/services/awardCycleService'
 import { filteringService } from '@/services/filteringService'
 import { DEFAULT_FILTERING_SORT } from '@/constants/advanced'
 
-export function useFilteringQueue(cycleId) {
+export function useFilteringQueue(cycleId, { status = '' } = {}) {
   const cycle = shallowRef(null)
   const list = useFinanceList({
     fetcher: (params) => filteringService.list(cycleId.value, params),
-    initialFilters: { status: '', regionId: '' },
+    initialFilters: { status, regionId: '' },
     sort: DEFAULT_FILTERING_SORT,
   })
   const summary = computed(() => (list.meta.value.counts ? list.meta.value : null))

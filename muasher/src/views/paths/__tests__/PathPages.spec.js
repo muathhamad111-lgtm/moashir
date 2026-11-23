@@ -8,6 +8,7 @@ import AccreditedRequest from '@/views/paths/AccreditedRequest.vue'
 import { dashboardService } from '@/services/dashboardService'
 import { accreditedService } from '@/services/accreditedService'
 import { pathsService } from '@/services/pathsService'
+import { advancedService } from '@/services/advancedService'
 import { useAuthStore } from '@/stores/auth'
 import { createTestGlobals } from '@/test-utils'
 import { sessionUserFor } from '@/test-utils/session'
@@ -20,6 +21,7 @@ vi.mock('@/services/pathsService', () => ({
   pathsService: { listRequests: vi.fn(), getRequest: vi.fn() },
 }))
 vi.mock('@/services/assessmentsService', () => ({ assessmentsService: { get: vi.fn() } }))
+vi.mock('@/services/advancedService', () => ({ advancedService: { apply: vi.fn() } }))
 
 const Q4 = {
   key: '2026-Q4',
@@ -139,6 +141,62 @@ describe('accredited path page', () => {
     )
     expect(wrapper.find('[data-testid="path-primary-action"]').exists()).toBe(false)
   })
+
+  // AJ-04: the entity applies from its path page and lands on the form, never on the public intro.
+  it('applies in place and lands on the award form', async () => {
+    dashboardService.getEntityBoard.mockResolvedValue({
+      data: board({}, { windowState: 'open', eligibility: { eligible: true, reason: null } }),
+    })
+    advancedService.apply.mockResolvedValue({ data: { id: 9310 } })
+    const wrapper = await mountAt(AwardPath, '/paths/award')
+    const action = wrapper.find('[data-testid="path-primary-action"]')
+    expect(action.element.tagName).toBe('BUTTON')
+    const push = vi.spyOn(wrapper.vm.$router, 'push').mockResolvedValue()
+    await action.trigger('click')
+    await flushPromises()
+    expect(advancedService.apply).toHaveBeenCalledWith({ awardCycleId: 3 })
+    expect(push).toHaveBeenCalledWith({ name: 'assessment.advanced.form', params: { id: 9310 } })
+  })
+
+  it('offers no apply action to an ineligible entity; the eligibility stays the server decision', async () => {
+    dashboardService.getEntityBoard.mockResolvedValue({
+      data: board({}, { windowState: 'open', eligibility: { eligible: false, reason: 'region' } }),
+    })
+    const wrapper = await mountAt(AwardPath, '/paths/award')
+    expect(wrapper.find('[data-testid="path-status-card"]').attributes('data-state')).toBe(
+      'notEligible',
+    )
+    expect(wrapper.find('[data-testid="path-primary-action"]').exists()).toBe(false)
+    expect(advancedService.apply).not.toHaveBeenCalled()
+  })
+
+  it('routes a paid cycle to the existing checkout when the server asks for payment', async () => {
+    dashboardService.getEntityBoard.mockResolvedValue({
+      data: board({}, { windowState: 'open', eligibility: { eligible: true, reason: null } }),
+    })
+    const payment = new Error('payment required')
+    payment.normalized = { status: 402, code: 'path.payment_required', meta: { awardCycleId: 3 } }
+    advancedService.apply.mockRejectedValue(payment)
+    const wrapper = await mountAt(AwardPath, '/paths/award')
+    const push = vi.spyOn(wrapper.vm.$router, 'push').mockResolvedValue()
+    await wrapper.find('[data-testid="path-primary-action"]').trigger('click')
+    await flushPromises()
+    expect(push).toHaveBeenCalledWith({ name: 'assessment.advanced.pay', query: { cycle: '3' } })
+  })
+
+  it('reloads the path after a conditions refusal so the header shows the reason', async () => {
+    dashboardService.getEntityBoard.mockResolvedValue({
+      data: board({}, { windowState: 'open', eligibility: { eligible: true, reason: null } }),
+    })
+    const refusal = new Error('refused')
+    refusal.normalized = { status: 422, code: 'cycle.conditions_failed', meta: { conditions: [] } }
+    advancedService.apply.mockRejectedValue(refusal)
+    const wrapper = await mountAt(AwardPath, '/paths/award')
+    const loads = dashboardService.getEntityBoard.mock.calls.length
+    await wrapper.find('[data-testid="path-primary-action"]').trigger('click')
+    await flushPromises()
+    expect(dashboardService.getEntityBoard.mock.calls.length).toBeGreaterThan(loads)
+  })
 })
 
 const SELF = {
@@ -200,6 +258,100 @@ describe('self path page (compact header)', () => {
 })
 
 describe('award path page', () => {
+  const OPEN_CYCLE = {
+    name: { ar: 'دورة الشمال', en: 'North cycle' },
+    year: 2026,
+    submissionStart: '2026-11-01T00:00:00+00:00',
+    submissionEnd: '2026-12-01T00:00:00+00:00',
+    regions: [{ id: 1, code: 'riyadh', name: { ar: 'الرياض', en: 'Riyadh' } }],
+    entryFee: { ...PRICE },
+    eligibility: { eligible: true, reason: null },
+    request: null,
+  }
+
+  function openCyclesBoard(openCycles) {
+    return board(
+      {},
+      {
+        windowState: 'open',
+        eligibility: { eligible: true, reason: null },
+        cycle: { ...OPEN_CYCLE, id: 41 },
+        openCycles,
+      },
+    )
+  }
+
+  const SEVERAL_OPEN = [
+    { ...OPEN_CYCLE, id: 41 },
+    {
+      ...OPEN_CYCLE,
+      id: 40,
+      name: { ar: 'دورة الجنوب', en: 'South cycle' },
+      eligibility: { eligible: false, reason: 'region' },
+    },
+    {
+      ...OPEN_CYCLE,
+      id: 39,
+      request: { id: 77, number: 'ADV-2026-00077', status: 'draft', isOpen: true },
+      eligibility: { eligible: false, reason: 'request_exists' },
+    },
+  ]
+
+  it('lists every open cycle with its own standing and applies to the cycle the entity picks', async () => {
+    dashboardService.getEntityBoard.mockResolvedValue({ data: openCyclesBoard(SEVERAL_OPEN) })
+    pathsService.listRequests.mockResolvedValue({ data: [], meta: {} })
+    advancedService.apply.mockResolvedValue({ data: { id: 9500 } })
+    const wrapper = await mountAt(AwardPath, '/paths/award', 'en')
+    const push = vi.spyOn(wrapper.vm.$router, 'push').mockResolvedValue()
+    const list = wrapper.find('[data-testid="award-open-cycles"]')
+    expect(list.findAll('.award-open-cycles__item')).toHaveLength(3)
+    const north = list.find('[data-testid="award-open-cycle-41"]')
+    expect(north.text()).toContain('North cycle')
+    expect(north.text()).toContain('Riyadh')
+    expect(north.attributes('aria-current')).toBe('true')
+    expect(
+      list
+        .find('[data-testid="award-open-cycle-40"] [data-testid="award-open-cycle-apply"]')
+        .exists(),
+    ).toBe(false)
+    expect(
+      list
+        .find('[data-testid="award-open-cycle-39"] [data-testid="award-open-cycle-continue"]')
+        .attributes('href'),
+    ).toBe('/assessment/advanced/form/77')
+    await north.find('[data-testid="award-open-cycle-apply"]').trigger('click')
+    await flushPromises()
+    expect(advancedService.apply).toHaveBeenCalledWith({ awardCycleId: 41 })
+    expect(push).toHaveBeenCalledWith({ name: 'assessment.advanced.form', params: { id: 9500 } })
+  })
+
+  it('marks the cycle named in the notification link', async () => {
+    dashboardService.getEntityBoard.mockResolvedValue({ data: openCyclesBoard(SEVERAL_OPEN) })
+    pathsService.listRequests.mockResolvedValue({ data: [], meta: {} })
+    const wrapper = await mountAt(AwardPath, '/paths/award?cycle=40', 'en')
+    expect(wrapper.find('[data-testid="award-open-cycle-40"]').attributes('aria-current')).toBe(
+      'true',
+    )
+    expect(
+      wrapper.find('[data-testid="award-open-cycle-41"]').attributes('aria-current'),
+    ).toBeUndefined()
+  })
+
+  it("keeps today's single-cycle page when exactly one cycle is open and applies to it", async () => {
+    dashboardService.getEntityBoard.mockResolvedValue({
+      data: openCyclesBoard([{ ...OPEN_CYCLE, id: 41 }]),
+    })
+    pathsService.listRequests.mockResolvedValue({ data: [], meta: {} })
+    advancedService.apply.mockResolvedValue({ data: { id: 9501 } })
+    const wrapper = await mountAt(AwardPath, '/paths/award', 'en')
+    vi.spyOn(wrapper.vm.$router, 'push').mockResolvedValue()
+    expect(wrapper.find('[data-testid="award-open-cycles"]').exists()).toBe(false)
+    expect(wrapper.find('[data-testid="path-cycle-card"]').text()).toContain('North cycle')
+    await wrapper.find('[data-testid="path-primary-action"]').trigger('click')
+    await flushPromises()
+    expect(advancedService.apply).toHaveBeenCalledWith({ awardCycleId: 41 })
+  })
+
   it('shows the closed window with the next cycle date and no apply action', async () => {
     pathsService.listRequests.mockResolvedValue({ data: [], meta: {} })
     const wrapper = await mountAt(AwardPath, '/paths/award')

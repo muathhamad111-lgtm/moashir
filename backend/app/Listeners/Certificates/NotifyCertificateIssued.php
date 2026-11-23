@@ -6,6 +6,7 @@ namespace App\Listeners\Certificates;
 
 use App\Data\Entities\EntityNotice;
 use App\Data\Mail\CertificateSeal;
+use App\Enums\Certificates\CertificateKind;
 use App\Enums\Certificates\CertificateLevel;
 use App\Enums\Identity\RoleKey;
 use App\Enums\Notifications\NotificationCode;
@@ -22,6 +23,10 @@ final readonly class NotifyCertificateIssued
 
     public function handle(CertificateIssued $event): void
     {
+        if ($event->certificate->kind !== CertificateKind::Accredited) {
+            return;
+        }
+
         $certificate = $event->certificate->loadMissing('assessment.entity');
         $assessment = $certificate->assessment;
         $extra = ['certificate' => $certificate->number];

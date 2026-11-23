@@ -18,6 +18,18 @@ function reasonRulesOf(meta) {
   }
 }
 
+// For an award request the API says whether its cycle links any initial assessor, and gives the cycle to its managers.
+function awardCycleOf(meta) {
+  const cycle = meta?.awardCycle
+  if (!cycle) return null
+  return { hasInitialAssessors: cycle.hasInitialAssessors === true, cycleId: cycle.cycleId ?? null }
+}
+
+function emptyStatusOf(searched, awardCycle) {
+  if (searched) return 'noMatch'
+  return awardCycle && !awardCycle.hasInitialAssessors ? 'cycleUnlinked' : 'empty'
+}
+
 function isOutOfScope(error) {
   const normalized = error?.normalized ?? {}
   return normalized.status === NOT_FOUND || Boolean(normalized.fieldErrors?.assessmentId)
@@ -28,6 +40,7 @@ export function useAssignAssessor({ requestId }) {
   const status = ref('idle')
   const search = ref('')
   const reasonRules = ref(DEFAULT_REASON_RULES)
+  const awardCycle = ref(null)
   let timer = null
 
   async function loadAssessors() {
@@ -40,7 +53,8 @@ export function useAssignAssessor({ requestId }) {
       const { data, meta } = await requestsService.listAssessors(params)
       assessors.value = data
       reasonRules.value = reasonRulesOf(meta)
-      status.value = data.length ? 'ready' : 'empty'
+      awardCycle.value = awardCycleOf(meta)
+      status.value = data.length ? 'ready' : emptyStatusOf(Boolean(params.search), awardCycle.value)
     } catch (error) {
       assessors.value = []
       status.value = isOutOfScope(error) ? 'outOfScope' : 'error'
@@ -60,7 +74,7 @@ export function useAssignAssessor({ requestId }) {
 
   onBeforeUnmount(() => clearTimeout(timer))
 
-  return { assessors, status, search, reasonRules, loadAssessors, submit }
+  return { assessors, status, search, reasonRules, awardCycle, loadAssessors, submit }
 }
 
 export function assignmentFailureOf(error) {

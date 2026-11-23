@@ -37,6 +37,8 @@ final readonly class UpdateBrandingColors
                 'primary_color' => $colors->primary,
                 'secondary_color' => $colors->secondary,
                 'color_overrides' => $colors->overrides->toArray(),
+                'sidebar_top_color' => $colors->rail->top,
+                'sidebar_bottom_color' => $colors->rail->bottom,
                 'updated_by_user_id' => $actor->id,
             ])->save();
             $this->audit->record($theme, $before, 'colors');

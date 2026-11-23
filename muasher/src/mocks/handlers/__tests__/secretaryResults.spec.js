@@ -59,6 +59,31 @@ afterEach(() => {
 })
 afterAll(() => server.close())
 
+describe('secretary mock — every Award Secretary reads every cycle (operator 2026-11-22)', () => {
+  const OUTSIDER = { id: 777, roles: ['award_secretary'] }
+
+  it('opens the cycle, roster, desk and results read-only to a secretary of another cycle', async () => {
+    resetWorld('committee')
+    seedMockSession(OUTSIDER)
+    const cycles = (await call('GET', '/award/cycles')).body.data.map((row) => row.id)
+    expect(cycles).toContain(31)
+    expect((await call('GET', '/award/cycles/31/committee')).body.meta.can_manage).toBe(false)
+    expect((await call('GET', DESK)).status).toBe(200)
+    expect((await call('GET', `${DESK}/9205`)).body.meta.is_cycle_secretary).toBe(false)
+    expect((await call('GET', '/award/cycles/31/results')).body.meta.is_cycle_secretary).toBe(false)
+    expect((await call('POST', `${DESK}/9205/approve`, {})).status).toBe(403)
+    expect((await call('POST', '/award/cycles/31/announce', {})).status).toBe(403)
+  })
+
+  it('tells the cycle own secretary it acts on the cycle', async () => {
+    resetWorld('committee')
+    seedMockSession(P.SECRETARY)
+    expect((await call('GET', '/award/cycles/31/committee')).body.meta.can_manage).toBe(true)
+    expect((await call('GET', `${DESK}/9205`)).body.meta.is_cycle_secretary).toBe(true)
+    expect((await call('GET', '/award/cycles/31/results')).body.meta.is_cycle_secretary).toBe(true)
+  })
+})
+
 describe('secretary mock — desk', () => {
   it('lists the committee requests with counts and limits the readers', async () => {
     resetWorld('committee')
@@ -202,7 +227,12 @@ describe('results mock — regional, national and announcement', () => {
     seedMockSession(P.SECRETARY)
     const board = await call('GET', '/award/cycles/31/results')
     expect(keys(board.body.data[0])).toEqual(RESULT_ROW_KEYS)
-    expect(keys(board.body.meta)).toEqual(['cycle_status', 'national', 'regions'])
+    expect(keys(board.body.meta)).toEqual([
+      'cycle_status',
+      'is_cycle_secretary',
+      'national',
+      'regions',
+    ])
     expect(board.body.meta.regions.find((region) => region.id === 2)).toMatchObject({
       approved: true,
       total: 2,

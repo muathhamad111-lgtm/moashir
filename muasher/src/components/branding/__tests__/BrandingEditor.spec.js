@@ -82,6 +82,8 @@ describe('Visual identity editor (System Administrator)', () => {
       primaryColor: '#d4088c',
       secondaryColor: '#4a2a7d',
       colorOverrides: {},
+      sidebarTopColor: null,
+      sidebarBottomColor: null,
       reason: null,
     })
     expect(useBrandingStore().scheme).toMatchObject({ primary: '#d4088c', secondary: '#4a2a7d' })
@@ -150,6 +152,8 @@ describe('Visual identity editor (System Administrator)', () => {
       primaryColor: '#98d8d3',
       secondaryColor: '#0a2325',
       colorOverrides: { primarySoft: '#e6f4f3' },
+      sidebarTopColor: null,
+      sidebarBottomColor: null,
       reason: null,
     })
     expect(useBrandingStore().scheme.primarySoft).toBe('#e6f4f3')
@@ -195,11 +199,10 @@ describe('Visual identity editor (System Administrator)', () => {
     wrapper.unmount()
   })
 
-  it('shows the fixed colours read only and previews the back office and the portal', async () => {
+  it('shows no fixed-colours card and previews the back office and the portal', async () => {
     const { wrapper } = await mountView('ar')
-    expect(wrapper.find('.brand-fixed').text()).toContain('للعرض فقط')
-    expect(wrapper.findAll('.brand-fixed__item')).toHaveLength(11)
-    expect(wrapper.findAll('.brand-fixed input, .brand-fixed button')).toHaveLength(0)
+    expect(wrapper.find('.brand-fixed').exists()).toBe(false)
+    expect(wrapper.text()).not.toContain('ألوان ثابتة')
     const tabs = wrapper.findAll('.brand-preview [role="tab"]')
     expect(tabs.map((tab) => tab.text())).toEqual(['لوحة التحكم', 'بوابة الجهة'])
     expect(wrapper.find('.brand-preview__stage').attributes('aria-label')).toContain('لوحة التحكم')
@@ -396,6 +399,71 @@ describe('Visual identity editor (System Administrator)', () => {
     expect(brandingService.update).not.toHaveBeenCalled()
     const dialog = document.body.querySelector('.reason-dialog textarea')
     expect(dialog).not.toBeNull()
+    wrapper.unmount()
+  })
+
+  it('offers the two sidebar colours on auto, previews a chosen pair and saves it', async () => {
+    brandingService.update.mockImplementation((payload) =>
+      Promise.resolve({
+        data: {
+          ...theme().data,
+          rail: { top: payload.sidebarTopColor, bottom: payload.sidebarBottomColor },
+        },
+      }),
+    )
+    const { wrapper } = await mountView('en')
+    const card = wrapper.find('.brand-rail')
+    const fields = card.findAll('.brand-rail-field')
+    expect(fields.map((field) => field.attributes('data-role'))).toEqual(['top', 'bottom'])
+    expect(fields[0].find('input[type="text"]').element.value).toBe('#0a2325')
+    expect(fields[1].find('input[type="text"]').element.value).toBe('#2b4d4d')
+    expect(card.findAll('.badge').map((badge) => badge.text())).toEqual(['Auto', 'Auto'])
+    expect(wrapper.find('.brand-sample__nav--rail').exists()).toBe(true)
+
+    await fields[0].find('input[type="text"]').setValue('#1D2B4F')
+    await fields[1].find('input[type="text"]').setValue('#3c6e71')
+    expect(card.findAll('.badge').map((badge) => badge.text())).toEqual(['Custom', 'Custom'])
+    await wrapper.find('.branding-page__actions .btn--primary').trigger('click')
+    await flushPromises()
+    expect(brandingService.update).toHaveBeenCalledWith(
+      expect.objectContaining({ sidebarTopColor: '#1d2b4f', sidebarBottomColor: '#3c6e71' }),
+    )
+    wrapper.unmount()
+  })
+
+  it('swaps the sidebar colours and treats a colour equal to its automatic value as auto', async () => {
+    const { wrapper } = await mountView('en')
+    const card = wrapper.find('.brand-rail')
+    const save = wrapper.find('.branding-page__actions .btn--primary')
+    const fields = card.findAll('.brand-rail-field')
+    await card.find('.brand-rail__swap').trigger('click')
+    expect(fields[0].find('input[type="text"]').element.value).toBe('#2b4d4d')
+    expect(fields[1].find('input[type="text"]').element.value).toBe('#0a2325')
+    expect(save.attributes('disabled')).toBeUndefined()
+
+    await card.find('.brand-rail__swap').trigger('click')
+    expect(save.attributes('disabled')).toBeDefined()
+    await fields[0].find('input[type="text"]').setValue('#1d2b4f')
+    expect(save.attributes('disabled')).toBeUndefined()
+    await fields[0].find('input[type="text"]').setValue('#0A2325')
+    expect(save.attributes('disabled')).toBeDefined()
+    wrapper.unmount()
+  })
+
+  it('saves any two sidebar colours with no contrast check, and restores auto', async () => {
+    const { wrapper } = await mountView('en')
+    const card = wrapper.find('.brand-rail')
+    const fields = card.findAll('.brand-rail-field')
+    await fields[0].find('input[type="text"]').setValue('#2b1055')
+    await fields[1].find('input[type="text"]').setValue('#9fb8ec')
+    expect(card.find('[role="alert"]').exists()).toBe(false)
+    const save = wrapper.find('.branding-page__actions .btn--primary')
+    expect(save.attributes('disabled')).toBeUndefined()
+
+    await fields[0].find('.btn').trigger('click')
+    await fields[1].find('.btn').trigger('click')
+    expect(card.findAll('.badge').map((badge) => badge.text())).toEqual(['Auto', 'Auto'])
+    expect(save.attributes('disabled')).toBeDefined()
     wrapper.unmount()
   })
 

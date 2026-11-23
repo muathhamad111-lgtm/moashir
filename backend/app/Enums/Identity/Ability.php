@@ -24,6 +24,8 @@ enum Ability: string
     case ManageCertificateSettings = 'settings.certificates-section.manage';
     case ManageContactSettings = 'settings.contact-section.manage';
     case ManageAuthSettings = 'settings.auth-section.manage';
+    case ManageNda = 'settings.nda-section.manage';
+    case ViewAcceptedNda = 'identity.nda.view-accepted';
     case ViewReadinessDetails = 'platform.readiness.details';
     case IssueAccreditedCertificate = 'certificates.accredited-certificate.issue';
     case ViewFeedbackReport = 'reports.feedback-report.view';

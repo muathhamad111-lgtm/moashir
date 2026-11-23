@@ -87,6 +87,7 @@ describe('OTP step after the password', () => {
     expect(wrapper.text()).toContain('Code expires in 5:00')
     expect(wrapper.text()).toContain('Resend available in 60s')
     expect(wrapper.findAll('.otp-input__box')).toHaveLength(6)
+    expect(wrapper.find('[data-auth-autofocus] .otp-input__box').exists()).toBe(true)
     expect(wrapper.find('.auth-otp__tile').exists()).toBe(false)
     expect(wrapper.find('.auth-form__switch a').text()).toBe('Back to login')
   })
@@ -108,12 +109,60 @@ describe('OTP step after the password', () => {
     expect(replace).toHaveBeenCalledWith({ name: 'auth.login' })
   })
 
-  it('verifies the code and continues to the workspace', async () => {
+  it('verifies the code, shows it was accepted, then continues to the workspace', async () => {
     authService.verifyOtp.mockResolvedValue({ data: { step: 'authenticated', user: { id: 1 } } })
     const { wrapper, push } = await mountOtp()
     await typeCode(wrapper, '482913')
     expect(authService.verifyOtp).toHaveBeenCalledWith({ challengeId: 'c-1', code: '482913' })
+    expect(wrapper.find('.auth-otp__verified').text()).toBe('Verified')
+    expect(wrapper.find('.auth-otp__expiry').exists()).toBe(false)
+    const group = wrapper.find('.otp-input')
+    expect(group.classes()).toContain('is-verified')
+    expect(group.attributes('inert')).toBeDefined()
+    expect(wrapper.find('.otp-input__box').attributes('disabled')).toBeUndefined()
+    expect(push).not.toHaveBeenCalled()
+    await vi.waitFor(() => expect(push).toHaveBeenCalledWith({ name: 'app.dashboard' }), {
+      timeout: 2000,
+    })
+  })
+
+  it('continues at once without the accepted pause for reduced motion', async () => {
+    vi.stubGlobal('matchMedia', (query) => ({
+      matches: query.includes('prefers-reduced-motion'),
+      media: query,
+      addEventListener: () => {},
+      removeEventListener: () => {},
+    }))
+    authService.verifyOtp.mockResolvedValue({ data: { step: 'authenticated', user: { id: 1 } } })
+    const { wrapper, push } = await mountOtp()
+    await typeCode(wrapper, '482913')
     expect(push).toHaveBeenCalledWith({ name: 'app.dashboard' })
+    vi.unstubAllGlobals()
+  })
+
+  it('opens the code boxes in sequence and shows the resend ring during the cooldown', async () => {
+    const { wrapper } = await mountOtp()
+    expect(wrapper.find('.otp-input').classes()).toContain('otp-input--entrance')
+    const ring = wrapper.find('.auth-otp__cooldown .otp-resend-ring')
+    expect(ring.attributes('aria-hidden')).toBe('true')
+    expect(ring.find('.otp-resend-ring__fill').attributes('stroke-dashoffset')).toBe('0')
+  })
+
+  it.each([
+    ['otp.invalid', 422],
+    ['otp.expired', 422],
+    ['otp.attempts_exceeded', 429],
+    ['otp.challenge_invalid', 422],
+  ])('never shows the accepted state when the code is refused (%s)', async (code, status) => {
+    authService.verifyOtp.mockRejectedValue(rejection(status, code))
+    const { wrapper, push } = await mountOtp()
+    await typeCode(wrapper, '000000')
+    await new Promise((resolve) => setTimeout(resolve, 50))
+    await flushPromises()
+    expect(wrapper.find('.auth-otp__verified').exists()).toBe(false)
+    expect(wrapper.find('.otp-input.is-verified').exists()).toBe(false)
+    expect(wrapper.find('.auth-otp__tick').exists()).toBe(false)
+    expect(push).not.toHaveBeenCalled()
   })
 
   it('keeps a wrong code inline and lets the user try again', async () => {

@@ -33,6 +33,7 @@ require_once __DIR__.'/Support/dashboard-helpers.php';
 require_once __DIR__.'/Support/certificate-helpers.php';
 require_once __DIR__.'/Support/contact-helpers.php';
 require_once __DIR__.'/Support/entity-logo-helpers.php';
+require_once __DIR__.'/Support/profile-change-helpers.php';
 require_once __DIR__.'/Support/sign-in-helpers.php';
 require_once __DIR__.'/Support/insights-helpers.php';
 require_once __DIR__.'/Support/insights-unit-helpers.php';
@@ -40,6 +41,8 @@ require_once __DIR__.'/Support/demo-helpers.php';
 require_once __DIR__.'/Support/period-helpers.php';
 require_once __DIR__.'/Support/national-id-helpers.php';
 require_once __DIR__.'/Support/watermark-helpers.php';
+require_once __DIR__.'/Support/nda-helpers.php';
+require_once __DIR__.'/Support/review-note-helpers.php';
 
 pest()->extend(TestCase::class)->in('Feature', 'Unit');
 

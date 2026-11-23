@@ -33,6 +33,8 @@ const unapproving = ref(null)
 useHead({ title: () => t('award.results.title') })
 
 const locked = computed(() => national.value.approved)
+// Only this cycle's own Award Secretaries act on its results; others read them (API meta).
+const actsForCycle = computed(() => meta.value?.isCycleSecretary === true)
 const regions = computed(() =>
   (meta.value?.regions ?? []).filter((region) => region.total || region.pending),
 )
@@ -67,7 +69,7 @@ function unapprove(reason) {
     <AwardPageHeader
       :title="t('award.results.title')"
       :cycle="cycle"
-      :back="{ name: ROUTE_NAMES.AWARD_RESULTS }"
+      :back="{ name: ROUTE_NAMES.AWARD_RESULTS, query: { list: 1 } }"
       :back-label="t('award.common.backToCycles')"
     />
     <ResultsTabs :cycle-id="cycleId" />
@@ -102,8 +104,8 @@ function unapprove(reason) {
         :key="region.id"
         :region="region"
         :rows="rowsOf(region)"
-        :can-rank="can(PERMISSIONS.AWARD_RESULTS_RANK) && !locked"
-        :can-approve="can(PERMISSIONS.AWARD_RESULTS_APPROVE) && !locked"
+        :can-rank="actsForCycle && can(PERMISSIONS.AWARD_RESULTS_RANK) && !locked"
+        :can-approve="actsForCycle && can(PERMISSIONS.AWARD_RESULTS_APPROVE) && !locked"
         :can-unapprove="auth.isSuperAdmin && !locked"
         :busy="busy"
         @rank="board.setRank"

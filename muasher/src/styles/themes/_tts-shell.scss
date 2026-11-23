@@ -7,6 +7,13 @@
   --brand-primary-text: #{$tts-default-primary-text};
   --brand-secondary: #{$tts-default-secondary};
   --brand-on-secondary: #{$tts-default-on-secondary};
+  --brand-rail-top: #{$tts-default-rail-top};
+  --brand-rail-bottom: #{$tts-default-rail-bottom};
+  --brand-on-rail: #{$tts-default-on-rail};
+  --brand-on-rail-muted: #{$tts-default-on-rail-muted};
+  --brand-rail-accent: #{$tts-default-rail-accent};
+  --brand-rail-glow: #{$tts-default-rail-glow};
+  --brand-rail-gradient: #{tts-rail-gradient($tts-default-rail-stops)};
   --brand-primary-tint: color-mix(
     in srgb,
     var(--brand-primary) #{$tts-primary-tint},
@@ -68,19 +75,28 @@
   --data-ink: var(--brand-primary-text);
   --data-track: #{tts-neutral(50)};
 
-  --sidebar-bg: #{$tts-white};
-  --sidebar-border: #{tts-neutral(50)};
-  --sidebar-text: #{tts-neutral(600)};
-  --sidebar-caption: #{tts-neutral(500)};
-  --sidebar-hover-bg: #{tts-neutral(50)};
-  --sidebar-hover-text: #{tts-neutral(900)};
-  --sidebar-active-bg: var(--brand-primary);
-  --sidebar-active-text: var(--brand-on-primary);
-  --sidebar-count-bg: #{tts-neutral(50)};
-  --sidebar-focus-ring: var(--brand-primary-text);
-  --sidebar-divider: #{tts-neutral(50)};
-  --sidebar-path-accredited: var(--path-accredited-text);
-  --sidebar-path-advanced: var(--path-advanced-text);
+  // Look 3 (operator, 2026-11-22): a floating gradient rail in the brand's two sidebar colours,
+  // text derived to read on all of it, and the current page as a light inverted pill.
+  --sidebar-bg: var(--brand-rail-top);
+  --sidebar-gradient: var(--brand-rail-gradient);
+  --sidebar-glow: color-mix(in srgb, var(--brand-primary) var(--brand-rail-glow), transparent);
+  --sidebar-radius: #{$tts-radius-rail};
+  --sidebar-shadow: 0 22px 48px -22px color-mix(in srgb, var(--brand-rail-bottom) 85%, transparent);
+  --sidebar-border: transparent;
+  --sidebar-text: var(--brand-on-rail-muted);
+  --sidebar-caption: var(--brand-on-rail-muted);
+  --sidebar-hover-bg: color-mix(in srgb, var(--brand-on-rail) #{$tts-overlay-strong}, transparent);
+  --sidebar-hover-text: var(--brand-on-rail);
+  --sidebar-active-bg: #{$tts-white};
+  --sidebar-active-text: #{tts-neutral(900)};
+  --sidebar-active-shadow: 0 8px 20px -10px rgb(0 0 0 / 45%);
+  --sidebar-count-bg: color-mix(in srgb, var(--brand-on-rail) #{$tts-overlay-strong}, transparent);
+  --sidebar-focus-ring: var(--brand-on-rail);
+  --sidebar-divider: color-mix(in srgb, var(--brand-on-rail) 20%, transparent);
+  --sidebar-control-border: color-mix(in srgb, var(--brand-on-rail) 24%, transparent);
+  --sidebar-accent: var(--brand-rail-accent);
+  --sidebar-path-accredited: var(--brand-on-rail-muted);
+  --sidebar-path-advanced: var(--brand-on-rail-muted);
 
   --chart-series-1: #{list.nth($tts-chart-series, 1)};
   --chart-series-2: #{list.nth($tts-chart-series, 2)};

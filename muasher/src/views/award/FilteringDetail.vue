@@ -16,6 +16,7 @@ import FilteringFacts from '@/components/award/FilteringFacts.vue'
 import FilteringDecisionList from '@/components/award/FilteringDecisionList.vue'
 import FilteringDecisionDialog from '@/components/award/FilteringDecisionDialog.vue'
 import { useFilteringDetail } from '@/composables/useFilteringDetail'
+import { filteringWindowOf } from '@/utils/award/filteringWindow'
 import { useSignedDownload } from '@/composables/useSignedDownload'
 import { useToast } from '@/composables/useToast'
 import { evidenceService } from '@/services/evidenceService'
@@ -28,7 +29,8 @@ const toast = useToast()
 const cycleId = computed(() => Number(route.params.id))
 const assessmentId = computed(() => Number(route.params.assessment))
 const filtering = useFilteringDetail(cycleId, assessmentId)
-const { status, errorMessage, detail, row, windowOpen, mayDecide } = filtering
+const { status, errorMessage, detail, cycle, row, windowOpen, mayDecide } = filtering
+const windowState = computed(() => filteringWindowOf(cycle.value?.status))
 const downloads = useSignedDownload()
 const dialogMode = ref('')
 
@@ -82,58 +84,60 @@ onMounted(filtering.load)
       :title="t('filtering.detail.blockedTitle')"
       :message="errorMessage || t('filtering.detail.blockedMessage')"
     />
-    <div v-else-if="detail" class="request-detail__layout">
-      <div class="request-detail__main">
-        <AssessmentNotice
-          v-if="row.isFrozen"
-          variant="frozen"
-          :title="t('accredited.notices.frozen.title')"
-          :message="t('accredited.notices.frozen.message')"
+    <div v-else-if="detail" class="award-detail__body">
+      <AssessmentNotice
+        v-if="row.isFrozen"
+        variant="frozen"
+        :title="t('accredited.notices.frozen.title')"
+        :message="t('accredited.notices.frozen.message')"
+      />
+      <AssessmentNotice
+        v-if="!windowOpen && mayDecide"
+        variant="info"
+        :title="t(`filtering.window.${windowState}.title`)"
+        :message="t(`filtering.window.${windowState}.message`)"
+      />
+      <Card :title="t('filtering.detail.facts')"><FilteringFacts :detail="detail" /></Card>
+      <Card v-if="detail.result.available" :title="t('filtering.detail.result')">
+        <p class="filtering-detail__read-only" role="note">
+          {{ t('filtering.detail.readOnly') }}
+        </p>
+        <AccreditedFeedbackList :feedback="detail.result.feedback" />
+      </Card>
+      <Card :title="t('filtering.detail.evidence')">
+        <ReviewEvidenceList
+          :files="detail.review.evidence"
+          :downloading="downloads.busy"
+          @download="download"
         />
-        <AssessmentNotice
-          v-if="!windowOpen && mayDecide"
-          variant="info"
-          :title="t('filtering.window.title')"
-          :message="t('filtering.window.message')"
-        />
-        <Card :title="t('filtering.detail.facts')"><FilteringFacts :detail="detail" /></Card>
-        <Card v-if="detail.result.available" :title="t('filtering.detail.result')">
-          <p class="filtering-detail__read-only" role="note">
-            {{ t('filtering.detail.readOnly') }}
-          </p>
-          <AccreditedFeedbackList :feedback="detail.result.feedback" />
-        </Card>
-        <Card :title="t('filtering.detail.evidence')">
-          <ReviewEvidenceList
-            :files="detail.review.evidence"
-            :downloading="downloads.busy"
-            @download="download"
-          />
-        </Card>
+      </Card>
+      <details v-if="detail.decisions.length" class="award-detail__history card">
+        <summary>{{ t('filtering.detail.decisions') }} ({{ detail.decisions.length }})</summary>
+        <FilteringDecisionList :decisions="detail.decisions" />
+      </details>
+      <div
+        v-if="mayDecide"
+        class="filtering-actions award-action-bar review-actions--sticky"
+        role="group"
+        :aria-label="t('filtering.detail.decide')"
+      >
+        <div class="filtering-actions__buttons">
+          <BaseButton
+            variant="primary"
+            icon="check-circle"
+            :disabled="!windowOpen"
+            @click="dialogMode = 'qualify'"
+            >{{ t('filtering.decision.qualify.label') }}</BaseButton
+          >
+          <BaseButton
+            variant="danger"
+            icon="x"
+            :disabled="!windowOpen"
+            @click="dialogMode = 'disqualify'"
+            >{{ t('filtering.decision.disqualify.label') }}</BaseButton
+          >
+        </div>
       </div>
-      <aside class="request-detail__aside">
-        <Card v-if="mayDecide" class="filtering-actions" :title="t('filtering.detail.decide')">
-          <div class="filtering-actions__buttons">
-            <BaseButton
-              variant="primary"
-              icon="check-circle"
-              :disabled="!windowOpen"
-              @click="dialogMode = 'qualify'"
-              >{{ t('filtering.decision.qualify.label') }}</BaseButton
-            >
-            <BaseButton
-              variant="danger"
-              icon="x"
-              :disabled="!windowOpen"
-              @click="dialogMode = 'disqualify'"
-              >{{ t('filtering.decision.disqualify.label') }}</BaseButton
-            >
-          </div>
-        </Card>
-        <Card :title="t('filtering.detail.decisions')"
-          ><FilteringDecisionList :decisions="detail.decisions"
-        /></Card>
-      </aside>
     </div>
     <FilteringDecisionDialog
       v-if="detail && dialogMode"

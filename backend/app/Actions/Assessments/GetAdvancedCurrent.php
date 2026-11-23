@@ -14,23 +14,29 @@ use App\Models\Entities\Entity;
 use App\Models\Identity\User;
 use App\Services\Award\AdvancedEligibilityChecker;
 use App\Services\Award\CurrentCycleReader;
+use App\Services\Award\OpenCycleOptionsReader;
 use Illuminate\Support\Facades\Date;
 
 final readonly class GetAdvancedCurrent
 {
     private const array RELATIONS = ['entity', 'currentResult', 'awardCycle'];
 
-    public function __construct(private CurrentCycleReader $cycles, private AdvancedEligibilityChecker $eligibility) {}
+    public function __construct(
+        private CurrentCycleReader $cycles,
+        private AdvancedEligibilityChecker $eligibility,
+        private OpenCycleOptionsReader $openCycles,
+    ) {}
 
-    public function handle(User $actor): AdvancedCurrent
+    public function handle(User $actor, ?int $cycleId): AdvancedCurrent
     {
         $entity = Entity::withTrashed()->find($actor->entity_id) ?? throw AssessmentRejected::entityRequired();
-        $cycle = $this->cycles->running();
+        $cycle = $cycleId === null ? $this->cycles->running() : $this->cycles->runningById($cycleId);
 
         return new AdvancedCurrent(
             $this->eligibility->check($entity, $cycle, Date::now()),
             $cycle instanceof AwardCycle ? $this->requestIn($entity, $cycle) : null,
             $this->previousRequest($entity, $cycle),
+            $this->openCycles->forEntity($entity),
         );
     }
 

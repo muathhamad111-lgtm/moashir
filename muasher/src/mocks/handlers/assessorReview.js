@@ -37,6 +37,7 @@ import { previewOverride } from '../stores/accredited/overridePreview'
 import { isAdvanced } from '../stores/assessments/reviewedPaths'
 import { runAccreditedSchedule } from '../stores/accredited/scheduler'
 import { summaryResource } from '../stores/insights/assessorSummaries'
+import { reviewNotesResource, saveReviewNotes } from '../stores/accredited/reviewNotes'
 
 const ASSESSMENT = '/api/v1/assessments/:assessment'
 const NUMERIC_ID = /^\d+$/
@@ -110,6 +111,7 @@ export const assessorReviewHandlers = [
       authorizeReview(user, record)
       return envelope({
         ...reviewResource(record, { mode: reviewModeOf(user, record), context: contextOf(record) }),
+        ...reviewNotesResource(user, record),
         summary: isAdvanced(record) ? null : summaryResource(record.id),
       })
     }),
@@ -143,6 +145,15 @@ export const assessorReviewHandlers = [
       const record = boundRecord(params)
       authorizeScore(user, record)
       return envelope(feedbackResource(saveFeedbackItems(user, record, await readJson(request))))
+    }),
+  ),
+
+  http.put(
+    `${ASSESSMENT}/review-notes`,
+    numericRoute(async ({ params, request }) => {
+      const user = signedInActor()
+      const record = boundRecord(params)
+      return envelope(saveReviewNotes(user, record, await readJson(request)))
     }),
   ),
 

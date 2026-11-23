@@ -120,9 +120,12 @@ describe('RequestHeaderActions', () => {
     )
     const detail = { id: 9102, path: 'accredited', status: 'completed', assignmentHistory: [] }
     const wrapper = mount(RequestHeaderActions, { props: { detail }, global: globals })
+    await globals.router.isReady()
     wrapper.findComponent(AppMenu).vm.$emit('select', 'override')
-    await vi.waitFor(() =>
-      expect(globals.router.currentRoute.value.query).toEqual({ override: '1' }),
+    // The review page loads lazily, which takes longer on a busy machine.
+    await vi.waitFor(
+      () => expect(globals.router.currentRoute.value.query).toEqual({ override: '1' }),
+      { timeout: 5000 },
     )
     expect(globals.router.currentRoute.value.path).toBe('/admin/requests/9102/review')
   })

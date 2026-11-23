@@ -344,6 +344,15 @@ test.describe('password recovery and invitations', () => {
     await expect(page.locator('.checkbox .field__error, .field__error').first()).toBeVisible()
     await page.locator('[name="termsAccepted"]').check()
     await page.locator('form button[type="submit"]').click()
+    const agreement = page.locator('[data-testid="invitation-nda"]')
+    await expect(agreement).toBeVisible()
+    const accept = page.locator('[data-testid="invitation-nda-accept"]')
+    await expect(accept).toBeDisabled()
+    await page.locator('[data-testid="nda-text"]').evaluate((text) => {
+      text.scrollTop = text.scrollHeight
+      text.dispatchEvent(new Event('scroll'))
+    })
+    await accept.click()
     await expect(page).toHaveURL(/\/auth\/mfa/)
   })
 })

@@ -25,7 +25,9 @@ export function useBrandingEditor({ auto = true } = {}) {
   const busy = computed(() => saving.value || resetting.value)
   const hasPendingLogo = computed(() => LOGO_SURFACES.some((surface) => logos[surface].file.value))
   const isDirty = computed(() => draft.isChanged.value || hasPendingLogo.value)
-  const canSave = computed(() => isDirty.value && draft.hasValidColors.value && !busy.value)
+  const canSave = computed(
+    () => isDirty.value && draft.hasValidColors.value && draft.railValid.value && !busy.value,
+  )
   const previewLogos = computed(() =>
     bySurface(
       (surface) => logos[surface].previewUrl.value || logoForSurface(savedLogos.value, surface),

@@ -23,19 +23,41 @@ return [
     'certificate' => [
         'title' => 'شهادة التقييم المعتمد',
         'participation_title' => 'شهادة مشاركة',
-        'certifies' => 'تشهد منصة مؤشر بأن',
-        'completed' => 'قد أتمّت التقييم المعتمد وفق نموذج التميز في العمل الخيري',
-        'achieved' => 'وحصلت على نسبة',
-        'level' => 'محققةً',
+        'certifies' => 'تشهد منصة مؤشر بإتمام',
+        'completed' => 'التقييم المعتمد وفق نموذج التميز في العمل الخيري',
+        'achieved' => 'بنسبة',
+        'level' => 'وتحقيق',
         'number' => 'رقم الشهادة',
-        'verification_code' => 'رمز التحقق',
         'issued_on' => 'تاريخ الإصدار',
         'request' => 'رقم الطلب',
         'verify_hint' => 'امسح الرمز للتحقق من صحة الشهادة',
-        'issued_electronically' => 'صدرت هذه الشهادة إلكترونيًا من منصة مؤشر، ويمكن التحقق من صحتها بمسح الرمز أو عبر صفحة التحقق.',
+        'issued_electronically' => 'صدرت هذه الشهادة إلكترونيًا من منصة مؤشر، ويمكن التحقق من صحتها بمسح الرمز.',
         'not_valid_for_verification' => 'غير صالحة للتحقق',
         'seal_alt' => 'ختم :level',
-        'entity_logo_alt' => 'شعار :entity',
+    ],
+
+    'award_certificate' => [
+        'titles' => [
+            'advanced_winner' => 'شهادة الفوز بالجائزة',
+            'advanced_qualified' => 'شهادة التأهل في الجائزة',
+            'advanced_participation' => 'شهادة المشاركة في الجائزة',
+        ],
+        'leads' => [
+            'advanced_winner' => 'تشهد منصة مؤشر بحصول',
+            'advanced_qualified' => 'تشهد منصة مؤشر بتأهّل',
+            'advanced_participation' => 'تشهد منصة مؤشر بمشاركة',
+        ],
+        'statements' => [
+            'regional_winner' => 'على المركز :rank في :region ضمن :cycle.',
+            'national_winner' => 'على المركز :national_rank على مستوى المملكة والمركز :rank في :region ضمن :cycle.',
+            'qualified' => 'لتقييم لجنة المقيّمين عن :region ضمن :cycle.',
+            'participation' => 'في :cycle وإتمام مرحلة التقييم الأولي.',
+        ],
+        'ranks' => [
+            1 => 'الأول',
+            2 => 'الثاني',
+            3 => 'الثالث',
+        ],
     ],
 
     'feedback_report' => [

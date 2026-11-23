@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Data\Settings;
 
+use App\Enums\Award\AwardCycleConcurrency;
 use App\Enums\Award\CommitteeEntityVisibility;
 use App\Enums\Criteria\ScaleKind;
 use App\Enums\Files\EvidenceFileType;
@@ -24,6 +25,7 @@ final readonly class AssessmentSettingsUpdate
         public ?CommitteeEntityVisibility $committeeVisibility = null,
         public ?int $generalMaxFileMegabytes = null,
         public ?ScaleKind $scaleKind = null,
+        public ?AwardCycleConcurrency $cycleConcurrency = null,
     ) {}
 
     /**
@@ -42,6 +44,7 @@ final readonly class AssessmentSettingsUpdate
             ...($this->advanced?->values() ?? []),
             SettingKey::CommitteeEntityDataVisibility->value => $this->committeeVisibility?->value,
             SettingKey::AssessmentScaleKind->value => $this->scaleKind?->value,
+            SettingKey::AwardCycleConcurrency->value => $this->cycleConcurrency?->value,
         ], static fn (mixed $value): bool => $value !== null);
     }
 

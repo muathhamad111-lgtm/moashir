@@ -91,5 +91,7 @@ const share = computed(() =>
       :confirming="round.confirming"
       @confirm="emit('confirm')"
     />
+    <!-- The indicator's internal note (operator 2026-11-22), filled by the sub-criterion card. -->
+    <slot />
   </li>
 </template>

@@ -10,6 +10,7 @@ defineProps({
   titleId: { type: String, required: true },
   editing: { type: Boolean, default: false },
   canEdit: { type: Boolean, default: false },
+  pending: { type: Boolean, default: false },
 })
 
 const emit = defineEmits(['edit'])
@@ -26,6 +27,10 @@ const { t } = useI18n()
         {{ t(`portal.profile.sections.${section.key}`) }}
       </h2>
       <ProfileSectionChip :state="section.state" :missing-count="section.missingCount" />
+      <span v-if="pending" class="profile-chip profile-chip--pending" data-testid="section-pending">
+        <AppIcon name="clock" />
+        {{ t('portal.profile.pendingChange.chip') }}
+      </span>
     </div>
     <span v-if="editing" class="profile-chip profile-chip--editing">
       <span class="profile-chip__dot" aria-hidden="true"></span>

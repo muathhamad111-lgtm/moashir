@@ -6,6 +6,7 @@ namespace App\Http\Requests\Settings;
 
 use App\Data\Settings\BrandColorOverrides;
 use App\Data\Settings\BrandColors;
+use App\Data\Settings\BrandRailColors;
 use App\Enums\Settings\DerivedBrandColor;
 use Illuminate\Foundation\Http\FormRequest;
 
@@ -23,6 +24,9 @@ final class UpdateBrandingRequest extends FormRequest
             'secondary_color' => ['required', 'string', self::HEX_RULE],
             'color_overrides' => ['sometimes', 'array:'.implode(',', DerivedBrandColor::keys())],
             'color_overrides.*' => ['required', 'string', self::HEX_RULE],
+            // Absent or null: the sidebar colour follows the brand colours.
+            'sidebar_top_color' => ['nullable', 'string', self::HEX_RULE],
+            'sidebar_bottom_color' => ['nullable', 'string', self::HEX_RULE],
             'reason' => ['nullable', 'string', 'min:10', 'max:1000'],
         ];
     }
@@ -33,12 +37,18 @@ final class UpdateBrandingRequest extends FormRequest
             $this->string('primary_color')->trim()->toString(),
             $this->string('secondary_color')->trim()->toString(),
             new BrandColorOverrides($this->overrides()),
+            new BrandRailColors($this->optionalColor('sidebar_top_color'), $this->optionalColor('sidebar_bottom_color')),
         );
     }
 
     public function reason(): ?string
     {
         return $this->filled('reason') ? $this->string('reason')->toString() : null;
+    }
+
+    private function optionalColor(string $field): ?string
+    {
+        return $this->filled($field) ? $this->string($field)->trim()->toString() : null;
     }
 
     /**

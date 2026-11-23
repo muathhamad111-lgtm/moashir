@@ -1,4 +1,4 @@
-import { acceptsApplications, covers, runningCycle } from './cycleStore'
+import { acceptsApplications, covers, currentCycle } from './cycleStore'
 
 const RIYADH_OFFSET_MS = 3 * 60 * 60 * 1000
 
@@ -23,7 +23,7 @@ function checksOf(entity, cycle, now) {
   ]
 }
 
-export function eligibilityOf(entity, cycle = runningCycle(), now = Date.now()) {
+export function eligibilityOf(entity, cycle = currentCycle(), now = Date.now()) {
   if (!cycle) return { cycle: null, windowOpen: false, checks: [] }
   return {
     cycle,

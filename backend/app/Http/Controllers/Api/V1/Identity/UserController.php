@@ -14,17 +14,24 @@ use App\Http\Requests\Identity\UpdateUserRequest;
 use App\Http\Resources\Identity\UserResource;
 use App\Http\Responses\ApiResponse;
 use App\Models\Identity\User;
+use App\Services\Nda\NdaStatusLookup;
 use Illuminate\Container\Attributes\CurrentUser;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Response;
 
 final class UserController
 {
-    public function index(IndexUsersRequest $request, ListStaffUsers $listUsers, SummarizeStaffUsers $summarize): JsonResponse
+    public function index(IndexUsersRequest $request, ListStaffUsers $listUsers, SummarizeStaffUsers $summarize, NdaStatusLookup $nda): JsonResponse
     {
         $filters = $request->filters();
+        $users = $listUsers->handle($filters);
+        $statuses = $nda->of(array_values($users->items()));
+        $items = array_map(static fn (User $user): array => [
+            ...new UserResource($user)->resolve($request),
+            'nda_status' => $statuses[$user->id]->value,
+        ], array_values($users->items()));
 
-        return ApiResponse::paginated($listUsers->handle($filters), UserResource::class, ['stats' => $summarize->handle($filters)]);
+        return ApiResponse::page($users, $items, ['stats' => $summarize->handle($filters), ...$nda->meta()]);
     }
 
     public function store(StoreUserRequest $request, #[CurrentUser] User $actor, InviteStaffUser $inviteUser): JsonResponse

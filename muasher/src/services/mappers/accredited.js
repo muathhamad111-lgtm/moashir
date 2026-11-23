@@ -87,7 +87,11 @@ export function toCvSheet(raw) {
 
 export function toAccreditedForm(raw = {}) {
   return {
-    assessment: { ...toAssessment(raw.assessment), ...toRequestPeriod(raw.assessment ?? {}) },
+    assessment: {
+      ...toAssessment(raw.assessment),
+      ...toRequestPeriod(raw.assessment ?? {}),
+      isPaid: Boolean(raw.assessment?.payment),
+    },
     criteria: raw.criteria ?? null,
     cv: toCvSheet(raw.cv),
     evidence: toEvidenceList(raw.evidence),
@@ -217,12 +221,19 @@ export function toServicePrices(raw = {}) {
   }
 }
 
+function toRunningCycles(raw) {
+  if (!raw) return null
+  return { running: raw.running ?? 0, openForSubmission: raw.openForSubmission ?? 0 }
+}
+
 export function toAssessmentSettings(raw = {}) {
   return {
     generalUploadMaxFileMb: raw.generalUploadMaxFileMb ?? null,
     advancedMinEntityAgeYears: raw.advancedMinEntityAgeYears ?? null,
     advancedDisqualificationScore: raw.advancedDisqualificationScore ?? null,
     committeeEntityDataVisibility: raw.committeeEntityDataVisibility ?? null,
+    advancedCycleConcurrency: raw.advancedCycleConcurrency ?? null,
+    runningCycles: toRunningCycles(raw.runningCycles),
     scaleKind: raw.scaleKind ?? null,
     publishedScaleKind: raw.publishedVersion?.scaleKind ?? null,
   }

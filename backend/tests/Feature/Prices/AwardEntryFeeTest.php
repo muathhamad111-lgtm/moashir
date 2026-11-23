@@ -2,12 +2,16 @@
 
 declare(strict_types=1);
 
+use App\Actions\Assessments\DeleteAdvancedDraft;
 use App\Contracts\Integrations\PaymentGateway;
 use App\Enums\Assessments\AdvancedAssessmentStatus;
+use App\Enums\Audit\AuditEvent;
 use App\Enums\Finance\PaymentChannel;
 use App\Enums\Finance\PaymentPurpose;
 use App\Enums\Finance\PaymentStatus;
+use App\Exceptions\Award\AwardRejected;
 use App\Models\Assessments\Assessment;
+use App\Models\Audit\Audit;
 use App\Models\Award\AwardCycle;
 use App\Models\Entities\Region;
 use App\Models\Finance\Payment;
@@ -172,4 +176,36 @@ it('opens a free award draft directly as built', function (): void {
     $cycle = openAwardCycle($version);
 
     applyForCycle(ownerOf(cycleEntity($cycle)), $cycle)->assertCreated()->assertJsonPath('data.status', 'draft')->assertJsonPath('data.award_cycle.id', $cycle->id);
+});
+
+it('refuses to delete a paid award draft, keeps it linked to its payment and returns it on a new application', function (): void {
+    ['cycle' => $cycle, 'owner' => $owner] = feeCycleWithEntity();
+    $created = startAwardPayment($owner, $cycle)->assertCreated();
+    $payment = Payment::query()->where('public_id', $created->json('data.id'))->sole();
+    verifyAs($owner, $payment, providerPaymentOf(app(PaymentGateway::class), $payment))->assertOk()->assertJsonPath('data.status', 'paid');
+    $draft = Assessment::query()->where('payment_id', $payment->id)->sole();
+
+    switchTo($owner)->deleteJson("/api/v1/assessments/{$draft->id}")->assertConflict()
+        ->assertJsonPath('code', 'award.paid_draft')
+        ->assertJsonPath('message', __('errors.award.paid_draft', [], 'ar'));
+
+    expect(Assessment::query()->whereKey($draft->id)->value('payment_id'))->toBe($payment->id)
+        ->and($payment->refresh()->status)->toBe(PaymentStatus::Paid);
+    applyForCycle($owner, $cycle)->assertOk()->assertJsonPath('data.id', $draft->id);
+});
+
+it('refuses the delete when the payment was linked after the request model was loaded, reading the locked row', function (): void {
+    ['cycle' => $cycle, 'owner' => $owner] = feeCycleWithEntity();
+    $created = startAwardPayment($owner, $cycle)->assertCreated();
+    $payment = Payment::query()->where('public_id', $created->json('data.id'))->sole();
+    verifyAs($owner, $payment, providerPaymentOf(app(PaymentGateway::class), $payment))->assertOk();
+    $draft = Assessment::query()->where('payment_id', $payment->id)->sole();
+    $boundBeforeTheLink = Assessment::query()->findOrFail($draft->id);
+    $boundBeforeTheLink->setRawAttributes([...$boundBeforeTheLink->getAttributes(), 'payment_id' => null], sync: true);
+
+    expect(fn () => app(DeleteAdvancedDraft::class)->handle($owner, $boundBeforeTheLink, null))
+        ->toThrow(AwardRejected::class);
+
+    expect(Assessment::query()->whereKey($draft->id)->value('payment_id'))->toBe($payment->id)
+        ->and(Audit::query()->where('event', AuditEvent::AwardDraftDeleted->value)->where('auditable_id', $draft->id)->exists())->toBeFalse();
 });

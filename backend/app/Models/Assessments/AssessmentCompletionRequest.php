@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Models\Assessments;
 
+use App\Enums\Assessments\AdvancedAssessmentStatus;
 use App\Enums\Assessments\CompletionExpiryOutcome;
 use App\Enums\Assessments\CompletionRequestStatus;
 use App\Models\Identity\User;
@@ -22,6 +23,8 @@ use Illuminate\Support\Carbon;
  * @property Carbon $deadline_at
  * @property CompletionExpiryOutcome $expiry_outcome
  * @property CompletionRequestStatus $status
+ * @property AdvancedAssessmentStatus|null $resumes_to
+ * @property int|null $review_days_remaining
  * @property int $requested_by_user_id
  * @property Carbon|null $resolved_at
  * @property Carbon $created_at
@@ -33,7 +36,7 @@ final class AssessmentCompletionRequest extends Model
     /**
      * @var list<string>
      */
-    protected $fillable = ['assessment_id', 'notes', 'items', 'deadline_at', 'expiry_outcome', 'status', 'requested_by_user_id'];
+    protected $fillable = ['assessment_id', 'notes', 'items', 'deadline_at', 'expiry_outcome', 'status', 'requested_by_user_id', 'resumes_to', 'review_days_remaining'];
 
     /**
      * @return array<string, string>
@@ -46,6 +49,8 @@ final class AssessmentCompletionRequest extends Model
             'deadline_at' => 'datetime',
             'expiry_outcome' => CompletionExpiryOutcome::class,
             'status' => CompletionRequestStatus::class,
+            'resumes_to' => AdvancedAssessmentStatus::class,
+            'review_days_remaining' => 'integer',
             'requested_by_user_id' => 'integer',
             'resolved_at' => 'datetime',
         ];

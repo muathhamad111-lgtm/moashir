@@ -33,7 +33,7 @@ use Illuminate\Support\Facades\Route;
 use Laravel\Sanctum\Http\Middleware\EnsureFrontendRequestsAreStateful;
 
 $payments = Payment::class;
-$signedIn = ['auth:sanctum', 'session.timeouts', 'mfa', 'password.current'];
+$signedIn = ['auth:sanctum', 'session.timeouts', 'mfa', 'password.current', 'nda.current'];
 
 Route::post('webhooks/moyasar', MoyasarWebhookController::class)
     ->withoutMiddleware([EnsureJsonRequest::class, EnsureFrontendRequestsAreStateful::class])

@@ -11,7 +11,6 @@ use App\Enums\Certificates\CertificateKind;
 use App\Enums\Certificates\CertificateStatus;
 use App\Events\Certificates\CertificateIssued;
 use App\Models\Certificates\Certificate;
-use App\Models\Entities\Entity;
 use App\Services\Audit\AuditRecorder;
 use App\Services\Periods\CertificateValidity;
 use Illuminate\Support\Facades\Date;
@@ -25,6 +24,7 @@ final readonly class CertificateIssuer
         private CertificateSnapshotBuilder $snapshots,
         private AuditRecorder $audit,
         private CertificateValidity $validity,
+        private CertificateEntityLogo $entityLogo,
     ) {}
 
     public function issue(CertificateIssue $issue): Certificate
@@ -50,7 +50,7 @@ final readonly class CertificateIssuer
             'issued_by_user_id' => $issue->issuedByUserId,
             'replaces_certificate_id' => $issue->replaces?->id,
             'reissue_reason' => $issue->reissueReason,
-            'entity_logo_file_id' => $this->currentLogoOf($issue->assessment->entity_id),
+            'entity_logo_file_id' => $this->entityLogo->currentFileIdOf($issue->assessment->entity_id),
             'valid_until' => $this->validUntilOf($issue),
         ]);
 
@@ -80,12 +80,5 @@ final readonly class CertificateIssuer
         $inherited = $issue->replaces?->valid_until;
 
         return ($inherited ?? $this->validity->validUntil($issue->assessment))?->toDateString();
-    }
-
-    private function currentLogoOf(int $entityId): ?int
-    {
-        $logoFileId = Entity::withTrashed()->whereKey($entityId)->sharedLock()->value('logo_file_id');
-
-        return is_int($logoFileId) ? $logoFileId : null;
     }
 }

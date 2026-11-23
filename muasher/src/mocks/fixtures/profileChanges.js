@@ -1,4 +1,6 @@
 export const PROFILE_FIELD_LABELS = Object.freeze({
+  logo: { ar: 'شعار الجهة', en: 'Entity logo' },
+  vat_certificate: { ar: 'شهادة التسجيل الضريبي', en: 'VAT registration certificate' },
   name: { ar: 'اسم الجهة', en: 'Entity name' },
   entity_type: { ar: 'نوع الجهة', en: 'Entity type' },
   development_sector: { ar: 'القطاع التنموي', en: 'Development sector' },

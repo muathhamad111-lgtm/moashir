@@ -28,6 +28,11 @@ export function isAchievement(type) {
   return type === SCORING_TYPES.ACHIEVEMENT
 }
 
+// The translation key of a saved achievement value: any value above zero is «متحقق».
+export function achievementKeyOf(rawValue) {
+  return toHundredths(normalizedRawValue(rawValue)) > 0 ? 'achieved' : 'notAchieved'
+}
+
 export function allowsRawValue(value, type) {
   if (!isRawScore(value) || !withinScale(value, maximumOf(type))) return false
   return !isAchievement(type) || toHundredths(normalizedRawValue(value)) % WHOLE === 0

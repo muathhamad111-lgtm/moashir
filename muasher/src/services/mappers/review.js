@@ -52,10 +52,39 @@ export function toAssessorReview(raw = {}) {
     evidence: toEvidenceList(raw.evidence),
     lateAttachmentKeys: raw.lateAttachmentKeys ?? [],
     feedback: toFeedbackSheet(raw.feedback),
+    ...toReviewNotes(raw),
     completionRequest: toCompletionRequest(raw.completionRequest),
     context: (raw.context ?? []).map(toContextItem),
     summary: toAssessorSummary(raw.summary),
     criteriaUpdate: toCriteriaUpdate(raw.criteriaUpdate),
+  }
+}
+
+function toNoteAuthor(raw = {}) {
+  return { id: raw.id ?? null, name: raw.name ?? '', role: raw.role ?? null }
+}
+
+function toReviewNote(raw) {
+  const { id, level, mainCriterionId, subCriterionId, guidingPointId } = raw
+  return {
+    id,
+    level,
+    mainCriterionId,
+    subCriterionId: subCriterionId ?? null,
+    guidingPointId: guidingPointId ?? null,
+    body: raw.body ?? '',
+    author: toNoteAuthor(raw.author),
+    isMine: Boolean(raw.isMine),
+    updatedAt: raw.updatedAt ?? null,
+  }
+}
+
+// Internal notes stay inside the platform (operator 2026-11-22); the API omits them for a viewer who
+// may not read them, so `reviewNotes` is null then rather than an empty list.
+export function toReviewNotes(raw = {}) {
+  return {
+    reviewNotes: Array.isArray(raw.reviewNotes) ? raw.reviewNotes.map(toReviewNote) : null,
+    canWriteReviewNotes: Boolean(raw.canWriteReviewNotes),
   }
 }
 

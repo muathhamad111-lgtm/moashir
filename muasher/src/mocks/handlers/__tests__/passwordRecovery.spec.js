@@ -92,6 +92,7 @@ describe('password recovery mock', () => {
     expect((await check('invite-sarah-whitfield-2026')).body.data).toEqual({
       usable: true,
       national_id_masked: null,
+      nda: expect.objectContaining({ id: 501, version: '1.0' }),
     })
     expect((await check('invite-expired-2026')).status).toBe(410)
     const used = await check('invite-used-2026')
@@ -105,11 +106,13 @@ describe('password recovery mock', () => {
         password: STRONG,
         password_confirmation: STRONG,
         terms_version_id: 3,
+        nda_version_id: 501,
         ...extra,
       })
     expect((await accept('invite-expired-2026')).status).toBe(410)
     expect((await accept('invite-used-2026')).body.code).toBe('invitation.invalid')
     expect((await accept('invite-sarah-whitfield-2026', { terms_version_id: 99 })).status).toBe(422)
+    expect((await accept('invite-sarah-whitfield-2026', { nda_version_id: null })).status).toBe(422)
     const activated = await accept('invite-sarah-whitfield-2026')
     expect(activated.body.data.step).toBe('mfa_enrollment')
     expect((await accept('invite-sarah-whitfield-2026')).status).toBe(404)

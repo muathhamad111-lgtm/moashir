@@ -299,8 +299,9 @@ describe('award cycles mock — create and edit', () => {
       200,
     )
     findCycle(31).members = findCycle(31).members.filter((member) => member.userId !== 18)
+    // Every Award Secretary reads every cycle (operator 2026-11-22), so a non-member edit is refused, not hidden.
     expect((await call('PUT', '/award/cycles/31', { announcement_at: inDays(131) })).status).toBe(
-      404,
+      403,
     )
     seedMockSession(FILTERING_OFFICER)
     expect((await call('PUT', '/award/cycles/31', { announcement_at: inDays(131) })).status).toBe(
@@ -341,8 +342,13 @@ describe('award cycles mock — create and edit', () => {
 })
 
 describe('award cycles mock — stages', () => {
-  it('refuses to open a draft while another cycle runs and opens it once the running one closes', async () => {
+  it('refuses to open a draft with no initial assessor first, then while another cycle runs, then opens it', async () => {
     seedMockSession(SYSTEM_ADMIN)
+    const unlinked = await call('POST', '/award/cycles/32/open', {})
+    expect(unlinked).toMatchObject({ status: 422, body: { code: 'cycle.no_initial_assessors' } })
+    expect(
+      (await call('PUT', '/award/cycles/32/initial-assessors', { assessor_ids: [10] })).status,
+    ).toBe(200)
     const refused = await call('POST', '/award/cycles/32/open', {})
     expect(refused).toMatchObject({
       status: 409,

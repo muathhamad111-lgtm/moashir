@@ -10,6 +10,7 @@ import { entitiesHandlers } from './entities'
 import { entityProfileChangesHandlers } from './entityProfileChanges'
 import { entityLifecycleHandlers } from './entityLifecycle'
 import { entityEmailChangesHandlers } from './entityEmailChanges'
+import { profileChangeRequestsHandlers } from './profileChangeRequests'
 import { regionsHandlers } from './regions'
 import { assessmentsHandlers } from './assessments'
 import { knowledgeBaseHandlers } from './settings'
@@ -58,6 +59,7 @@ import { certificateLevelsHandlers } from './certificateLevels'
 import { pathGuidesHandlers } from './pathGuides'
 import { legalHandlers } from './legal'
 import { legalVersionsHandlers } from './legalVersions'
+import { ndaHandlers } from './nda'
 import { auditLogsHandlers } from './auditLogs'
 
 export const handlers = [
@@ -68,6 +70,7 @@ export const handlers = [
   ...criteriaHandlers,
   ...legalHandlers,
   ...legalVersionsHandlers,
+  ...ndaHandlers,
   ...contentHandlers,
   ...certificateLevelsHandlers,
   ...pathGuidesHandlers,
@@ -80,6 +83,7 @@ export const handlers = [
   ...usersHandlers,
   ...authHandlers,
   ...entityEmailChangesHandlers,
+  ...profileChangeRequestsHandlers,
   ...entityLifecycleHandlers,
   ...entityProfileChangesHandlers,
   ...entitiesHandlers,

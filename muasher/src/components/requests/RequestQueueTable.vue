@@ -19,6 +19,7 @@ const props = defineProps({
   status: { type: String, required: true },
   errorMessage: { type: String, default: '' },
   showsRegion: { type: Boolean, default: false },
+  showsCycle: { type: Boolean, default: false },
   canAssign: { type: Boolean, default: false },
 })
 
@@ -27,6 +28,7 @@ const { t, locale } = useI18n()
 
 const columns = computed(() => [
   { key: 'number', label: t('requests.columns.number') },
+  ...(props.showsCycle ? [{ key: 'cycle', label: t('requests.columns.cycle') }] : []),
   ...(props.showsRegion ? [{ key: 'region', label: t('requests.columns.region') }] : []),
   { key: 'status', label: t('requests.columns.status') },
   { key: 'assessor', label: t('requests.columns.assessor') },
@@ -57,6 +59,10 @@ function detailRouteOf(item) {
     <template #cell-number="{ item }">
       <RequestQueueRequestCell :item="item" :to="detailRouteOf(item)" />
     </template>
+    <template #cell-cycle="{ item }"
+      >{{ item.awardCycle ? localizedText(item.awardCycle.name, locale) : '' }}
+      <bdi v-if="item.awardCycle?.year" class="u-ltr">{{ item.awardCycle.year }}</bdi></template
+    >
     <template #cell-region="{ item }">{{
       item.region ? localizedText(item.region.name, locale) : ''
     }}</template>

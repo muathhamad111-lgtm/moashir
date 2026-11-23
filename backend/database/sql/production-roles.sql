@@ -64,6 +64,10 @@ REVOKE UPDATE, TRUNCATE ON assessment_summaries FROM :"app_role";
 GRANT SELECT, INSERT, DELETE ON assessment_summaries TO :"app_role";
 GRANT UPDATE (superseded_at) ON assessment_summaries TO :"app_role";
 
+REVOKE UPDATE, TRUNCATE ON assessment_review_notes FROM :"app_role";
+GRANT SELECT, INSERT, DELETE ON assessment_review_notes TO :"app_role";
+GRANT UPDATE (superseded_at) ON assessment_review_notes TO :"app_role";
+
 REVOKE UPDATE, TRUNCATE ON assessment_assignments FROM :"app_role";
 GRANT SELECT, INSERT, DELETE ON assessment_assignments TO :"app_role";
 GRANT UPDATE (status, started_at, ended_at, end_reason, updated_at) ON assessment_assignments TO :"app_role";

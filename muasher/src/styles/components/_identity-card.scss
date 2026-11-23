@@ -22,7 +22,7 @@
 
   .identity-card__preview {
     padding: 0;
-    border: var(--border-width) solid var(--theme-border-strong);
+    border: var(--border-width) solid var(--sidebar-control-border, var(--theme-border-strong));
     border-radius: var(--btn-radius);
   }
 
@@ -72,9 +72,9 @@
   display: flex;
   align-items: stretch;
   min-block-size: var(--size-toolbar-control);
-  border: var(--border-width) solid var(--theme-border-strong);
+  border: var(--border-width) solid var(--sidebar-control-border, var(--theme-border-strong));
   border-radius: var(--btn-radius);
-  background-color: var(--sidebar-bg);
+  background-color: transparent;
   overflow: hidden;
 }
 
@@ -83,7 +83,7 @@
   @include flex(row, center, center, var(--space-2));
   border: 0;
   background-color: transparent;
-  color: var(--sidebar-hover-text);
+  color: var(--sidebar-accent, var(--sidebar-hover-text));
   font: inherit;
   font-size: var(--fs-sm);
   font-weight: var(--fw-medium);
@@ -115,7 +115,8 @@
 .identity-card__copy {
   flex-shrink: 0;
   inline-size: var(--size-toolbar-control);
-  border-inline-start: var(--border-width) solid var(--theme-border-strong);
+  border-inline-start: var(--border-width) solid
+    var(--sidebar-control-border, var(--theme-border-strong));
 }
 
 .identity-card__hint {

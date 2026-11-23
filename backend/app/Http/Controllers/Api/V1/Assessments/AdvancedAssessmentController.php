@@ -9,6 +9,7 @@ use App\Actions\Assessments\DeleteAdvancedDraft;
 use App\Actions\Assessments\GetAdvancedCurrent;
 use App\Http\Requests\Assessments\ApplyForAdvancedRequest;
 use App\Http\Requests\Assessments\AssessmentActionRequest;
+use App\Http\Requests\Assessments\ShowAdvancedCurrentRequest;
 use App\Http\Resources\Assessments\AdvancedCurrentResource;
 use App\Http\Resources\Assessments\AssessmentResource;
 use App\Http\Responses\ApiResponse;
@@ -20,9 +21,9 @@ use Illuminate\Http\Response;
 
 final class AdvancedAssessmentController
 {
-    public function current(#[CurrentUser] User $actor, GetAdvancedCurrent $current): JsonResponse
+    public function current(ShowAdvancedCurrentRequest $request, #[CurrentUser] User $actor, GetAdvancedCurrent $current): JsonResponse
     {
-        return ApiResponse::resource(new AdvancedCurrentResource($current->handle($actor)));
+        return ApiResponse::resource(new AdvancedCurrentResource($current->handle($actor, $request->cycleId())));
     }
 
     public function apply(ApplyForAdvancedRequest $request, #[CurrentUser] User $actor, ApplyForAdvanced $apply): JsonResponse

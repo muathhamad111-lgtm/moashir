@@ -20,6 +20,9 @@ const props = defineProps({
   errorMessage: { type: String, default: '' },
   // The current sort ("column" or "-column"); columns with a `sortKey` sort on click.
   sort: { type: String, default: '' },
+  // When the list itself is narrow (a phone, or a column beside a side panel), each row reads as a
+  // block of label/value lines: the first column as its title and the actions column last.
+  stacked: { type: Boolean, default: false },
 })
 
 const emit = defineEmits(['retry', 'sort'])
@@ -31,7 +34,7 @@ const ACTIONS_COLUMN = 'actions'
 const DATE_COLUMN_SUFFIX = 'At'
 
 function cellClass(column) {
-  if (column.key === ACTIONS_COLUMN) return 'table__cell--actions'
+  if (column.key === ACTIONS_COLUMN || column.action) return 'table__cell--actions'
   return column.date || column.key.endsWith(DATE_COLUMN_SUFFIX) ? 'table__cell--date' : null
 }
 
@@ -41,7 +44,7 @@ function keyOf(item, index) {
 </script>
 
 <template>
-  <div class="table-wrap">
+  <div class="table-wrap" :class="{ 'table-wrap--stacked': stacked }">
     <table
       v-if="status === 'loading' || status === 'success'"
       class="table"
@@ -68,6 +71,7 @@ function keyOf(item, index) {
               :key="column.key"
               class="table__cell"
               :class="cellClass(column)"
+              :data-label="stacked ? column.label : undefined"
             >
               <Skeleton variant="text" />
             </td>
@@ -80,8 +84,14 @@ function keyOf(item, index) {
               :key="column.key"
               class="table__cell"
               :class="cellClass(column)"
+              :data-label="stacked ? column.label : undefined"
             >
-              <slot :name="`cell-${column.key}`" :item="item">
+              <div v-if="stacked" class="table__value">
+                <slot :name="`cell-${column.key}`" :item="item">
+                  {{ item[column.key] }}
+                </slot>
+              </div>
+              <slot v-else :name="`cell-${column.key}`" :item="item">
                 {{ item[column.key] }}
               </slot>
             </td>

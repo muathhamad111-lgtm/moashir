@@ -618,3 +618,30 @@
   font-size: var(--fs-sm);
   color: var(--theme-text-muted);
 }
+
+// An achievement item marked «غير متحقق» reads red, so met and unmet items differ at a glance (operator 2026-11-22).
+// CSS only: the card follows the checked «غير متحقق» option of its own achievement control.
+.review-card.is-scored:has(
+    > .review-card__head .review-achievement__option--notAchieved[aria-checked='true']
+  ) {
+  border-color: var(--color-danger-light);
+
+  > .review-card__head {
+    background-color: var(--theme-danger-soft);
+  }
+
+  > .review-card__head .review-state.is-done {
+    border-color: var(--theme-danger-text);
+    background-color: var(--theme-danger-text);
+
+    svg {
+      display: none;
+    }
+
+    &::after {
+      content: '×';
+      font-weight: var(--fw-bold);
+      line-height: 1;
+    }
+  }
+}

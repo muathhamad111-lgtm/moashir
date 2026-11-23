@@ -24,7 +24,7 @@ Route::middleware('throttle:public')->group(function (): void {
     Route::get('kpi-types', [PublicKpiCatalogController::class, 'types'])->name('kpi-types.index');
 });
 
-Route::middleware(['auth:sanctum', 'session.timeouts', 'mfa', 'password.current', $manage])
+Route::middleware(['auth:sanctum', 'session.timeouts', 'mfa', 'password.current', 'nda.current', $manage])
     ->prefix('admin')
     ->name('admin.')
     ->group(function (): void {

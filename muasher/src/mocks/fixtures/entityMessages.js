@@ -74,6 +74,30 @@ export const entityMessages = {
     ar: 'يُغيَّر البريد الرسمي من «تغيير البريد» فقط.',
     en: 'The official e-mail is changed only through «Change e-mail».',
   },
+  'profile.change_amended': {
+    ar: 'عدّلت الجهة طلبها بعد فتحه. راجع التعديلات الحالية ثم قرّر مجددًا.',
+    en: 'The entity amended its request after you opened it. Review the current changes and decide again.',
+  },
+  'profile.change_stale': {
+    ar: 'تغيّرت البيانات المعتمدة لبعض الحقول بعد تقديم الطلب، فلا يمكن اعتمادها. ارفضها أو اطلب من الجهة إعادة تقديمها.',
+    en: 'The approved value of some fields changed after the request was submitted, so they cannot be approved. Reject them or ask the entity to submit them again.',
+  },
+  'profile.change_unknown_items': {
+    ar: 'اختر من التعديلات الموجودة في الطلب فقط.',
+    en: 'Choose only among the changes in this request.',
+  },
+  'profile.change_coupled_items': {
+    ar: 'المنطقة والمدينة، وكذلك التسجيل الضريبي والرقم الضريبي، تُعتمد معًا أو تُرفض معًا.',
+    en: 'Region and city, and VAT registration and VAT number, are approved or rejected together.',
+  },
+  'profile.change_reason_required': {
+    ar: 'اكتب سبب الرفض (10 أحرف على الأقل) عند رفض أي تعديل.',
+    en: 'Write the reason for rejection (at least 10 characters) when you reject any change.',
+  },
+  'profile.change_missing': {
+    ar: 'لا يوجد طلب تعديل بانتظار الاعتماد.',
+    en: 'There is no profile change awaiting approval.',
+  },
   'profile.section_stale': {
     ar: 'تغيّرت بيانات هذا القسم بعد فتحه. راجع القيم الحالية ثم احفظ مجددًا.',
     en: 'This section was changed after you opened it. Review the current values and save again.',

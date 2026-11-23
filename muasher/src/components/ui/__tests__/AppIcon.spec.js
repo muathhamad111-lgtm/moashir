@@ -46,9 +46,15 @@ describe('AppIcon', () => {
   })
 
   it('draws a pending icon with its stop-gap glyph under its own name', () => {
-    const svg = render({ name: 'award' })
-    expect(svg.attributes('data-icon')).toBe('award')
+    const svg = render({ name: 'flag' })
+    expect(svg.attributes('data-icon')).toBe('flag')
     expect(svg.find('path').attributes('d')).toBe(ICON_GLYPHS.star[0])
+  })
+
+  it('draws a delivered menu icon with its own glyph, not its old stop-gap', () => {
+    const svg = render({ name: 'award' })
+    expect(svg.find('path').attributes('d')).toBe(ICON_GLYPHS.award[0])
+    expect(svg.find('path').attributes('d')).not.toBe(ICON_GLYPHS.star[0])
   })
 
   it('draws the official brand logo, not the generic link glyph', () => {

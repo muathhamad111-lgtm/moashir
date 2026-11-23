@@ -99,7 +99,10 @@ function pendingChange(change) {
     : null
 }
 
-export function ownEntityResource(entity, { awaitingChange = null, canEdit = false } = {}) {
+export function ownEntityResource(
+  entity,
+  { awaitingChange = null, canEdit = false, pendingProfileChange = null } = {},
+) {
   return {
     ...entitySummary(entity),
     ...entityProfileOf(entity),
@@ -108,6 +111,7 @@ export function ownEntityResource(entity, { awaitingChange = null, canEdit = fal
     marketingConsent: entity.marketingConsentAt !== null,
     marketingConsentAt: entity.marketingConsentAt,
     pendingEmailChange: pendingChange(awaitingChange),
+    pendingProfileChange,
     logo: entity.logo ? { ...entity.logo } : null,
     canEdit,
     profileSections: profileSectionsOf(entity),

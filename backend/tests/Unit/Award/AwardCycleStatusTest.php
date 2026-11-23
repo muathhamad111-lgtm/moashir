@@ -26,7 +26,10 @@ it('tells which cycles run and which can close', function (): void {
         ->and(Status::SubmissionOpen->isClosable())->toBeFalse()
         ->and(Status::SubmissionClosed->isClosable())->toBeTrue()
         ->and(Status::SubmissionClosed->allowsFilteringDecisions())->toBeTrue()
-        ->and(Status::SubmissionOpen->allowsFilteringDecisions())->toBeFalse();
+        ->and(Status::SubmissionOpen->allowsFilteringDecisions())->toBeTrue()
+        ->and(Status::AwaitingSecretary->allowsFilteringDecisions())->toBeTrue()
+        ->and(Status::Draft->allowsFilteringDecisions())->toBeFalse()
+        ->and(Status::Approved->allowsFilteringDecisions())->toBeFalse();
 });
 
 it('locks the cycle fields by stage', function (Status $status, string $field, bool $editable): void {

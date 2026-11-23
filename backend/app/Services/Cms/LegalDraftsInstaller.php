@@ -26,7 +26,7 @@ final readonly class LegalDraftsInstaller
     {
         $textDrafts = 0;
 
-        foreach (TermsKind::cases() as $kind) {
+        foreach (TermsKind::legal() as $kind) {
             $textDrafts += $this->storeTextDraft($kind) ? 1 : 0;
         }
 

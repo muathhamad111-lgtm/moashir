@@ -18,12 +18,13 @@ const { deleting, deleteDraft } = useDraftDeletion()
 
 useHead({ title: () => t('advanced.form.title') })
 
-function backToIntro() {
-  router.push({ name: ROUTE_NAMES.ASSESSMENT_ADVANCED })
+// Back to the award path page inside the portal, never to the public intro (AJ-04).
+function backToPath() {
+  router.push({ name: ROUTE_NAMES.PATHS_AWARD })
 }
 
 async function onDelete(assessment) {
-  if (await deleteDraft(assessment)) backToIntro()
+  if (await deleteDraft(assessment)) backToPath()
 }
 </script>
 
@@ -41,11 +42,11 @@ async function onDelete(assessment) {
     <AccreditedFormWorkspace
       :key="assessmentId"
       :assessment-id="assessmentId"
-      @submitted="backToIntro"
+      @submitted="backToPath"
     >
       <template #extra-actions="{ assessment }">
         <BaseButton
-          v-if="assessment.status === ADVANCED_STATUSES.DRAFT"
+          v-if="assessment.status === ADVANCED_STATUSES.DRAFT && !assessment.isPaid"
           variant="danger"
           icon="trash"
           :loading="deleting"

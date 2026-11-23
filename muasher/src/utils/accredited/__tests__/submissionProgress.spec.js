@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import {
   STATION_STATES,
+  hasEntityInput,
   isSubComplete,
   stationsOf,
   submissionProgressOf,
@@ -94,5 +95,15 @@ describe('submission progress', () => {
   it('handles a form that is not loaded yet', () => {
     expect(stationsOf(null)).toEqual([])
     expect(submissionProgressOf(null)).toEqual({ total: 0, complete: 0, remaining: 0 })
+  })
+
+  it('sees no entity input on a fresh draft, even with every item missing', () => {
+    expect(hasEntityInput({ ...FORM, evidence: [], cv: { 21: '', 31: '   ' } })).toBe(false)
+    expect(hasEntityInput(null)).toBe(false)
+  })
+
+  it('sees entity input once a CV text is saved or any file is uploaded', () => {
+    expect(hasEntityInput({ ...FORM, evidence: [], cv: { 21: 'نبذة' } })).toBe(true)
+    expect(hasEntityInput({ ...FORM, evidence: [{ id: 'm1', mainCriterionId: 1 }] })).toBe(true)
   })
 })

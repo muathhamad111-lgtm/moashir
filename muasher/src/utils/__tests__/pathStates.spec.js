@@ -62,13 +62,21 @@ describe('path states (03 §19.2 header states)', () => {
       lastResult: null,
     }
     expect(awardStateOf(base)).toBe('eligible')
+    // AJ-04: the entity applies from its path page; the action runs there instead of leaving for the public intro.
+    expect(awardAction('eligible', base)).toMatchObject({
+      labelKey: 'paths.actions.applyAward',
+      run: 'applyAward',
+    })
+    expect(awardAction('eligible', base).to).toBeUndefined()
     expect(awardStateOf({ ...base, eligibility: { eligible: false, reason: 'region' } })).toBe(
       'notEligible',
     )
     expect(awardStateOf({ ...base, windowState: 'closed' })).toBe('closed')
     expect(awardStateOf({ ...base, windowState: 'upcoming' })).toBe('upcoming')
     expect(awardStateOf({ ...base, windowState: 'none' })).toBe('none')
-    expect(awardStateOf({ ...base, openRequest: { id: 5, status: 'submitted' } })).toBe('submitted')
+    expect(
+      awardStateOf({ ...base, openRequest: { id: 5, status: 'submitted', isOpen: true } }),
+    ).toBe('submitted')
     expect(awardAction('submitted', base)).toBeNull()
     expect(selfStateOf({ pricing: AVAILABLE, openDraft: { id: 3 } })).toBe('draft')
   })
@@ -78,7 +86,12 @@ describe('path states (03 §19.2 header states)', () => {
       pricing: AVAILABLE,
       windowState: 'open',
       eligibility: { eligible: true, reason: null },
-      openRequest: { id: 9201, number: 'ADV-2026-000001', status: 'needs-completion' },
+      openRequest: {
+        id: 9201,
+        number: 'ADV-2026-000001',
+        status: 'needs-completion',
+        isOpen: true,
+      },
     }
     const form = { name: 'assessment.advanced.form', params: { id: '9201' } }
     expect(awardStateOf(returned)).toBe('needsCompletion')
@@ -119,5 +132,58 @@ describe('isFreePath', () => {
       isFreePath({ pricing: { price: null, isFree: true, availability: 'unavailable' } }),
     ).toBe(false)
     expect(isFreePath(null)).toBe(false)
+  })
+
+  // AJ-21: the API sends the cycle's latest request whatever its state; only an open one drives the header.
+  describe('award header with a closed or rejected request of the cycle', () => {
+    const announcedBase = {
+      pricing: AVAILABLE,
+      windowState: 'closed',
+      eligibility: { eligible: false, reason: 'window_closed' },
+      awaitingPayment: null,
+      announced: true,
+      lastResult: { assessmentId: 9204, number: 'ADV-2026-000004' },
+    }
+
+    it('shows the announced result although the API still sends the closed request', () => {
+      const award = {
+        ...announcedBase,
+        openRequest: { id: 9204, status: 'national-winner', isOpen: false },
+      }
+      expect(awardStateOf(award)).toBe('announced')
+    })
+
+    it('lets an entity rejected on its conditions apply again once eligible', () => {
+      const award = {
+        pricing: AVAILABLE,
+        windowState: 'open',
+        eligibility: { eligible: true, reason: null },
+        awaitingPayment: null,
+        announced: false,
+        lastResult: null,
+        openRequest: { id: 9206, status: 'rejected-conditions', isOpen: false },
+      }
+      expect(awardStateOf(award)).toBe('eligible')
+    })
+
+    it('falls back to the window state after a withdrawal', () => {
+      const award = {
+        ...announcedBase,
+        announced: false,
+        lastResult: null,
+        openRequest: { id: 9205, status: 'withdrawn', isOpen: false },
+      }
+      expect(awardStateOf(award)).toBe('closed')
+    })
+
+    it('still follows an open request in review', () => {
+      const award = {
+        ...announcedBase,
+        announced: false,
+        windowState: 'open',
+        openRequest: { id: 9202, status: 'under-review', isOpen: true },
+      }
+      expect(awardStateOf(award)).toBe('submitted')
+    })
   })
 })

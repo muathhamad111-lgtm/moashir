@@ -180,7 +180,8 @@ test.describe('Award Secretary desk', () => {
     const errors = trackConsole(page)
     await signIn(page, testInfo, USERS.secretary, 'committee')
     await page.goto('/admin/award/secretary')
-    await page.locator('.cycle-table__link').first().click()
+    // One cycle in progress: the picker opens it directly (phase 1).
+    await expect(page).toHaveURL(/\/admin\/award\/cycles\/31\/secretary/)
     await expect(rows(page)).toHaveCount(3)
     await shot(page, 'secretary-desk', testInfo)
     await rows(page)
@@ -190,7 +191,7 @@ test.describe('Award Secretary desk', () => {
       .click()
     await expect(page.locator('.secretary-facts__percent')).toBeVisible()
     await page.locator('.secretary-evaluation__table, .filtering-actions').first().waitFor()
-    await page.locator('.request-detail__main .btn--ghost').first().click()
+    await page.locator('.award-detail__body .btn--ghost').first().click()
     await expect(page.locator('.secretary-evaluation__table')).toBeVisible()
     await page.keyboard.press('Escape')
     await shot(page, 'secretary-request', testInfo)
@@ -234,7 +235,8 @@ test.describe('Results and announcement', () => {
     const errors = trackConsole(page)
     await signIn(page, testInfo, USERS.secretary, 'results')
     await page.goto('/admin/award/results')
-    await page.locator('.cycle-table__link').first().click()
+    // One cycle in progress: the picker opens it directly (phase 1).
+    await expect(page).toHaveURL(/\/admin\/award\/cycles\/31\/results/)
     const riyadh = page
       .locator('.region-results')
       .filter({ hasText: text(testInfo, 'Riyadh', 'الرياض') })
@@ -268,12 +270,11 @@ test.describe('Results and announcement', () => {
   }, testInfo) => {
     const errors = trackConsole(page)
     await signIn(page, testInfo, USERS.ruwad, 'announced')
-    await page.goto('/assessment/advanced')
-    await page
-      .locator('.advanced-request__link', {
-        hasText: text(testInfo, 'View the award result', 'عرض نتيجة الجائزة'),
-      })
-      .click()
+    await page.goto('/paths/award')
+    await expect(page.locator('[data-testid="path-primary-action"]')).toContainText(
+      text(testInfo, 'View the award result', 'عرض نتيجة الجائزة'),
+    )
+    await page.locator('[data-testid="path-primary-action"]').click()
     await expect(page).toHaveURL(/\/assessment\/advanced\/result\/9204$/)
     await expect(page.locator('.award-outcome__title')).toHaveText(
       text(testInfo, 'National award winner', 'فائز بالجائزة على مستوى المملكة'),

@@ -20,22 +20,23 @@ use App\Models\Assessments\Assessment;
 use App\Models\Award\AwardCycle;
 use App\Models\Entities\Region;
 use App\Models\Identity\User;
+use App\Services\Award\CycleRoleScope;
 use App\Support\Award\AwardResultsMeta;
 use Illuminate\Container\Attributes\CurrentUser;
 use Illuminate\Http\JsonResponse;
 
 final readonly class AwardResultsController
 {
-    public function __construct(private ListAwardResults $results) {}
+    public function __construct(private ListAwardResults $results, private CycleRoleScope $roles) {}
 
-    public function regional(IndexAwardResultsRequest $request, AwardCycle $cycle): JsonResponse
+    public function regional(IndexAwardResultsRequest $request, AwardCycle $cycle, #[CurrentUser] User $viewer): JsonResponse
     {
-        return $this->board($cycle, RankStage::Regional, $request->regionId());
+        return $this->board($viewer, $cycle, RankStage::Regional, $request->regionId());
     }
 
-    public function national(AwardCycle $cycle): JsonResponse
+    public function national(AwardCycle $cycle, #[CurrentUser] User $viewer): JsonResponse
     {
-        return $this->board($cycle, RankStage::National, null);
+        return $this->board($viewer, $cycle, RankStage::National, null);
     }
 
     public function rankRegional(SetAwardRankRequest $request, AwardCycle $cycle, Assessment $assessment, #[CurrentUser] User $actor, SetAwardRank $rank): JsonResponse
@@ -52,27 +53,28 @@ final readonly class AwardResultsController
     {
         $approve->handle($actor, $cycle, $region, $request->reason());
 
-        return $this->board($cycle, RankStage::Regional, $region->id);
+        return $this->board($actor, $cycle, RankStage::Regional, $region->id);
     }
 
     public function unapproveRegion(UnapproveRegionRequest $request, AwardCycle $cycle, Region $region, #[CurrentUser] User $actor, UnapproveRegionResults $unapprove): JsonResponse
     {
         $unapprove->handle($actor, $cycle, $region, $request->reason());
 
-        return $this->board($cycle, RankStage::Regional, $region->id);
+        return $this->board($actor, $cycle, RankStage::Regional, $region->id);
     }
 
     public function approveNational(CycleActionRequest $request, AwardCycle $cycle, #[CurrentUser] User $actor, ApproveNationalResults $approve): JsonResponse
     {
         $approved = $approve->handle($actor, $cycle, $request->reason());
 
-        return $this->board($approved, RankStage::National, null);
+        return $this->board($actor, $approved, RankStage::National, null);
     }
 
-    private function board(AwardCycle $cycle, RankStage $stage, ?int $regionId): JsonResponse
+    private function board(User $viewer, AwardCycle $cycle, RankStage $stage, ?int $regionId): JsonResponse
     {
         $board = $this->results->handle($cycle->refresh()->load('regions'), $stage, $regionId);
+        $meta = [...AwardResultsMeta::of($board), 'is_cycle_secretary' => $this->roles->isCycleSecretary($viewer, $cycle)];
 
-        return ApiResponse::data(AwardResultRowResource::collection($board->rankings)->resolve(request()), meta: AwardResultsMeta::of($board));
+        return ApiResponse::data(AwardResultRowResource::collection($board->rankings)->resolve(request()), meta: $meta);
     }
 }

@@ -12,7 +12,7 @@ use App\Models\Contact\ContactMessage;
 use Illuminate\Support\Facades\Route;
 
 $messages = ContactMessage::class;
-$signedIn = ['auth:sanctum', 'session.timeouts', 'mfa', 'password.current'];
+$signedIn = ['auth:sanctum', 'session.timeouts', 'mfa', 'password.current', 'nda.current'];
 
 Route::post('contact-messages', SubmitContactMessageController::class)->middleware('throttle:contact-messages')->name('contact-messages.store');
 

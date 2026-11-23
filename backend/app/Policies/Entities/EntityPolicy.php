@@ -73,7 +73,19 @@ final readonly class EntityPolicy
             return $actor->entity_id === $entity->id && $this->viewOwn($actor) ? Response::allow() : Response::denyAsNotFound();
         }
 
-        return $actor->can('viewTransfers', Payment::class) ? Response::allow() : Response::denyAsNotFound();
+        return $actor->can('viewTransfers', Payment::class) || $this->approvesProfileChanges($actor) ? Response::allow() : Response::denyAsNotFound();
+    }
+
+    /**
+     * A logo or VAT certificate still waiting for approval: only the entity's own users and the approvers see it.
+     */
+    public function viewPendingProfileFile(User $actor, Entity $entity): Response
+    {
+        if ($actor->entity_id !== null) {
+            return $actor->entity_id === $entity->id && $this->viewOwn($actor) ? Response::allow() : Response::denyAsNotFound();
+        }
+
+        return $this->approvesProfileChanges($actor) ? Response::allow() : Response::denyAsNotFound();
     }
 
     public function viewProfileChanges(User $actor, Entity $entity): Response
@@ -130,6 +142,11 @@ final readonly class EntityPolicy
     public function export(User $actor): bool
     {
         return $actor->can(PermissionKey::EntitiesExport->value) && $this->scope->accessOf($actor) === EntityAccess::Full;
+    }
+
+    private function approvesProfileChanges(User $actor): bool
+    {
+        return $actor->can(PermissionKey::EntitiesProfileChangeApprove->value);
     }
 
     private function statusOfOwn(User $actor, ?Entity $entity): ?EntityStatus

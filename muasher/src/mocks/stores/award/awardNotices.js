@@ -16,7 +16,7 @@ export function announceCycleOpened(cycle) {
     ar: `فُتح التقديم في ${cycle.name.ar} لعام ${cycle.year}.`,
     en: `Submissions opened for ${cycle.name.en} ${cycle.year}.`,
   }
-  notify('ADV-01', 'entity', title, body, ENTITY_LINK)
+  notify('ADV-01', 'entity', title, body, `/paths/award?cycle=${cycle.id}`)
   notify('ADV-01', 'system_admin', title, body, `/admin/award/cycles/${cycle.id}`)
   notify('ADV-01', 'request_follower', title, body, '/admin/requests')
 }
@@ -165,6 +165,20 @@ export function announceCycleClosed(cycle) {
   }
   ;['system_admin', 'award_secretary'].forEach((role) =>
     notify('CYC-02', role, title, body, `/admin/award/cycles/${cycle.id}`),
+  )
+}
+
+export function announceCycleOpenDeferred(cycle, at) {
+  const day = at.slice(0, 10)
+  if (cycle.openDeferredOn === day) return
+  cycle.openDeferredOn = day
+  const title = { ar: 'لم تُفتح دورة الجائزة في موعدها', en: 'Award cycle not opened on schedule' }
+  const body = {
+    ar: `حلّ موعد فتح التقديم في ${cycle.name.ar} لعام ${cycle.year}، لكن إعداد تزامن دورات الجائزة لا يسمح بفتحها الآن، فتبقى مسودةً.`,
+    en: `${cycle.name.en} ${cycle.year} was due to open, but the award cycle concurrency setting does not allow it now, so it stays a draft.`,
+  }
+  ;['system_admin', 'award_secretary'].forEach((role) =>
+    notify('CYC-04', role, title, body, `/admin/award/cycles/${cycle.id}`),
   )
 }
 

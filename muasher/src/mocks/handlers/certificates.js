@@ -137,8 +137,10 @@ export const certificatesHandlers = [
     const owned = certificates.filter(
       (certificate) => certificate.entityId === Number(listedEntityId(query)),
     )
+    const kind = query.get('filter[kind]')
     const items = owned
       .filter((certificate) => !statuses.length || statuses.includes(certificate.status))
+      .filter((certificate) => !kind || certificate.kind === kind)
       .sort((a, b) => new Date(b.issuedAt) - new Date(a.issuedAt))
       .map(certificateResource)
     return envelope(items, {
@@ -179,6 +181,7 @@ export const certificatesHandlers = [
         levelLabel: hidden ? null : found.levelLabel,
         percent: hidden ? null : found.percent,
         entityName: found.entity.name,
+        award: found.award ?? null,
         issuedAt: found.issuedAt,
       },
     })

@@ -28,6 +28,7 @@ const columns = computed(() => [
 
 <template>
   <DataTable
+    stacked
     :columns="columns"
     :items="members"
     :status="status"

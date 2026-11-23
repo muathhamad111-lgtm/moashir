@@ -61,6 +61,7 @@ return [
         'vat_registered' => 'VAT registration',
         'vat_number' => 'VAT registration number',
         'vat_certificate' => 'VAT registration certificate',
+        'logo' => 'Entity logo',
     ],
 
     'export' => [

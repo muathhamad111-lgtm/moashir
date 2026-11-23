@@ -63,6 +63,12 @@ enum AuditEvent: string
     case TermsDraftCreated = 'terms.draft_created';
     case TermsDraftUpdated = 'terms.draft_updated';
     case TermsDraftDiscarded = 'terms.draft_discarded';
+    case NdaPublished = 'nda.published';
+    case NdaAccepted = 'nda.accepted';
+    case NdaScopeChanged = 'nda.scope_changed';
+    case NdaReminderDelayChanged = 'nda.reminder_delay_changed';
+    case NdaAcceptancesExported = 'nda.acceptances_exported';
+    case NdaReminderSent = 'nda.reminder_sent';
     case EntityRegistered = 'entity.registered';
     case EntityVerified = 'entity.verified';
     case EntityProfileUpdated = 'entity.profile_updated';
@@ -81,6 +87,9 @@ enum AuditEvent: string
     case EntityEmailChangeRejected = 'entity.email_change_rejected';
     case EntityEmailChangeApplied = 'entity.email_change_applied';
     case EntityEmailChangeCancelled = 'entity.email_change_cancelled';
+    case EntityProfileChangeSubmitted = 'entity.profile_change_submitted';
+    case EntityProfileChangeCancelled = 'entity.profile_change_cancelled';
+    case EntityProfileChangeDecided = 'entity.profile_change_decided';
     case EntitySoftDeleted = 'entity.soft_deleted';
     case EntityRestored = 'entity.restored';
     case EntityPermanentlyDeleted = 'security.entity.permanently_deleted';
@@ -107,6 +116,7 @@ enum AuditEvent: string
     case AssessmentReviewStarted = 'assessment.review_started';
     case AssessmentFeedbackSaved = 'assessment.feedback_saved';
     case AssessmentSummarySaved = 'assessment.summary_saved';
+    case AssessmentReviewNotesSaved = 'assessment.review_notes_saved';
     case AssessmentCompletionRequested = 'assessment.completion_requested';
     case AssessmentResubmitted = 'assessment.resubmitted';
     case AssessmentCompletionExpired = 'assessment.completion_expired';
@@ -124,10 +134,12 @@ enum AuditEvent: string
     case CycleMembersChanged = 'cycle.members_changed';
     case CycleInitialAssessorsChanged = 'cycle.initial_assessors_changed';
     case CycleOpened = 'cycle.opened';
+    case CycleOpenBlocked = 'cycle.open_blocked';
     case CycleSubmissionsClosed = 'cycle.submissions_closed';
     case CycleClosed = 'cycle.closed';
     case CycleReopened = 'cycle.reopened';
     case CycleRemindersSent = 'cycle.reminders_sent';
+    case CycleOpenDeferred = 'cycle.open_deferred';
     case AwardApplicationCreated = 'award.application_created';
     case AwardApplicationRejected = 'award.application_rejected';
     case AwardSubmitted = 'award.submitted';

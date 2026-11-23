@@ -31,6 +31,11 @@ final readonly class AwardPathSummary
         return ! $this->ineligibility instanceof AwardIneligibility;
     }
 
+    public function isApplicable(): bool
+    {
+        return $this->window === AwardWindowState::Open && $this->isEligible();
+    }
+
     public function isAnnounced(): bool
     {
         return $this->cycle?->isAnnounced() === true;

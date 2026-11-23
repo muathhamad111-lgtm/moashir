@@ -28,6 +28,11 @@ final class EntityLinks
         return self::STAFF_ROOT.'/email-changes';
     }
 
+    public static function profileChanges(): string
+    {
+        return self::STAFF_ROOT.'/profile-changes';
+    }
+
     public static function deletedEntities(): string
     {
         return self::STAFF_ROOT.'/deleted';

@@ -12,7 +12,7 @@ use App\Http\Controllers\Api\V1\Notifications\NotificationTypeController;
 use App\Models\Notifications\Notification;
 use Illuminate\Support\Facades\Route;
 
-Route::middleware(['auth:sanctum', 'session.timeouts', 'mfa', 'password.current'])->group(function (): void {
+Route::middleware(['auth:sanctum', 'session.timeouts', 'mfa', 'password.current', 'nda.current'])->group(function (): void {
     Route::prefix('notifications')->name('notifications.')->middleware('can:viewAny,'.Notification::class)->group(function (): void {
         Route::get('/', [NotificationController::class, 'index'])->name('index');
         Route::get('unread-count', [NotificationController::class, 'unreadCount'])->name('unread-count');

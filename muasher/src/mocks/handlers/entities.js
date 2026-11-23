@@ -23,12 +23,14 @@ import { entityStats, filtersFrom, queryEntities } from '../stores/entityQueries
 import { LEVEL_FILTERS } from '../stores/entityLevels'
 import { applyProfile, isDeleted } from '../stores/entitiesStore'
 import { applyUnifiedNumber } from '../stores/entityUnifiedNumber'
-import { removeEntityLogo, storeEntityLogo } from '../stores/entityLogo'
+import { acceptEntityLogo } from '../stores/entityLogo'
+import { acceptVatCertificate, vatCertificateFileOf } from '../stores/entityBilling'
 import {
-  removeVatCertificate,
-  storeVatCertificate,
-  vatCertificateFileOf,
-} from '../stores/entityBilling'
+  mayHoldVatCertificate,
+  proposeFile,
+  proposeFileRemoval,
+  proposeSection,
+} from '../stores/profileChangeRequests'
 import { findFile } from '../stores/finance/financeState'
 import { signedDownloadOf } from '../stores/finance/signedFiles'
 import { assertProfile, assertReason, contactFrom, profileFrom } from '../stores/entityValidation'
@@ -37,12 +39,9 @@ import { entitiesCsv, exportFileName } from '../stores/entityCsv'
 import { recordProfileChanges } from '../stores/profileChangesStore'
 import { ownEditableEntity, ownEntityActor, ownResource } from '../stores/ownEntity'
 import { PROFILE_SECTION_KEYS } from '../stores/entityProfileSections'
-import {
-  applySection,
-  assertFreshRevision,
-  assertSection,
-  snapshotOf,
-} from '../stores/entitySectionSaves'
+import { assertFreshRevision, assertSection, snapshotOf } from '../stores/entitySectionSaves'
+
+const ACCEPTED = 202
 
 function staffResource(user, entity) {
   return entityResourceFor(accessOf(user))(entity, user)
@@ -54,13 +53,8 @@ async function saveSection({ params, request }) {
   const body = await readJson(request)
   assertSection(params.section, body, entity)
   assertFreshRevision(params.section, body, entity)
-  const before = snapshotOf(entity)
-  applySection(params.section, entity, body)
-  const changedFields = recordProfileChanges(entity, before, entity, {
-    actor: user,
-    isStaff: false,
-  })
-  return envelope(ownResource(entity), { section: params.section, changedFields })
+  proposeSection(entity, params.section, body, user)
+  return envelope(ownResource(entity), { section: params.section }, { status: ACCEPTED })
 }
 
 function listFilters(request) {
@@ -101,34 +95,37 @@ export const entitiesHandlers = [
     entityRoute(async ({ request }) => {
       const { user, entity } = ownEditableEntity()
       const form = await request.formData()
-      await storeEntityLogo(user, entity, form.get('file'))
-      return envelope(ownResource(entity), {}, { status: 201 })
+      proposeFile(entity, 'logo', await acceptEntityLogo(user, form.get('file')), user)
+      return envelope(ownResource(entity), {}, { status: ACCEPTED })
     }),
   ),
 
   http.delete(
     '/api/v1/entities/me/logo',
     entityRoute(() => {
-      const { entity } = ownEditableEntity()
-      return envelope(ownResource(removeEntityLogo(entity)))
+      const { user, entity } = ownEditableEntity()
+      proposeFileRemoval(entity, 'logo', user)
+      return envelope(ownResource(entity), {}, { status: ACCEPTED })
     }),
   ),
 
   http.post(
     '/api/v1/entities/me/vat-certificate',
     entityRoute(async ({ request }) => {
-      const { entity } = ownEditableEntity()
+      const { user, entity } = ownEditableEntity()
+      if (!mayHoldVatCertificate(entity)) throw entityReject.vatNotRegistered()
       const form = await request.formData()
-      await storeVatCertificate(entity, form.get('file'))
-      return envelope(ownResource(entity), {}, { status: 201 })
+      proposeFile(entity, 'vat_certificate', await acceptVatCertificate(form.get('file')), user)
+      return envelope(ownResource(entity), {}, { status: ACCEPTED })
     }),
   ),
 
   http.delete(
     '/api/v1/entities/me/vat-certificate',
     entityRoute(() => {
-      const { entity } = ownEditableEntity()
-      return envelope(ownResource(removeVatCertificate(entity)))
+      const { user, entity } = ownEditableEntity()
+      proposeFileRemoval(entity, 'vat_certificate', user)
+      return envelope(ownResource(entity), {}, { status: ACCEPTED })
     }),
   ),
 

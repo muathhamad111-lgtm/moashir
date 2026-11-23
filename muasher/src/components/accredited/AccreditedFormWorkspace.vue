@@ -36,6 +36,7 @@ const {
   previousMain,
   nextMain,
   refreshing,
+  showsChecklist,
   selectMain,
   revealSub,
   revealMain,
@@ -91,7 +92,7 @@ async function goTo(mainId) {
         @refresh="refresh"
       />
       <AccreditedCompleteness
-        v-if="isEditable"
+        v-if="isEditable && showsChecklist"
         :missing="form.missing"
         :criteria="form.criteria"
         @reveal="revealSub"

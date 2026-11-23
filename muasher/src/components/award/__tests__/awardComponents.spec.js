@@ -4,13 +4,12 @@ import { setActivePinia } from 'pinia'
 import { createTestGlobals } from '@/test-utils'
 import { useAuthStore } from '@/stores/auth'
 import { sessionUserFor } from '@/test-utils/session'
-import AdvancedRequestCard from '../AdvancedRequestCard.vue'
-import AdvancedEligibilityList from '../AdvancedEligibilityList.vue'
 import CycleActionsCard from '../CycleActionsCard.vue'
 import CycleStatusBadge from '../CycleStatusBadge.vue'
 import FilteringDecisionDialog from '../FilteringDecisionDialog.vue'
 import FilteringDecisionList from '../FilteringDecisionList.vue'
 import PublicCycleCard from '../PublicCycleCard.vue'
+import AwardCycleChooser from '../AwardCycleChooser.vue'
 
 function render(component, props, { roles = [], extra = {}, locale = 'en' } = {}) {
   const globals = createTestGlobals({ locale })
@@ -19,22 +18,6 @@ function render(component, props, { roles = [], extra = {}, locale = 'en' } = {}
   return mount(component, { props, global: { plugins: globals.plugins }, attachTo: document.body })
 }
 
-const eligible = {
-  eligible: true,
-  windowOpen: true,
-  conditions: [
-    { rule: 'min_entity_age', passed: true, required: 3, actual: 17 },
-    { rule: 'region', passed: true, required: null, actual: null },
-  ],
-}
-const notEligible = {
-  eligible: false,
-  windowOpen: true,
-  conditions: [
-    { rule: 'min_entity_age', passed: false, required: 3, actual: 1 },
-    { rule: 'region', passed: true, required: null, actual: null },
-  ],
-}
 const cycle = {
   id: 31,
   status: 'submission-open',
@@ -43,69 +26,7 @@ const cycle = {
   year: 2026,
 }
 
-describe('advanced entity components', () => {
-  it('offers to apply only when eligible and lists the failed conditions otherwise', () => {
-    const apply = render(AdvancedRequestCard, { request: null, eligibility: eligible })
-    expect(apply.text()).toContain('Your entity meets the entry conditions')
-    expect(apply.find('.advanced-request__actions .btn--primary').text()).toBe(
-      'Apply for the award',
-    )
-    const refused = render(AdvancedRequestCard, { request: null, eligibility: notEligible })
-    expect(refused.findAll('.advanced-request__actions button')).toHaveLength(0)
-    expect(refused.find('.eligibility-list__item--failed').text()).toContain(
-      'at least 3 years (your entity: 1 years)',
-    )
-  })
-
-  it('shows the draft, completion, masked review and closed states without any filtering outcome', () => {
-    const draft = render(AdvancedRequestCard, {
-      request: { id: 9300, number: 'ADV-2026-000007', status: 'draft' },
-      eligibility: eligible,
-    })
-    expect(draft.find('.advanced-request__link').text()).toBe('Continue the draft')
-    expect(draft.find('.btn--danger').text()).toBe('Delete the draft')
-    const completion = render(AdvancedRequestCard, {
-      request: { id: 9201, number: 'ADV-2026-000001', status: 'needs-completion' },
-      eligibility: eligible,
-    })
-    expect(completion.find('.advanced-request__link').text()).toBe('Complete the request')
-    const review = render(AdvancedRequestCard, {
-      request: {
-        id: 9204,
-        number: 'ADV-2026-000004',
-        status: 'under-review',
-        submittedAt: '2026-10-10T08:00:00Z',
-      },
-      eligibility: eligible,
-    })
-    expect(review.text()).toContain('Your request is under review')
-    expect(review.text()).not.toMatch(/filtering|qualif/i)
-    const rejected = render(AdvancedRequestCard, {
-      request: {
-        id: 9206,
-        number: 'ADV-2026-000006',
-        status: 'rejected-conditions',
-        conditionFailures: [{ rule: 'region', passed: false }],
-      },
-      eligibility: { ...notEligible, eligible: false },
-    })
-    expect(rejected.find('.eligibility-list__item--failed').text()).toContain('region')
-    expect(rejected.findAll('.advanced-request__actions button')).toHaveLength(0)
-  })
-
-  it('renders the eligibility checks with text, never color alone, in Arabic', () => {
-    const list = render(
-      AdvancedEligibilityList,
-      { conditions: eligible.conditions, windowOpen: false },
-      { locale: 'ar' },
-    )
-    expect(list.findAll('.eligibility-list__state').map((item) => item.text())).toEqual([
-      'مستوفى',
-      'مستوفى',
-      'مغلقة',
-    ])
-  })
-
+describe('public award intro components', () => {
   it('shows the public cycle states', () => {
     expect(render(PublicCycleCard, { status: 'empty', cycle: null }).text()).toContain(
       'No award cycle is running',
@@ -148,11 +69,20 @@ describe('cycle staff components', () => {
     ).toEqual(['Start the committee assessment', 'Close the cycle'])
     const draft = render(
       CycleActionsCard,
-      { cycle: { ...cycle, id: 32, status: 'draft' }, blockingCycle: cycle },
+      {
+        cycle: {
+          ...cycle,
+          id: 32,
+          status: 'draft',
+          openBlock: { code: 'cycle.another_open', concurrency: 'single', cycle },
+        },
+        openBlock: { code: 'cycle.another_open', concurrency: 'single', cycle },
+      },
       { roles: ['system_admin'] },
     )
     expect(draft.find('.btn--primary').attributes('disabled')).toBeDefined()
     expect(draft.text()).toContain('Cycle 2026 is running')
+    expect(draft.text()).toContain('allows one running cycle at a time')
     expect(
       labels(
         render(
@@ -171,6 +101,70 @@ describe('cycle staff components', () => {
         ),
       ),
     ).toEqual(['Reopen the cycle'])
+  })
+
+  it('words a blocked opening after the active concurrency setting and never blocks in concurrent mode', () => {
+    const staggered = render(
+      CycleActionsCard,
+      {
+        cycle: { ...cycle, id: 32, status: 'draft' },
+        openBlock: { code: 'cycle.another_open_for_submission', concurrency: 'staggered', cycle },
+      },
+      { roles: ['system_admin'] },
+    )
+    expect(staggered.text()).toContain('Applications are open in Cycle 2026')
+    expect(staggered.find('.btn--primary').attributes('disabled')).toBeDefined()
+    const arabic = render(
+      CycleActionsCard,
+      {
+        cycle: { ...cycle, id: 32, status: 'draft' },
+        openBlock: { code: 'cycle.another_open_for_submission', concurrency: 'staggered', cycle },
+      },
+      { roles: ['system_admin'], locale: 'ar' },
+    )
+    expect(arabic.text()).toContain('التقديم مفتوح في دورة 2026')
+    const concurrent = render(
+      CycleActionsCard,
+      { cycle: { ...cycle, id: 32, status: 'draft' }, openBlock: null },
+      { roles: ['system_admin'] },
+    )
+    expect(concurrent.text()).not.toContain('Submissions cannot open yet')
+    expect(concurrent.find('.btn--primary').attributes('disabled')).toBeUndefined()
+    const refused = render(
+      CycleActionsCard,
+      {
+        cycle: { ...cycle, id: 32, status: 'draft' },
+        blocked: { code: 'cycle.another_open_for_submission', cycleId: 31 },
+      },
+      { roles: ['system_admin'] },
+    )
+    expect(refused.text()).toContain('Another cycle is open for applications')
+  })
+
+  it('lists the open cycles to choose from with their submission windows', async () => {
+    const choices = [
+      {
+        id: 41,
+        name: { ar: 'دورة الشمال', en: 'North cycle' },
+        year: 2026,
+        submissionStart: '2026-11-01T00:00:00Z',
+        submissionEnd: '2026-12-01T00:00:00Z',
+      },
+      {
+        id: 40,
+        name: { ar: 'دورة الجنوب', en: 'South cycle' },
+        year: 2026,
+        submissionStart: '2026-10-20T00:00:00Z',
+        submissionEnd: '2026-11-30T00:00:00Z',
+      },
+    ]
+    const chooser = render(AwardCycleChooser, { choices, modelValue: 41 })
+    expect(chooser.findAll('input[type="radio"]')).toHaveLength(2)
+    expect(chooser.find('[data-testid="award-cycle-choice-41"]').element.checked).toBe(true)
+    expect(chooser.text()).toContain('North cycle')
+    expect(chooser.text()).toContain('Applications from 2026-10-20 to 2026-11-30')
+    await chooser.find('[data-testid="award-cycle-choice-40"]').setValue(true)
+    expect(chooser.emitted('update:modelValue')).toEqual([[40]])
   })
 
   it('lists the requests that block the close', () => {
@@ -261,6 +255,5 @@ describe('filtering components', () => {
     })
     expect(list.text()).toContain('Exception')
     expect(list.text()).toContain('Initial result 57.50%, threshold 60.00%')
-    expect(render(FilteringDecisionList, { decisions: [] }).text()).toContain('No decision yet.')
   })
 })

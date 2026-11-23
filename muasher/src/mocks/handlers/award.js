@@ -11,7 +11,7 @@ import { findAssessment } from '../stores/assessments/assessmentsStore'
 import { assessmentResource } from '../stores/assessments/selfSerializers'
 import { normalizeSearchText } from '../stores/searchIndex'
 import { runAccreditedSchedule } from '../stores/accredited/scheduler'
-import { runningCycle } from '../stores/award/cycleStore'
+import { currentCycle, openCycles } from '../stores/award/cycleStore'
 import {
   authorizeAdvancedEntity,
   authorizeCreateCycle,
@@ -82,8 +82,16 @@ export const awardHandlers = [
     `${CYCLES}/current`,
     assessmentRoute(() => {
       runAccreditedSchedule()
-      const cycle = runningCycle()
+      const cycle = currentCycle()
       return envelope(cycle ? publicCycleResource(cycle) : null)
+    }),
+  ),
+
+  http.get(
+    `${CYCLES}/open`,
+    assessmentRoute(() => {
+      runAccreditedSchedule()
+      return envelope(openCycles().map((cycle) => publicCycleResource(cycle)))
     }),
   ),
 
@@ -193,11 +201,12 @@ export const awardHandlers = [
 
   http.get(
     '/api/v1/assessments/advanced/current',
-    assessmentRoute(() => {
+    assessmentRoute(({ request }) => {
       const user = signedInActor()
       authorizeAdvancedEntity(user)
       runAccreditedSchedule()
-      return envelope(advancedCurrentResource(user))
+      const cycleId = new URL(request.url).searchParams.get('awardCycleId')
+      return envelope(advancedCurrentResource(user, cycleId))
     }),
   ),
 

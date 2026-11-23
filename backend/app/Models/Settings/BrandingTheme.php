@@ -7,6 +7,7 @@ namespace App\Models\Settings;
 use App\Casts\JsonObjectCast;
 use App\Data\Settings\BrandColorOverrides;
 use App\Data\Settings\BrandColors;
+use App\Data\Settings\BrandRailColors;
 use App\Models\Files\StoredFile;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -17,6 +18,8 @@ use Illuminate\Support\Carbon;
  * @property string $primary_color
  * @property string $secondary_color
  * @property array<string, mixed> $color_overrides
+ * @property string|null $sidebar_top_color
+ * @property string|null $sidebar_bottom_color
  * @property int|null $logo_light_file_id
  * @property int|null $favicon_file_id
  * @property int|null $site_logo_file_id
@@ -49,7 +52,12 @@ final class BrandingTheme extends Model
 
     public function colors(): BrandColors
     {
-        return new BrandColors($this->primary_color, $this->secondary_color, new BrandColorOverrides($this->color_overrides));
+        return new BrandColors(
+            $this->primary_color,
+            $this->secondary_color,
+            new BrandColorOverrides($this->color_overrides),
+            new BrandRailColors($this->sidebar_top_color, $this->sidebar_bottom_color),
+        );
     }
 
     /**

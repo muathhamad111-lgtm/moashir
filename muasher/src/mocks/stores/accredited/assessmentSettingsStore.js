@@ -15,10 +15,12 @@ const DEFAULTS = {
   advancedInitialReviewSlaDays: 14,
   committeeEntityDataVisibility: 'name_only',
   scaleKind: 'of-10',
+  advancedCycleConcurrency: 'single',
 }
 
 export const COMMITTEE_VISIBILITIES = ['name_only', 'code_only', 'full']
 export const SCALE_KIND_VALUES = ['of-10', 'relative']
+export const CYCLE_CONCURRENCY_VALUES = ['single', 'staggered', 'concurrent']
 
 let settings = { ...DEFAULTS, evidenceAllowedTypes: [...DEFAULTS.evidenceAllowedTypes] }
 

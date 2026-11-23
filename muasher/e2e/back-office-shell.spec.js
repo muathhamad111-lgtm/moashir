@@ -6,10 +6,13 @@ import { AA_NON_TEXT, AA_TEXT, contrastOf } from './support/contrast'
 
 const IGNORED_CONSOLE = /Failed to load resource|50\d|Service Unavailable/i
 const SHOTS = 'e2e/__screenshots__/shell'
-const SIDEBAR_LOGO = /moashir-logo-on-light/
+// Look 3: the sidebar is a gradient rail in the brand's sidebar colours, dark by default, so it
+// shows the logo made for dark fills.
+const SIDEBAR_LOGO = /moashir-logo-on-dark/
 const DARK_LOGO = /moashir-logo-on-dark/
+const ACTIVE_ITEM = { background: 'rgb(255, 255, 255)', text: 'rgb(16, 15, 16)' }
 const SHELL_COLORS = {
-  sidebar: 'rgb(255, 255, 255)',
+  sidebar: 'rgb(10, 35, 37)',
   content: 'rgb(248, 248, 248)',
   primary: 'rgb(152, 216, 211)',
   secondary: 'rgb(10, 35, 37)',
@@ -109,7 +112,7 @@ const SIDEBAR_STATES = [
 ]
 
 for (const { state, prepare } of SIDEBAR_STATES) {
-  test(`TTS shell: light content, white sidebar, primary active item even for a dark-mode user — ${state}`, async ({
+  test(`TTS shell: light content, gradient sidebar rail, light active item even for a dark-mode user — ${state}`, async ({
     page,
   }, testInfo) => {
     const errors = trackConsole(page)
@@ -140,6 +143,7 @@ for (const { state, prepare } of SIDEBAR_STATES) {
       return {
         itemBg: style('.sidebar__item.is-active').backgroundColor,
         sidebarBg: style('.sidebar').backgroundColor,
+        sidebarGradient: style('.sidebar').backgroundImage.startsWith('linear-gradient('),
         contentBg: style('.app-layout').backgroundColor,
         headerBg: style('.navbar--app').backgroundColor,
         sidebarAtStart:
@@ -150,8 +154,9 @@ for (const { state, prepare } of SIDEBAR_STATES) {
       }
     })
     expect(shell).toEqual({
-      itemBg: SHELL_COLORS.primary,
+      itemBg: ACTIVE_ITEM.background,
       sidebarBg: SHELL_COLORS.sidebar,
+      sidebarGradient: true,
       contentBg: SHELL_COLORS.content,
       headerBg: SHELL_COLORS.secondary,
       sidebarAtStart: true,
@@ -263,9 +268,11 @@ test('branding: System Administrator sets the primary and secondary colours, the
   await page.locator('.sidebar__item').first().click()
   await expect(page.locator('.sidebar__item.is-active')).toHaveCSS(
     'background-color',
-    TTS_COLORS.primary,
+    ACTIVE_ITEM.background,
   )
-  await expect(page.locator('.sidebar__item.is-active')).toHaveCSS('color', 'rgb(255, 255, 255)')
+  await expect(page.locator('.sidebar__item.is-active')).toHaveCSS('color', ACTIVE_ITEM.text)
+  // The automatic rail follows the new secondary colour.
+  await expect(page.locator('.sidebar')).toHaveCSS('background-color', TTS_COLORS.secondary)
   await page.screenshot({ path: `${SHOTS}/dashboard-tts-colors-${suffix(testInfo)}.png` })
 
   await page.locator('.navbar__avatar').click()
@@ -280,7 +287,7 @@ test('branding: System Administrator sets the primary and secondary colours, the
   expect(errors).toEqual([])
 })
 
-test('branding: the site logo, made for a light background, drives the sidebar and the global reset returns it to the brand default', async ({
+test('branding: the logo for dark fills drives the dark sidebar rail and the global reset returns it to the brand default', async ({
   page,
 }, testInfo) => {
   const errors = trackConsole(page)
@@ -295,9 +302,9 @@ test('branding: the site logo, made for a light background, drives the sidebar a
   await expect(
     page.locator('.logo-variant[data-surface="dark"] .logo-variant__image'),
   ).toHaveAttribute('src', DARK_LOGO)
-  const siteField = page.locator('.logo-variant[data-surface="site"]')
+  const siteField = page.locator('.logo-variant[data-surface="dark"]')
   await siteField.locator('input[type="file"]').setInputFiles({
-    name: 'moashir-on-light.png',
+    name: 'moashir-on-dark.png',
     mimeType: 'image/png',
     buffer: Buffer.from(
       'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==',

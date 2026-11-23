@@ -27,6 +27,8 @@ enum NotificationCode: string
     case EntityAwaitingReview = 'REG-11';
     case EntityRegistrationApproved = 'REG-12';
     case EntityRegistrationRejected = 'REG-13';
+    case EntityProfileChangeRequested = 'REG-14';
+    case EntityProfileChangeDecided = 'REG-15';
     case SuperAdminLogin = 'SEC-01';
     case SuperAdminMfaFailed = 'SEC-02';
     case SuperAdminGrantChanged = 'SEC-03';
@@ -83,6 +85,7 @@ enum NotificationCode: string
     case ReturnedToCommittee = 'ADV-16';
     case CommitteeAverageApproved = 'ADV-17';
     case AwardResultsAnnounced = 'ADV-18';
+    case AdvancedCertificateIssued = 'ADV-19';
     case RegionApproved = 'ADV-20';
     case QualifiedForNational = 'ADV-21';
     case NationalResultApproved = 'ADV-22';
@@ -95,8 +98,11 @@ enum NotificationCode: string
     case AdvancedCompletionExpired = 'ADV-27';
     case AdvancedFilteringException = 'ADV-28';
     case AdvancedWithdrawn = 'ADV-31';
+    case AdvancedParticipationCertificateIssued = 'ADV-32';
     case CycleSubmissionsClosed = 'CYC-01';
     case CycleClosed = 'CYC-02';
+    case CycleOpenBlocked = 'CYC-03';
+    case CycleOpenDeferred = 'CYC-04';
     case EvidenceBundleReady = 'EVD-01';
     case EvidenceRefused = 'EVD-02';
     case SmsSendFailed = 'INT-01';
@@ -131,6 +137,8 @@ enum NotificationCode: string
     case ContactMessageAcknowledged = 'CNT-03';
     case ContactFollowUpReceived = 'CNT-04';
     case ContactMessageAssigned = 'CNT-05';
+    case NdaVersionPublished = 'NDA-01';
+    case NdaAcceptanceReminder = 'NDA-02';
 
     public function category(): NotificationCategory
     {
@@ -149,7 +157,7 @@ enum NotificationCode: string
             self::CommitteeAllSubmitted, self::CommitteeAssessorDisabled, self::CommitteeSubstituteAssigned, self::ReturnedToCommittee,
             self::QualifiedForNational, self::NationalResultApproved, self::CommitteeDiscussionOpened,
             self::ContactMessageReceived, self::ContactFollowUpReceived, self::ContactMessageAssigned,
-            self::IdentityChangeRequested => NotificationCategory::ActionRequired,
+            self::IdentityChangeRequested, self::EntityProfileChangeRequested, self::NdaVersionPublished, self::NdaAcceptanceReminder => NotificationCategory::ActionRequired,
             self::AccountStatusChanged, self::CriteriaMainCreated, self::CriteriaScaleChanged,
             self::CriteriaEditedWithScope, self::EntityCoreDataEdited, self::EntityReactivated, self::EntityRegistrationApproved,
             self::EntityEmailChangeDecided, self::SelfAssessmentStarted, self::SelfAssessmentDraftSaved,
@@ -158,12 +166,13 @@ enum NotificationCode: string
             self::FinanceExportReady, self::AccreditedDraftSaved, self::AccreditedReviewStarted, self::AccreditedCompleted,
             self::AccreditedFeedbackAvailable, self::AccreditedCertificateIssued, self::AccreditedCompletionExpired, self::EvidenceBundleReady,
             self::AdvancedConditionsRejected, self::AdvancedQualified, self::AdvancedNotQualified, self::AdvancedCompletionExpired,
-            self::AdvancedWithdrawn, self::CycleSubmissionsClosed, self::CycleClosed, self::CommitteeEvaluationStarted,
+            self::AdvancedWithdrawn, self::AdvancedCertificateIssued, self::AdvancedParticipationCertificateIssued,
+            self::CycleSubmissionsClosed, self::CycleClosed, self::CommitteeEvaluationStarted,
             self::CommitteeEvaluationSubmitted, self::CommitteeAverageApproved, self::AwardResultsAnnounced, self::RegionApproved,
             self::RegionalResult, self::NationalResult, self::CommitteeSubstituteApproved, self::CommitteeDiscussionEntry,
             self::KpiAdded, self::KpiValueEdited, self::KpiPublished, self::HomepageContentEdited, self::ContentUnpublished,
             self::ContactReplySent, self::ContactMessageAcknowledged, self::PeriodMissed, self::PeriodDigest,
-            self::PeriodCorrected, self::IdentityChangeDecided => NotificationCategory::Informational,
+            self::PeriodCorrected, self::IdentityChangeDecided, self::EntityProfileChangeDecided => NotificationCategory::Informational,
             default => NotificationCategory::Alert,
         };
     }
@@ -179,7 +188,7 @@ enum NotificationCode: string
             self::OtpCode, self::EntityVerificationReminder, self::EntityEmailChangeRequested,
             self::SuperAdminLogin, self::SuperAdminMfaFailed, self::SuperAdminGrantChanged, self::ReasonRequiredAction,
             self::SuperAdminAssignmentRejected, self::IntegrationSecretReplaced, self::EntitySignInCodeChannelsChanged,
-            self::TwoFactorPolicyChanged,
+            self::TwoFactorPolicyChanged, self::NdaVersionPublished, self::NdaAcceptanceReminder,
         ], true);
     }
 

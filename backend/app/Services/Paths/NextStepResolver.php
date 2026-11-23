@@ -14,6 +14,7 @@ use App\Enums\Award\AwardWindowState;
 use App\Enums\Dashboards\NextStepKey;
 use App\Enums\Periods\EntityPeriodState;
 use App\Models\Assessments\Assessment;
+use App\Models\Award\AwardCycle;
 use App\Models\Finance\Payment;
 use App\Models\Identity\User;
 use App\Support\Assessments\StatusMask;
@@ -150,16 +151,16 @@ final class NextStepResolver
 
     private function applyAward(EntityPaths $paths): ?NextStep
     {
-        $award = $paths->award;
+        $cycle = $paths->applicableAwardCycle();
 
-        if ($award->window !== AwardWindowState::Open || ! $award->isEligible()) {
+        if (! $cycle instanceof AwardCycle) {
             return null;
         }
 
         return new NextStep(NextStepKey::ApplyAward, AssessmentPath::Advanced, new NextStepTarget(NextStepTarget::AWARD), [
             ...$this->emptyContext(),
-            'deadline_at' => $award->cycle?->submission_end->toIso8601String(),
-            'cycle_id' => $award->cycle?->id,
+            'deadline_at' => $cycle->submission_end->toIso8601String(),
+            'cycle_id' => $cycle->id,
         ]);
     }
 

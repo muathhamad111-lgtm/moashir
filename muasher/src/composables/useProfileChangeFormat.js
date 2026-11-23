@@ -29,6 +29,7 @@ export function useProfileChangeFormat() {
     name: nameValue,
     governance_grade: (value) => formatGovernanceGrade(value),
     has_strategic_plan: (value) => t(value ? 'common.yes' : 'common.no'),
+    vat_registered: (value) => t(value ? 'common.yes' : 'common.no'),
     marketing_consent: (value) =>
       t(`portal.profile.values.${value ? 'subscribed' : 'notSubscribed'}`),
   }

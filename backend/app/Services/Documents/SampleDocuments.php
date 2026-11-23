@@ -30,7 +30,7 @@ final readonly class SampleDocuments
         ['M8', 'قياس الأثر والنتائج', 'Impact measurement and results', '100.00', '92.50', '92.50'],
     ];
 
-    public function __construct(private Repository $config, private DocumentAssets $assets, private SampleBoardReports $boardReports, private PathIdentityReader $paths) {}
+    public function __construct(private Repository $config, private SampleBoardReports $boardReports, private PathIdentityReader $paths) {}
 
     /**
      * @return array<string, PdfDocument>
@@ -38,9 +38,12 @@ final readonly class SampleDocuments
     public function all(): array
     {
         return [
-            'sample-certificate-gold.pdf' => $this->certificate('gold', '87.50', $this->assets->sampleEntityLogo()),
-            'sample-certificate-silver.pdf' => $this->certificate('silver', '74.20', null),
-            'sample-certificate-participation.pdf' => $this->certificate(null, '54.25', null),
+            'sample-certificate-gold.pdf' => $this->certificate('gold', '87.50'),
+            'sample-certificate-silver.pdf' => $this->certificate('silver', '74.20'),
+            'sample-certificate-participation.pdf' => $this->certificate(null, '54.25'),
+            'sample-award-winner.pdf' => $this->awardCertificate('advanced_winner', 1, 2),
+            'sample-award-qualified.pdf' => $this->awardCertificate('advanced_qualified', null, null),
+            'sample-award-participation.pdf' => $this->awardCertificate('advanced_participation', null, null),
             'sample-feedback-report-ar.pdf' => $this->feedbackReport('ar'),
             'sample-feedback-report-en.pdf' => $this->feedbackReport('en'),
             'sample-receipt.pdf' => $this->receipt(),
@@ -48,20 +51,40 @@ final readonly class SampleDocuments
         ];
     }
 
-    private function certificate(?string $level, string $percent, ?string $entityLogo): PdfDocument
+    private function certificate(?string $level, string $percent): PdfDocument
     {
         $issuedAt = $this->issuedAt();
 
         return new PdfDocument(DocumentTemplate::AccreditedCertificate->value, [
             'number' => 'CRT-'.$issuedAt->year.'-000123',
-            'verification_code' => 'K7Q4-9XPM-2DHT-R8WN-5C3J-V6BA-QE4Z',
             'verification_url' => rtrim($this->config->string('moashir.frontend_url'), '/').'/verify/K7Q49XPM2DHTR8WN5C3JV6BAQE4Z',
             'request_number' => 'ACC-'.$issuedAt->year.'-000045',
             'entity_name' => ['ar' => self::ENTITY_AR, 'en' => self::ENTITY_EN],
-            'entity_logo' => $entityLogo,
             'percent' => $percent,
             'level' => $level,
             'level_label' => $level === null ? null : ['ar' => trans('certificates.levels.'.$level, [], 'ar'), 'en' => trans('certificates.levels.'.$level, [], 'en')],
+            'issued_on' => $issuedAt->toDateString(),
+            'issued_on_hijri' => $this->hijri($issuedAt),
+            'issue_year' => (string) $issuedAt->year,
+            'is_test' => true,
+        ]);
+    }
+
+    private function awardCertificate(string $kind, ?int $regionalRank, ?int $nationalRank): PdfDocument
+    {
+        $issuedAt = $this->issuedAt();
+
+        return new PdfDocument(DocumentTemplate::AwardCertificate->value, [
+            'number' => 'CRT-'.$issuedAt->year.'-000124',
+            'verification_url' => rtrim($this->config->string('moashir.frontend_url'), '/').'/verify/M3T86QRZ4HKDW2PX9F5CB7NAJE6V',
+            'request_number' => 'ADV-'.$issuedAt->year.'-000012',
+            'entity_name' => ['ar' => self::ENTITY_AR, 'en' => self::ENTITY_EN],
+            'kind' => $kind,
+            'cycle_name' => ['ar' => 'دورة جائزة مؤشر للتميز المؤسسي', 'en' => 'Moashir Institutional Excellence Award'],
+            'cycle_year' => $issuedAt->year,
+            'region' => $kind === 'advanced_participation' ? null : ['ar' => 'منطقة الرياض', 'en' => 'Riyadh Region'],
+            'regional_rank' => $regionalRank,
+            'national_rank' => $nationalRank,
             'issued_on' => $issuedAt->toDateString(),
             'issued_on_hijri' => $this->hijri($issuedAt),
             'issue_year' => (string) $issuedAt->year,

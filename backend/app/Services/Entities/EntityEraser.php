@@ -9,6 +9,7 @@ use App\Data\Entities\ErasureOutcome;
 use App\Enums\Entities\ErasureRetainedRecord;
 use App\Models\Entities\Entity;
 use App\Models\Entities\EntityProfileChange;
+use App\Models\Entities\EntityProfileChangeRequest;
 use App\Models\Identity\EmailChangeRequest;
 use App\Models\Identity\User;
 use App\Support\ValueObjects\EntityName;
@@ -73,6 +74,7 @@ final readonly class EntityEraser
                 ->when($owner instanceof User, static fn (Builder $inner): Builder => $inner->orWhere('user_id', $owner?->id)))
             ->delete();
         EntityProfileChange::query()->where('entity_id', $entity->id)->delete();
+        EntityProfileChangeRequest::query()->where('entity_id', $entity->id)->delete();
         $this->deadlines->forget($entity);
     }
 

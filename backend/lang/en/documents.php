@@ -28,14 +28,36 @@ return [
         'achieved' => 'with a score of',
         'level' => 'achieving the',
         'number' => 'Certificate number',
-        'verification_code' => 'Verification code',
         'issued_on' => 'Issue date',
         'request' => 'Request number',
         'verify_hint' => 'Scan the code to verify this certificate',
-        'issued_electronically' => 'This certificate was issued electronically by the Moashir platform. Verify it by scanning the code or on the verification page.',
+        'issued_electronically' => 'This certificate was issued electronically by the Moashir platform. Verify it by scanning the code.',
         'not_valid_for_verification' => 'Not valid for verification',
         'seal_alt' => ':level seal',
-        'entity_logo_alt' => 'Logo of :entity',
+    ],
+
+    'award_certificate' => [
+        'titles' => [
+            'advanced_winner' => 'Award Winner Certificate',
+            'advanced_qualified' => 'Award Qualification Certificate',
+            'advanced_participation' => 'Award Participation Certificate',
+        ],
+        'leads' => [
+            'advanced_winner' => 'The Moashir platform certifies that',
+            'advanced_qualified' => 'The Moashir platform certifies that',
+            'advanced_participation' => 'The Moashir platform certifies that',
+        ],
+        'statements' => [
+            'regional_winner' => 'won :rank place in :region in :cycle.',
+            'national_winner' => 'won :national_rank place nationally and :rank place in :region in :cycle.',
+            'qualified' => 'qualified for the assessors committee evaluation for :region in :cycle.',
+            'participation' => 'took part in :cycle and completed the initial assessment.',
+        ],
+        'ranks' => [
+            1 => 'first',
+            2 => 'second',
+            3 => 'third',
+        ],
     ],
 
     'feedback_report' => [

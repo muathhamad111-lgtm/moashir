@@ -58,7 +58,7 @@ final readonly class ReassignAssessor
 
     private function currentAssignmentOf(Assessment $locked): AssessmentAssignment
     {
-        if (! $locked->status instanceof ReviewedAssessmentState || ! $locked->status->hasAssessor()) {
+        if (! $locked->status instanceof ReviewedAssessmentState || ! $locked->status->acceptsReassignment()) {
             throw IllegalStateTransition::from((string) $locked->status->value, AssessmentVerb::Reassign->value);
         }
 

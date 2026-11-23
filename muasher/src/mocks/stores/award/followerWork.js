@@ -11,8 +11,7 @@ import {
   trimmed,
 } from '../accredited/accreditedValidation'
 import { ADVANCED_STATES, isWithdrawable } from './advancedStates'
-import { findCycle } from './cycleStore'
-import { awardReject } from './awardRejection'
+import { assertBeforeCommittee } from './completionWindow'
 import { announceReturned, announceWithdrawn } from './awardNotices'
 import { releaseCommitteeWork } from '../committee/committeeRelease'
 
@@ -43,17 +42,20 @@ function validateReturn(body) {
   return trimmed(body.reason) || null
 }
 
-function assertBeforeCommittee(record, deadlineAt) {
-  const cycle = findCycle(record.awardCycleId)
-  if (new Date(deadlineAt).getTime() > new Date(cycle.committeeStart).getTime())
-    throw awardReject.deadlineAfterCommittee(cycle.committeeStart)
-}
+// Operator 2026-11-22: the follower also returns a request after it is assigned; the resubmission
+// then goes back to the same assessor.
+const RETURNABLE = [
+  ADVANCED_STATES.AWAITING_ASSIGNMENT,
+  ADVANCED_STATES.ASSIGNED,
+  ADVANCED_STATES.UNDER_INITIAL_ASSESSMENT,
+]
 
 export function returnForCompletion(user, record, body) {
   const reason = validateReturn(body)
   assertNotFrozen(record)
   if (user.superAdmin && !reason) throw assessmentReject.reasonRequired()
-  if (record.status !== ADVANCED_STATES.AWAITING_ASSIGNMENT)
+  const from = record.status
+  if (!RETURNABLE.includes(from))
     throw assessmentReject.illegalTransition(
       toCanonicalStatus(record.status),
       'return_for_completion',
@@ -72,12 +74,13 @@ export function returnForCompletion(user, record, body) {
     expiryOutcome: body.expiryOutcome,
     createdAt: at,
     resolvedAt: null,
+    resumesTo: from === ADVANCED_STATES.AWAITING_ASSIGNMENT ? null : from,
   }
   record.completionRequests.push(completion)
   record.status = ADVANCED_STATES.NEEDS_COMPLETION
   record.transitions.push(
     transition(
-      ADVANCED_STATES.AWAITING_ASSIGNMENT,
+      from,
       ADVANCED_STATES.NEEDS_COMPLETION,
       'return_for_completion',
       at,

@@ -2,6 +2,7 @@ import { ROUTE_NAMES } from '@/constants/routeNames'
 import { PORTAL_TOOLS } from '@/constants/portal'
 import { FINANCE_TABS } from '@/constants/finance'
 import { accreditedEntryGuard } from './accreditedEntry'
+import { awardEntryGuard } from './awardEntry'
 import { accountProfileEntryGuard } from './accountProfileEntry'
 import { withComingSoonScreens } from './comingSoon'
 
@@ -248,6 +249,7 @@ export const appRoutes = [
     path: '/assessment/advanced',
     name: ROUTE_NAMES.ASSESSMENT_ADVANCED,
     component: () => import('@/views/assessment/advanced/Intro.vue'),
+    beforeEnter: awardEntryGuard,
     meta: {
       layout: 'public',
       openForPortalUsers: true,
@@ -818,6 +820,26 @@ export const appRoutes = [
     },
   },
   {
+    path: '/admin/settings/nda',
+    name: ROUTE_NAMES.ADMIN_SETTINGS_NDA,
+    component: () => import('@/views/settings/nda/NdaSettings.vue'),
+    meta: {
+      layout: 'app',
+      titleKey: 'routes.admin.settings.nda.title',
+      requiresAuth: true,
+    },
+  },
+  {
+    path: '/admin/settings/nda/acceptances',
+    name: ROUTE_NAMES.ADMIN_SETTINGS_NDA_ACCEPTANCES,
+    component: () => import('@/views/settings/nda/NdaAcceptances.vue'),
+    meta: {
+      layout: 'app',
+      titleKey: 'routes.admin.settings.ndaAcceptances.title',
+      requiresAuth: true,
+    },
+  },
+  {
     path: '/admin/settings/certificates',
     name: ROUTE_NAMES.ADMIN_SETTINGS_CERTIFICATES,
     redirect: { name: ROUTE_NAMES.ADMIN_SETTINGS_ASSESSMENT, query: { tab: 'general' } },
@@ -1039,6 +1061,16 @@ export const appRoutes = [
     name: ROUTE_NAMES.ADMIN_ENTITIES_DELETED,
     component: () => import('@/views/entities/admin/Deleted.vue'),
     meta: { layout: 'app', titleKey: 'routes.admin.deletedEntities.title', requiresAuth: true },
+  },
+  {
+    path: '/admin/entities/profile-changes',
+    name: ROUTE_NAMES.ADMIN_ENTITY_PROFILE_CHANGES,
+    component: () => import('@/views/entities/admin/ProfileChanges.vue'),
+    meta: {
+      layout: 'app',
+      titleKey: 'routes.admin.entityProfileChanges.title',
+      requiresAuth: true,
+    },
   },
   {
     path: '/admin/entities/email-changes',

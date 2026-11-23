@@ -21,6 +21,7 @@ final class CertificateSummaryPresenter
         return [
             'id' => $certificate->public_id,
             'number' => $certificate->number,
+            'kind' => $certificate->kind->value,
             'level' => $certificate->level?->value,
             'status' => $certificate->status->value,
             'issued_at' => $certificate->issued_at->toIso8601String(),

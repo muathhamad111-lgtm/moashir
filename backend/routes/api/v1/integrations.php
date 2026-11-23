@@ -28,7 +28,7 @@ $sms = 'can:'.Ability::ManageSmsIntegration->value;
 $email = 'can:'.Ability::ManageEmailIntegration->value;
 $ai = 'can:'.Ability::ManageAiIntegration->value;
 
-Route::middleware(['auth:sanctum', 'session.timeouts', 'mfa', 'password.current'])->prefix('settings')->name('settings.')->group(function () use ($payment, $sms, $email, $ai): void {
+Route::middleware(['auth:sanctum', 'session.timeouts', 'mfa', 'password.current', 'nda.current'])->prefix('settings')->name('settings.')->group(function () use ($payment, $sms, $email, $ai): void {
     Route::get('integrations', IntegrationOverviewController::class)->middleware('can:'.Ability::IntegrationsOverview->value)->name('integrations.index');
 
     Route::prefix('payment')->name('payment.')->group(function () use ($payment): void {

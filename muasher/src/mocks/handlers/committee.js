@@ -18,6 +18,7 @@ import {
   authorizeManageRoster,
   authorizeOwnWork,
   authorizeViewRoster,
+  managesRoster,
 } from '../stores/committee/committeeAccess'
 import { startCommittee } from '../stores/committee/committeeLifecycle'
 import {
@@ -99,7 +100,9 @@ export const committeeHandlers = [
       const user = signedInActor()
       const cycle = boundCycle(params)
       authorizeViewRoster(user, cycle)
-      return envelope(rosterOf(cycle).map(memberResource))
+      return envelope(rosterOf(cycle).map(memberResource), {
+        canManage: managesRoster(user, cycle),
+      })
     }),
   ),
 

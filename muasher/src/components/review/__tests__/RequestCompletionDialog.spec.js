@@ -19,7 +19,10 @@ const CRITERIA = {
           name: { en: 'Direction' },
           hasCv: true,
           evaluationType: 'guiding-points',
-          points: [{ id: 111 }, { id: 112 }],
+          points: [
+            { id: 111, code: 'M1.1.1' },
+            { id: 112, code: 'M1.1.2' },
+          ],
         },
         { id: 12, name: { en: 'Governance' }, hasCv: false, evaluationType: 'direct', points: [] },
       ],
@@ -35,9 +38,10 @@ const SCORES = {
   },
 }
 
-function mountDialog(send = vi.fn().mockResolvedValue({ data: {} })) {
+function mountDialog(send = vi.fn().mockResolvedValue({ data: {} }), extra = {}) {
   const wrapper = mount(RequestCompletionDialog, {
     props: {
+      ...extra,
       modelValue: false,
       assessmentId: 9107,
       criteria: CRITERIA,
@@ -86,6 +90,46 @@ describe('RequestCompletionDialog', () => {
         expiryOutcome: 'continue_as_submitted',
       }),
     )
+    wrapper.unmount()
+  })
+
+  // Operator 2026-11-22: a chosen item starts with the assessor's own internal note, still editable.
+  it("starts each chosen item with the viewer's own internal notes, marked and editable", async () => {
+    const note = (level, ids, body, isMine = true) => ({ level, ...ids, body, isMine })
+    const reviewNotes = [
+      note('sub', { mainCriterionId: 1, subCriterionId: 11 }, 'Board minutes are missing.'),
+      note(
+        'point',
+        { mainCriterionId: 1, subCriterionId: 11, guidingPointId: 111 },
+        'Link broken.',
+      ),
+      note(
+        'point',
+        { mainCriterionId: 1, subCriterionId: 11, guidingPointId: 112 },
+        'Theirs',
+        false,
+      ),
+    ]
+    const { wrapper, send } = mountDialog(undefined, { reviewNotes })
+    await wrapper.setProps({ modelValue: true })
+    await flushPromises()
+    const field = wrapper.find('input[name="note-11:evidence"]')
+    expect(field.element.value).toBe('Board minutes are missing. · M1.1.1 — Link broken.')
+    expect(wrapper.find('.completion-summary__from-notes').text()).toBe('From your notes')
+    await field.setValue('Attach the signed minutes.')
+    expect(wrapper.find('.completion-summary__from-notes').exists()).toBe(false)
+
+    await wrapper.find('form').trigger('submit')
+    await vi.waitFor(() => expect(currentStep(wrapper)).toContain('Message and deadline'))
+    await wrapper.find('textarea[name="notes"]').setValue('Please attach the approved plan.')
+    await wrapper.find('input[type="date"]').setValue('2026-11-28')
+    await wrapper.find('form').trigger('submit')
+    await vi.waitFor(() => expect(currentStep(wrapper)).toContain('Review and send'))
+    await wrapper.find('form').trigger('submit')
+    await vi.waitFor(() => expect(send).toHaveBeenCalled())
+    expect(send.mock.calls[0][1].items).toEqual([
+      { subCriterionId: 11, kind: 'evidence', note: 'Attach the signed minutes.' },
+    ])
     wrapper.unmount()
   })
 

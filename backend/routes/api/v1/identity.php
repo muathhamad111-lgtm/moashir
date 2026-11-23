@@ -78,14 +78,14 @@ Route::middleware(['auth:sanctum', 'session.timeouts', 'mfa'])->group(function (
     Route::post('auth/logout', LogoutController::class)->middleware("can:{$authenticated}")->name('auth.logout');
     Route::post('auth/password/change', ChangePasswordController::class)->middleware(["can:{$authenticated}", 'throttle:sensitive'])->name('auth.password.change');
 
-    Route::prefix('me')->name('me.')->middleware(["can:{$authenticated}", 'password.current'])->group(function (): void {
+    Route::prefix('me')->name('me.')->middleware(["can:{$authenticated}", 'password.current', 'nda.current'])->group(function (): void {
         Route::get('preferences', [PreferencesController::class, 'show'])->name('preferences.show');
         Route::patch('preferences', [PreferencesController::class, 'update'])->name('preferences.update');
         Route::post('national-id', [MyNationalIdController::class, 'store'])->middleware('throttle:sensitive')->name('national-id.store');
         Route::patch('gender', MyGenderController::class)->middleware(['can:'.Ability::RecordOwnGender->value, 'throttle:sensitive'])->name('gender.update');
     });
 
-    Route::middleware('password.current')->group(function () use ($authenticated): void {
+    Route::middleware(['password.current', 'nda.current'])->group(function () use ($authenticated): void {
         Route::post('auth/mfa/recovery-codes', RecoveryCodesController::class)->middleware(["can:{$authenticated}", 'throttle:sensitive'])->name('auth.mfa.recovery-codes');
         Route::delete('auth/mfa', DisableMfaController::class)->middleware(["can:{$authenticated}", 'throttle:sensitive'])->name('auth.mfa.disable');
 

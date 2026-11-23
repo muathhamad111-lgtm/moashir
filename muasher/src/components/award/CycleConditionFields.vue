@@ -13,6 +13,7 @@ const props = defineProps({
   published: { type: Object, default: null },
   versionId: { type: Number, default: null },
   canSetParticipation: { type: Boolean, default: false },
+  thresholdLocked: { type: Boolean, default: false },
 })
 
 const { t, locale } = useI18n()
@@ -78,7 +79,11 @@ const versionOptions = computed(() => {
         :label="t('cycles.form.disqualificationScore')"
         inputmode="decimal"
         input-dir="ltr"
-        :hint="t('cycles.form.disqualificationScoreHint')"
+        :hint="
+          thresholdLocked
+            ? t('cycles.form.thresholdLockedHint')
+            : t('cycles.form.disqualificationScoreHint')
+        "
         required
         :disabled="locked.has('disqualificationScore')"
       />

@@ -187,6 +187,7 @@ describe('assessment settings form', () => {
     advancedDisqualificationScore: '60.00',
     committeeEntityDataVisibility: 'name_only',
     scaleKind: 'of-10',
+    advancedCycleConcurrency: 'single',
   }
 
   it('sends the chosen assessment scale only when it changes', () => {
@@ -201,12 +202,24 @@ describe('assessment settings form', () => {
     const values = { ...settingsFormValues(settings), generalUploadMaxFileMb: '٣٠' }
     expect(changedAssessmentSettings(settings, values)).toEqual({ generalUploadMaxFileMb: 30 })
     expect(Object.keys(settingsFormValues(settings)).sort()).toEqual([
+      'advancedCycleConcurrency',
       'advancedDisqualificationScore',
       'advancedMinEntityAgeYears',
       'committeeEntityDataVisibility',
       'generalUploadMaxFileMb',
       'scaleKind',
     ])
+  })
+
+  it('sends the award cycle concurrency only when it changes and rejects an unknown mode', async () => {
+    const values = settingsFormValues(settings)
+    expect(values.advancedCycleConcurrency).toBe('single')
+    expect(
+      changedAssessmentSettings(settings, { ...values, advancedCycleConcurrency: 'staggered' }),
+    ).toEqual({ advancedCycleConcurrency: 'staggered' })
+    await expect(
+      assessmentSettingsSchema(t).validate({ ...values, advancedCycleConcurrency: 'unlimited' }),
+    ).rejects.toMatchObject({ errors: ['validation.required'] })
   })
 
   it('validates the general upload bounds', async () => {

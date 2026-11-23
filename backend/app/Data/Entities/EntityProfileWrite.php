@@ -13,5 +13,6 @@ final readonly class EntityProfileWrite
         public array $attributes,
         public ?EntityContactData $contact = null,
         public ?bool $marketingConsent = null,
+        public ?int $changeRequestId = null,
     ) {}
 }

@@ -10,7 +10,7 @@ const { t } = useI18n()
 </script>
 
 <template>
-  <ul v-if="decisions.length" class="filtering-decisions">
+  <ul class="filtering-decisions">
     <li v-for="decision in decisions" :key="decision.id" class="filtering-decisions__item">
       <div class="filtering-decisions__head">
         <strong>{{ t(`award.secretary.decisions.${decision.kind}`) }}</strong>
@@ -22,5 +22,4 @@ const { t } = useI18n()
       <p v-if="decision.note" class="filtering-decisions__note">{{ decision.note }}</p>
     </li>
   </ul>
-  <p v-else class="filtering-decisions__empty">{{ t('award.secretary.noDecisions') }}</p>
 </template>

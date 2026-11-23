@@ -167,12 +167,16 @@ export const authService = {
     )
   },
 
-  acceptInvitation(token, { password, passwordConfirmation, termsVersionId, nationalId }) {
+  acceptInvitation(
+    token,
+    { password, passwordConfirmation, termsVersionId, nationalId, ndaVersionId },
+  ) {
     const body = {
       password,
       passwordConfirmation,
       termsVersionId,
       ...(nationalId ? { nationalId } : {}),
+      ...(ndaVersionId ? { ndaVersionId } : {}),
     }
     return postOutcome(
       'auth.acceptInvitation',

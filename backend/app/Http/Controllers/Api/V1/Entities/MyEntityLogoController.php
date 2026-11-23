@@ -20,13 +20,13 @@ final class MyEntityLogoController
     {
         $entity = $uploadLogo->handle($owner, $request->upload());
 
-        return ApiResponse::resource(new OwnEntityResource($entity->load(OwnEntityResource::RELATIONS)), Response::HTTP_CREATED);
+        return ApiResponse::resource(new OwnEntityResource($entity->load(OwnEntityResource::RELATIONS)), Response::HTTP_ACCEPTED);
     }
 
     public function destroy(#[CurrentUser] User $owner, RemoveOwnEntityLogo $removeLogo): JsonResponse
     {
         $entity = $removeLogo->handle($owner);
 
-        return ApiResponse::resource(new OwnEntityResource($entity->load(OwnEntityResource::RELATIONS)));
+        return ApiResponse::resource(new OwnEntityResource($entity->load(OwnEntityResource::RELATIONS)), Response::HTTP_ACCEPTED);
     }
 }

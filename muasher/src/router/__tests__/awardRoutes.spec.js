@@ -29,10 +29,21 @@ describe('award routes — the links of the award notifications', () => {
     useAuthStore().clearSession()
     expect(await visit('/assessment/advanced')).toBe(R.ASSESSMENT_ADVANCED)
     signIn([ROLES.ENTITY])
+    expect(await visit('/assessment/advanced')).toBe(R.PATHS_AWARD)
     expect(await visit('/assessment/advanced/form/9201')).toBe(R.ASSESSMENT_ADVANCED_FORM)
     expect(await visit('/admin/award/cycles')).toBe(R.ERRORS_FORBIDDEN)
     signIn([ROLES.REQUEST_FOLLOWER])
     expect(await visit('/assessment/advanced/form/9201')).toBe(R.ERRORS_FORBIDDEN)
+  })
+
+  it('keeps the staff results screens and the entity result page apart (AJ-23)', async () => {
+    signIn([ROLES.ENTITY])
+    expect(await visit('/admin/award/results')).toBe(R.ERRORS_FORBIDDEN)
+    expect(await visit('/admin/award/cycles/31/results')).toBe(R.ERRORS_FORBIDDEN)
+    expect(await visit('/admin/award/cycles/31/results/national')).toBe(R.ERRORS_FORBIDDEN)
+    expect(await visit('/assessment/advanced/result/9204')).toBe(R.ASSESSMENT_ADVANCED_RESULT)
+    signIn([ROLES.REQUEST_FOLLOWER], { permissions: ['assessment.advanced.manage'] })
+    expect(await visit('/assessment/advanced/result/9204')).toBe(R.ERRORS_FORBIDDEN)
   })
 
   it('lets the cycle managers create cycles and the readers open them', async () => {

@@ -74,6 +74,11 @@ enum AccreditedAssessmentStatus: string implements ReviewedAssessmentState
         return in_array($this, [self::Assigned, self::UnderReview, self::NeedsCompletion], true);
     }
 
+    public function acceptsReassignment(): bool
+    {
+        return $this->hasAssessor();
+    }
+
     public function isForceTarget(): bool
     {
         return in_array($this, [self::Draft, self::Submitted, self::Assigned, self::UnderReview, self::Completed], true);

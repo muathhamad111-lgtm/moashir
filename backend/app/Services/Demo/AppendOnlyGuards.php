@@ -15,6 +15,7 @@ final class AppendOnlyGuards
         'assessment_criteria_moves',
         'assessment_feedback_items',
         'assessment_result_snapshots',
+        'assessment_review_notes',
         'assessment_scores',
         'assessment_status_transitions',
         'assessment_summaries',

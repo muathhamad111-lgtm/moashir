@@ -52,6 +52,14 @@
   }
 }
 
+// The TTS shell restyles floated labels (static, wrapping text); a hidden label must stay out of the
+// flow there too, or its text wraps in a 1px box and overflows the field (a stray scrollbar in a table).
+.field.field--label-hidden .field__label {
+  @include in-tts-shell {
+    @include visually-hidden;
+  }
+}
+
 .dropdown-combobox {
   @include flex(row, center, flex-start, var(--space-1));
   flex-wrap: wrap;

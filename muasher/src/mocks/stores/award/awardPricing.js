@@ -1,5 +1,5 @@
 import { pathPricingOf, priceInForce, pricingOfPrice } from '../finance/priceVersions'
-import { acceptsApplications, allCycles, runningCycle } from './cycleStore'
+import { acceptsApplications, allCycles, currentCycle } from './cycleStore'
 
 const NOT_YET_OPEN = ['draft']
 const FREE_FEE = '0.00'
@@ -45,7 +45,7 @@ export function awardPricingOf(cycle, now = Date.now()) {
 }
 
 export function awardPricing(now = Date.now()) {
-  return awardPricingOf(runningCycle(), now)
+  return awardPricingOf(currentCycle(now), now)
 }
 
 export function cycleFeePricing(cycle) {

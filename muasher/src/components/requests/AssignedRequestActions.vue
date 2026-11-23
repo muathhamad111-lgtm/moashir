@@ -3,7 +3,7 @@ import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 import BaseButton from '@/components/ui/BaseButton.vue'
 import { ROUTE_NAMES } from '@/constants/routeNames'
-import { reviewActionKey } from '@/utils/reviewAction'
+import { reviewActionKey, reviewRoute } from '@/utils/reviewAction'
 
 const props = defineProps({
   requestId: { type: Number, required: true },
@@ -30,7 +30,7 @@ const actionKey = computed(() => reviewActionKey(props.status))
     <BaseButton
       :variant="actionKey === 'viewReview' ? 'secondary' : 'primary'"
       size="sm"
-      :to="{ name: ROUTE_NAMES.REQUESTS_REVIEW, params }"
+      :to="reviewRoute(requestId)"
       >{{ t(`requests.assigned.actions.${actionKey}`) }}</BaseButton
     >
   </div>

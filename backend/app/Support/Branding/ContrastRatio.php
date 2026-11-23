@@ -18,6 +18,16 @@ final class ContrastRatio
         return (max($first, $second) + 0.05) / (min($first, $second) + 0.05);
     }
 
+    /**
+     * The lowest contrast $text reaches on any of $fills.
+     *
+     * @param  non-empty-list<string>  $fills
+     */
+    public static function weakest(string $text, array $fills): float
+    {
+        return min(array_map(static fn (string $fill): float => self::between($text, $fill), $fills));
+    }
+
     public static function meets(float $ratio, string $minimum): bool
     {
         return is_numeric($minimum) && $ratio >= (float) $minimum;

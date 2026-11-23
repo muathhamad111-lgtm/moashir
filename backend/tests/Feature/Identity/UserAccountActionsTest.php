@@ -213,7 +213,7 @@ it('writes the user export in English for an English request and joins several r
     $lines = array_values(array_filter(explode("\n", trim(ltrim($csv, "\u{FEFF}")))));
 
     expect(str_getcsv($lines[0], ',', '"', ''))->toBe(['Name', 'E-mail', 'Roles', 'Status', 'Last sign-in', 'Created at'])
-        ->and($csv)->toContain('"Finance Officer, Content Officer"')
+        ->and($csv)->toContain('"Content Officer, Finance Officer"')
         ->and(str_getcsv($lines[1], ',', '"', '')[4])->toBe('');
 });
 

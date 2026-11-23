@@ -13,12 +13,13 @@ use Illuminate\Contracts\Config\Repository;
 
 /**
  * Derives every brand colour the interface uses from the two base colours, then applies the
- * client's overrides. The SPA mirrors these rules for its live preview only; this class is
- * the authority (tests/Fixtures/branding/scheme-vectors.json keeps both in step).
+ * client's overrides; the sidebar gradient comes from BrandRailDeriver. The SPA mirrors these
+ * rules for its live preview only; this class is the authority
+ * (tests/Fixtures/branding/scheme-vectors.json keeps both in step).
  */
 final readonly class BrandColorDeriver
 {
-    public function __construct(private Repository $config) {}
+    public function __construct(private Repository $config, private BrandRailDeriver $rail) {}
 
     public function scheme(BrandColors $colors): BrandColorScheme
     {
@@ -36,6 +37,7 @@ final readonly class BrandColorDeriver
             $soft,
             $colors->secondary,
             $overrides->get(DerivedBrandColor::OnSecondary) ?? $this->readableOn($colors->secondary),
+            $this->rail->rail($colors),
         );
     }
 
@@ -48,15 +50,7 @@ final readonly class BrandColorDeriver
         $paper = $this->surface('paper');
         $ink = $this->surface('ink');
 
-        return $this->weakestContrast($paper, $fills) >= $this->weakestContrast($ink, $fills) ? $paper : $ink;
-    }
-
-    /**
-     * @param  non-empty-list<string>  $fills
-     */
-    private function weakestContrast(string $text, array $fills): float
-    {
-        return min(array_map(static fn (string $fill): float => ContrastRatio::between($text, $fill), $fills));
+        return ContrastRatio::weakest($paper, $fills) >= ContrastRatio::weakest($ink, $fills) ? $paper : $ink;
     }
 
     /**
@@ -81,7 +75,7 @@ final readonly class BrandColorDeriver
      */
     private function isReadable(string $foreground, array $backgrounds): bool
     {
-        return ContrastRatio::meets($this->weakestContrast($foreground, $backgrounds), $this->config->string('moashir.branding.minimum_contrast'));
+        return ContrastRatio::meets(ContrastRatio::weakest($foreground, $backgrounds), $this->config->string('moashir.branding.minimum_contrast'));
     }
 
     private function surface(string $name): string

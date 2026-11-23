@@ -5,7 +5,9 @@ import { bankTransfersHandlers } from '@/mocks/handlers/bankTransfers'
 import { resetEntitiesMock } from '@/mocks/stores/entityMockReset'
 import { resetFinanceState } from '@/mocks/stores/finance/financeState'
 import { findEntity } from '@/mocks/stores/entitiesStore'
-import { storeVatCertificate } from '@/mocks/stores/entityBilling'
+import { acceptVatCertificate } from '@/mocks/stores/entityBilling'
+import { mayHoldVatCertificate, proposeFile } from '@/mocks/stores/profileChangeRequests'
+import { approvePendingChange } from './profileChangeSupport'
 import { MOCK_API_BASE, clearMockSession, seedMockSession, wireFetch } from '@/test-utils/mockApi'
 
 const server = setupServer(...entitiesHandlers, ...bankTransfersHandlers)
@@ -80,13 +82,16 @@ describe('entity billing mock (row 49)', () => {
     const before = (await call('GET', '/entities/me')).body.data
     expect(before.billing_complete).toBe(false)
     const saved = await call('PATCH', '/entities/me/profile/billing', await billing())
-    expect(saved.status).toBe(200)
-    expect(saved.body.data).toMatchObject({
+    expect(saved.status).toBe(202)
+    expect(saved.body.data.billing_complete).toBe(false)
+    approvePendingChange(6004)
+    const approved = await call('GET', '/entities/me')
+    expect(approved.body.data).toMatchObject({
       address_short_code: 'MDAZ4410',
       vat_registered: true,
       billing_complete: false,
     })
-    const section = saved.body.data.profile_completion.sections.find(
+    const section = approved.body.data.profile_completion.sections.find(
       (item) => item.key === 'billing',
     )
     expect(section.missing_fields).toEqual(['vat_certificate'])
@@ -118,26 +123,27 @@ describe('entity billing mock (row 49)', () => {
   it('uploads, downloads and removes the certificate, and refuses it before a yes', async () => {
     seedMockSession(ALBIRR)
     const entity = findEntity(5001)
-    await expect(storeVatCertificate(entity, pdf())).rejects.toMatchObject({
-      status: 409,
-      code: 'entity.vat_not_registered',
-    })
+    expect(mayHoldVatCertificate(entity)).toBe(false)
     await call(
       'PATCH',
       '/entities/me/profile/billing',
       await billing({ vat_number: '300050010000003' }),
     )
-    await expect(storeVatCertificate(entity, pdf('scan.png', 'image/png'))).rejects.toMatchObject({
+    expect(mayHoldVatCertificate(entity)).toBe(true)
+    await expect(acceptVatCertificate(pdf('scan.png', 'image/png'))).rejects.toMatchObject({
       status: 422,
     })
-    await storeVatCertificate(entity, pdf())
+    proposeFile(entity, 'vat_certificate', await acceptVatCertificate(pdf()), ALBIRR)
+    approvePendingChange(5001)
     const own = (await call('GET', '/entities/me')).body.data
     expect(own.billing_complete).toBe(true)
     expect(own.vat_certificate.name).toBe('vat-certificate.pdf')
     const link = await call('POST', '/entities/me/vat-certificate/download')
     expect(link.body.data.url).toContain('/files/')
     const removed = await call('DELETE', '/entities/me/vat-certificate')
-    expect(removed.body.data.vat_certificate).toBeNull()
+    expect(removed.status).toBe(202)
+    expect(removed.body.data.pending_profile_change.items).toEqual(['vat_certificate'])
+    approvePendingChange(5001)
     const missing = await call('POST', '/entities/me/vat-certificate/download')
     expect(missing.status).toBe(404)
     expect(missing.body.code).toBe('entity.vat_certificate_missing')
@@ -150,7 +156,9 @@ describe('entity billing mock (row 49)', () => {
       '/entities/me/profile/billing',
       await billing({ vat_registered: false, vat_number: null }),
     )
-    expect(saved.body.data).toMatchObject({
+    expect(saved.status).toBe(202)
+    approvePendingChange(6001)
+    expect((await call('GET', '/entities/me')).body.data).toMatchObject({
       vat_number: null,
       vat_certificate: null,
       billing_complete: true,

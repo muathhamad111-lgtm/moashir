@@ -35,7 +35,16 @@ export function useVatCertificate() {
   const error = ref('')
 
   const certificate = computed(() => entityStore.profile?.vatCertificate ?? null)
-  const canUpload = computed(() => entityStore.profile?.vatRegistered === true)
+  const proposedRegistration = computed(
+    () =>
+      entityStore.pendingChange?.changes?.find((change) => change.item === 'vat_registered') ??
+      null,
+  )
+  const canUpload = computed(() =>
+    proposedRegistration.value
+      ? proposedRegistration.value.newValue === true
+      : entityStore.profile?.vatRegistered === true,
+  )
   const downloading = computed(() => Boolean(downloads.busy[DOWNLOAD_KEY]))
 
   async function run(action, successKey) {
@@ -43,7 +52,7 @@ export function useVatCertificate() {
     error.value = ''
     try {
       const { data } = await action()
-      entityStore.applyProfile(data)
+      await entityStore.applyProposal(data)
       if (successKey) toast.success(t(successKey))
     } catch (failure) {
       error.value = fileUploadMessage(failure, t('errors.unexpected'))

@@ -12,6 +12,7 @@ import AuthLayout from '@/components/layout/AuthLayout.vue'
 import PortalLayout from '@/components/layout/PortalLayout.vue'
 import AppLoadingScreen from '@/components/feedback/AppLoadingScreen.vue'
 import AccountCompletionHost from '@/components/identity/completion/AccountCompletionHost.vue'
+import NdaGateHost from '@/components/identity/nda/NdaGateHost.vue'
 import { useLocale } from '@/composables/useLocale'
 import { useTheme } from '@/composables/useTheme'
 import { usePlatformIdentity } from '@/composables/usePlatformIdentity'
@@ -112,4 +113,5 @@ useHead({
   <ConfirmModal />
   <SuccessModal />
   <AccountCompletionHost v-if="!isBooting" />
+  <NdaGateHost v-if="!isBooting" />
 </template>

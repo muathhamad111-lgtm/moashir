@@ -20,7 +20,8 @@ const MODES = Object.freeze({ LIST: 'list', VIEW: 'view', EDIT: 'edit', NEW: 'ne
 const DRAFT = 'draft'
 const CURRENT = 'current'
 
-export function useLegalVersions(kind) {
+// `service` is the legal texts API by default; the staff agreement passes its own adapter with the same calls.
+export function useLegalVersions(kind, service = legalVersionsService) {
   const { t } = useI18n()
   const toast = useToast()
   const { confirm } = useConfirm()
@@ -40,7 +41,7 @@ export function useLegalVersions(kind) {
     status.value = 'loading'
     errorMessage.value = ''
     try {
-      versions.value = (await legalVersionsService.list(kind.value)).data
+      versions.value = (await service.list(kind.value)).data
       status.value = 'success'
     } catch (error) {
       errorMessage.value = error?.normalized?.message ?? ''
@@ -57,7 +58,7 @@ export function useLegalVersions(kind) {
   async function open(version) {
     busy.value = 'open'
     try {
-      const detail = (await legalVersionsService.get(version.id)).data
+      const detail = (await service.get(version.id)).data
       if (detail.status === DRAFT) edit(detail)
       else {
         selected.value = detail
@@ -71,7 +72,7 @@ export function useLegalVersions(kind) {
   }
 
   async function startDraft() {
-    const source = current.value ? (await legalVersionsService.get(current.value.id)).data : null
+    const source = current.value ? (await service.get(current.value.id)).data : null
     edit(
       { ...legalDraftValues(source), version: suggestedVersionLabel(), status: DRAFT },
       MODES.NEW,
@@ -108,7 +109,7 @@ export function useLegalVersions(kind) {
     run('save', async () => {
       const saved =
         mode.value === MODES.NEW
-          ? await legalVersionsService.createDraft(kind.value, legalDraftPayload(values))
+          ? await service.createDraft(kind.value, legalDraftPayload(values))
           : await saveChanges(values)
       if (!saved) return
       edit(saved.data)
@@ -123,7 +124,7 @@ export function useLegalVersions(kind) {
       toast.info(t('legalAdmin.toasts.unchanged'))
       return null
     }
-    return legalVersionsService.updateDraft(selected.value.id, changes)
+    return service.updateDraft(selected.value.id, changes)
   }
 
   async function discard() {
@@ -135,7 +136,7 @@ export function useLegalVersions(kind) {
     })
     if (!accepted) return
     await run('discard', async () => {
-      await legalVersionsService.discardDraft(selected.value.id)
+      await service.discardDraft(selected.value.id)
       toast.success(t('legalAdmin.toasts.discarded'))
       close()
       await loadList()
@@ -153,7 +154,7 @@ export function useLegalVersions(kind) {
     const extra = await reasonExtra()
     if (!extra) return undefined
     return run('publish', async () => {
-      const published = (await legalVersionsService.publish(selected.value.id, extra)).data
+      const published = (await service.publish(selected.value.id, extra)).data
       selected.value = published
       mode.value = MODES.VIEW
       success.show({ title: t('legalAdmin.toasts.published'), message: published.version })

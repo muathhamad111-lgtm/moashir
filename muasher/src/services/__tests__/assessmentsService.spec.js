@@ -185,6 +185,19 @@ describe('assessmentsService (self assessment contract)', () => {
     })
   })
 
+  it('keeps the scoring type of each result row, so an achievement reads as achieved', async () => {
+    const sub = { subId: 11, code: 'M1.1', rawValue: '1.00', scoringType: 'achievement' }
+    const point = { pointId: 7, code: 'M1.2.1', rawValue: '9.00', scoringType: 'score' }
+    apiClient.get.mockResolvedValue({
+      data: {
+        data: { id: 9001, status: 'completed', available: true, sub: [sub], points: [point] },
+      },
+    })
+    const { data } = await assessmentsService.getResult(9001)
+    expect(data.sub[0].scoringType).toBe('achievement')
+    expect(data.points[0].scoringType).toBe('score')
+  })
+
   it('reports unexpected failures to GlitchTip and rethrows (never swallows)', async () => {
     const failure = new Error('boom')
     apiClient.get.mockRejectedValue(failure)

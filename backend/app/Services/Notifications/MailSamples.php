@@ -83,6 +83,7 @@ final readonly class MailSamples
         'PAY' => '/payments',
         'FIN' => '/finance/transactions',
         'CNT' => '/admin/contact-messages',
+        'NDA' => '/',
     ];
 
     public function __construct(private Repository $config, private AuthSettings $authSettings) {}

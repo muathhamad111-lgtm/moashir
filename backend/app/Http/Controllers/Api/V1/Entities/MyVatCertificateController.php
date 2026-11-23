@@ -23,14 +23,14 @@ final class MyVatCertificateController
     {
         $entity = $upload->handle($owner, $request->upload());
 
-        return ApiResponse::resource(new OwnEntityResource($entity->load(OwnEntityResource::RELATIONS)), Response::HTTP_CREATED);
+        return ApiResponse::resource(new OwnEntityResource($entity->load(OwnEntityResource::RELATIONS)), Response::HTTP_ACCEPTED);
     }
 
     public function destroy(#[CurrentUser] User $owner, RemoveOwnVatCertificate $remove): JsonResponse
     {
         $entity = $remove->handle($owner);
 
-        return ApiResponse::resource(new OwnEntityResource($entity->load(OwnEntityResource::RELATIONS)));
+        return ApiResponse::resource(new OwnEntityResource($entity->load(OwnEntityResource::RELATIONS)), Response::HTTP_ACCEPTED);
     }
 
     public function download(#[CurrentUser] User $owner, OwnEntity $ownEntity, IssueVatCertificateDownload $issueDownload): JsonResponse

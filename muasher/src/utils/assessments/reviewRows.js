@@ -55,3 +55,9 @@ export function subEvidenceOf(sub, files, lateKeys = []) {
     others: files.filter((file) => !known.has(file.attachmentKey)),
   }
 }
+
+// The state badge of a sub-criterion card: waiting for a new result, scored, or still pending.
+export function subStateBadge({ awaiting, done }) {
+  if (awaiting) return { variant: 'warning', key: 'awaiting' }
+  return done ? { variant: 'success', key: 'scored' } : { variant: 'muted', key: 'pending' }
+}

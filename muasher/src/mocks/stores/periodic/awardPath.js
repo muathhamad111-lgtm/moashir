@@ -6,7 +6,7 @@ import { findRegion } from '../regionsStore'
 import { findPayment } from '../finance/financeState'
 import { quoteOfPrice } from '../finance/priceVersions'
 import { requestPaymentOf } from '../accredited/requestPayments'
-import { runningCycle } from '../award/cycleStore'
+import { currentCycle, openCycles } from '../award/cycleStore'
 import { eligibilityOf, failuresOf } from '../award/eligibility'
 import {
   awardAvailability,
@@ -53,18 +53,49 @@ function advancedRecords(entityId) {
   )
 }
 
+// As the API: the entity's request in the cycle whatever its state, a conditions rejection only when nothing else.
 function requestOf(records, cycle) {
   if (!cycle) return null
-  return (
-    records.find((record) => record.awardCycleId === cycle.id && record.status !== REJECTED) ?? null
-  )
+  const inCycle = records.filter((record) => record.awardCycleId === cycle.id)
+  return inCycle.find((record) => record.status !== REJECTED) ?? inCycle[0] ?? null
+}
+
+function requestSummaryOf(request) {
+  if (!request) return null
+  const resource = assessmentResource(request)
+  return {
+    id: resource.id,
+    number: resource.number,
+    status: resource.status,
+    isOpen: resource.isOpen,
+  }
+}
+
+function openCycleOptionOf(entity, records, cycle, now) {
+  const request = requestOf(records, cycle)
+  const awaitingPayment = openOrderSummaryOf(entity.id, 'award', cycle.id)
+  const eligibility = eligibilityOf(entity, cycle, now)
+  const reason = eligibilityReason({ windowState: 'open', eligibility, request, awaitingPayment })
+  return {
+    ...cycleResource(cycle),
+    year: cycle.year,
+    eligibility: { eligible: reason === null, reason },
+    request: requestSummaryOf(request),
+  }
+}
+
+export function openCycleOptionsOf(entityId, now = Date.now()) {
+  const entity = findEntity(entityId)
+  if (!entity) return []
+  const records = advancedRecords(entityId).sort((left, right) => right.id - left.id)
+  return openCycles(now).map((cycle) => openCycleOptionOf(entity, records, cycle, now))
 }
 
 function eligibilityReason({ windowState, eligibility, request, awaitingPayment }) {
   if (windowState === 'none') return 'no_cycle'
   if (windowState === 'upcoming') return 'window_not_open'
   if (windowState === 'closed') return 'window_closed'
-  if (request) return 'request_exists'
+  if (request && request.status !== REJECTED) return 'request_exists'
   if (awaitingPayment) return 'awaiting_payment'
   if (awardAvailability() !== 'available') return 'path_unavailable'
   return failuresOf(eligibility)[0]?.rule ?? null
@@ -77,7 +108,7 @@ function paidAfterWindow(request, cycle) {
 
 function openRequestOf(request) {
   const resource = request ? assessmentResource(request) : null
-  if (!resource?.isOpen) return null
+  if (!resource) return null
   return {
     id: resource.id,
     number: resource.number,
@@ -98,7 +129,7 @@ function lastResultOf(request, cycle, announced) {
 }
 
 export function awardPathOf(entityId, now = Date.now()) {
-  const cycle = runningCycle()
+  const cycle = currentCycle(now)
   const windowState = windowStateOf(cycle, now)
   const entity = findEntity(entityId)
   const records = advancedRecords(entityId)
@@ -122,5 +153,6 @@ export function awardPathOf(entityId, now = Date.now()) {
     windowClosedBeforePayment: paidAfterWindow(request, cycle),
     announced,
     lastResult: lastResultOf(request, cycle, announced),
+    openCycles: openCycleOptionsOf(entityId, now),
   }
 }

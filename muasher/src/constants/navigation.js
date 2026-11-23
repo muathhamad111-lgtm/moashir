@@ -24,7 +24,11 @@ export const APP_NAV_ITEMS = [
     icon: 'building',
     routeName: ROUTE_NAMES.ADMIN_ENTITIES,
     // Deleted entities and e-mail change requests open from buttons on the entities page.
-    activeOn: [ROUTE_NAMES.ADMIN_ENTITIES_DELETED, ROUTE_NAMES.ADMIN_ENTITY_EMAIL_CHANGES],
+    activeOn: [
+      ROUTE_NAMES.ADMIN_ENTITIES_DELETED,
+      ROUTE_NAMES.ADMIN_ENTITY_EMAIL_CHANGES,
+      ROUTE_NAMES.ADMIN_ENTITY_PROFILE_CHANGES,
+    ],
   },
   {
     id: 'finance',

@@ -30,7 +30,7 @@ const columns = computed(() => [
   { key: 'dueAt', label: t('award.work.columns.dueAt'), sortKey: 'due_at' },
   { key: 'progress', label: t('requests.assigned.columns.progress') },
   { key: 'percent', label: t('award.work.columns.percent') },
-  { key: 'open', label: t('requests.assigned.columns.actions') },
+  { key: 'open', label: t('requests.assigned.columns.actions'), action: true },
 ])
 
 function isClosed(row) {
@@ -50,6 +50,7 @@ function openLabel(row) {
 
 <template>
   <DataTable
+    stacked
     :columns="columns"
     :items="items"
     :status="status"

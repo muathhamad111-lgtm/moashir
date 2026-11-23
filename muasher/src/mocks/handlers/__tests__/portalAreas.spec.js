@@ -10,7 +10,8 @@ import { resetSenderThreads } from '@/mocks/stores/senderThreads'
 import { resetContactMessages } from '@/mocks/stores/contactMessages'
 import { resetEntitiesMock } from '@/mocks/stores/entityMockReset'
 import { resetFinanceState } from '@/mocks/stores/finance/financeState'
-import { removeEntityLogo, storeEntityLogo } from '@/mocks/stores/entityLogo'
+import { acceptEntityLogo } from '@/mocks/stores/entityLogo'
+import { approvePendingChange } from './profileChangeSupport'
 import { MOCK_API_BASE, clearMockSession, seedMockSession, wireFetch } from '@/test-utils/mockApi'
 import { resetProfileScenarioAfterEach, startWithIncompleteProfile } from './profileScenarioSupport'
 
@@ -168,8 +169,11 @@ describe('entity registry details and logo', () => {
       license_number: '000123',
       founded_on: '2012-03-01',
     })
-    expect(saved.body.data).toMatchObject({ license_number: '000123', founding_year: 2012 })
-    expect(saved.body.data.profile_completion.percent).toBe(87)
+    expect(saved.status).toBe(202)
+    approvePendingChange(6001)
+    const approved = (await call('GET', '/entities/me')).body.data
+    expect(approved).toMatchObject({ license_number: '000123', founding_year: 2012 })
+    expect(approved.profile_completion.percent).toBe(87)
     const refused = await call('PATCH', '/entities/me/profile/contact', {
       base_revision: revision('contact'),
       authorized_person_name: me.authorized_person_name,
@@ -182,17 +186,14 @@ describe('entity registry details and logo', () => {
   })
 
   it('keeps a clean PNG logo behind a signed link and refuses other types', async () => {
-    const entity = { id: 6001, logo: null }
-    await storeEntityLogo(
+    const logo = await acceptEntityLogo(
       NAMAA,
-      entity,
       new File([new Uint8Array([0x89, 0x50])], 'logo.png', { type: 'image/png' }),
     )
-    expect(entity.logo.url).toContain('/files/')
+    expect(logo.url).toContain('/files/')
     await expect(
-      storeEntityLogo(NAMAA, entity, new File(['<svg/>'], 'logo.svg', { type: 'image/svg+xml' })),
+      acceptEntityLogo(NAMAA, new File(['<svg/>'], 'logo.svg', { type: 'image/svg+xml' })),
     ).rejects.toMatchObject({ status: 422 })
-    expect(removeEntityLogo(entity).logo).toBeNull()
   })
 })
 

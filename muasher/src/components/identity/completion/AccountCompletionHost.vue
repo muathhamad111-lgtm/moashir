@@ -13,9 +13,11 @@ const auth = useAuthStore()
 const completion = useAccountCompletionStore()
 const route = useRoute()
 
+// The mandatory staff agreement comes first; the skippable completion modal waits until it is accepted.
 const canPrompt = computed(
   () =>
     auth.isAuthenticated &&
+    auth.user?.ndaAcceptanceRequired !== true &&
     route.meta.requiresAuth === true &&
     PROMPT_LAYOUTS.includes(route.meta.layout),
 )

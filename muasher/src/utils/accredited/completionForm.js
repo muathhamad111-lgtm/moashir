@@ -49,6 +49,10 @@ function itemKey(subId, kind) {
   return `${subId}:${kind}`
 }
 
+export function cvItemKey(subId) {
+  return itemKey(subId, COMPLETION_ITEM_KINDS.CV)
+}
+
 function mainItemKey(mainId) {
   return `${MAIN_PREFIX}${mainId}:${COMPLETION_ITEM_KINDS.EVIDENCE}`
 }

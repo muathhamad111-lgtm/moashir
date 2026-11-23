@@ -4,9 +4,11 @@ declare(strict_types=1);
 
 namespace App\Http\Resources\Assessments;
 
+use App\Enums\Certificates\CertificateKind;
 use App\Enums\Identity\PermissionKey;
 use App\Models\Assessments\Assessment;
 use App\Models\Assessments\AssessmentResultSnapshot;
+use App\Models\Certificates\Certificate;
 use App\Models\Identity\User;
 use App\Support\Assessments\PathPresenter;
 use App\Support\Assessments\RequestPaymentPresenter;
@@ -65,6 +67,10 @@ final class AssessmentResource extends JsonResource
     {
         $payment = $this->paymentOf($assessment, $request);
 
+        if ($assessment->isAdvanced()) {
+            return ['payment' => $payment, 'level' => null, 'certificate' => CertificateSummaryPresenter::present($this->topAwardCertificateOf($assessment)), 'kit' => null];
+        }
+
         if (! $assessment->isAccredited()) {
             return ['payment' => $payment, 'level' => null, 'certificate' => null, 'kit' => null];
         }
@@ -77,6 +83,18 @@ final class AssessmentResource extends JsonResource
             'certificate' => CertificateSummaryPresenter::present($certificate),
             'kit' => KitLinePresenter::placeholder(),
         ];
+    }
+
+    /**
+     * The certificate an award row points to: the winner or qualified one when issued, else the participation one.
+     */
+    private function topAwardCertificateOf(Assessment $assessment): ?Certificate
+    {
+        $order = CertificateKind::award();
+
+        return $assessment->awardCertificates
+            ->sortBy(static fn (Certificate $certificate): int => (int) array_search($certificate->kind, $order, true))
+            ->first();
     }
 
     /**

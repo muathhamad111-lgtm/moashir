@@ -45,7 +45,7 @@ onMounted(load)
       :message="errorMessage || t('advanced.result.missingMessage')"
     />
     <ResultPendingNotice v-else-if="!result.available" :result="result">
-      <RouterLink class="accredited-result__back" :to="{ name: ROUTE_NAMES.ASSESSMENT_ADVANCED }">{{
+      <RouterLink class="accredited-result__back" :to="{ name: ROUTE_NAMES.PATHS_AWARD }">{{
         t('advanced.result.back')
       }}</RouterLink>
     </ResultPendingNotice>

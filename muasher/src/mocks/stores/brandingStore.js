@@ -9,10 +9,12 @@ export function getBrandingTheme() {
   return theme
 }
 
-export function updateBrandingColors({ primary, secondary, overrides }) {
+export function updateBrandingColors({ primary, secondary, overrides, rail }) {
   theme.primaryColor = primary
   theme.secondaryColor = secondary
   theme.colorOverrides = { ...overrides }
+  theme.sidebarTopColor = rail.top
+  theme.sidebarBottomColor = rail.bottom
   theme.updatedAt = new Date().toISOString()
   return theme
 }

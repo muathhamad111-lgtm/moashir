@@ -25,6 +25,7 @@ final readonly class DocumentHtmlComposer
         $view = match (DocumentTemplate::tryFrom($document->template)) {
             DocumentTemplate::PaymentReceipt => 'documents.payment_receipt',
             DocumentTemplate::AccreditedCertificate => 'documents.accredited_certificate',
+            DocumentTemplate::AwardCertificate => 'documents.award_certificate',
             DocumentTemplate::FeedbackReport => 'documents.feedback_report',
             DocumentTemplate::BoardReport => 'documents.board_report',
             null => throw new InvalidArgumentException('Unknown document template.'),

@@ -108,9 +108,9 @@ describe('ReviewOverrideBand', () => {
 })
 
 describe('ScoreOverrideReview', () => {
-  function mountReview(override) {
+  function mountReview(override, { values = { 'point-31': '9.5' }, typeOf = () => 'score' } = {}) {
     return mount(ScoreOverrideReview, {
-      props: { modelValue: true, override, values: { 'point-31': '9.5' } },
+      props: { modelValue: true, override, values, typeOf },
       ...globals(),
       attachTo: document.body,
     })
@@ -133,6 +133,28 @@ describe('ScoreOverrideReview', () => {
     await flushPromises()
     expect(submit).toHaveBeenCalledWith('Corrected after checking the attached evidence.')
     expect(wrapper.emitted('update:modelValue')).toEqual([[false]])
+    wrapper.unmount()
+  })
+})
+
+describe('ScoreOverrideReview with achievement items', () => {
+  it('shows an achievement change as not achieved → achieved, with no numeric delta', () => {
+    const override = {
+      ...fakeOverride(),
+      saved: () => ({ rawValue: '0.00', percent: '0.00' }),
+    }
+    const wrapper = mount(ScoreOverrideReview, {
+      props: {
+        modelValue: true,
+        override,
+        values: { 'point-31': '1' },
+        typeOf: () => 'achievement',
+      },
+      ...globals(),
+      attachTo: document.body,
+    })
+    const cells = wrapper.findAll('tbody td').map((cell) => cell.text())
+    expect(cells).toEqual(['Not achieved', 'Achieved', '—'])
     wrapper.unmount()
   })
 })

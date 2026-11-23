@@ -3,8 +3,10 @@ import { versionWithStatus } from '../criteriaStore'
 import { assessmentReject, fieldMessage } from '../assessments/assessmentRejection'
 import { isOpen } from '../assessments/assessmentsStore'
 import { dispatchQueuedJob } from '../mockQueue'
+import { runningCycleCounts } from '../award/cycleConcurrency'
 import {
   COMMITTEE_VISIBILITIES,
+  CYCLE_CONCURRENCY_VALUES,
   SCALE_KIND_VALUES,
   EVIDENCE_TYPE_CATALOG,
   SLA_LIMITS,
@@ -52,6 +54,20 @@ function typesError(value) {
   return valid ? null : [fieldMessage('validation.invalid', {}, 'settings')]
 }
 
+const CHOICE_RULES = {
+  committeeEntityDataVisibility: COMMITTEE_VISIBILITIES,
+  scaleKind: SCALE_KIND_VALUES,
+  advancedCycleConcurrency: CYCLE_CONCURRENCY_VALUES,
+}
+
+function validateChoices(body, errors, changes) {
+  Object.entries(CHOICE_RULES).forEach(([key, allowed]) => {
+    if (!(key in body)) return
+    if (allowed.includes(body[key])) changes[key] = body[key]
+    else errors[key] = [fieldMessage('validation.invalid', {}, 'settings')]
+  })
+}
+
 function validatedChanges(body) {
   const errors = {}
   const changes = {}
@@ -71,15 +87,7 @@ function validatedChanges(body) {
     if (error) errors.advancedDisqualificationScore = error
     else changes.advancedDisqualificationScore = twoDecimals(body.advancedDisqualificationScore)
   }
-  if ('committeeEntityDataVisibility' in body) {
-    if (COMMITTEE_VISIBILITIES.includes(body.committeeEntityDataVisibility))
-      changes.committeeEntityDataVisibility = body.committeeEntityDataVisibility
-    else errors.committeeEntityDataVisibility = [fieldMessage('validation.invalid', {}, 'settings')]
-  }
-  if ('scaleKind' in body) {
-    if (SCALE_KIND_VALUES.includes(body.scaleKind)) changes.scaleKind = body.scaleKind
-    else errors.scaleKind = [fieldMessage('validation.invalid', {}, 'settings')]
-  }
+  validateChoices(body, errors, changes)
   const reason = reasonError(body.reason)
   if (reason) errors.reason = reason
   throwIfErrors(errors)
@@ -95,10 +103,18 @@ function recomputeDueDates(slaDays) {
     })
 }
 
+function switchesConcurrency(changes) {
+  return (
+    'advancedCycleConcurrency' in changes &&
+    changes.advancedCycleConcurrency !== assessmentSettings().advancedCycleConcurrency
+  )
+}
+
 export function updateAssessmentSettings(user, body) {
   const changes = validatedChanges(body)
   if (!Object.keys(changes).length) return assessmentSettings()
-  if (user.superAdmin && !trimmed(body.reason)) throw assessmentReject.reasonRequired()
+  if ((user.superAdmin || switchesConcurrency(changes)) && !trimmed(body.reason))
+    throw assessmentReject.reasonRequired()
   const before = assessmentSettings().accreditedReviewSlaDays
   const after = writeAssessmentSettings(changes)
   if (after.accreditedReviewSlaDays !== before)
@@ -125,6 +141,8 @@ export function assessmentSettingsResource() {
     advancedDisqualificationScore: settings.advancedDisqualificationScore,
     advancedInitialReviewSlaDays: settings.advancedInitialReviewSlaDays,
     committeeEntityDataVisibility: settings.committeeEntityDataVisibility,
+    advancedCycleConcurrency: settings.advancedCycleConcurrency,
+    runningCycles: runningCycleCounts(),
     scaleKind: settings.scaleKind,
     publishedVersion: publishedScale(),
   }

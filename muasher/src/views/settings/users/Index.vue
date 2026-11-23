@@ -13,6 +13,7 @@ import ReasonDialog from '@/components/modal/ReasonDialog.vue'
 import UserForm from '@/components/users/UserForm.vue'
 import UserDetailsDialog from '@/components/users/UserDetailsDialog.vue'
 import UserStatusBadge from '@/components/users/UserStatusBadge.vue'
+import NdaStatusCell from '@/components/nda/NdaStatusCell.vue'
 import RowActions from '@/components/data-list/RowActions.vue'
 import UserPathAccessCell from '@/components/users/UserPathAccessCell.vue'
 import AssessorQualificationsDialog from '@/components/users/AssessorQualificationsDialog.vue'
@@ -46,14 +47,15 @@ import {
 const { t, locale } = useI18n()
 const toast = useToast()
 const { can, canAccess } = usePermissions()
-const { roleLabel, roleFilterOptions, statusFilterOptions } = useUsers()
+const { roleLabel, roleFilterOptions, statusFilterOptions, ndaFilterOptions } = useUsers()
 
-const filters = useFilters({ role: '', status: '' })
+const filters = useFilters({ role: '', status: '', nda: '' })
 const { search } = filters
 useSearchPrefill(search, ROUTE_NAMES.ADMIN_USERS)
 const paginator = usePagination({ perPage: 10 })
 const { pagination, setPage } = paginator
 const stats = ref(null)
+const ndaMeta = ref({ scopeRoles: [], currentVersion: null })
 const canManage = computed(() => can(PERMISSIONS.USERS_MANAGE))
 const canViewRoles = computed(() => canAccess(accessFor(ROUTE_NAMES.ADMIN_PERMISSIONS)))
 const canReviewIdentity = computed(() => canAccess(accessFor(ROUTE_NAMES.ADMIN_IDENTITY_CHANGES)))
@@ -63,6 +65,10 @@ const { items, status, errorMessage, load } = useTable({
   fetcher: async (params) => {
     const envelope = await usersService.list(params)
     stats.value = envelope.meta?.stats ?? null
+    ndaMeta.value = {
+      scopeRoles: envelope.meta?.ndaScopeRoles ?? [],
+      currentVersion: envelope.meta?.ndaCurrentVersion ?? null,
+    }
     return envelope
   },
   filters,
@@ -175,6 +181,12 @@ function onAction(key, row) {
           :label="t('users.filters.status')"
           @update:model-value="draft.setFilter('status', $event)"
         />
+        <AppSelect
+          :model-value="draft.filters.nda"
+          :options="ndaFilterOptions"
+          :label="t('nda.users.filter')"
+          @update:model-value="draft.setFilter('nda', $event)"
+        />
       </template>
       <template v-if="can(PERMISSIONS.USERS_EXPORT)" #export>
         <BaseButton
@@ -221,6 +233,7 @@ function onAction(key, row) {
       <template #cell-status="{ item }">
         <span class="users-page__state">
           <UserStatusBadge :status="item.status" />
+          <NdaStatusCell :status="item.ndaStatus" :version="ndaMeta.currentVersion" labelled />
           <span class="users-page__last-login">{{ lastLoginLabel(item.lastLoginAt) }}</span>
         </span>
       </template>
@@ -242,7 +255,14 @@ function onAction(key, row) {
       @update:page="setPage($event)"
     />
 
-    <UserForm v-if="canManage" v-model="formOpen" :user="editing" :save="save" @saved="onSaved" />
+    <UserForm
+      v-if="canManage"
+      v-model="formOpen"
+      :user="editing"
+      :save="save"
+      :nda-scope-roles="ndaMeta.scopeRoles"
+      @saved="onSaved"
+    />
     <UserDetailsDialog v-model="detailsOpen" :user="details" />
     <AssessorQualificationsDialog
       v-if="canManage"

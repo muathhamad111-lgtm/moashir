@@ -9,6 +9,7 @@ import {
   authorizeRank,
   authorizeUnapprove,
   authorizeViewResults,
+  isCycleSecretary,
 } from '../stores/committee/committeeAccess'
 import {
   announceCycle,
@@ -26,7 +27,7 @@ const CYCLE = '/api/v1/award/cycles/:cycle'
 
 function boardResponse(cycle, stage, regionId = null) {
   const { items, meta } = resultsBoard(cycle, stage, regionId)
-  return envelope(items, meta)
+  return envelope(items, { ...meta, isCycleSecretary: isCycleSecretary(signedInActor(), cycle) })
 }
 
 function guarded(authorize, resolve) {

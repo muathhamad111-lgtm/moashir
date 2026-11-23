@@ -292,10 +292,14 @@ $auth-two-columns: 28rem;
   color: var(--lp-ink-2);
 
   &.is-selected {
-    border-color: var(--lp-btn);
-    background: var(--lp-btn);
     color: var(--lp-btn-ink);
   }
+}
+
+.lp-auth .sign-in-methods__indicator {
+  border-color: var(--lp-btn);
+  border-radius: 10px;
+  background: var(--lp-btn);
 }
 
 @media (min-width: $auth-split) {

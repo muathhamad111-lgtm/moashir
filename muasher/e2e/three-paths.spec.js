@@ -250,8 +250,6 @@ test.describe('award flow (page 20, flow 3)', () => {
     )
     await shot(page, '15-path-award-eligible', testInfo)
     await page.locator('[data-testid="path-primary-action"]').click()
-    await expect(page).toHaveURL(/\/assessment\/advanced$/)
-    await page.locator('.advanced-request__actions .btn--primary').click()
     await expect(page).toHaveURL(/\/assessment\/advanced\/form\/\d+$/)
     await navigateInApp(page, '/paths/award')
     await expect(page.locator('[data-testid="path-status-card"]')).toHaveAttribute(

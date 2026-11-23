@@ -19,6 +19,7 @@ export function toUser(raw = {}) {
     lastLoginAt: raw.lastLoginAt ?? null,
     entityId: raw.entityId ?? null,
     createdAt: raw.createdAt ?? null,
+    ndaStatus: raw.ndaStatus ?? null,
   }
 }
 

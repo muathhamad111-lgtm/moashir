@@ -140,7 +140,8 @@
     "contactMessages": "Inbox",
     "auditLog": "Audit log",
     "finance": "Finance",
-    "pendingCount": "{count} awaiting action"
+    "pendingCount": "{count} awaiting action",
+    "entityProfileChanges": "Profile change requests"
   },
   "footer": {
     "copyright": "All rights reserved © {year} — Moashir platform",
@@ -341,7 +342,8 @@
     "awaiting_secretary": "Awaiting the secretary",
     "committee_discussion": "Committee discussion",
     "returned_to_committee": "Returned to the committee",
-    "national_non_winner": "National non-winner"
+    "national_non_winner": "National non-winner",
+    "partially_approved": "Partially approved"
   },
   "validation": {
     "required": "This field is required",
@@ -1224,6 +1226,12 @@
         },
         "notificationTexts": {
           "title": "Notification texts"
+        },
+        "nda": {
+          "title": "Non-disclosure agreement"
+        },
+        "ndaAcceptances": {
+          "title": "Agreement acceptance register"
         }
       },
       "criteria": {
@@ -1273,6 +1281,9 @@
       },
       "identityChanges": {
         "title": "Identity change requests"
+      },
+      "entityProfileChanges": {
+        "title": "Entity profile change requests"
       }
     },
     "dev": {
@@ -2005,6 +2016,7 @@
       "title": "Verification code",
       "inputLabel": "Verification code digit",
       "verify": "Verify code",
+      "verified": "Verified",
       "expiresIn": "Code expires in {time}",
       "expired": "The code has expired. Please request a new one.",
       "noCode": "Didn't receive the code?",
@@ -2547,7 +2559,58 @@
     "lastAssessment": {
       "none": "Not assessed yet"
     },
-    "registeredOn": "Registered {date}"
+    "registeredOn": "Registered {date}",
+    "profileChanges": {
+      "title": "Entity profile change requests",
+      "subtitle": "Changes entities made to their own profiles, waiting for your decision field by field.",
+      "pendingCount": "{count} awaiting decision",
+      "searchLabel": "Search by entity name or reference",
+      "columns": {
+        "entity": "Entity",
+        "items": "Changed items",
+        "submittedAt": "Submitted on",
+        "status": "Status",
+        "actions": "Decision"
+      },
+      "itemCount": "{count} item | {count} items",
+      "reviewAction": "Review",
+      "view": "View",
+      "emptyTitle": "No profile change requests in this list",
+      "emptyMessage": "Profile changes entities submit for approval appear here.",
+      "review": {
+        "title": "Review the profile change",
+        "subtitle": "{name} · revision {revision}",
+        "loading": "Loading the request…",
+        "approved": "Approved value",
+        "proposed": "Proposed value",
+        "approve": "Approve this change",
+        "approveAll": "Approve all",
+        "rejectAll": "Reject all",
+        "empty": "Empty",
+        "noFile": "No file",
+        "removesFile": "Remove the current file",
+        "openFile": "Open the file",
+        "scanPending": "The file is still being scanned.",
+        "stale": "The approved value changed after the request; this change can only be rejected.",
+        "coupled": "Region and city, and VAT registration and VAT number, are decided together.",
+        "summary": "{approved} to approve · {rejected} to reject",
+        "reason": "Reason for rejection",
+        "reasonHint": "Required when you reject any change. The entity sees it.",
+        "reasonRequired": "Write the reason for rejection (at least 10 characters).",
+        "submit": "Save the decision",
+        "decided": "The decision was saved and the entity was notified.",
+        "decision": {
+          "approved": "Approved",
+          "rejected": "Rejected"
+        },
+        "decidedBy": "Decided by {name} on {date}"
+      },
+      "recordCard": {
+        "title": "Profile change awaiting approval",
+        "text": "{count} item submitted on {date}. | {count} items submitted on {date}.",
+        "open": "Review the request"
+      }
+    }
   },
   "dashboard": {
     "eyebrow": "Dashboard",
@@ -3183,6 +3246,10 @@
         "criteria": {
           "title": "Criteria set-up",
           "desc": "Main and sub-criteria, their weights and checkpoints."
+        },
+        "nda": {
+          "title": "Non-disclosure agreement",
+          "desc": "Versions, roles in scope and the acceptance register."
         }
       }
     },
@@ -3296,7 +3363,20 @@
       "generalUploadsNote": "Applies to uploads other than assessment evidence, such as refund evidence. Evidence limits are set on each path.",
       "scaleTitle": "Default scoring type",
       "scale": "Type for new main criteria",
-      "scaleHint": "Each new main criterion starts with this type; each sub-criterion and indicator gets its own type in the criteria settings. Existing criteria keep their type."
+      "scaleHint": "Each new main criterion starts with this type; each sub-criterion and indicator gets its own type in the criteria settings. Existing criteria keep their type.",
+      "cycleConcurrency": "Award cycles running together",
+      "cycleConcurrencyOptions": {
+        "single": "One running cycle only",
+        "staggered": "A new cycle while another is not closed",
+        "concurrent": "Several cycles in the same period"
+      },
+      "cycleConcurrencyHints": {
+        "single": "A new cycle opens only after the running cycle is closed.",
+        "staggered": "A new cycle may open while another is in filtering, committee or results, but only one cycle accepts applications at a time.",
+        "concurrent": "Several cycles may accept applications at the same time; each entity chooses the cycle it applies to."
+      },
+      "cycleConcurrencyNote": "A change applies to cycles opened after it and needs a reason; it does not close running cycles.",
+      "cycleConcurrencyFutureOnly": "Applies to new cycles only"
     },
     "sms": {
       "broadcastTitle": "Send messages",
@@ -3496,7 +3576,8 @@
           "guestFollowUp": "Guest follow-up line",
           "sms": "Text",
           "emailBody": "Body",
-          "emailSubject": "Subject"
+          "emailSubject": "Subject",
+          "nda": "Non-disclosure agreement line"
         },
         "variants": {
           "single": "Notification text",
@@ -4430,6 +4511,7 @@
       "ADV-16": "Returned to the assessors committee",
       "ADV-17": "Committee average approved",
       "ADV-18": "Award results announced",
+      "ADV-19": "Award certificate issued",
       "ADV-20": "Regional results approved",
       "ADV-21": "Organizations qualified for the national award",
       "ADV-22": "National result approved",
@@ -4442,6 +4524,7 @@
       "ADV-29": "Committee discussion opened",
       "ADV-30": "Committee discussion entry",
       "ADV-31": "Advanced request withdrawn",
+      "ADV-32": "Award participation certificate issued",
       "INT-01": "SMS sending failed",
       "INT-02": "SMS gateway check passed",
       "INT-03": "Payment gateway check failed",
@@ -4474,6 +4557,7 @@
       "PER-05": "Period dates corrected",
       "CYC-01": "Award submissions closed",
       "CYC-02": "Award cycle closed",
+      "CYC-03": "The award cycle could not open",
       "EVD-01": "Evidence bundle ready",
       "EVD-02": "Evidence file refused",
       "FIN-01": "Transactions export ready",
@@ -4482,7 +4566,12 @@
       "CMS-02": "Indicator value updated",
       "CMS-03": "Indicator published",
       "CMS-04": "Public content updated",
-      "CMS-05": "Content unpublished"
+      "CMS-05": "Content unpublished",
+      "NDA-01": "New version of the non-disclosure agreement",
+      "NDA-02": "Reminder to accept the non-disclosure agreement",
+      "CYC-04": "Award cycle not opened on schedule",
+      "REG-14": "Entity profile change request",
+      "REG-15": "Entity profile change decision"
     }
   },
   "requests": {
@@ -4554,7 +4643,7 @@
       "searchLabel": "Search assessors by name",
       "assessorLabel": "Assessor",
       "openRequests": "No open requests | 1 open request | {count} open requests",
-      "empty": "No eligible assessor matches the search.",
+      "empty": "No qualified assessor is available for this request.",
       "loadFailed": "The assessors could not be loaded. Close the dialog and try again.",
       "reasonLabel": "Reason",
       "reasonRequiredHint": "Required, at least {min} characters. It is kept in the assignment history.",
@@ -4564,7 +4653,11 @@
       "chooseError": "Choose an assessor.",
       "qualifiedOnly": "Only the assessors qualified for this path are listed.",
       "notQualified": "This assessor is not qualified for the path of this request. Choose another assessor from the refreshed list.",
-      "outOfScope": "This request is no longer in the paths you follow."
+      "outOfScope": "This request is no longer in the paths you follow.",
+      "noMatch": "No available assessor matches the search.",
+      "cycleUnlinked": "No initial assessor is linked to this award cycle yet. The System Administrator or the Award Secretary links them on the cycle page.",
+      "qualifiedOnlyAward": "Only the initial assessors linked to the award cycle are listed here, except its members.",
+      "linkAssessors": "Link initial assessors to the cycle"
     },
     "assigned": {
       "title": "My assigned requests",
@@ -4614,7 +4707,8 @@
         "refunded": "Fee refunded",
         "reopened": "Request reopened",
         "forced_transition": "Status changed by the Super Admin",
-        "declined_incomplete": "Closed as incomplete"
+        "declined_incomplete": "Closed as incomplete",
+        "assessor_unavailable": "The assessor is no longer available"
       }
     },
     "detail": {
@@ -5026,87 +5120,6 @@
       "notAccepting": "Not accepting applications",
       "minAge": "Minimum entity age: {years} years"
     },
-    "entity": {
-      "title": "Your entity in this cycle",
-      "noCycle": "There is no running award cycle to apply to.",
-      "previous": "Previous award request"
-    },
-    "eligibility": {
-      "title": "Entry conditions",
-      "age": "Entity age of at least {required} years (your entity: {actual} years)",
-      "rules": {
-        "region": "The region of your entity is covered by the cycle",
-        "min_entity_age": "Minimum entity age"
-      },
-      "window": "The submission period is open",
-      "passed": "Met",
-      "failed": "Not met",
-      "open": "Open",
-      "closed": "Closed"
-    },
-    "request": {
-      "label": "Your award request",
-      "apply": "Apply for the award",
-      "applyAgain": "Apply again",
-      "continue": "Continue the draft",
-      "complete": "Complete the request",
-      "submittedAt": "Submitted on",
-      "states": {
-        "apply": {
-          "title": "Your entity meets the entry conditions",
-          "message": "Apply to open a draft, then add your CV entries and evidence before the submission end."
-        },
-        "notEligible": {
-          "title": "Your entity does not meet the entry conditions",
-          "message": "Review the conditions below. You can apply once your entity meets them."
-        },
-        "windowClosed": {
-          "title": "The submission period is closed",
-          "message": "Applications are accepted only during the submission period of the cycle."
-        },
-        "rejected": {
-          "title": "Your application did not meet the entry conditions",
-          "message": "The application was recorded with the reasons below. If your entity now meets the conditions, you can apply again."
-        },
-        "draft": {
-          "title": "Your draft is open",
-          "message": "Complete your CV entries and evidence, then submit before the submission end. You can delete the draft while it is not submitted."
-        },
-        "completion": {
-          "title": "Your request was returned for completion",
-          "message": "Complete only the listed items and resubmit before the deadline."
-        },
-        "review": {
-          "title": "Your request is under review",
-          "message": "The award stages run confidentially. The outcome is shared when the results are announced."
-        },
-        "expired": {
-          "title": "The draft expired",
-          "message": "The submission period ended before the draft was submitted."
-        },
-        "declined": {
-          "title": "The request was closed as incomplete",
-          "message": "The completion deadline passed without completion."
-        },
-        "withdrawn": {
-          "title": "The request was withdrawn",
-          "message": "The request was withdrawn at your request and is closed."
-        },
-        "notQualified": {
-          "title": "The request did not qualify",
-          "message": "The results of this cycle were announced."
-        },
-        "other": {
-          "title": "Your award request",
-          "message": "Follow the status of your request on this page."
-        },
-        "result": {
-          "title": "The award results are announced",
-          "message": "Your result is available with the feedback of the initial assessment."
-        }
-      },
-      "viewResult": "View the award result"
-    },
     "draft": {
       "delete": "Delete the draft",
       "deleteTitle": "Delete the draft?",
@@ -5160,6 +5173,11 @@
         "national_winner": "National award winner",
         "national_non_winner": "National finalist — not a winner"
       }
+    },
+    "chooser": {
+      "label": "Choose the award cycle",
+      "hint": "Several award cycles are open. Choose the one you want to view.",
+      "window": "Applications from {start} to {end}"
     }
   },
   "shell": {
@@ -5311,27 +5329,25 @@
         }
       }
     },
-    "fixed": {
-      "title": "Colors that never follow the brand",
-      "readOnly": "Read only",
-      "hint": "They carry a fixed meaning users already know, so they do not change with the brand colors.",
-      "groups": {
-        "states": "System states",
-        "levels": "Award levels",
-        "charts": "Chart series"
+    "rail": {
+      "title": "Sidebar gradient",
+      "hint": "Pick the color at the top of the sidebar and the color at its bottom. The two blend into a smooth gradient that does not fade in the middle. The text color (white or dark) is chosen automatically from how light the two colors are, and the preview shows the result before you save.",
+      "top": {
+        "label": "Top color",
+        "hint": "Auto: the secondary color"
       },
-      "colors": {
-        "success": "Success",
-        "warning": "Warning",
-        "danger": "Error",
-        "info": "Info",
-        "diamond": "Diamond",
-        "gold": "Gold",
-        "silver": "Silver",
-        "bronze": "Bronze",
-        "series1": "Series 1",
-        "series2": "Series 2",
-        "series3": "Series 3"
+      "bottom": {
+        "label": "Bottom color",
+        "hint": "Auto: a blend of the secondary and primary colors"
+      },
+      "swap": "Swap the two colors",
+      "sample": "Preview of the sidebar with the unsaved colors",
+      "ideas": {
+        "title": "Suggestions from the brand colors",
+        "auto": "Auto",
+        "deep": "Deep",
+        "mono": "Single color",
+        "primary": "From the primary"
       }
     },
     "preview": {
@@ -6808,7 +6824,7 @@
     "evidenceTitle": "Attachments ({count})",
     "noEvidence": "No attachments for this sub-criterion.",
     "directScoreLabel": "Score of {name}",
-    "feedbackLegend": "Feedback to the entity",
+    "feedbackLegend": "Notes and feedback for the entity",
     "feedbackOptional": "Optional. The entity sees these fields with the result, without your name.",
     "actionsLabel": "Assessment actions",
     "unsaved": "You have unsaved scores or feedback.",
@@ -6877,7 +6893,8 @@
         "review": "Review and send"
       },
       "suggested": "No suggestions | We suggested 1 item that is not achieved or below 50%; you can change the selection. | We suggested {count} items that are not achieved or below 50%; you can change the selection.",
-      "suggestedTag": "Suggested"
+      "suggestedTag": "Suggested",
+      "fromNotes": "From your notes"
     },
     "override": {
       "noticeTitle": "Published result",
@@ -6974,7 +6991,6 @@
       "afterCompletion": "No item after completion | 1 item after completion | {count} items after completion"
     },
     "nextNamed": "Next: {name}",
-    "completeMissing": "Complete the assessment · {count}",
     "rounds": {
       "caption": "Completion rounds: {name}",
       "round": "Round",
@@ -6993,7 +7009,27 @@
       "newFile": "New"
     },
     "directIndicators": "Indicators and their evidence",
-    "directIndicatorsHint": "The whole sub-criterion gets one judgment; the indicators and their evidence are there to verify it."
+    "directIndicatorsHint": "The whole sub-criterion gets one judgment; the indicators and their evidence are there to verify it.",
+    "remaining": "Items left: {count}",
+    "internalNotes": {
+      "label": "Internal note (not shown to the entity)",
+      "reasonLabel": "Why it is not achieved (optional, not shown to the entity)",
+      "hint": "{count} of {max} characters",
+      "tooLong": "The note is longer than {max} characters.",
+      "toggle": {
+        "add": "Add an internal note",
+        "show": "Show your internal note"
+      },
+      "others": "The team's internal notes",
+      "roles": {
+        "assessor": "Assessor",
+        "follower": "Request follower",
+        "admin": "Administration",
+        "super_admin": "Super Admin"
+      },
+      "save": "Save notes",
+      "saved": "Your internal notes were saved."
+    }
   },
   "cycles": {
     "statuses": {
@@ -7015,7 +7051,7 @@
     },
     "list": {
       "title": "Award cycles",
-      "subtitle": "Prepare the cycles, their dates, conditions and staff. One cycle runs at a time; the next one can be prepared as a draft.",
+      "subtitle": "Prepare the cycles, their dates, conditions and staff. The award cycle concurrency setting decides how many cycles run together; the next one can be prepared as a draft.",
       "new": "New cycle",
       "searchPlaceholder": "Search by cycle name",
       "emptyTitle": "No award cycles",
@@ -7086,6 +7122,7 @@
       "minEntityAgeYears": "Minimum entity age in years",
       "disqualificationScore": "Qualification threshold (%)",
       "disqualificationScoreHint": "Initial results below this percentage need a recorded reason to qualify. Default 60.",
+      "thresholdLockedHint": "This cycle has filtering decisions, so its qualification threshold can no longer change.",
       "initialReviewSlaDays": "Initial assessment deadline in days",
       "initialReviewSlaDaysHint": "Counted from the assignment of the initial assessor",
       "participationCertificate": "Participation certificate",
@@ -7147,11 +7184,14 @@
       },
       "blockedOpen": {
         "title": "Submissions cannot open yet",
-        "message": "{name} {year} is running. Only one cycle runs at a time, so this draft opens after that cycle is closed."
+        "message": "{name} {year} is running, and the award cycle setting allows one running cycle at a time, so this draft opens after that cycle is closed.",
+        "staggeredMessage": "Applications are open in {name} {year}, and the award cycle setting allows one cycle open for applications at a time, so this draft opens after that submission period closes."
       },
       "anotherOpen": {
         "title": "Another cycle is running",
-        "message": "Close the running cycle before opening or reopening this one."
+        "message": "Close the running cycle before opening or reopening this one.",
+        "staggeredTitle": "Another cycle is open for applications",
+        "staggeredMessage": "Open this cycle after the submission period of the other cycle closes, or change the award cycle concurrency setting."
       },
       "startCommittee": {
         "label": "Start the committee assessment",
@@ -7164,6 +7204,14 @@
         "committee": "Assessors committee",
         "secretary": "Secretary desk",
         "results": "Results"
+      },
+      "needsAssessors": {
+        "title": "Link the initial assessors before opening",
+        "message": "The cycle opens only once at least one initial assessor is linked in the Initial assessors panel, so its requests can be assigned."
+      },
+      "assigningBlocked": {
+        "title": "Requests of this cycle cannot be assigned",
+        "message": "No initial assessor is linked to the cycle, so the Request Follower has no one to assign its requests to. Link the initial assessors in the Initial assessors panel."
       }
     },
     "blocked": {
@@ -7214,8 +7262,14 @@
       "below": "Below the threshold"
     },
     "window": {
-      "title": "Decisions open after the submission period",
-      "message": "You can review the initial assessments now. Qualify and disqualify become available once the submissions of the cycle are closed."
+      "before": {
+        "title": "Decisions open with submissions",
+        "message": "Qualifying and not qualifying is available from the opening of submissions until the results of the cycle are approved."
+      },
+      "ended": {
+        "title": "Filtering has ended",
+        "message": "The results of this cycle are approved, so the filtering decisions are read only."
+      }
     },
     "filters": {
       "status": "Status",
@@ -7289,7 +7343,6 @@
       "done": "The decision was recorded."
     },
     "decisions": {
-      "empty": "No decision yet.",
       "figures": "Initial result {initial}%, threshold {threshold}%",
       "reason": "Reason:",
       "note": "Note:"
@@ -7360,10 +7413,6 @@
     },
     "roster": {
       "title": "Assessors committee",
-      "ruleTitle": "Every committee assessor assesses every qualified entity",
-      "ruleMessage": "Requests are distributed to all active committee assessors when the committee starts and whenever an entity qualifies or an assessor is appointed. There is no redistribution: a disabled assessor is excluded or replaced by a substitute.",
-      "readOnlyTitle": "Read only",
-      "readOnlyMessage": "You can follow the committee of this cycle. Its roster is managed by the System Administrator, the requests followers and the cycle members.",
       "emptyTitle": "No committee assessor yet",
       "emptyMessage": "Appoint the committee assessors of this cycle before the committee assessment starts.",
       "columns": {
@@ -7574,10 +7623,8 @@
         "note": "Note"
       },
       "discussionsTitle": "Committee discussions",
-      "noDiscussions": "No discussion was opened.",
       "summary": "Summary: {text}",
-      "decisionsTitle": "Decisions",
-      "noDecisions": "No decision yet.",
+      "decisionsTitle": "Decision history",
       "decidedBy": "By {name}",
       "decisions": {
         "approve_average": "Average approved",
@@ -7588,7 +7635,7 @@
         "approve_national": "National result approved",
         "announce": "Results announced"
       },
-      "readOnly": "You can read this request. Decisions belong to the Award Secretary of the cycle.",
+      "readOnly": "Read only — decisions belong to this cycle's Award Secretary.",
       "substitutionFirst": "Approve the pending substitute result first. | Approve the {count} pending substitute results first.",
       "averageNote": "The platform computes the average automatically once every committee assessor submits. Recomputing with the same evaluations keeps the same version.",
       "actions": {
@@ -7644,7 +7691,8 @@
         "closeDiscussion": "The discussion was closed."
       },
       "unavailableTitle": "This request is not on the desk",
-      "unavailableMessage": "It is not in the committee stage of this cycle or you cannot review it."
+      "unavailableMessage": "It is not in the committee stage of this cycle or you cannot review it.",
+      "averageHint": "How the average is computed"
     },
     "results": {
       "title": "Regional results",
@@ -8582,7 +8630,8 @@
       "footer": {
         "unsaved": "Unsaved changes",
         "saved": "Saved",
-        "error": "Correct the highlighted fields"
+        "error": "Correct the highlighted fields",
+        "submitted": "Sent for approval"
       },
       "errors": {
         "summary": "Correct the highlighted fields to save the section",
@@ -8608,7 +8657,12 @@
           "entity": "The entity",
           "staff": "Platform staff",
           "system": "System"
-        }
+        },
+        "tabs": {
+          "requests": "Change requests"
+        },
+        "requestsEmpty": "No change requests yet.",
+        "requestReason": "Reason: {reason}"
       },
       "email": {
         "change": "Change e-mail",
@@ -8636,14 +8690,16 @@
         "upload": "Upload logo",
         "replace": "Replace logo",
         "remove": "Remove logo",
-        "uploaded": "The logo was uploaded and scanned.",
         "removeTitle": "Remove the entity logo?",
         "removeMessage": "It will not appear on new certificates.",
         "errors": {
           "type": "The logo must be a PNG or JPEG image.",
           "size": "The logo must not exceed 2 MB.",
           "dimensions": "Each side of the image must be between 200 and 2000 pixels."
-        }
+        },
+        "pending": "A new logo is awaiting the administration’s approval.",
+        "pendingRemoval": "Removing the logo is awaiting the administration’s approval.",
+        "submitted": "The logo was scanned and sent for the administration’s approval."
       },
       "questions": {
         "vatRegistered": "Is your entity registered for VAT?"
@@ -8660,7 +8716,7 @@
           "hint": "A PDF file of up to {max} MB.",
           "saveFirst": "Save «Yes» and the VAT registration number first, then upload the VAT registration certificate.",
           "download": "Download certificate",
-          "uploaded": "The VAT registration certificate was uploaded.",
+          "uploaded": "The VAT registration certificate was uploaded and sent for the administration’s approval.",
           "removeTitle": "Delete the VAT registration certificate?",
           "removeMessage": "The uploaded certificate will be deleted, and the billing details stay incomplete until you upload a new one.",
           "errors": {
@@ -8669,6 +8725,24 @@
             "size": "The file is larger than {max} MB."
           }
         }
+      },
+      "pendingChange": {
+        "title": "Awaiting the administration’s approval",
+        "text": "Your changes take effect after the platform team approves them. Until then the approved details stay in use across the platform.",
+        "show": "Show the proposed changes",
+        "hide": "Hide the proposed changes",
+        "cancel": "Cancel the request",
+        "cancelTitle": "Cancel the profile change request?",
+        "cancelMessage": "All proposed changes and uploaded files in this request will be discarded.",
+        "cancelled": "The profile change request was cancelled.",
+        "submitted": "Your change was sent for the administration’s approval.",
+        "chip": "Awaiting approval",
+        "current": "Current",
+        "proposed": "Proposed",
+        "removeFile": "Remove",
+        "newFile": "New file uploaded",
+        "loadFailed": "The proposed changes could not be loaded.",
+        "itemName": "Entity name"
       }
     },
     "checkoutMethod": {
@@ -9030,6 +9104,27 @@
       "code": "Verification code"
     }
   },
+  "certificates": {
+    "award": {
+      "kinds": {
+        "advanced_winner": "Award winner certificate",
+        "advanced_qualified": "Award qualification certificate",
+        "advanced_participation": "Award participation certificate"
+      },
+      "fields": {
+        "kind": "Certificate type",
+        "cycle": "Cycle",
+        "region": "Region",
+        "regionalRank": "Regional rank",
+        "nationalRank": "National rank"
+      },
+      "ranks": {
+        "1": "First",
+        "2": "Second",
+        "3": "Third"
+      }
+    }
+  },
   "legal": {
     "eyebrow": "Moashir platform",
     "names": {
@@ -9282,7 +9377,17 @@
         "minAge": "Minimum entity age: {years} years",
         "resultsNote": "Results show after the announcement.",
         "nextCycle": "The next cycle starts on {date}",
-        "latePaymentNote": "This request cannot be submitted after the window closed. The finance team follows up the fee refund."
+        "latePaymentNote": "This request cannot be submitted after the window closed. The finance team follows up the fee refund.",
+        "openCycles": {
+          "title": "Open award cycles",
+          "subtitle": "Choose the cycle you want to apply to. You can apply to every cycle whose conditions your entity meets.",
+          "submission": "Submission period",
+          "fee": "Entry fee",
+          "eligible": "Your entity meets the conditions of this cycle.",
+          "request": "Your request {number}: {status}",
+          "apply": "Apply to this cycle",
+          "continue": "Continue the request"
+        }
       }
     },
     "request": {
@@ -10415,6 +10520,151 @@
       "requestedNationalId": "Requested national ID",
       "viewAudited": "Opening this request is recorded in the audit log.",
       "loadFailed": "The request could not be loaded."
+    }
+  },
+  "nda": {
+    "modal": {
+      "title": "Non-disclosure agreement",
+      "subtitle": "Read the agreement to the end, then accept it to keep working on the platform.",
+      "version": "Version {version}",
+      "changes": "Summary of changes",
+      "textLabel": "Agreement text",
+      "scrollHint": "Scroll the text to the end to enable acceptance.",
+      "accept": "I accept the agreement",
+      "loadFailed": "The agreement could not be loaded. Try again."
+    },
+    "invitation": {
+      "stepsLabel": "Invitation steps",
+      "step": "{number}. {name}",
+      "steps": {
+        "password": "Password",
+        "nda": "Non-disclosure agreement",
+        "mfa": "Two-factor authentication"
+      },
+      "next": "Next",
+      "accept": "I accept the agreement and continue",
+      "back": "Back"
+    },
+    "roles": {
+      "superAdmin": "Super Admin"
+    },
+    "statuses": {
+      "accepted": "Accepted",
+      "pending": "Pending acceptance",
+      "out-of-scope": "Not in scope"
+    },
+    "admin": {
+      "title": "Non-disclosure agreement",
+      "subtitle": "Versions, roles in scope and acceptance reminders.",
+      "registerLink": "Acceptance register",
+      "publishDraft": "Publish draft",
+      "versionsTitle": "Agreement versions",
+      "newDraft": "New draft",
+      "immutableNote": "A published version cannot be edited; a change creates a new version that must be accepted again.",
+      "acceptancesOf": "{count} of {total}",
+      "columns": {
+        "version": "Version",
+        "status": "Status",
+        "publishedAt": "Published on",
+        "publishedBy": "Published by",
+        "acceptances": "Acceptances",
+        "actions": "Actions"
+      },
+      "empty": {
+        "title": "No versions yet",
+        "message": "Create a draft in Arabic and English, then publish it."
+      },
+      "scope": {
+        "title": "Roles in scope",
+        "hint": "Holders of these roles must accept every published version.",
+        "superAdmin": "The Super Admin is always in scope; entities never are.",
+        "reminderDays": "Reminder for those who have not accepted (days)",
+        "reminderHint": "From 1 to {max} days after publishing.",
+        "unsaved": "Unsaved change.",
+        "save": "Save roles and reminder",
+        "saved": "The agreement settings were saved.",
+        "reasonTitle": "Reason for changing the agreement scope"
+      },
+      "publish": {
+        "title": "Publish version {version}",
+        "summaryAr": "Summary of changes in Arabic",
+        "summaryEn": "Summary of changes in English",
+        "reach": "{count} staff members will be asked to accept",
+        "roleCount": "{role} {count}",
+        "reason": "Reason for publishing",
+        "reasonHint": "At least 10 characters.",
+        "confirm": "Publishing cannot be undone.",
+        "confirmRequired": "Confirm that you understand publishing cannot be undone.",
+        "done": "Version {version} was published",
+        "doneMessage": "The notice was sent to {count} staff members."
+      }
+    },
+    "register": {
+      "title": "Non-disclosure agreement register",
+      "back": "Back to the agreement settings",
+      "remind": "Remind those pending",
+      "export": "Export CSV",
+      "exported": "The register was exported ({count} rows).",
+      "remindTitle": "Send a reminder",
+      "remindMessage": "The reminder goes to {count} staff members who have not accepted yet. It can be sent once every 24 hours.",
+      "reminded": "The reminder was sent to {count} staff members.",
+      "filterLabel": "Filter the register",
+      "filters": {
+        "all": "All",
+        "pending": "Pending acceptance",
+        "accepted": "Accepted"
+      },
+      "stats": {
+        "accepted": "Accepted the current version",
+        "pending": "Pending acceptance",
+        "version": "Current version"
+      },
+      "columns": {
+        "user": "Staff member",
+        "roles": "Roles",
+        "version": "Version",
+        "status": "Status",
+        "acceptedAt": "Accepted at",
+        "ip": "IP"
+      },
+      "pendingFor": "Pending {version}",
+      "empty": {
+        "title": "No staff in this view",
+        "message": "Change the filter or publish a version of the agreement."
+      }
+    },
+    "history": {
+      "title": "Agreement history",
+      "empty": "No acceptances recorded.",
+      "columns": {
+        "version": "Version",
+        "acceptedAt": "Accepted at",
+        "ip": "IP",
+        "roles": "Roles at the time",
+        "actions": "Actions"
+      },
+      "status": {
+        "accepted": "Accepted the current version.",
+        "pending": "Pending acceptance of the current version.",
+        "out-of-scope": "Not in the agreement scope at present."
+      }
+    },
+    "account": {
+      "title": "Agreements",
+      "hint": "The versions of the non-disclosure agreement you accepted. View only."
+    },
+    "users": {
+      "column": "Agreement",
+      "filter": "Agreement",
+      "statuses": {
+        "accepted": "Accepted",
+        "pending": "Pending",
+        "out-of-scope": "Not in scope"
+      }
+    },
+    "roleWarning": {
+      "named": "{name} will be asked to accept the non-disclosure agreement at their next sign-in.",
+      "invite": "The user will be asked to accept the non-disclosure agreement when accepting the invitation."
     }
   }
 }

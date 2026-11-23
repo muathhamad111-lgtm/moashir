@@ -65,21 +65,8 @@
   color: var(--theme-text-muted);
 }
 
-.request-detail__loading,
-.request-detail__main,
-.request-detail__aside {
+.request-detail__loading {
   @include flex(column, stretch, flex-start, var(--space-4));
-}
-
-.request-detail__layout {
-  display: grid;
-  gap: var(--space-5);
-  grid-template-columns: 1fr;
-
-  @include respond-to(lg) {
-    grid-template-columns: minmax(0, 1fr) minmax(0, var(--size-panel));
-    align-items: start;
-  }
 }
 
 .review-page__title-row {
@@ -189,4 +176,36 @@
   margin-block: var(--space-1) 0;
   font-size: var(--fs-sm);
   color: var(--theme-text-muted);
+}
+
+// Award request screens (operator 2026-11-22): one column at full width, no fixed side column. History sits at the
+// end and only when it has entries; the decisions sit in a bar at the end of the page (sticky on desktop).
+.award-detail__body {
+  @include flex(column, stretch, flex-start, var(--space-4));
+}
+
+.award-detail__history {
+  summary {
+    font-weight: var(--fw-semibold);
+    color: var(--theme-heading);
+    cursor: pointer;
+  }
+
+  &[open] summary {
+    margin-block-end: var(--space-3);
+  }
+}
+
+.award-action-bar {
+  @include flex(row, center, space-between, var(--space-3));
+  flex-wrap: wrap;
+  padding: var(--space-3) var(--space-4);
+  border: var(--border-width) solid var(--theme-border);
+  border-radius: var(--radius-lg);
+  background-color: var(--theme-surface);
+  box-shadow: var(--shadow-md);
+
+  .cycle-actions__note {
+    margin: 0;
+  }
 }

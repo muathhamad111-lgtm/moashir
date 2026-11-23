@@ -8,6 +8,8 @@ import EntityLogoDialog from './EntityLogoDialog.vue'
 import ProfileCompletenessCard from './ProfileCompletenessCard.vue'
 import ProfileHistoryDrawer from './ProfileHistoryDrawer.vue'
 import ProfileSectionCard from './ProfileSectionCard.vue'
+import PendingProfileChangeBanner from './PendingProfileChangeBanner.vue'
+import { usePendingProfileChange } from '@/composables/usePendingProfileChange'
 import { useProfileEditor } from '@/composables/useProfileEditor'
 import { useEntityLogo } from '@/composables/useEntityLogo'
 import { firstMissingOf, sectionViewsOf } from '@/utils/entityProfile/sections'
@@ -26,6 +28,7 @@ const emit = defineEmits(['refresh'])
 const { t } = useI18n()
 const editor = useProfileEditor()
 const logo = useEntityLogo()
+const pending = usePendingProfileChange()
 const logoOpen = ref(false)
 const historyOpen = ref(false)
 const historySection = ref('')
@@ -85,6 +88,13 @@ function fixSection(section) {
         <AppIcon name="lock" />
         <span>{{ t(`portal.profile.readOnly.${readOnlyKey}`) }}</span>
       </p>
+      <PendingProfileChangeBanner
+        v-if="pending.hasPending.value"
+        :pending-change="pending.details.value"
+        :can-edit="canEdit"
+        :busy="pending.busy.value"
+        @cancel="pending.cancel"
+      />
       <ProfileCompletionPrompt
         v-if="welcome && canEdit && !profile.profileCompleted"
         welcome
@@ -109,6 +119,7 @@ function fixSection(section) {
             :can-edit="canEdit"
             :editing="editor.active.value === section.key"
             :saved="editor.savedSection.value === section.key"
+            :pending="pending.pendingSections.value.has(section.key)"
             :focus-field="editor.active.value === section.key ? editor.focusField.value : null"
             :region-options="regionOptions"
             :city-options-for="cityOptionsFor"
@@ -131,6 +142,7 @@ function fixSection(section) {
     <EntityLogoDialog
       v-model="logoOpen"
       :logo="logo.logo.value"
+      :pending-change="logo.pendingChange.value"
       :busy="logo.busy.value"
       :error="logo.error.value"
       @upload="logo.upload"

@@ -6,6 +6,7 @@ import Skeleton from '@/components/feedback/Skeleton.vue'
 import ErrorState from '@/components/feedback/ErrorState.vue'
 import Pagination from '@/components/data-list/Pagination.vue'
 import ProfileHistoryEntry from './ProfileHistoryEntry.vue'
+import ProfileChangeRequestList from './ProfileChangeRequestList.vue'
 import { useProfileChanges } from '@/composables/useProfileChanges'
 import { profileChangesService } from '@/services/profileChangesService'
 
@@ -17,6 +18,7 @@ const props = defineProps({
 })
 
 const emit = defineEmits(['update:modelValue'])
+const REQUESTS = 'requests'
 const { t } = useI18n()
 const filter = ref(props.section)
 const { changes, status, errorMessage, pagination, goTo } = useProfileChanges((params) =>
@@ -26,7 +28,7 @@ const { changes, status, errorMessage, pagination, goTo } = useProfileChanges((p
 function choose(value) {
   if (filter.value === value) return
   filter.value = value
-  goTo(1)
+  if (value !== REQUESTS) goTo(1)
 }
 
 watch(
@@ -63,8 +65,17 @@ watch(
         >
           {{ key ? t(`portal.profile.sections.${key}`) : t('portal.profile.history.allSections') }}
         </button>
+        <button
+          type="button"
+          class="history-drawer__chip"
+          :aria-pressed="filter === REQUESTS"
+          @click="choose(REQUESTS)"
+        >
+          {{ t('portal.profile.history.tabs.requests') }}
+        </button>
       </div>
-      <Skeleton v-if="status === 'loading'" variant="text" :count="4" />
+      <ProfileChangeRequestList v-if="filter === REQUESTS" />
+      <Skeleton v-else-if="status === 'loading'" variant="text" :count="4" />
       <ErrorState v-else-if="status === 'error'" :message="errorMessage" @retry="goTo(1)" />
       <p v-else-if="status !== 'success'" class="history-drawer__empty" role="status">
         {{ t('portal.profile.history.empty') }}

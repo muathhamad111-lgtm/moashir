@@ -60,18 +60,18 @@ describe('ReviewActions', () => {
   const testIds = (wrapper) =>
     wrapper.findAll('[data-testid]').map((element) => element.attributes('data-testid'))
 
-  it('offers the way between criteria, save and complete, with buttons only', () => {
+  it('puts save first and the way between criteria last, and counts what is left instead of completing', () => {
     const wrapper = mountBar({ dirty: true })
+    // Operator 2026-11-22: «التالي» sits at the inline end (left in RTL); «إكمال التقييم» waits for every item.
     expect(testIds(wrapper)).toEqual([
+      'review-save',
+      'review-remaining',
       'step-previous',
       'step-next',
-      'review-save',
-      'review-complete',
     ])
     expect(wrapper.find('[data-testid="step-next"]').text()).toBe('Next: Strategic Planning')
-    expect(wrapper.find('[data-testid="review-complete"]').text()).toBe(
-      'Complete the assessment · 4',
-    )
+    expect(wrapper.find('[data-testid="review-remaining"]').text()).toBe('Items left: 4')
+    expect(wrapper.find('[data-testid="review-complete"]').exists()).toBe(false)
     // The save state is for screen readers only (operator, assessor journey #30).
     expect(wrapper.find('.review-actions__status').attributes('aria-live')).toBe('polite')
     expect(wrapper.find('.review-actions__status').text()).toContain('unsaved')
@@ -125,13 +125,22 @@ describe('ReviewFoldedText', () => {
 })
 
 describe('ReviewFeedbackFold', () => {
-  const mountFold = (fields) =>
-    mount(ReviewFeedbackFold, { props: { subId: 21, fields }, ...globals() })
+  const mountFold = (fields, disabled = true) =>
+    mount(ReviewFeedbackFold, { props: { subId: 21, fields, disabled }, ...globals() })
 
-  it('stays folded and counts the written fields', () => {
+  it('stays folded while read-only and counts the written fields', () => {
     const wrapper = mountFold({ strengths: 'Clear plan', improvements: '', notes: '' })
     expect(wrapper.find('details').attributes('open')).toBeUndefined()
     expect(wrapper.find('.review-feedback-fold__count').text()).toBe('1 of 3 written · optional')
+    expect(wrapper.find('.review-feedback-fold__title').text()).toBe(
+      'Notes and feedback for the entity',
+    )
+  })
+
+  // Operator 2026-11-22: the notes looked gone while folded, so they stay open while editable.
+  it('stays open while the review is editable', () => {
+    const wrapper = mountFold({ strengths: '', improvements: '', notes: '' }, false)
+    expect(wrapper.find('details').attributes('open')).toBeDefined()
   })
 
   it('opens by itself when a field is over its limit, so its error shows', () => {

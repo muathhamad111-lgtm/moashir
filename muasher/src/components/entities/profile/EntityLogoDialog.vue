@@ -1,14 +1,15 @@
 <script setup>
-import { ref } from 'vue'
+import { computed, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import BaseModal from '@/components/modal/BaseModal.vue'
 import BaseButton from '@/components/ui/BaseButton.vue'
 import AppIcon from '@/components/ui/AppIcon.vue'
 import { ENTITY_LOGO_RULES } from '@/constants/entityProfile'
 
-defineProps({
+const props = defineProps({
   modelValue: { type: Boolean, required: true },
   logo: { type: Object, default: null },
+  pendingChange: { type: Object, default: null },
   busy: { type: Boolean, default: false },
   error: { type: String, default: '' },
 })
@@ -16,6 +17,9 @@ defineProps({
 const emit = defineEmits(['update:modelValue', 'upload', 'remove'])
 const { t } = useI18n()
 const input = ref(null)
+const pendingLogo = computed(() => props.pendingChange?.newValue ?? null)
+const pendingRemoval = computed(() => props.pendingChange?.removes === true)
+const shown = computed(() => pendingLogo.value ?? props.logo)
 
 function choose() {
   input.value?.click()
@@ -38,9 +42,9 @@ function onChange(event) {
     <div class="logo-dialog" data-testid="logo-dialog">
       <div class="logo-dialog__preview">
         <img
-          v-if="logo?.url"
+          v-if="shown?.url"
           class="logo-dialog__image"
-          :src="logo.url"
+          :src="shown.url"
           :alt="t('portal.profile.logo.alt')"
         />
         <AppIcon v-else name="image" class="logo-dialog__placeholder" />
@@ -51,6 +55,11 @@ function onChange(event) {
             min: ENTITY_LOGO_RULES.minSide,
             max: ENTITY_LOGO_RULES.maxSide,
           })
+        }}
+      </p>
+      <p v-if="pendingLogo || pendingRemoval" class="logo-dialog__pending" role="status">
+        {{
+          t(pendingRemoval ? 'portal.profile.logo.pendingRemoval' : 'portal.profile.logo.pending')
         }}
       </p>
       <p class="logo-dialog__note">{{ t('portal.profile.logo.note') }}</p>
@@ -67,9 +76,15 @@ function onChange(event) {
     </div>
     <template #footer>
       <BaseButton variant="primary" icon="upload" :loading="busy" @click="choose">
-        {{ logo ? t('portal.profile.logo.replace') : t('portal.profile.logo.upload') }}
+        {{ shown ? t('portal.profile.logo.replace') : t('portal.profile.logo.upload') }}
       </BaseButton>
-      <BaseButton v-if="logo" variant="ghost" icon="trash" :disabled="busy" @click="emit('remove')">
+      <BaseButton
+        v-if="shown && !pendingRemoval"
+        variant="ghost"
+        icon="trash"
+        :disabled="busy"
+        @click="emit('remove')"
+      >
         {{ t('portal.profile.logo.remove') }}
       </BaseButton>
     </template>

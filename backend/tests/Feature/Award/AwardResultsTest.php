@@ -138,7 +138,8 @@ it('approves the national result and lets only the award secretary announce it m
     $owner = ownerOf($results['middle']->entity);
     switchTo($owner)->getJson("/api/v1/assessments/{$results['middle']->id}/result")->assertOk()->assertJsonPath('data.available', false)->assertJsonPath('data.status', 'under_review');
     switchTo(systemAdmin())->postJson(resultsPath($cycle, 'announce'))->assertForbidden();
-    switchTo(awardSecretary())->postJson(resultsPath($cycle, 'announce'))->assertNotFound();
+    // Operator 2026-11-22: every Award Secretary reads every cycle; only the cycle's own secretaries act (403, not 404).
+    switchTo(awardSecretary())->postJson(resultsPath($cycle, 'announce'))->assertForbidden();
     $admin = systemAdmin();
     switchTo($results['secretary'])->postJson(resultsPath($cycle, 'announce'))->assertOk()->assertJsonPath('data.status', 'announced');
 
@@ -181,4 +182,27 @@ it('lets only the Super Admin unapprove a region with a reason before the nation
         ->and($results['low']->refresh()->status->value)->toBe('approved')
         ->and(Audit::query()->where('event', AuditEvent::AwardRegionUnapproved->value)->value('reason'))->toBe(UNAPPROVE_REASON);
     switchTo($results['secretary'])->putJson(resultsPath($cycle, "results/{$results['low']->id}/regional-rank"), ['rank' => 2])->assertOk();
+});
+
+it('lets the entity read its own announced award result without the staff results key, and nothing more (AJ-23)', function (): void {
+    $results = resultsScenario();
+    $cycle = $results['cycle'];
+    switchTo($results['secretary'])->putJson(resultsPath($cycle, "results/{$results['top']->id}/regional-rank"), ['rank' => 1])->assertOk();
+    test()->putJson(resultsPath($cycle, "results/{$results['middle']->id}/regional-rank"), ['rank' => 2])->assertOk();
+    test()->postJson(resultsPath($cycle, "regions/{$results['region']}/approve"))->assertOk();
+    test()->putJson(resultsPath($cycle, "national/{$results['middle']->id}/rank"), ['rank' => 1])->assertOk();
+    test()->postJson(resultsPath($cycle, 'national/approve'))->assertOk();
+    test()->postJson(resultsPath($cycle, 'announce'))->assertOk();
+    $owner = ownerOf($results['middle']->entity);
+
+    expect($owner->can('award.results.view'))->toBeFalse();
+    switchTo($owner)->getJson("/api/v1/assessments/{$results['middle']->id}/result")->assertOk()
+        ->assertJsonPath('data.available', true)
+        ->assertJsonPath('data.award.status', 'national_winner');
+    test()->getJson("/api/v1/assessments/{$results['middle']->id}")->assertOk()->assertJsonPath('data.status', 'national_winner');
+    test()->getJson("/api/v1/assessments/{$results['top']->id}/result")->assertNotFound();
+
+    foreach (['results', 'national'] as $board) {
+        expect(test()->getJson(resultsPath($cycle, $board))->status())->toBeIn([403, 404]);
+    }
 });

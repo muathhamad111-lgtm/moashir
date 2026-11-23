@@ -22,7 +22,7 @@ final class AwardCycleDetailResource extends JsonResource
     {
         $view = $this->resource;
         $cycle = $view->cycle;
-        $detail = [...new AwardCycleResource($cycle)->toArray($request), 'can_manage' => $view->canManage];
+        $detail = [...new AwardCycleResource($cycle)->toArray($request), 'can_manage' => $view->canManage, 'threshold_locked' => $view->thresholdLocked, 'open_block' => $view->openBlock?->toArray()];
 
         if (! $view->revealsStaff) {
             return $detail;

@@ -5,6 +5,7 @@ import {
   toAssessorReview,
   toAssessorSummary,
   toFeedbackSaved,
+  toReviewNotes,
   toReviewRounds,
 } from './mappers/review'
 
@@ -54,6 +55,15 @@ export const assessorReviewService = {
       payload,
     )
     return mapData(request, toFeedbackSaved)
+  },
+
+  saveReviewNotes(assessmentId, payload) {
+    const request = write(
+      'saveReviewNotes',
+      () => apiClient.put(`/assessments/${assessmentId}/review-notes`, payload),
+      payload,
+    )
+    return mapData(request, toReviewNotes)
   },
 
   saveSummary(assessmentId, payload) {

@@ -49,7 +49,7 @@ it('groups the shipped texts into templates with their parts, defaults and varia
 
     expect($invitation)->toBeInstanceOf(NotificationTextTemplate::class)
         ->and($invitation?->code)->toBe(NotificationCode::StaffInvited)
-        ->and(array_keys($invitation->parts ?? []))->toBe(['subject', 'line', 'action', 'expiry'])
+        ->and(array_keys($invitation->parts ?? []))->toBe(['subject', 'line', 'nda', 'action', 'expiry'])
         ->and($invitation?->placeholders)->toBe(['duration'])
         ->and($invitation?->parts['subject']['ar'])->toBe(__('notifications.staff_invited.subject', [], 'ar'))
         ->and($registered?->partKey('title'))->toBe('entities.REG-01.entity.title')

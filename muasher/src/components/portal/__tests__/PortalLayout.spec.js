@@ -151,7 +151,7 @@ describe('PortalLayout', () => {
     expect(collapse.find('svg').attributes('data-icon')).toBe('menu')
     expect(wrapper.find('.side-nav [data-testid="portal-nav-collapse"]').exists()).toBe(false)
     expect(wrapper.find('.side-nav .identity-card__logo').attributes('src')).toMatch(
-      /moashir-logo-on-light/,
+      /moashir-logo-on-dark/,
     )
     expect(wrapper.find('.side-nav [data-testid="sidebar-preview-platform"]').exists()).toBe(true)
     expect(wrapper.find('[aria-label^="التبديل إلى"]').exists()).toBe(false)

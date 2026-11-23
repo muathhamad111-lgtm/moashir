@@ -5,6 +5,8 @@ import { useAuthStore } from '@/stores/auth'
 import { useUiStore } from '@/stores/ui'
 import { useBrandingStore } from '@/stores/branding'
 import { DEFAULT_BACK_OFFICE_LOGOS } from '@/composables/useBackOfficeLogo'
+import { DEFAULT_BRAND_COLORS } from '@/constants/branding'
+import { deriveBrandScheme } from '@/utils/brandingContrast'
 import { ROLES } from '@/constants/roles'
 import { createTestGlobals } from '@/test-utils'
 import { sessionUserFor } from '@/test-utils/session'
@@ -208,17 +210,24 @@ describe('Sidebar', () => {
     expect(labels).not.toContain('سجل التدقيق')
   })
 
-  it('opens with the platform card: the on-light logo linking to the dashboard', () => {
+  it('opens with the platform card: the logo for the dark gradient rail, linking to the dashboard', () => {
     const { wrapper } = factory()
     expect(wrapper.find('.identity-card__brand').attributes('href')).toBe('/dashboard')
     const logo = wrapper.find('.identity-card__logo')
     expect(logo.attributes('alt')).toBe('مؤشر، الانتقال إلى لوحة المعلومات')
-    expect(logo.attributes('src')).toBe(DEFAULT_BACK_OFFICE_LOGOS.site)
+    expect(logo.attributes('src')).toBe(DEFAULT_BACK_OFFICE_LOGOS.dark)
   })
 
-  it('prefers the uploaded site logo, made for a light background', async () => {
+  it('shows the uploaded logo for dark fills on a dark rail and the site logo on a light rail', async () => {
     const { wrapper, globals } = factory()
-    useBrandingStore(globals.pinia).apply({ logos: { dark: 'blob:on-dark', site: 'blob:site' } })
+    const logos = { dark: 'blob:on-dark', site: 'blob:site' }
+    const branding = useBrandingStore(globals.pinia)
+    branding.apply({ logos })
+    await wrapper.vm.$nextTick()
+    expect(wrapper.find('.identity-card__logo').attributes('src')).toBe('blob:on-dark')
+
+    const lightRail = { top: '#f3f6f4', bottom: '#cfe7e4' }
+    branding.apply({ logos, scheme: deriveBrandScheme(DEFAULT_BRAND_COLORS, {}, lightRail) })
     await wrapper.vm.$nextTick()
     expect(wrapper.find('.identity-card__logo').attributes('src')).toBe('blob:site')
   })

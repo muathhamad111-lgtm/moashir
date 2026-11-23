@@ -54,7 +54,13 @@ final class PublishTermsCommand extends Command
 
     private function kind(): TermsKind
     {
-        return TermsKind::tryFrom($this->stringArgument('kind')) ?? throw new InvalidArgumentException('The kind must be terms or privacy.');
+        $kind = TermsKind::tryFrom($this->stringArgument('kind'));
+
+        if (! $kind instanceof TermsKind || ! $kind->isLegal()) {
+            throw new InvalidArgumentException('The kind must be terms or privacy.');
+        }
+
+        return $kind;
     }
 
     private function label(): string

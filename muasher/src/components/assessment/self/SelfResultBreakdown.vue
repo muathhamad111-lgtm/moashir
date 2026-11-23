@@ -6,6 +6,7 @@ import Badge from '@/components/ui/Badge.vue'
 import AppIcon from '@/components/ui/AppIcon.vue'
 import { localizedText } from '@/utils/localizedText'
 import { percentText, pointsText } from '@/utils/percentText'
+import { achievementKeyOf, isAchievement } from '@/utils/assessments/scoringTypes'
 
 const props = defineProps({
   result: { type: Object, required: true },
@@ -21,6 +22,14 @@ function text(content) {
 
 function percent(value) {
   return percentText(n, t, value)
+}
+
+// An achievement unit reads «متحقق / غير متحقق»; a row without a type (a result issued before the
+// scoring types) keeps its score.
+function rawText(row) {
+  if (isAchievement(row.scoringType))
+    return t(`assessment.self.achievement.${achievementKeyOf(row.rawValue)}`)
+  return t('assessment.self.result.rawValue', { raw: row.rawValue })
 }
 
 function subsOf(mainId) {
@@ -100,9 +109,7 @@ function panelId(mainId) {
               <div class="self-result__sub-row">
                 <span class="self-result__sub-name">{{ text(sub.name) }}</span>
                 <span class="self-result__sub-score">
-                  <span v-if="sub.rawValue" class="self-result__sub-raw">
-                    {{ t('assessment.self.result.rawValue', { raw: sub.rawValue }) }}
-                  </span>
+                  <span v-if="sub.rawValue" class="self-result__sub-raw">{{ rawText(sub) }}</span>
                   <span class="self-result__sub-percent u-ltr">{{ percent(sub.percent) }}</span>
                   <span class="self-result__sub-earned u-ltr">
                     {{
@@ -123,7 +130,7 @@ function panelId(mainId) {
                   <span class="self-result__point-name">{{ text(point.description) }}</span>
                   <span class="self-result__sub-score">
                     <span v-if="point.rawValue" class="self-result__sub-raw">{{
-                      t('assessment.self.result.rawValue', { raw: point.rawValue })
+                      rawText(point)
                     }}</span>
                     <span class="self-result__sub-percent u-ltr">{{ percent(point.percent) }}</span>
                   </span>

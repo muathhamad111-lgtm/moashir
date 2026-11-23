@@ -18,6 +18,18 @@ final readonly class UsableInvitationFinder
         return $this->usable($this->byToken($token)->first());
     }
 
+    /**
+     * The invitation when it can still be accepted, without refusing: validation reads it to know which steps apply.
+     */
+    public function tryFind(string $token): ?UserInvitation
+    {
+        $invitation = $this->byToken($token)->first();
+
+        return $invitation instanceof UserInvitation
+            && ! in_array($invitation->status, [InvitationStatus::Accepted, InvitationStatus::Revoked], true)
+            && $invitation->isUsable() ? $invitation : null;
+    }
+
     public function findForUpdate(string $token): UserInvitation
     {
         return $this->usable($this->byToken($token)->lockForUpdate()->first());

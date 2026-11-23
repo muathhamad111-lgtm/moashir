@@ -27,17 +27,8 @@ const route = useRoute()
 const router = useRouter()
 const cycleId = computed(() => (route.params.id ? Number(route.params.id) : null))
 const editor = useCycleEditor(cycleId)
-const {
-  status,
-  errorMessage,
-  cycle,
-  published,
-  regions,
-  blockingCycle,
-  isNew,
-  initialValues,
-  locked,
-} = editor
+const { status, errorMessage, cycle, published, regions, openBlock, isNew, initialValues, locked } =
+  editor
 const { prompt: reasonPrompt, reasonExtra } = useSuperAdminReason()
 const transitions = useCycleTransitions({ editor, reasonExtra })
 const staff = useCycleStaff({ editor, reasonExtra })
@@ -99,6 +90,7 @@ watch(cycleId, editor.load)
           :regions="regions"
           :published="published"
           :can-set-participation="isSystemAdministrator"
+          :threshold-locked="cycle?.thresholdLocked === true"
           :editable="editable"
           :reason-extra="reasonExtra"
           :fee-quote="cycle?.entryFeeQuote ?? null"
@@ -111,7 +103,7 @@ watch(cycleId, editor.load)
         <CycleActionsCard
           :cycle="cycle"
           :busy="transitions.busy.value"
-          :blocking-cycle="blockingCycle"
+          :open-block="openBlock"
           :blocked="transitions.blocked.value"
           :can-reopen="canReopen"
           @run="transitions.confirmAndRun"

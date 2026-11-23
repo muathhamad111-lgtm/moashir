@@ -17,7 +17,7 @@ import {
   throwIfErrors,
 } from '../accredited/accreditedValidation'
 import { ADVANCED_STATES } from './advancedStates'
-import { acceptsApplications, findCycle, runningCycle } from './cycleStore'
+import { acceptsApplications, currentCycle, findCycle, isRunning } from './cycleStore'
 import { eligibilityOf, eligibilityResource, failuresOf } from './eligibility'
 import { publicCycleResource } from './cycleSerializers'
 import { awardReject, conditionsRejection } from './awardRejection'
@@ -25,11 +25,13 @@ import { announceConditionsRejected } from './awardNotices'
 import { cycleFeePricing } from './awardPricing'
 import { assertAvailable, pathReject } from '../finance/pathRejection'
 import { openOrderFor, paidWithoutRequest } from '../periodic/paidRequests'
+import { openCycleOptionsOf } from '../periodic/awardPath'
 
 const ADVANCED_PREFIX = 'ADV'
 const AWAITING_PAYMENT = 'awaiting-payment'
 const ACTIVE_ENTITY = 'active'
 const AWARD = 'award'
+const CYCLE_ID = /^[1-9]\d*$/
 
 function entityRecords(entityId) {
   return allAssessments()
@@ -49,10 +51,18 @@ function inCycle(records, cycle) {
   return records.filter((record) => record.awardCycleId === cycle.id)
 }
 
-export function advancedCurrentResource(user) {
+function selectedCycle(cycleId) {
+  if (cycleId === null || cycleId === undefined || cycleId === '') return currentCycle()
+  if (!CYCLE_ID.test(String(cycleId)))
+    throwIfErrors({ awardCycleId: [fieldMessage('validation.integer', {}, 'awardCycleId')] })
+  const cycle = findCycle(cycleId)
+  return cycle && isRunning(cycle) ? cycle : null
+}
+
+export function advancedCurrentResource(user, cycleId = null) {
   const entity = findEntity(user.entityId)
   if (!entity) throw assessmentReject.entityRequired()
-  const cycle = runningCycle()
+  const cycle = selectedCycle(cycleId)
   const eligibility = eligibilityOf(entity, cycle)
   const records = entityRecords(entity.id)
   const current = cycle ? inCycle(records, cycle) : []
@@ -66,6 +76,7 @@ export function advancedCurrentResource(user) {
     eligibility: eligibilityResource(eligibility),
     request: present(request),
     previous: present(previous),
+    openCycles: openCycleOptionsOf(entity.id),
   }
 }
 
@@ -177,8 +188,8 @@ export function applyForAdvanced(user, body) {
   const entity = findEntity(user.entityId)
   if (!entity) throw assessmentReject.entityRequired()
   if (entity.status !== ACTIVE_ENTITY) throw assessmentReject.entityNotActive()
-  assertAvailable(AWARD, cycleFeePricing(runningCycle()))
   const cycle = findCycle(body.awardCycleId)
+  assertAvailable(AWARD, cycleFeePricing(cycle))
   assertApplicable(entity, cycle)
   const existing = inCycle(entityRecords(entity.id), cycle)
   const request = liveRequestOf(existing)

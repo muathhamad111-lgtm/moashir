@@ -25,6 +25,7 @@ final class CompletionRequestPresenter
             'items' => self::items($request, $subs),
             'deadline_at' => $request->deadline_at->toIso8601String(),
             'expiry_outcome' => $request->expiry_outcome->value,
+            'resumes_to' => $request->resumes_to?->value,
             'requested_at' => $request->created_at->toIso8601String(),
             'resolved_at' => $request->resolved_at?->toIso8601String(),
         ];

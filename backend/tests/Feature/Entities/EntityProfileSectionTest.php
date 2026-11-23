@@ -27,15 +27,13 @@ function historyOf(int $entityId): array
         ->all();
 }
 
-it('saves the governance section, records every changed field and notifies the administration', function (): void {
+it('applies an approved governance section, records every changed field and tells the entity', function (): void {
     $admin = systemAdmin();
     $entity = entityWithOwner(static fn (EntityFactory $factory): EntityFactory => $factory->incompleteProfile());
     $owner = ownerOf($entity);
 
-    saveSection($entity, ProfileSection::Governance, ['governance_grade' => '91.5', 'employees_count' => 60, 'annual_beneficiaries_count' => 3200, 'has_strategic_plan' => null])
+    saveAndApproveSection($entity, ProfileSection::Governance, ['governance_grade' => '91.5', 'employees_count' => 60, 'annual_beneficiaries_count' => 3200, 'has_strategic_plan' => null])
         ->assertOk()
-        ->assertJsonPath('meta.section', 'governance')
-        ->assertJsonPath('meta.changed_fields', ['governance_grade', 'employees_count', 'annual_beneficiaries_count', 'has_strategic_plan'])
         ->assertJsonPath('data.governance_grade', '91.50')
         ->assertJsonPath('data.employees_count', 60)
         ->assertJsonPath('data.has_strategic_plan', null)
@@ -50,20 +48,20 @@ it('saves the governance section, records every changed field and notifies the a
         'has_strategic_plan' => [true, null],
     ])
         ->and(EntityProfileChange::query()->value('changed_by_user_id'))->toBe($owner->id)
-        ->and(Audit::query()->where('event', AuditEvent::EntityProfileUpdated->value)->sole()->new_values)->toMatchArray(['section' => 'governance', 'governance_grade' => '91.50']);
-    Notification::assertSentTo($admin, EntityNotification::class, static fn (EntityNotification $notification): bool => $notification->notice->code === NotificationCode::EntityCoreDataEdited);
-    Notification::assertNotSentTo($owner, EntityNotification::class);
+        ->and(Audit::query()->where('event', AuditEvent::EntityProfileChangeDecided->value)->sole()->new_values)->toMatchArray(['status' => 'approved', 'governance_grade' => '91.50']);
+    Notification::assertSentTo($admin, EntityNotification::class, static fn (EntityNotification $notification): bool => $notification->notice->code === NotificationCode::EntityProfileChangeRequested);
+    Notification::assertNotSentTo($admin, EntityNotification::class, static fn (EntityNotification $notification): bool => $notification->notice->code === NotificationCode::EntityCoreDataEdited);
+    Notification::assertSentTo($owner, EntityNotification::class, static fn (EntityNotification $notification): bool => $notification->notice->code === NotificationCode::EntityProfileChangeDecided);
 });
 
 it('saves the identity section and derives the founding year from the founding date', function (): void {
     $entity = entityWithOwner(static fn (EntityFactory $factory): EntityFactory => $factory->state(['founding_year' => 2005, 'founded_on' => null, 'license_number' => null]));
 
-    saveSection($entity, ProfileSection::Identity, [
+    saveAndApproveSection($entity, ProfileSection::Identity, [
         'name' => ['ar' => 'مؤسسة نماء للتنمية', 'en' => 'Namaa Development Foundation'],
         'license_number' => '000123',
         'founded_on' => '2012-03-01',
     ])->assertOk()
-        ->assertJsonPath('meta.changed_fields', ['name.ar', 'name.en', 'license_number', 'founded_on'])
         ->assertJsonPath('data.name', ['ar' => 'مؤسسة نماء للتنمية', 'en' => 'Namaa Development Foundation'])
         ->assertJsonPath('data.license_number', '000123')
         ->assertJsonPath('data.founded_on', '2012-03-01')
@@ -75,7 +73,7 @@ it('saves the identity section and derives the founding year from the founding d
 it('keeps the founding year when the founding date is cleared', function (): void {
     $entity = entityWithOwner(static fn (EntityFactory $factory): EntityFactory => $factory->state(['founding_year' => 2012]));
 
-    saveSection($entity, ProfileSection::Identity, ['founded_on' => null])->assertOk()
+    saveAndApproveSection($entity, ProfileSection::Identity, ['founded_on' => null])->assertOk()
         ->assertJsonPath('data.founded_on', null)
         ->assertJsonPath('data.founding_year', 2012)
         ->assertJsonPath('data.profile_completion.sections.0.missing_fields', ['founded_on']);
@@ -85,7 +83,7 @@ it('moves the entity to another region and one of its cities', function (): void
     $entity = entityWithOwner();
     $newCity = regionWithCity();
 
-    saveSection($entity, ProfileSection::Classification, ['region_id' => $newCity->region_id, 'city_id' => $newCity->id, 'org_size' => 'large'])
+    saveAndApproveSection($entity, ProfileSection::Classification, ['region_id' => $newCity->region_id, 'city_id' => $newCity->id, 'org_size' => 'large'])
         ->assertOk()
         ->assertJsonPath('data.region.id', $newCity->region_id)
         ->assertJsonPath('data.city.id', $newCity->id)
@@ -97,7 +95,7 @@ it('saves the contact section with a masked phone in the history and keeps conta
     $entity = entityWithOwner();
     $owner = ownerOf($entity);
 
-    saveSection($entity, ProfileSection::Contact, [
+    saveAndApproveSection($entity, ProfileSection::Contact, [
         'authorized_person_name' => 'ريم بنت خالد الحربي',
         'phone' => '0569876543',
         'website_url' => 'HTTPS://WWW.Alamal.Example.SA/',
@@ -107,39 +105,39 @@ it('saves the contact section with a masked phone in the history and keeps conta
         ->assertJsonPath('data.phone', '+966569876543')
         ->assertJsonPath('data.phone_verified', false)
         ->assertJsonPath('data.website_url', 'https://www.alamal.example.sa')
-        ->assertJsonPath('data.marketing_consent', true)
-        ->assertJsonPath('meta.changed_fields', ['authorized_person_name', 'phone', 'website_url', 'marketing_consent']);
+        ->assertJsonPath('data.marketing_consent', true);
 
     $history = historyOf($entity->id);
-    $audit = Audit::query()->where('event', AuditEvent::EntityProfileUpdated->value)->sole();
+    $audit = Audit::query()->where('event', AuditEvent::EntityProfileChangeDecided->value)->sole();
     $everyAudit = json_encode(Audit::query()->get(['old_values', 'new_values'])->toArray(), JSON_UNESCAPED_UNICODE);
 
-    expect($history)->toBe([
+    expect($history)->toEqual([
         'website_url' => [null, 'https://www.alamal.example.sa'],
         'authorized_person_name' => [$owner->name, 'ريم بنت خالد الحربي'],
         'phone' => [null, '+9665*****543'],
         'marketing_consent' => [false, true],
     ])
         ->and($everyAudit)->not->toContain('ريم بنت خالد الحربي')->not->toContain('569876543')
-        ->and($audit->new_values['changed_fields'] ?? null)->toBe(['website_url', 'authorized_person_name', 'phone', 'marketing_consent']);
+        ->and($audit->new_values['approved'] ?? null)->toBe(['website_url', 'authorized_person_name', 'phone'])
+        ->and(Audit::query()->where('event', AuditEvent::EntityProfileUpdated->value)->sole()->new_values['changed_fields'] ?? null)->toBe(['marketing_consent']);
     Notification::assertSentTo($admin, EntityNotification::class);
 });
 
-it('raises no core-data notice for a contact-only change', function (): void {
+it('raises no core-data notice when an approved change applies', function (): void {
     $admin = systemAdmin();
     $entity = entityWithOwner();
 
-    saveSection($entity, ProfileSection::Contact, ['authorized_person_name' => 'ريم بنت خالد الحربي'])->assertOk();
+    saveAndApproveSection($entity, ProfileSection::Contact, ['authorized_person_name' => 'ريم بنت خالد الحربي'])->assertOk();
 
-    Notification::assertNotSentTo($admin, EntityNotification::class);
-    expect(Audit::query()->where('event', AuditEvent::EntityProfileUpdated->value)->count())->toBe(1);
+    Notification::assertNotSentTo($admin, EntityNotification::class, static fn (EntityNotification $notification): bool => $notification->notice->code === NotificationCode::EntityCoreDataEdited);
+    expect(Audit::query()->where('event', AuditEvent::EntityProfileUpdated->value)->count())->toBe(0);
 });
 
 it('records the withdrawal of marketing consent', function (): void {
     $entity = entityWithOwner();
     $entity->forceFill(['marketing_consent_at' => now()])->save();
 
-    saveSection($entity, ProfileSection::Contact, ['marketing_consent' => false])->assertOk()->assertJsonPath('data.marketing_consent', false);
+    saveSection($entity, ProfileSection::Contact, ['marketing_consent' => false])->assertAccepted()->assertJsonPath('data.marketing_consent', false);
 
     expect($entity->refresh()->marketing_consent_at)->toBeNull()
         ->and($entity->marketing_unsubscribed_at)->not->toBeNull()
@@ -149,9 +147,10 @@ it('records the withdrawal of marketing consent', function (): void {
 it('writes nothing for a save without a change', function (ProfileSection $section): void {
     $entity = entityWithOwner();
 
-    saveSection($entity, $section)->assertOk()->assertJsonPath('meta.changed_fields', []);
+    saveSection($entity, $section)->assertAccepted()->assertJsonPath('data.pending_profile_change', null);
 
     expect(EntityProfileChange::query()->count())->toBe(0)
+        ->and(pendingProfileChangeOf($entity))->toBeNull()
         ->and(Audit::query()->where('event', AuditEvent::EntityProfileUpdated->value)->count())->toBe(0);
     Notification::assertNothingSent();
 })->with(ProfileSection::cases());
@@ -159,7 +158,7 @@ it('writes nothing for a save without a change', function (ProfileSection $secti
 it('refuses a save on a stale revision and writes nothing', function (): void {
     $entity = entityWithOwner();
     $stale = sectionBody($entity, ProfileSection::Governance, ['employees_count' => 5]);
-    saveSection($entity, ProfileSection::Governance, ['employees_count' => 7])->assertOk();
+    saveAndApproveSection($entity, ProfileSection::Governance, ['employees_count' => 7])->assertOk();
 
     $response = switchTo(ownerOf($entity))->patchJson('/api/v1/entities/me/profile/governance', $stale)
         ->assertConflict()
@@ -188,10 +187,10 @@ it('detects a staff edit made after the section was opened', function (): void {
 it('does not reject a section whose own values did not change since it was opened', function (): void {
     $entity = entityWithOwner();
     $opened = sectionBody($entity, ProfileSection::Governance, ['employees_count' => 5]);
-    saveSection($entity, ProfileSection::Contact, ['marketing_consent' => true])->assertOk();
-    uploadEntityLogo(ownerOf($entity), logoUpload(logoImageBytes()))->assertCreated();
+    saveSection($entity, ProfileSection::Contact, ['marketing_consent' => true])->assertAccepted();
+    uploadEntityLogo(ownerOf($entity), logoUpload(logoImageBytes()))->assertAccepted();
 
-    switchTo(ownerOf($entity))->patchJson('/api/v1/entities/me/profile/governance', $opened)->assertOk()->assertJsonPath('data.employees_count', 5);
+    switchTo(ownerOf($entity))->patchJson('/api/v1/entities/me/profile/governance', $opened)->assertAccepted()->assertJsonPath('data.pending_profile_change.items', ['employees_count', 'logo']);
 });
 
 it('rejects invalid section data', function (ProfileSection $section, array $overrides, string $field): void {
@@ -261,7 +260,7 @@ it('never changes the official e-mail from the contact section', function (): vo
 it('ignores the fields of other sections', function (): void {
     $entity = entityWithOwner(static fn (EntityFactory $factory): EntityFactory => $factory->state(['entity_type' => 'civil_association']));
 
-    saveSection($entity, ProfileSection::Governance, ['employees_count' => 9, 'entity_type' => 'waqf', 'founding_year' => 1950])->assertOk();
+    saveAndApproveSection($entity, ProfileSection::Governance, ['employees_count' => 9, 'entity_type' => 'waqf', 'founding_year' => 1950])->assertOk();
 
     expect($entity->refresh()->employees_count)->toBe(9)
         ->and($entity->entity_type->value)->not->toBe('waqf')

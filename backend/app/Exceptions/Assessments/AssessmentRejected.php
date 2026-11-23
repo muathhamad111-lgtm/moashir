@@ -93,6 +93,11 @@ final class AssessmentRejected extends ApiException
         return self::fieldError('assessment.main_not_in_version', $field);
     }
 
+    public static function pointNotInVersion(string $field): self
+    {
+        return self::fieldError('assessment.point_not_in_version', $field);
+    }
+
     public static function cvNotAllowed(string $field): self
     {
         return self::fieldError('cv.not_allowed', $field);

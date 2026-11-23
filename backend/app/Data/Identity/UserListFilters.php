@@ -16,5 +16,6 @@ final readonly class UserListFilters
         public ?UserStatus $status = null,
         public string $sort = 'name',
         public int $perPage = 15,
+        public bool $ndaPendingOnly = false,
     ) {}
 }

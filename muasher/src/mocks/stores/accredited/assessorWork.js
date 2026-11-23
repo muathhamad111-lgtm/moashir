@@ -8,7 +8,9 @@ import { STATES } from './accreditedStates'
 import { activeAssignment, mainOfId, nowIso, subOfId, touch } from './accreditedRecords'
 import { assertNotFrozen } from './entityWorkflow'
 import { isAdvanced, stagesOf } from '../assessments/reviewedPaths'
-import { announceInitialCompleted } from '../award/awardNotices'
+import { announceInitialCompleted, announceReturned } from '../award/awardNotices'
+import { ADVANCED_STATES } from '../award/advancedStates'
+import { assertBeforeCommittee } from '../award/completionWindow'
 import { recordSnapshot } from './resultSnapshots'
 import { writeSummary } from '../insights/assessorSummaries'
 import { issueOnCompletion } from '../requestCertificates'
@@ -257,30 +259,38 @@ export function completionItem(record, item, index) {
 
 export function requestCompletion(user, record, body) {
   validateCompletion(body)
-  const states = isAdvanced(record) ? [] : [STATES.UNDER_REVIEW]
+  // Operator 2026-11-22: the initial assessor also asks an advanced entity for completion once the
+  // assessment is finished; the resubmission comes back to the same review.
+  const advanced = isAdvanced(record)
+  const from = record.status
+  const states = advanced ? [ADVANCED_STATES.UNDER_INITIAL_ASSESSMENT] : [STATES.UNDER_REVIEW]
   enterReviewGate(user, record, {
     verb: 'request_completion',
     reason: trimmed(body.reason) || null,
     states,
   })
   assertFullyScored(record)
+  const deadlineAt = new Date(body.deadlineAt).toISOString()
+  if (advanced) assertBeforeCommittee(record, deadlineAt)
   const items = body.items.map((item, index) => completionItem(record, item, index))
   const at = nowIso()
   completionSequence += 1
-  record.completionRequests.push({
+  const completion = {
     id: completionSequence,
     status: 'open',
     notes: body.notes.trim(),
     items,
-    deadlineAt: new Date(body.deadlineAt).toISOString(),
+    deadlineAt,
     expiryOutcome: body.expiryOutcome,
     createdAt: at,
     resolvedAt: null,
-  })
+    resumesTo: advanced ? from : null,
+  }
+  record.completionRequests.push(completion)
   record.status = STATES.NEEDS_COMPLETION
   record.transitions.push(
     transition(
-      STATES.UNDER_REVIEW,
+      from,
       STATES.NEEDS_COMPLETION,
       'request_completion',
       at,
@@ -289,13 +299,13 @@ export function requestCompletion(user, record, body) {
     ),
   )
   touch(record)
+  if (advanced) announceReturned(record, completion)
   return record
 }
 
-// Every item is scored before the entity is asked to complete anything (design §B.3.3, UX-1).
-// The follower's return of an advanced request is not a scored review, so it is exempt.
+// Every item is scored before the assessor asks the entity to complete anything (design §B.3.3,
+// UX-1). The follower's return of an advanced request is not a scored review and does not come here.
 function assertFullyScored(record) {
-  if (isAdvanced(record)) return
   const missing = missingUnits(record)
   if (missing.length) throw assessmentReject.scoresIncomplete(missing)
 }

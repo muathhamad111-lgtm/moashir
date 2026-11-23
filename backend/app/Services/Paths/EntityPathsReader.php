@@ -6,6 +6,7 @@ namespace App\Services\Paths;
 
 use App\Data\Paths\EntityPaths;
 use App\Models\Entities\Entity;
+use App\Services\Award\OpenCycleOptionsReader;
 
 final readonly class EntityPathsReader
 {
@@ -14,6 +15,7 @@ final readonly class EntityPathsReader
         private AccreditedPathReader $accredited,
         private AwardPathReader $award,
         private PaymentToSettleReader $payments,
+        private OpenCycleOptionsReader $openCycles,
     ) {}
 
     public function read(Entity $entity): EntityPaths
@@ -22,6 +24,6 @@ final readonly class EntityPathsReader
         $accredited = $this->accredited->read($entity);
         $award = $this->award->read($entity);
 
-        return new EntityPaths($self, $accredited, $award, $this->payments->read($entity, $self, $accredited, $award));
+        return new EntityPaths($self, $accredited, $award, $this->payments->read($entity, $self, $accredited, $award), $this->openCycles->forEntity($entity));
     }
 }

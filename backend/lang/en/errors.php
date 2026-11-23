@@ -68,6 +68,13 @@ return [
     'password' => [
         'change_required' => 'You must set a new password before continuing.',
     ],
+    'nda' => [
+        'acceptance_required' => 'You must accept the current non-disclosure agreement before continuing.',
+        'version_not_current' => 'This agreement version is no longer current. Refresh the page and read the current version.',
+        'no_current_version' => 'No version of the non-disclosure agreement has been published.',
+        'no_draft' => 'There is no draft of the non-disclosure agreement.',
+        'reminder_too_soon' => 'A reminder was sent in the last 24 hours. You can send another once they have passed.',
+    ],
     'identity_change' => [
         'already_pending' => 'You already have a change request under review. Wait for its decision or cancel it first.',
         'nothing_to_change' => 'The requested values match the current ones. Change at least one value.',
@@ -175,6 +182,7 @@ return [
     'assessment' => [
         'sub_not_in_version' => 'This sub-criterion is not part of the criteria version of this assessment.',
         'main_not_in_version' => 'This main criterion is not part of the criteria version of this assessment.',
+        'point_not_in_version' => 'This indicator is not part of the criteria version of this assessment, or its sub-criterion is not scored through indicators.',
         'not_assignee' => 'Only the assessor assigned to this request can do this.',
         'assignment_required' => 'This request has no assigned assessor.',
         'result_required' => 'This request has no computed result yet.',
@@ -199,6 +207,13 @@ return [
     ],
     'profile' => [
         'section_stale' => 'This section was changed after you opened it. Review the current values and save again.',
+        'change_amended' => 'The entity amended its request after you opened it. Review the current changes and decide again.',
+        'change_stale' => 'The approved value of some fields changed after the request was submitted, so they cannot be approved. Reject them or ask the entity to submit them again.',
+        'change_file_not_clean' => 'The uploaded file has not finished its security scan, so it cannot be approved yet.',
+        'change_unknown_items' => 'Choose only among the changes in this request.',
+        'change_coupled_items' => 'Region and city, and VAT registration and VAT number, are approved or rejected together.',
+        'change_reason_required' => 'Write the reason for rejection (at least 10 characters) when you reject any change.',
+        'change_missing' => 'There is no profile change awaiting approval.',
     ],
     'prices' => [
         'stale_version' => 'This price was changed by someone else. Review the current price and try again.',
@@ -345,7 +360,8 @@ return [
     ],
     'cycle' => [
         'committee_not_started' => 'The committee assessment of this cycle has not started.',
-        'another_open' => 'Another award cycle is already running. Close it before opening a new one.',
+        'another_open' => 'Another award cycle is already running, and the award cycle setting allows one running cycle at a time. Close it before opening or reopening this one.',
+        'another_open_for_submission' => 'Submissions are already open in another award cycle, and the award cycle setting allows one cycle open for submission at a time. Open this cycle after that submission period closes.',
         'dates_unordered' => 'The cycle dates must follow each other: submission start, submission end, committee assessment start, committee assessment end, then the announcement date. While submissions are open, the submission end must be in the future.',
         'field_locked' => 'This field can no longer be changed at the current stage of the cycle.',
         'region_has_requests' => 'A region that already has requests in this cycle cannot be removed.',
@@ -357,7 +373,9 @@ return [
         'conditions_failed' => 'Your entity does not meet the entry conditions of the award cycle.',
         'member_invalid' => 'Choose active staff accounts that hold the required role.',
         'initial_assessor_invalid' => 'Choose active assessor accounts.',
-        'filtering_not_open' => 'Filtering decisions can be taken only after the submission period of the cycle has closed.',
+        'no_initial_assessors' => 'Link at least one initial assessor to the cycle before opening it, so its requests can be assigned.',
+        'filtering_not_open' => 'Filtering decisions can be taken from the opening of submissions until the results of the cycle are approved.',
+        'threshold_locked' => 'The qualification threshold cannot change once the cycle has filtering decisions.',
     ],
     'advanced' => [
         'request_exists' => 'Your entity already has a request in this award cycle.',
@@ -396,6 +414,7 @@ return [
         'region_approved' => 'The results of this region are already approved.',
         'region_not_approved' => 'The results of this region are not approved.',
         'national_approved' => 'The national result of this cycle is approved and locked.',
+        'paid_draft' => 'A paid award draft cannot be deleted. Contact the platform to request a refund of its fee.',
     ],
     'region' => [
         'requests_pending' => 'Some requests of this region have not reached an approved result yet.',

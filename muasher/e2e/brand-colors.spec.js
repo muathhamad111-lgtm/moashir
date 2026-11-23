@@ -30,6 +30,16 @@ async function openVisualIdentity(page, testInfo) {
   return TEXT[isEn(testInfo) ? 'en' : 'ar']
 }
 
+function railField(page, role) {
+  return page.locator(`.brand-rail-field[data-role="${role}"]`)
+}
+
+function backgroundImage(page, selector) {
+  return page.locator(selector).evaluate((element) => getComputedStyle(element).backgroundImage)
+}
+
+const NAVY = 'rgb(29, 43, 79)'
+
 function row(page, index) {
   return page.locator('.brand-derived__row').nth(index)
 }
@@ -48,7 +58,7 @@ test('lists the derived colours on auto, previews them and saves a readable over
   for (let index = 0; index < 5; index += 1) {
     await expect(row(page, index).locator('.badge')).toHaveText(text.auto)
   }
-  await expect(page.locator('.brand-fixed__item')).toHaveCount(11)
+  await expect(page.locator('.brand-fixed')).toHaveCount(0)
   await expect(page.locator('.brand-preview [role="tab"]')).toHaveCount(2)
   await page.screenshot({ path: `${SHOTS}/screen-${suffix(testInfo)}.png`, fullPage: true })
 
@@ -132,4 +142,72 @@ test('applies a saved brand scheme under the production CSP (no inline style)', 
       ).length,
   )
   expect(inlineBrandStyles).toBe(0)
+})
+
+// Sidebar gradient (look 3): two colours, a live preview on the screen, nothing applied before save.
+test('previews a chosen sidebar gradient on the screen only, then applies it on save', async ({
+  page,
+}, testInfo) => {
+  const text = await openVisualIdentity(page, testInfo)
+  await expect(railField(page, 'top').locator('.badge')).toHaveText(text.auto)
+  await expect(railField(page, 'top').locator('input[type="text"]')).toHaveValue('#0a2325')
+  await expect(railField(page, 'bottom').locator('input[type="text"]')).toHaveValue('#2b4d4d')
+  expect(await backgroundImage(page, '.sidebar')).toContain('rgb(10, 35, 37)')
+
+  await railField(page, 'top').locator('input[type="text"]').fill('#1d2b4f')
+  await railField(page, 'bottom').locator('input[type="text"]').fill('#3c6e71')
+  await expect(railField(page, 'top').locator('.badge')).toHaveText(text.custom)
+  await expect.poll(() => backgroundImage(page, '.brand-rail__sample')).toContain(NAVY)
+  expect(await backgroundImage(page, '.brand-sample__nav--rail')).toContain(NAVY)
+  expect(await backgroundImage(page, '.sidebar')).not.toContain(NAVY)
+  expect(await shellProperty(page, '--brand-rail-top')).toBe('#0a2325')
+  await page.screenshot({ path: `${SHOTS}/rail-preview-${suffix(testInfo)}.png`, fullPage: true })
+
+  await page.locator('.branding-page__actions .btn--primary').click()
+  await expect.poll(() => shellProperty(page, '--brand-rail-top')).toBe('#1d2b4f')
+  await expect.poll(() => backgroundImage(page, '.sidebar')).toContain(NAVY)
+  await page.screenshot({ path: `${SHOTS}/rail-saved-${suffix(testInfo)}.png` })
+})
+
+test('saves any two sidebar colours with no contrast check: the client owns the result', async ({
+  page,
+}, testInfo) => {
+  const text = await openVisualIdentity(page, testInfo)
+  await railField(page, 'top').locator('input[type="text"]').fill('#2b1055')
+  await railField(page, 'bottom').locator('input[type="text"]').fill('#9fb8ec')
+  await expect(page.locator('.brand-rail [role="alert"]')).toHaveCount(0)
+  await page.screenshot({ path: `${SHOTS}/rail-any-pair-${suffix(testInfo)}.png`, fullPage: true })
+  await page.locator('.branding-page__actions .btn--primary').click()
+  await expect.poll(() => shellProperty(page, '--brand-rail-top')).toBe('#2b1055')
+
+  await railField(page, 'top').locator('.btn').click()
+  await railField(page, 'bottom').locator('.btn').click()
+  await expect(railField(page, 'bottom').locator('.badge')).toHaveText(text.auto)
+})
+
+test('draws the saved sidebar gradient under the production CSP (no inline style)', async ({
+  page,
+}, testInfo) => {
+  await serveWithProductionCsp(page)
+  await openVisualIdentity(page, testInfo)
+  await railField(page, 'top').locator('input[type="text"]').fill('#1d2b4f')
+  await railField(page, 'bottom').locator('input[type="text"]').fill('#3c6e71')
+  await page.locator('.branding-page__actions .btn--primary').click()
+
+  // The dev server's own <style> tags are refused under this policy; the brand scheme is not.
+  await expect.poll(() => shellProperty(page, '--brand-rail-top')).toBe('#1d2b4f')
+  expect(await shellProperty(page, '--brand-rail-gradient')).toMatch(
+    /^linear-gradient\(180deg, #1d2b4f 0%, .+ #3c6e71 100%\)$/,
+  )
+  await expect(page.locator('.brand-rail__idea .brand-rail__swatch').first()).not.toHaveCSS(
+    'background-image',
+    'none',
+  )
+  const inlineRailStyles = await page.evaluate(
+    () =>
+      [...document.querySelectorAll('style, [style]')].filter((node) =>
+        /#1d2b4f|rgb\(29, 43, 79\)/.test(node.textContent + (node.getAttribute('style') ?? '')),
+      ).length,
+  )
+  expect(inlineRailStyles).toBe(0)
 })

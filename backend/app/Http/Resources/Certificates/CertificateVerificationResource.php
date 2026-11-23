@@ -44,10 +44,21 @@ final class CertificateVerificationResource extends JsonResource
             'kind' => $certificate->kind->value,
             'level' => $level?->value,
             'level_label' => $level === null ? null : LocalizedText::fromTranslation('certificates.levels.'.$level->value)->toArray(),
-            'percent' => $outcome === VerificationOutcome::UnderReview ? null : ScalarValue::string($snapshot['percent'] ?? null),
+            'percent' => $outcome === VerificationOutcome::UnderReview ? null : $this->percentOf($snapshot),
             'entity_name' => $snapshot['entity_name'] ?? null,
+            'award' => is_array($snapshot['award'] ?? null) ? $snapshot['award'] : null,
             'issued_at' => $certificate->issued_at->toIso8601String(),
             'valid_until' => $certificate->valid_until?->toDateString(),
         ];
+    }
+
+    /**
+     * An award certificate keeps no percentage, so it shows none (03 §8.4).
+     *
+     * @param  array<string, mixed>  $snapshot
+     */
+    private function percentOf(array $snapshot): ?string
+    {
+        return isset($snapshot['percent']) ? ScalarValue::string($snapshot['percent']) : null;
     }
 }

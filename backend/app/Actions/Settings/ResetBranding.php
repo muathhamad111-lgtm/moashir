@@ -44,6 +44,8 @@ final readonly class ResetBranding
                 'primary_color' => $defaults->primary,
                 'secondary_color' => $defaults->secondary,
                 'color_overrides' => $defaults->overrides->toArray(),
+                'sidebar_top_color' => $defaults->rail->top,
+                'sidebar_bottom_color' => $defaults->rail->bottom,
                 ...array_fill_keys($columns, null),
                 'updated_by_user_id' => $actor->id,
             ])->save();

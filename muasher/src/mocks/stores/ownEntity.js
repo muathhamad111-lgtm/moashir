@@ -3,6 +3,8 @@ import { ENTITY_PERMISSIONS as P, ownEntityOf } from './entityAccess'
 import { sessionCan } from './sessionPermissions'
 import { ownEntityResource } from './entitySerializers'
 import { awaitingChangeOf } from './entityEmailChanges'
+import { pendingRequestOf } from './profileChangeRequests'
+import { ownPendingSummary } from './profileChangeResources'
 
 const ACTIVE = 'active'
 
@@ -27,5 +29,6 @@ export function ownResource(entity) {
   return ownEntityResource(entity, {
     awaitingChange: awaitingChangeOf(entity.id),
     canEdit: canEditOwn(entity),
+    pendingProfileChange: ownPendingSummary(pendingRequestOf(entity.id)),
   })
 }

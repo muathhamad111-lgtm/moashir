@@ -2,6 +2,7 @@ import { object, string } from 'yup'
 
 import { ENTITY_VISIBILITY_LIST } from '@/constants/committee'
 import { SCALE_KINDS } from '@/constants/assessment'
+import { CYCLE_CONCURRENCY_LIST } from '@/constants/advanced'
 import { toWesternDigits } from '@/utils/numerals'
 
 export const UPLOAD_BOUNDS = {
@@ -14,6 +15,7 @@ export const ADVANCED_BOUNDS = {
 }
 
 const INTEGER_FIELDS = ['generalUploadMaxFileMb', 'advancedMinEntityAgeYears']
+const CHOICE_FIELDS = ['committeeEntityDataVisibility', 'scaleKind', 'advancedCycleConcurrency']
 const INTEGER = /^\d+$/
 const SCORE = /^\d{1,3}(\.\d{1,2})?$/
 
@@ -54,6 +56,7 @@ export function assessmentSettingsSchema(t) {
     advancedDisqualificationScore: scoreField(t),
     committeeEntityDataVisibility: string().oneOf(ENTITY_VISIBILITY_LIST, t('validation.required')),
     scaleKind: string().oneOf([...Object.values(SCALE_KINDS), ''], t('validation.required')),
+    advancedCycleConcurrency: string().oneOf(CYCLE_CONCURRENCY_LIST, t('validation.required')),
   })
 }
 
@@ -61,8 +64,7 @@ export function settingsFormValues(settings) {
   return {
     ...Object.fromEntries(INTEGER_FIELDS.map((field) => [field, String(settings[field] ?? '')])),
     advancedDisqualificationScore: String(settings.advancedDisqualificationScore ?? ''),
-    committeeEntityDataVisibility: settings.committeeEntityDataVisibility ?? '',
-    scaleKind: settings.scaleKind ?? '',
+    ...Object.fromEntries(CHOICE_FIELDS.map((field) => [field, settings[field] ?? ''])),
   }
 }
 
@@ -70,13 +72,25 @@ function isKnown(value) {
   return value !== null && value !== undefined
 }
 
-export function changedAssessmentSettings(settings, values) {
-  const changes = Object.fromEntries(
+function changedChoices(settings, values) {
+  return Object.fromEntries(
+    CHOICE_FIELDS.filter(
+      (field) => isKnown(settings[field]) && values[field] !== settings[field],
+    ).map((field) => [field, values[field]]),
+  )
+}
+
+function changedIntegers(settings, values) {
+  return Object.fromEntries(
     INTEGER_FIELDS.filter(
       (field) =>
         isKnown(settings[field]) && Number(normalizedNumber(values[field])) !== settings[field],
     ).map((field) => [field, Number(normalizedNumber(values[field]))]),
   )
+}
+
+export function changedAssessmentSettings(settings, values) {
+  const changes = { ...changedIntegers(settings, values), ...changedChoices(settings, values) }
   if (
     isKnown(settings.advancedDisqualificationScore) &&
     !sameScore(values.advancedDisqualificationScore, settings.advancedDisqualificationScore)
@@ -85,12 +99,5 @@ export function changedAssessmentSettings(settings, values) {
       normalizedNumber(values.advancedDisqualificationScore),
     ).toFixed(2)
   }
-  if (
-    isKnown(settings.committeeEntityDataVisibility) &&
-    values.committeeEntityDataVisibility !== settings.committeeEntityDataVisibility
-  )
-    changes.committeeEntityDataVisibility = values.committeeEntityDataVisibility
-  if (isKnown(settings.scaleKind) && values.scaleKind !== settings.scaleKind)
-    changes.scaleKind = values.scaleKind
   return changes
 }

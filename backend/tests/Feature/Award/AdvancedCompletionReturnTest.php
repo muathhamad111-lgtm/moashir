@@ -103,10 +103,10 @@ it('lets only the followers and the System Administrator return an advanced requ
     switchTo(systemAdmin())->postJson($path, returnPayload($version))->assertOk();
 });
 
-it('refuses a return once the initial assessor is assigned', function (): void {
+it('refuses a return once the initial assessment is complete', function (): void {
     $version = publishedAccreditedCriteria();
     $cycle = openAwardCycle($version);
-    $assessment = assignedAdvancedRequest($cycle, $version, assessorUser());
+    $assessment = initiallyAssessedRequest($cycle, $version, assessorUser());
 
     switchTo(requestFollower())->postJson("/api/v1/requests/{$assessment->id}/return-for-completion", returnPayload($version))
         ->assertConflict()->assertJsonPath('code', 'state.transition_illegal');
@@ -125,7 +125,7 @@ it('lets the entity change only the listed items and resubmit to the follower qu
         ->assertUnprocessable()->assertJsonPath('code', 'completion.item_not_requested');
     uploadEvidence($owner, $assessment, $version)->assertUnprocessable()->assertJsonPath('code', 'completion.item_not_requested');
     switchTo($owner)->putJson("/api/v1/assessments/{$assessment->id}/cv", ['cv' => [$listed => 'تحديث وصف السياسة المعتمدة من مجلس الإدارة.']])->assertOk();
-    switchTo($owner)->postJson("/api/v1/assessments/{$assessment->id}/submit")->assertOk()->assertJsonPath('data.status', 'awaiting_review_assignment');
+    switchTo($owner)->postJson("/api/v1/assessments/{$assessment->id}/submit")->assertOk()->assertJsonPath('data.status', 'under_review');
 
     expect(AssessmentCompletionRequest::query()->where('assessment_id', $assessment->id)->value('status')->value)->toBe('resubmitted')
         ->and(financeNoticeSent($follower, NotificationCode::AdvancedSubmitted))->toBeTrue();

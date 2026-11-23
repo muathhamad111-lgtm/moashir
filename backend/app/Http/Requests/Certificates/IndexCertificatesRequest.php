@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Http\Requests\Certificates;
 
 use App\Data\Certificates\CertificateListFilters;
+use App\Enums\Certificates\CertificateKind;
 use App\Enums\Certificates\CertificateLevel;
 use App\Enums\Certificates\CertificateStatus;
 use App\Rules\EnumValueList;
@@ -19,9 +20,10 @@ final class IndexCertificatesRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'filter' => ['nullable', 'array:status,level,entity_id,assessment_id'],
+            'filter' => ['nullable', 'array:status,level,kind,entity_id,assessment_id'],
             'filter.status' => ['nullable', new EnumValueList(CertificateStatus::class)],
             'filter.level' => ['nullable', Rule::enum(CertificateLevel::class)],
+            'filter.kind' => ['nullable', Rule::enum(CertificateKind::class)],
             'filter.entity_id' => ['nullable', 'integer', 'min:1'],
             'filter.assessment_id' => ['nullable', 'integer', 'min:1'],
             'search' => ['nullable', 'string', 'max:30'],
@@ -39,6 +41,7 @@ final class IndexCertificatesRequest extends FormRequest
             $this->filled('filter.assessment_id') ? $this->integer('filter.assessment_id') : null,
             $this->filled('search') ? strtoupper($this->string('search')->trim()->toString()) : null,
             $this->integer('per_page', 15),
+            CertificateKind::tryFrom($this->string('filter.kind')->toString()),
         );
     }
 }

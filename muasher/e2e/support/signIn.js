@@ -32,6 +32,7 @@ export async function submitSignIn(page, identifier, password = MOCK_PASSWORD) {
 export async function requestSignInCode(page, identifier) {
   await signInTab(page, 'code').click()
   await expect(signInTab(page, 'code')).toHaveAttribute('aria-selected', 'true')
+  await expect(page.locator('[name="password"]')).toHaveCount(0)
   await page.locator('[name="identifier"]').fill(identifier)
   const answered = answerOf(page, '/api/v1/auth/otp/request')
   await page.locator('form button[type="submit"]').click()

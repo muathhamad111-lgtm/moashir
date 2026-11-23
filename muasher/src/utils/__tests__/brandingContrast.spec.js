@@ -61,7 +61,8 @@ describe('brand colour scheme', () => {
     'derives the same scheme as the server: %s',
     (label, vector) => {
       const overrides = camelScheme(vector.overrides)
-      expect(deriveBrandScheme(vector, overrides)).toEqual(camelScheme(vector.scheme))
+      const rail = { top: vector.sidebar_top_color, bottom: vector.sidebar_bottom_color }
+      expect(deriveBrandScheme(vector, overrides, rail)).toEqual(camelScheme(vector.scheme))
     },
   )
 

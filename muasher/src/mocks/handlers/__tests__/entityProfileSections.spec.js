@@ -7,6 +7,7 @@ import { regionsHandlers } from '@/mocks/handlers/regions'
 import { resetEntitiesMock } from '@/mocks/stores/entityMockReset'
 import { MOCK_API_BASE, clearMockSession, seedMockSession, wireFetch } from '@/test-utils/mockApi'
 import { resetProfileScenarioAfterEach, startWithIncompleteProfile } from './profileScenarioSupport'
+import { approvePendingChange } from './profileChangeSupport'
 
 const server = setupServer(
   ...entityEmailChangesHandlers,
@@ -80,7 +81,7 @@ describe('entity profile sections mock (Task-82b contract)', () => {
     ])
   })
 
-  it('saves one section, reports the changed fields and moves to 87 %', async () => {
+  it('puts a section edit in a pending request and moves to 87 % once it is approved', async () => {
     startWithIncompleteProfile()
     seedMockSession(NAMAA)
     const saved = await call(
@@ -88,18 +89,23 @@ describe('entity profile sections mock (Task-82b contract)', () => {
       '/entities/me/profile/governance',
       governance(await revisionOf('governance')),
     )
-    expect(saved.status).toBe(200)
-    expect(saved.body.meta).toEqual({
-      section: 'governance',
-      changed_fields: ['governance_grade', 'employees_count', 'annual_beneficiaries_count'],
-    })
-    expect(saved.body.data.profile_completion.percent).toBe(87)
+    expect(saved.status).toBe(202)
+    expect(saved.body.meta).toEqual({ section: 'governance' })
+    expect(saved.body.data.pending_profile_change.items).toEqual([
+      'governance_grade',
+      'employees_count',
+      'annual_beneficiaries_count',
+    ])
+    expect(saved.body.data.profile_completion.percent).toBe(75)
+    approvePendingChange(6001)
+    expect((await call('GET', '/entities/me')).body.data.profile_completion.percent).toBe(87)
   })
 
   it('answers 409 profile.section_stale with the current revision', async () => {
     seedMockSession(NAMAA)
     const stale = await revisionOf('governance')
     await call('PATCH', '/entities/me/profile/governance', governance(stale))
+    approvePendingChange(6001)
     const conflict = await call(
       'PATCH',
       '/entities/me/profile/governance',
@@ -117,8 +123,11 @@ describe('entity profile sections mock (Task-82b contract)', () => {
       '/entities/me/profile/governance',
       governance(await revisionOf('governance'), { has_strategic_plan: null }),
     )
-    expect(saved.body.data.has_strategic_plan).toBeNull()
-    const section = saved.body.data.profile_completion.sections[2]
+    expect(saved.status).toBe(202)
+    approvePendingChange(6001)
+    const approved = (await call('GET', '/entities/me')).body.data
+    expect(approved.has_strategic_plan).toBeNull()
+    const section = approved.profile_completion.sections[2]
     expect(section.missing_fields).toEqual(['has_strategic_plan'])
   })
 
@@ -178,6 +187,7 @@ describe('entity profile sections mock (Task-82b contract)', () => {
       website_url: null,
       marketing_consent: true,
     })
+    approvePendingChange(5001)
     const contact = await call('GET', '/entities/me/profile-changes?section=contact')
     expect(contact.body.data.every((item) => item.section === 'contact')).toBe(true)
     const phone = contact.body.data.find((item) => item.field === 'phone')

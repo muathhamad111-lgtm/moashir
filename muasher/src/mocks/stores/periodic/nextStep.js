@@ -69,7 +69,7 @@ function needsNewOrder(payment, path) {
   return (
     payment.status === REJECTED &&
     !requestOfPayment(payment.id) &&
-    !path.openRequest &&
+    !(path.openRequest && path.openRequest.isOpen !== false) &&
     !path.openDraft &&
     !path.awaitingPayment &&
     path.pricing.availability === 'available' &&
@@ -101,7 +101,7 @@ function settleStep({ payment, purpose }) {
 
 function paymentStep(entityId, paths) {
   const award = paths.award
-  const awardOpen = award?.windowState === 'open' && !award.openRequest
+  const awardOpen = award?.windowState === 'open' && !award.openRequest?.isOpen
   const [latest] = [
     paymentCandidate(entityId, 'accredited', paths.accredited),
     paymentCandidate(entityId, 'self', paths.self),
@@ -135,7 +135,7 @@ function paidSelfDraftStep({ self }) {
 
 function awardRequestStep({ award }) {
   const request = award.openRequest
-  if (!request) return null
+  if (!request?.isOpen) return null
   const fields = { assessmentId: request.id, number: request.number, cycleId: award.cycle?.id }
   if (request.status === 'draft' && award.windowState === 'open')
     return step(3, 'finish_draft', 'advanced', target('award'), {

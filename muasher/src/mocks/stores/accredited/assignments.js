@@ -8,6 +8,7 @@ import { addDays } from './dates'
 import { isAdvanced, pathRules, stagesOf } from '../assessments/reviewedPaths'
 import { findCycle, isInitialAssessor, isMember } from '../award/cycleStore'
 import { announceInitialAssessorAssigned } from '../award/awardNotices'
+import { canManage as canManageCycle } from '../award/cycleAccess'
 import { activeAssessors, isActiveAssessor } from './staffDirectory'
 import { assertNotFrozen } from './entityWorkflow'
 import { isPositiveInteger, reasonError, throwIfErrors, trimmed } from './accreditedValidation'
@@ -146,12 +147,17 @@ export function assignAssessor(user, record, body) {
   return record
 }
 
+// Operator 2026-11-23 («السماح في المسارين»): the assessor may change while the entity completes the request.
+function acceptsReassignment(record) {
+  return pathRules(record.path).hasAssessor(record.status) || record.status === 'needs-completion'
+}
+
 export function reassignAssessor(user, record, body) {
   const input = validateAssignment(body, {
     reasonRequired: assignmentReasonRules().reassignRequired,
   })
   assertNotFrozen(record)
-  if (!pathRules(record.path).hasAssessor(record.status))
+  if (!acceptsReassignment(record))
     throw assessmentReject.illegalTransition(toCanonicalStatus(record.status), 'reassign')
   const current = activeAssignment(record)
   if (!current) throw assessmentReject.coded(409, 'assessment.assignment_required')
@@ -166,4 +172,15 @@ export function reassignAssessor(user, record, body) {
   )
   touch(record)
   return record
+}
+
+// The award hint of the assessor list, as the API sends it: whether the request's cycle links an initial assessor.
+export function assignmentCycleHint(user, query) {
+  const record = query.get('assessmentId') ? findAssessment(query.get('assessmentId')) : null
+  const cycle = cycleOf(record)
+  if (!cycle) return null
+  return {
+    hasInitialAssessors: cycle.initialAssessors.some((link) => link.isActive),
+    cycleId: canManageCycle(user, cycle) ? cycle.id : null,
+  }
 }

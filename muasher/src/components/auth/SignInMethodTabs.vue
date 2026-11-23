@@ -1,8 +1,9 @@
 <script setup>
-import { useId } from 'vue'
+import { toRef, useId } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { SIGN_IN_METHOD_VALUES } from '@/constants/signIn'
 import { isRightToLeft, tabIndexAfterKey } from '@/utils/tabNavigation'
+import { useAuthPanelTransition } from '@/composables/auth/useAuthPanelTransition'
 
 const props = defineProps({
   modelValue: {
@@ -16,6 +17,10 @@ const emit = defineEmits(['update:modelValue'])
 const { t } = useI18n()
 const panelId = useId()
 const tabs = []
+const { onBeforeLeave, onLeave, onEnter } = useAuthPanelTransition(
+  toRef(props, 'modelValue'),
+  SIGN_IN_METHOD_VALUES,
+)
 
 function tabIdOf(method) {
   return `${panelId}-tab-${method}`
@@ -36,7 +41,13 @@ function onKeydown(event, index) {
 
 <template>
   <div class="sign-in-methods">
-    <div class="sign-in-methods__list" role="tablist" :aria-label="t('auth.login.methods.label')">
+    <div
+      class="sign-in-methods__list"
+      role="tablist"
+      :aria-label="t('auth.login.methods.label')"
+      :data-selected="props.modelValue"
+    >
+      <span class="sign-in-methods__indicator" aria-hidden="true" />
       <button
         v-for="(method, index) in SIGN_IN_METHOD_VALUES"
         :id="tabIdOf(method)"
@@ -62,7 +73,9 @@ function onKeydown(event, index) {
       role="tabpanel"
       :aria-labelledby="tabIdOf(props.modelValue)"
     >
-      <slot />
+      <Transition :css="false" @before-leave="onBeforeLeave" @leave="onLeave" @enter="onEnter">
+        <slot />
+      </Transition>
     </div>
   </div>
 </template>

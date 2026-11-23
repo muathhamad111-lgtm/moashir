@@ -69,11 +69,12 @@ export function changePasswordPayload(values) {
   }
 }
 
-export function invitationPayload(values, terms) {
+export function invitationPayload(values, terms, nda = null) {
   return {
     password: values.password,
     passwordConfirmation: values.passwordConfirmation,
     termsVersionId: terms?.terms?.id ?? null,
+    ...(nda ? { ndaVersionId: nda.id } : {}),
     ...(values.nationalId ? { nationalId: normalizeNationalId(values.nationalId) } : {}),
   }
 }

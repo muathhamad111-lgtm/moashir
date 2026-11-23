@@ -18,7 +18,7 @@ final class CurrentTermsController
     {
         $current = [];
 
-        foreach (TermsKind::cases() as $kind) {
+        foreach (TermsKind::legal() as $kind) {
             $version = $terms->of($kind);
             $current[$kind->value] = $version instanceof TermsVersion ? new TermsVersionResource($version)->resolve($request) : null;
         }

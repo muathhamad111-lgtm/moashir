@@ -1,9 +1,14 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
-import { ref } from 'vue'
+import { computed, defineComponent, ref } from 'vue'
+import { mount } from '@vue/test-utils'
+import { setActivePinia } from 'pinia'
+import { createTestGlobals } from '@/test-utils'
 import { awardCycleService } from '@/services/awardCycleService'
 import { advancedService } from '@/services/advancedService'
 import { filteringService } from '@/services/filteringService'
 import { useAdvancedIntro } from '@/composables/useAdvancedIntro'
+import { useAwardApplication } from '@/composables/useAwardApplication'
+import { useAwardCycleChoice } from '@/composables/useAwardCycleChoice'
 import { useCycleEditor } from '@/composables/useCycleEditor'
 import { useCycleTransitions } from '@/composables/useCycleTransitions'
 import { useFilteringDetail } from '@/composables/useFilteringDetail'
@@ -14,6 +19,7 @@ import { withSetup } from '@/test-utils/withSetup'
 vi.mock('@/services/awardCycleService', () => ({
   awardCycleService: {
     getCurrent: vi.fn(),
+    listOpen: vi.fn(),
     get: vi.fn(),
     getDefaultConditions: vi.fn(),
     open: vi.fn(),
@@ -51,50 +57,119 @@ beforeEach(() => {
 })
 
 describe('useAdvancedIntro', () => {
-  it('loads the public cycle for guests and the eligibility for an entity', async () => {
+  it('loads the public cycle without any entity call', async () => {
     awardCycleService.getCurrent.mockResolvedValue({ data: null })
     const guest = withSetup(() => useAdvancedIntro())
     await guest.api.load()
     expect(guest.api.cycleStatus.value).toBe('empty')
     expect(advancedService.getCurrent).not.toHaveBeenCalled()
-    const entity = withSetup(() => useAdvancedIntro())
-    useAuthStore(entity.globals.pinia).setUser(sessionUserFor(['entity']))
-    advancedService.getCurrent.mockResolvedValue({
-      data: { cycle: { id: 31 }, eligibility: { eligible: true }, request: null, previous: null },
-    })
-    await entity.api.load()
-    expect(entity.api.status.value).toBe('ready')
+    awardCycleService.getCurrent.mockRejectedValue(failure(500, 'server_error'))
+    await guest.api.load()
+    expect(guest.api.cycleStatus.value).toBe('error')
+  })
+})
+
+const NORTH = { id: 41, name: { en: 'North' }, year: 2026 }
+const SOUTH = { id: 40, name: { en: 'South' }, year: 2026 }
+
+async function setupAt(path, composable) {
+  const globals = createTestGlobals({ locale: 'en' })
+  setActivePinia(globals.pinia)
+  await globals.router.push(path)
+  let api
+  mount(
+    defineComponent({
+      setup() {
+        api = composable()
+        return () => null
+      },
+    }),
+    { global: { plugins: globals.plugins } },
+  )
+  return api
+}
+
+describe('award cycle choice', () => {
+  it('chooses the only open cycle by default and shows no chooser', async () => {
+    const api = await setupAt('/assessment/advanced', () =>
+      useAwardCycleChoice(
+        ref([NORTH]),
+        computed(() => null),
+      ),
+    )
+    expect(api.showChooser.value).toBe(false)
+    expect(api.selectedId.value).toBe(41)
   })
 
-  it('keeps the conditions failure of an application and reloads the current state', async () => {
-    const entity = withSetup(() => useAdvancedIntro())
-    useAuthStore(entity.globals.pinia).setUser(sessionUserFor(['entity']))
-    advancedService.getCurrent.mockResolvedValue({
-      data: { cycle: { id: 31 }, eligibility: { eligible: true }, request: null, previous: null },
-    })
-    await entity.api.loadCurrent()
+  it('lists several open cycles, prefers the cycle in the link, then the fallback, then the choice', async () => {
+    const choices = ref([NORTH, SOUTH])
+    const fallback = computed(() => 41)
+    const linked = await setupAt('/paths/award?cycle=40', () =>
+      useAwardCycleChoice(choices, fallback),
+    )
+    expect(linked.showChooser.value).toBe(true)
+    expect(linked.selectedId.value).toBe(40)
+    const plain = await setupAt('/paths/award?cycle=99', () =>
+      useAwardCycleChoice(choices, fallback),
+    )
+    expect(plain.selectedId.value).toBe(41)
+    plain.choose(40)
+    expect(plain.selected.value).toEqual(SOUTH)
+  })
+
+  it('lets a visitor of the intro browse the open cycles', async () => {
+    awardCycleService.getCurrent.mockResolvedValue({ data: NORTH })
+    awardCycleService.listOpen.mockResolvedValue({ data: [NORTH, SOUTH] })
+    const guest = withSetup(() => useAdvancedIntro())
+    await guest.api.load()
+    expect(guest.api.showChooser.value).toBe(true)
+    expect(guest.api.displayedCycle.value).toEqual(NORTH)
+    guest.api.selectCycle(40)
+    expect(guest.api.displayedCycle.value).toEqual(SOUTH)
+    awardCycleService.listOpen.mockResolvedValue({ data: [NORTH] })
+    await guest.api.load()
+    expect(guest.api.showChooser.value).toBe(false)
+  })
+})
+
+describe('useAwardApplication', () => {
+  it('applies for the cycle and returns the opened draft', async () => {
+    const entity = withSetup(() => useAwardApplication())
+    advancedService.apply.mockResolvedValue({ data: { id: 9300 } })
+    expect(await entity.api.apply(31)).toEqual({ id: 9300 })
+    expect(advancedService.apply).toHaveBeenLastCalledWith({ awardCycleId: 31 })
+    expect(await entity.api.apply(null)).toBeNull()
+    expect(advancedService.apply).toHaveBeenCalledTimes(1)
+  })
+
+  it('keeps a conditions failure for the page to reload', async () => {
+    const entity = withSetup(() => useAwardApplication())
     advancedService.apply.mockRejectedValue(
       failure(422, 'cycle.conditions_failed', { conditions: [{ rule: 'region', passed: false }] }),
     )
-    expect(await entity.api.apply()).toBeNull()
+    expect(await entity.api.apply(31)).toBeNull()
     expect(entity.api.rejection.value).toEqual({
       code: 'cycle.conditions_failed',
       conditions: [{ rule: 'region', passed: false }],
     })
-    expect(advancedService.getCurrent).toHaveBeenCalledTimes(2)
-    advancedService.apply.mockResolvedValue({ data: { id: 9300 } })
-    expect(await entity.api.apply()).toEqual({ id: 9300 })
-    expect(advancedService.apply).toHaveBeenLastCalledWith({ awardCycleId: 31 })
+  })
+
+  it('sends a paid cycle to its checkout instead of refusing', async () => {
+    const entity = withSetup(() => useAwardApplication())
+    const push = vi.spyOn(entity.globals.router, 'push').mockResolvedValue(undefined)
+    advancedService.apply.mockRejectedValue(
+      failure(402, 'path.payment_required', { awardCycleId: 31 }),
+    )
+    expect(await entity.api.apply(31)).toBeNull()
+    expect(entity.api.rejection.value).toBeNull()
+    expect(push).toHaveBeenCalledWith({ name: 'assessment.advanced.pay', query: { cycle: '31' } })
   })
 })
 
 describe('cycle editor and transitions', () => {
-  it('loads a new cycle with the defaults and an existing one with its locks and the running cycle', async () => {
+  it('loads a new cycle with the defaults and an existing one with its locks and its open block', async () => {
     awardCycleService.getDefaultConditions.mockResolvedValue({
       data: { minEntityAgeYears: 3, disqualificationScore: '60.00', initialReviewSlaDays: 14 },
-    })
-    awardCycleService.getCurrent.mockResolvedValue({
-      data: { id: 31, name: { en: 'Cycle' }, year: 2026 },
     })
     const fresh = withSetup(() => useCycleEditor(ref(null)))
     await fresh.api.load()
@@ -102,7 +177,19 @@ describe('cycle editor and transitions', () => {
       disqualificationScore: '60.00',
       criteriaVersionId: 1,
     })
-    expect(fresh.api.blockingCycle.value).toMatchObject({ id: 31 })
+    expect(fresh.api.openBlock.value).toBeNull()
+    expect(awardCycleService.getCurrent).not.toHaveBeenCalled()
+    const block = {
+      code: 'cycle.another_open_for_submission',
+      concurrency: 'staggered',
+      cycle: { id: 31, name: { en: 'Cycle' }, year: 2026, status: 'submission-open' },
+    }
+    awardCycleService.get.mockResolvedValueOnce({
+      data: { id: 33, status: 'draft', regions: [], conditions: {}, openBlock: block },
+    })
+    const blocked = withSetup(() => useCycleEditor(ref(33)))
+    await blocked.api.load()
+    expect(blocked.api.openBlock.value).toEqual(block)
     awardCycleService.get.mockResolvedValue({
       data: {
         id: 32,
@@ -154,7 +241,11 @@ describe('useFilteringDetail', () => {
     const officer = withSetup(() => useFilteringDetail(ref(31), ref(9205)))
     useAuthStore(officer.globals.pinia).setUser(sessionUserFor(['filtering_officer']))
     await officer.api.load()
-    expect([officer.api.mayDecide.value, officer.api.windowOpen.value]).toEqual([true, false])
+    // Decisions are open while submissions are open (operator, 2026-11-22); a draft cycle keeps them closed.
+    expect([officer.api.mayDecide.value, officer.api.windowOpen.value]).toEqual([true, true])
+    awardCycleService.get.mockResolvedValue({ data: { id: 31, status: 'draft' } })
+    await officer.api.load()
+    expect(officer.api.windowOpen.value).toBe(false)
     const admin = withSetup(() => useFilteringDetail(ref(31), ref(9205)))
     useAuthStore(admin.globals.pinia).setUser(sessionUserFor(['system_admin']))
     await admin.api.load()

@@ -215,8 +215,6 @@ test.describe('award entry fee', () => {
     )
     await expect(page.locator('[data-testid="path-price"]')).toContainText('500.00')
     await page.locator('[data-testid="path-primary-action"]').click()
-    await expect(page).toHaveURL(/\/assessment\/advanced$/)
-    await page.locator('.advanced-request__actions .btn--primary').click()
     await expect(page).toHaveURL(/\/assessment\/advanced\/pay\?cycle=31$/)
     await expect(page.locator('.checkout-summary')).toContainText('575.00')
     const paymentId = await payByTransfer(page)

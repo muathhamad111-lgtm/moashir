@@ -28,7 +28,12 @@ export function toPlace(raw) {
 
 export function toCycleSummary(raw) {
   if (!raw) return null
-  return { id: raw.id ?? null, name: raw.name ?? null, status: raw.status ?? null }
+  return {
+    id: raw.id ?? null,
+    name: raw.name ?? null,
+    year: raw.year ?? null,
+    status: raw.status ?? null,
+  }
 }
 
 function toQueueEntity(raw) {

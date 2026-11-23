@@ -7,6 +7,7 @@ import BaseButton from '@/components/ui/BaseButton.vue'
 import AppIcon from '@/components/ui/AppIcon.vue'
 import AuthFailureAlert from '@/components/auth/AuthFailureAlert.vue'
 import OtpChallengeEnded from '@/components/auth/OtpChallengeEnded.vue'
+import OtpResendRing from '@/components/auth/OtpResendRing.vue'
 import { useOtpStep } from '@/composables/useOtpStep'
 import { useLoginOutcome } from '@/composables/useLoginOutcome'
 import { ROUTE_NAMES } from '@/constants/routeNames'
@@ -22,6 +23,7 @@ const {
   codeError,
   failure,
   submitting,
+  verified,
   resending,
   isCode,
   destination,
@@ -77,16 +79,29 @@ onMounted(() => {
     <div v-if="!ended" class="auth-form__body">
       <OtpInput
         v-model="code"
+        data-auth-autofocus
+        entrance
         :length="otp.length.value"
         :label="t('auth.otp.inputLabel')"
         :invalid="Boolean(codeError)"
-        :disabled="locked"
+        :verified="verified"
+        :disabled="locked && !verified"
+        :inert="verified"
         @complete="step.verify"
       />
 
       <p v-if="codeError" class="auth-otp__error" role="alert">{{ codeError }}</p>
 
-      <p class="auth-otp__expiry" :class="{ 'is-expired': otp.expired.value }" aria-live="polite">
+      <p v-if="verified" class="auth-otp__verified" role="status">
+        <span class="auth-otp__tick" aria-hidden="true"><AppIcon name="check" /></span>
+        <span class="auth-otp__verified-text">{{ t('auth.otp.verified') }}</span>
+      </p>
+      <p
+        v-else
+        class="auth-otp__expiry"
+        :class="{ 'is-expired': otp.expired.value }"
+        aria-live="polite"
+      >
         <AppIcon :name="otp.expired.value ? 'x' : 'clock'" />
         <span v-if="otp.expired.value">{{ t('auth.otp.expired') }}</span>
         <span v-else>{{ t('auth.otp.expiresIn', { time: otp.expiryClock.value }) }}</span>
@@ -116,6 +131,7 @@ onMounted(() => {
           {{ t('auth.otp.resend') }}
         </button>
         <span v-else class="auth-otp__cooldown">
+          <OtpResendRing :seconds-left="otp.resendSecondsLeft.value" />
           {{ t('auth.otp.resendIn', { seconds: otp.resendSecondsLeft.value }) }}
         </span>
       </div>

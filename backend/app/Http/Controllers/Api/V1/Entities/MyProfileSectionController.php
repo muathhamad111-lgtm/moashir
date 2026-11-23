@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Api\V1\Entities;
 
-use App\Actions\Entities\SaveOwnProfileSection;
-use App\Data\Entities\ProfileSectionSaved;
+use App\Actions\Entities\ProposeOwnProfileSection;
+use App\Http\Requests\Entities\ProfileSectionRequest;
 use App\Http\Requests\Entities\UpdateBillingSectionRequest;
 use App\Http\Requests\Entities\UpdateClassificationSectionRequest;
 use App\Http\Requests\Entities\UpdateContactSectionRequest;
@@ -20,36 +20,37 @@ use Illuminate\Http\Response;
 
 final class MyProfileSectionController
 {
-    public function identity(UpdateIdentitySectionRequest $request, #[CurrentUser] User $owner, SaveOwnProfileSection $save): JsonResponse
+    public function identity(UpdateIdentitySectionRequest $request, #[CurrentUser] User $owner, ProposeOwnProfileSection $propose): JsonResponse
     {
-        return $this->saved($save->handle($owner, $request->update()));
+        return $this->proposed($request, $owner, $propose);
     }
 
-    public function classification(UpdateClassificationSectionRequest $request, #[CurrentUser] User $owner, SaveOwnProfileSection $save): JsonResponse
+    public function classification(UpdateClassificationSectionRequest $request, #[CurrentUser] User $owner, ProposeOwnProfileSection $propose): JsonResponse
     {
-        return $this->saved($save->handle($owner, $request->update()));
+        return $this->proposed($request, $owner, $propose);
     }
 
-    public function governance(UpdateGovernanceSectionRequest $request, #[CurrentUser] User $owner, SaveOwnProfileSection $save): JsonResponse
+    public function governance(UpdateGovernanceSectionRequest $request, #[CurrentUser] User $owner, ProposeOwnProfileSection $propose): JsonResponse
     {
-        return $this->saved($save->handle($owner, $request->update()));
+        return $this->proposed($request, $owner, $propose);
     }
 
-    public function contact(UpdateContactSectionRequest $request, #[CurrentUser] User $owner, SaveOwnProfileSection $save): JsonResponse
+    public function contact(UpdateContactSectionRequest $request, #[CurrentUser] User $owner, ProposeOwnProfileSection $propose): JsonResponse
     {
-        return $this->saved($save->handle($owner, $request->update()));
+        return $this->proposed($request, $owner, $propose);
     }
 
-    public function billing(UpdateBillingSectionRequest $request, #[CurrentUser] User $owner, SaveOwnProfileSection $save): JsonResponse
+    public function billing(UpdateBillingSectionRequest $request, #[CurrentUser] User $owner, ProposeOwnProfileSection $propose): JsonResponse
     {
-        return $this->saved($save->handle($owner, $request->update()));
+        return $this->proposed($request, $owner, $propose);
     }
 
-    private function saved(ProfileSectionSaved $saved): JsonResponse
+    private function proposed(ProfileSectionRequest $request, User $owner, ProposeOwnProfileSection $propose): JsonResponse
     {
-        return ApiResponse::resource(new OwnEntityResource($saved->entity->load(OwnEntityResource::RELATIONS)), Response::HTTP_OK, [
-            'section' => $saved->section->value,
-            'changed_fields' => $saved->changedFields,
+        $entity = $propose->handle($owner, $request->update());
+
+        return ApiResponse::resource(new OwnEntityResource($entity->load(OwnEntityResource::RELATIONS)), Response::HTTP_ACCEPTED, [
+            'section' => $request->section()->value,
         ]);
     }
 }

@@ -19,6 +19,7 @@ const USER_KEYS = [
   'name',
   'national_id_changed_at_acceptance_at',
   'national_id_masked',
+  'nda_status',
   'phone',
   'request_scope',
   'roles',

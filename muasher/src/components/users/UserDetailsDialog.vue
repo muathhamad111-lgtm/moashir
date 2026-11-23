@@ -3,6 +3,7 @@ import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 import BaseModal from '@/components/modal/BaseModal.vue'
 import AppIcon from '@/components/ui/AppIcon.vue'
+import NdaUserHistory from '@/components/nda/NdaUserHistory.vue'
 import { useEntityDisplay } from '@/composables/useEntityDisplay'
 
 const props = defineProps({
@@ -75,5 +76,6 @@ const genderLabel = computed(() =>
         })
       }}</span>
     </p>
+    <NdaUserHistory v-if="user" :user="user" />
   </BaseModal>
 </template>

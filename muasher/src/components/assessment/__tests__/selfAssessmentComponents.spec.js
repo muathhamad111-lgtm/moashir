@@ -326,4 +326,44 @@ describe('result components', () => {
     await head.trigger('click')
     expect(head.attributes('aria-expanded')).toBe('false')
   })
+
+  function directResult(subs) {
+    return {
+      id: 9003,
+      main: [{ criterionId: 1, code: 'M1', name: { en: 'Leadership' }, weight: '1000.00' }],
+      sub: subs.map((sub, index) => ({
+        subId: 21 + index,
+        mainCriterionId: 1,
+        code: `M1.${index + 1}`,
+        name: { en: `Item ${index + 1}` },
+        weight: '500.00',
+        earned: '0.00',
+        ...sub,
+      })),
+      points: [],
+    }
+  }
+
+  it('shows an achievement sub-criterion as achieved or not, never as a score', () => {
+    const wrapper = mountWith(
+      SelfResultBreakdown,
+      {
+        result: directResult([
+          { rawValue: '1.00', percent: '100.00', scoringType: 'achievement' },
+          { rawValue: '0.00', percent: '0.00', scoringType: 'achievement' },
+        ]),
+      },
+      { locale: 'ar' },
+    )
+    const raws = wrapper.findAll('.self-result__sub-raw').map((raw) => raw.text())
+    expect(raws).toEqual(['متحقق', 'غير متحقق'])
+    expect(wrapper.text()).not.toMatch(/الدرجة \d/)
+  })
+
+  it('keeps the score of a result issued before the scoring types (no type in the row)', () => {
+    const wrapper = mountWith(SelfResultBreakdown, {
+      result: directResult([{ rawValue: '1.00', percent: '10.00', scoringType: null }]),
+    })
+    expect(wrapper.find('.self-result__sub-raw').text()).toBe('Score 1.00')
+  })
 })

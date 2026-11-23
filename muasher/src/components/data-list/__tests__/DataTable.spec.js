@@ -112,4 +112,57 @@ describe('DataTable', () => {
     await wrapper.setProps({ sort: '-due_at' })
     expect(wrapper.findAll('th')[1].attributes('aria-sort')).toBe('descending')
   })
+
+  describe('stacked mode', () => {
+    const stackedColumns = [
+      { key: 'entity', label: 'الجهة' },
+      { key: 'status', label: 'الحالة', sortKey: 'status' },
+      { key: 'open', label: 'فتح', action: true },
+    ]
+
+    it('leaves a plain table untouched: no stacked class, labels or value wrappers', () => {
+      const wrapper = factory()
+      expect(wrapper.find('.table-wrap').classes()).not.toContain('table-wrap--stacked')
+      expect(wrapper.find('tbody td').attributes('data-label')).toBeUndefined()
+      expect(wrapper.find('.table__value').exists()).toBe(false)
+    })
+
+    it('labels every cell with its column and wraps the cell content', () => {
+      const wrapper = factory(
+        { stacked: true, columns: stackedColumns },
+        { 'cell-status': '<em class="custom">{{ params.item.status }}</em>' },
+      )
+      expect(wrapper.find('.table-wrap').classes()).toContain('table-wrap--stacked')
+      const firstRow = wrapper.findAll('tbody .table__row')[0]
+      expect(firstRow.findAll('td').map((cell) => cell.attributes('data-label'))).toEqual([
+        'الجهة',
+        'الحالة',
+        'فتح',
+      ])
+      expect(firstRow.findAll('.table__value')).toHaveLength(3)
+      expect(firstRow.find('.table__value em.custom').text()).toBe('under-review')
+    })
+
+    it('treats a column marked as an action like the actions column', () => {
+      const wrapper = factory({ stacked: true, columns: stackedColumns })
+      const marked = wrapper
+        .findAll('tbody .table__row')[0]
+        .findAll('td')
+        .map((cell) => cell.classes().includes('table__cell--actions'))
+      expect(marked).toEqual([false, false, true])
+    })
+
+    it('marks sortable headings so they stay reachable when the rows stack', () => {
+      const wrapper = factory({ stacked: true, columns: stackedColumns })
+      const sortable = wrapper
+        .findAll('th')
+        .map((cell) => cell.classes().includes('table__cell--sortable'))
+      expect(sortable).toEqual([false, true, false])
+    })
+
+    it('labels skeleton cells while loading', () => {
+      const wrapper = factory({ stacked: true, columns: stackedColumns, status: 'loading' })
+      expect(wrapper.find('tbody td').attributes('data-label')).toBe('الجهة')
+    })
+  })
 })

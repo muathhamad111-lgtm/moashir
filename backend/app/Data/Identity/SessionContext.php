@@ -26,5 +26,6 @@ final readonly class SessionContext
         public array $committeeAppointments = [],
         public ?AccountAvatar $avatar = null,
         public ?AccountCompletion $completion = null,
+        public bool $ndaAcceptanceRequired = false,
     ) {}
 }

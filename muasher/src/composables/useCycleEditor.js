@@ -31,7 +31,6 @@ export function useCycleEditor(cycleId) {
   const defaults = shallowRef(null)
   const published = shallowRef(null)
   const regions = ref([])
-  const running = shallowRef(null)
   const serverLocked = ref([])
 
   const isNew = computed(() => !cycleId.value)
@@ -46,12 +45,11 @@ export function useCycleEditor(cycleId) {
       new Set([
         ...lockedCycleFields(cycle.value?.status),
         ...feeLocked.value,
+        ...(cycle.value?.thresholdLocked ? ['disqualificationScore'] : []),
         ...serverLocked.value,
       ]),
   )
-  const blockingCycle = computed(() =>
-    running.value && running.value.id !== cycle.value?.id ? running.value : null,
-  )
+  const openBlock = computed(() => cycle.value?.openBlock ?? null)
 
   async function loadCycle() {
     if (isNew.value) {
@@ -66,11 +64,10 @@ export function useCycleEditor(cycleId) {
     errorMessage.value = ''
     serverLocked.value = []
     try {
-      const [, regionList, tree, current] = await Promise.all([
+      const [, regionList, tree] = await Promise.all([
         loadCycle(),
         optional(regionsService.listRegions()),
         optional(assessmentsService.getPublishedCriteria()),
-        optional(awardCycleService.getCurrent()),
       ])
       regions.value = regionList ?? []
       published.value = tree
@@ -79,7 +76,6 @@ export function useCycleEditor(cycleId) {
             versionNumber: tree.versionNumber,
           }
         : null
-      running.value = current
       status.value = 'ready'
     } catch (error) {
       errorMessage.value = error?.normalized?.message ?? ''
@@ -102,8 +98,7 @@ export function useCycleEditor(cycleId) {
     defaults,
     published,
     regions,
-    running,
-    blockingCycle,
+    openBlock,
     isNew,
     initialValues,
     locked,

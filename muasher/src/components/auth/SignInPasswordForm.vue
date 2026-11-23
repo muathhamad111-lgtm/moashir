@@ -17,6 +17,7 @@ const { t } = useI18n()
 const { form, failure, submitting, onSubmit } = useSignIn(props.identifier)
 const [typedIdentifier] = form.defineField('identifier')
 const [password] = form.defineField('password')
+const knowsIdentifier = Boolean(props.identifier)
 
 watch(typedIdentifier, (value) => emit('update:identifier', value))
 </script>
@@ -33,6 +34,7 @@ watch(typedIdentifier, (value) => emit('update:identifier', value))
           name="password"
           type="password"
           autocomplete="current-password"
+          :data-auth-autofocus="knowsIdentifier || undefined"
           :label="t('auth.login.fields.password')"
           :error="form.errors.value.password"
           required

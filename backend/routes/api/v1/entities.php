@@ -11,11 +11,13 @@ use App\Http\Controllers\Api\V1\Entities\EntityController;
 use App\Http\Controllers\Api\V1\Entities\EntityDeletionImpactController;
 use App\Http\Controllers\Api\V1\Entities\EntityEmailChangeController;
 use App\Http\Controllers\Api\V1\Entities\EntityProfileChangeController;
+use App\Http\Controllers\Api\V1\Entities\EntityProfileChangeRequestController;
 use App\Http\Controllers\Api\V1\Entities\ExportEntitiesController;
 use App\Http\Controllers\Api\V1\Entities\MyEmailChangeController;
 use App\Http\Controllers\Api\V1\Entities\MyEntityController;
 use App\Http\Controllers\Api\V1\Entities\MyEntityLogoController;
 use App\Http\Controllers\Api\V1\Entities\MyProfileChangeController;
+use App\Http\Controllers\Api\V1\Entities\MyProfileChangeRequestController;
 use App\Http\Controllers\Api\V1\Entities\MyProfileSectionController;
 use App\Http\Controllers\Api\V1\Entities\MyVatCertificateController;
 use App\Http\Controllers\Api\V1\Entities\PermanentlyDeleteEntityController;
@@ -31,11 +33,13 @@ use App\Http\Controllers\Api\V1\Entities\RestoreEntityController;
 use App\Http\Controllers\Api\V1\Entities\SoftDeleteEntityController;
 use App\Http\Controllers\Api\V1\Entities\VerifyRegistrationEmailCodeController;
 use App\Models\Entities\Entity;
+use App\Models\Entities\EntityProfileChangeRequest;
 use App\Models\Identity\EmailChangeRequest;
 use Illuminate\Support\Facades\Route;
 
 $entities = Entity::class;
 $emailChanges = EmailChangeRequest::class;
+$profileChanges = EntityProfileChangeRequest::class;
 
 Route::get('regions', [RegionController::class, 'index'])->middleware('throttle:public')->name('regions.index');
 Route::get('terms/current', CurrentTermsController::class)->middleware('throttle:public')->name('terms.current');
@@ -45,7 +49,7 @@ Route::post('auth/register/email-code', RegistrationEmailCodeController::class)-
 Route::post('auth/register/email-code/verify', VerifyRegistrationEmailCodeController::class)->middleware('throttle:otp-verify')->name('auth.register.email-code.verify');
 Route::post('auth/register/email-code/resend', ResendRegistrationEmailCodeController::class)->middleware('throttle:otp-resend')->name('auth.register.email-code.resend');
 
-Route::middleware(['auth:sanctum', 'session.timeouts', 'mfa', 'password.current'])->group(function () use ($entities, $emailChanges): void {
+Route::middleware(['auth:sanctum', 'session.timeouts', 'mfa', 'password.current', 'nda.current'])->group(function () use ($entities, $emailChanges, $profileChanges): void {
     Route::prefix('entities/me')->name('entities.me.')->group(function () use ($entities): void {
         Route::get('/', [MyEntityController::class, 'show'])->middleware("can:viewOwn,{$entities}")->name('show');
         Route::prefix('profile')->name('profile.')->middleware(["can:updateOwn,{$entities}", 'throttle:sensitive'])->group(function (): void {
@@ -63,6 +67,9 @@ Route::middleware(['auth:sanctum', 'session.timeouts', 'mfa', 'password.current'
         Route::get('profile-changes', MyProfileChangeController::class)->middleware("can:viewOwn,{$entities}")->name('profile-changes');
         Route::post('email/change', MyEmailChangeController::class)->middleware(["can:updateOwn,{$entities}", 'throttle:email-change'])->name('email.change');
         Route::post('email/confirm', ConfirmMyEmailChangeController::class)->middleware(["can:updateOwn,{$entities}", 'throttle:otp-verify'])->name('email.confirm');
+        Route::get('profile-change', [MyProfileChangeRequestController::class, 'pending'])->middleware("can:viewOwn,{$entities}")->name('profile-change.show');
+        Route::post('profile-change/cancel', [MyProfileChangeRequestController::class, 'cancel'])->middleware(["can:updateOwn,{$entities}", 'throttle:sensitive'])->name('profile-change.cancel');
+        Route::get('profile-change-requests', [MyProfileChangeRequestController::class, 'index'])->middleware("can:viewOwn,{$entities}")->name('profile-change-requests');
         Route::post('email/cancel', CancelMyEmailChangeController::class)->middleware(["can:updateOwn,{$entities}", 'throttle:sensitive'])->name('email.cancel');
     });
 
@@ -84,6 +91,12 @@ Route::middleware(['auth:sanctum', 'session.timeouts', 'mfa', 'password.current'
             Route::post('{entity}/restore', RestoreEntityController::class)->middleware(['can:restore,entity', 'throttle:sensitive'])->name('restore');
             Route::delete('{entity}/permanent', PermanentlyDeleteEntityController::class)->middleware(['can:forceDelete,entity', 'throttle:sensitive'])->name('force-delete');
         });
+    });
+
+    Route::prefix('admin/entity-profile-changes')->name('entity-profile-changes.')->group(function () use ($profileChanges): void {
+        Route::get('/', [EntityProfileChangeRequestController::class, 'index'])->middleware("can:viewAny,{$profileChanges}")->name('index');
+        Route::get('{profileChange}', [EntityProfileChangeRequestController::class, 'show'])->whereUuid('profileChange')->middleware('can:view,profileChange')->name('show');
+        Route::post('{profileChange}/decide', [EntityProfileChangeRequestController::class, 'decide'])->whereUuid('profileChange')->middleware(['can:decide,profileChange', 'throttle:sensitive'])->name('decide');
     });
 
     Route::prefix('admin/entity-email-changes')->name('entity-email-changes.')->group(function () use ($emailChanges): void {

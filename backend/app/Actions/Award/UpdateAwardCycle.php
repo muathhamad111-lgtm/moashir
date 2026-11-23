@@ -9,6 +9,7 @@ use App\Data\Award\CycleAttributes;
 use App\Data\Award\CycleSchedule;
 use App\Enums\Audit\AuditEvent;
 use App\Enums\Award\AwardCycleStatus;
+use App\Events\Award\ParticipationCertificatesEnabled;
 use App\Exceptions\Award\AwardRejected;
 use App\Models\Assessments\Assessment;
 use App\Models\Award\AwardCycle;
@@ -19,6 +20,8 @@ use App\Services\Audit\AuditRecorder;
 use App\Services\Award\AwardCycleRowLock;
 use App\Services\Award\CycleAuditValues;
 use App\Services\Award\CycleFieldLocks;
+use App\Services\Award\QualificationThresholdLock;
+use App\Support\ValueObjects\Percent;
 use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\DB;
 
@@ -30,6 +33,7 @@ final readonly class UpdateAwardCycle
         private CycleFieldLocks $locks,
         private CycleAuditValues $auditValues,
         private AuditRecorder $audit,
+        private QualificationThresholdLock $thresholdLock,
     ) {}
 
     public function handle(User $actor, AwardCycle $cycle, CycleAttributes $changes, ?string $reason): AwardCycle
@@ -44,12 +48,18 @@ final readonly class UpdateAwardCycle
             $locked = $this->rowLock->lock($cycle->id);
             $fields = $changes->touchedFields();
             $this->locks->assertEditable($actor, $locked->status, $changes);
+            $this->assertThresholdOpen($locked, $changes);
             $this->assertSchedule($locked, $changes);
             $this->assertRegionsKeepRequests($locked, $changes->regionIds);
             $before = $this->auditValues->of($locked, $fields);
+            $gaveParticipation = $locked->participation_certificate_enabled;
 
             $this->apply($locked, $changes);
             $this->audit->record(new AuditEntry(AuditEvent::CycleUpdated, $locked, $before, $this->auditValues->of($locked, $fields)));
+
+            if (! $gaveParticipation && $locked->participation_certificate_enabled) {
+                ParticipationCertificatesEnabled::dispatch($locked);
+            }
 
             return $locked;
         });
@@ -72,6 +82,19 @@ final readonly class UpdateAwardCycle
         if ($changes->regionIds !== null) {
             $locked->regions()->sync($changes->regionIds);
             $locked->load('regions');
+        }
+    }
+
+    /**
+     * Runs under the cycle row lock, which a filtering decision also takes: a decision and a threshold change never
+     * interleave, so the threshold can never move once a decision is recorded. Re-sending the current value is fine.
+     */
+    private function assertThresholdOpen(AwardCycle $locked, CycleAttributes $changes): void
+    {
+        $score = $changes->disqualificationScore;
+
+        if ($score instanceof Percent && ! $score->equals($locked->disqualification_score) && $this->thresholdLock->isLocked($locked->id)) {
+            throw AwardRejected::thresholdLocked();
         }
     }
 

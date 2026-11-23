@@ -10,33 +10,16 @@ use App\Integrations\Fakes\FakeFileScanner;
 use App\Models\Audit\Audit;
 use App\Models\Entities\Entity;
 use App\Models\Files\StoredFile;
-use App\Models\Identity\User;
 use App\Services\Entities\EntityEraser;
 use App\Services\Files\SignedDownloadIssuer;
 use Database\Factories\Entities\EntityFactory;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Facades\Storage;
-use Illuminate\Testing\TestResponse;
 
 beforeEach(function (): void {
     Notification::fake();
 });
-
-function vatCertificatePdf(string $name = 'شهادة-التسجيل-الضريبي.pdf', string $contents = SAMPLE_PDF): UploadedFile
-{
-    return UploadedFile::fake()->createWithContent($name, $contents);
-}
-
-function uploadVatCertificate(User $owner, UploadedFile $file): TestResponse
-{
-    return switchTo($owner)->post('/api/v1/entities/me/vat-certificate', ['file' => $file], ['Accept' => 'application/json']);
-}
-
-function vatRegisteredEntity(): Entity
-{
-    return entityWithOwner(static fn (EntityFactory $factory): EntityFactory => $factory->vatRegistered());
-}
 
 function currentVatCertificateOf(Entity $entity): StoredFile
 {
@@ -46,8 +29,8 @@ function currentVatCertificateOf(Entity $entity): StoredFile
 it('keeps an uploaded PDF certificate private, audits it and completes the billing data', function (): void {
     $entity = vatRegisteredEntity();
 
-    $response = uploadVatCertificate(ownerOf($entity), vatCertificatePdf())
-        ->assertCreated()
+    $response = uploadAndApproveVatCertificate(ownerOf($entity), vatCertificatePdf())
+        ->assertOk()
         ->assertJsonPath('data.billing_complete', true)
         ->assertJsonPath('data.profile_completion.percent', 100)
         ->assertJsonPath('data.vat_certificate.name', 'شهادة-التسجيل-الضريبي.pdf');
@@ -65,10 +48,10 @@ it('keeps an uploaded PDF certificate private, audits it and completes the billi
 it('replaces the previous certificate and removes its file', function (): void {
     $entity = vatRegisteredEntity();
     $owner = ownerOf($entity);
-    uploadVatCertificate($owner, vatCertificatePdf())->assertCreated();
+    uploadAndApproveVatCertificate($owner, vatCertificatePdf())->assertOk();
     $first = currentVatCertificateOf($entity);
 
-    uploadVatCertificate($owner, vatCertificatePdf('شهادة-محدثة.pdf', SAMPLE_PDF.'%updated'))->assertCreated();
+    uploadAndApproveVatCertificate($owner, vatCertificatePdf('شهادة-محدثة.pdf', SAMPLE_PDF.'%updated'))->assertOk();
 
     expect(currentVatCertificateOf($entity)->id)->not->toBe($first->id)
         ->and(StoredFile::query()->find($first->id))->toBeNull();
@@ -119,18 +102,18 @@ it('refuses a certificate while the entity is not registered for VAT', function 
 it('removes the certificate on request and when the entity answers «no»', function (): void {
     $entity = vatRegisteredEntity();
     $owner = ownerOf($entity);
-    uploadVatCertificate($owner, vatCertificatePdf())->assertCreated();
+    uploadAndApproveVatCertificate($owner, vatCertificatePdf())->assertOk();
     $first = currentVatCertificateOf($entity);
 
-    switchTo($owner)->deleteJson('/api/v1/entities/me/vat-certificate')->assertOk()
+    removeAndApproveVatCertificate($owner)->assertOk()
         ->assertJsonPath('data.vat_certificate', null)
         ->assertJsonPath('data.billing_complete', false);
     expect(StoredFile::query()->find($first->id))->toBeNull();
 
-    uploadVatCertificate($owner, vatCertificatePdf())->assertCreated();
+    uploadAndApproveVatCertificate($owner, vatCertificatePdf())->assertOk();
     $second = currentVatCertificateOf($entity);
 
-    saveSection($entity, ProfileSection::Billing, ['vat_registered' => false, 'vat_number' => null])->assertOk()
+    saveAndApproveSection($entity, ProfileSection::Billing, ['vat_registered' => false, 'vat_number' => null])->assertOk()
         ->assertJsonPath('data.vat_number', null)
         ->assertJsonPath('data.vat_certificate', null)
         ->assertJsonPath('data.billing_complete', true);
@@ -143,7 +126,7 @@ it('removes the certificate on request and when the entity answers «no»', func
 it('issues a short-lived download link to the owner and to Finance, never to other entities or staff', function (): void {
     $entity = vatRegisteredEntity();
     $owner = ownerOf($entity);
-    uploadVatCertificate($owner, vatCertificatePdf())->assertCreated();
+    uploadAndApproveVatCertificate($owner, vatCertificatePdf())->assertOk();
 
     $url = (string) switchTo($owner)->postJson('/api/v1/entities/me/vat-certificate/download')->assertOk()->json('data.url');
     $this->get($url)->assertOk()->assertHeader('Content-Type', 'application/pdf');
@@ -175,7 +158,7 @@ it('keeps staff away from the own certificate endpoints', function (): void {
 
 it('drops the certificate and the billing data when the entity is erased', function (): void {
     $entity = vatRegisteredEntity();
-    uploadVatCertificate(ownerOf($entity), vatCertificatePdf())->assertCreated();
+    uploadAndApproveVatCertificate(ownerOf($entity), vatCertificatePdf())->assertOk();
     $certificate = currentVatCertificateOf($entity);
     $entity->delete();
 

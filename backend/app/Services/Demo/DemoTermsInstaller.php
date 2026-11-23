@@ -31,7 +31,7 @@ final readonly class DemoTermsInstaller
         $currentIds = [];
         $published = 0;
 
-        foreach (TermsKind::cases() as $kind) {
+        foreach (TermsKind::legal() as $kind) {
             $seed = $this->publishSeed($kind, $publisher);
             $published += $seed instanceof TermsVersion ? 1 : 0;
             $current = $seed ?? $this->terms->of($kind) ?? throw new LogicException('Every legal text kind has a current version after the demo installation.');

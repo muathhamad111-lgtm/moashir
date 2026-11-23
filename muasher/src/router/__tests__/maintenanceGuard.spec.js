@@ -90,7 +90,8 @@ describe('maintenance guard (Q-96)', () => {
 
   it.each([
     ['/assessment/accredited', ROUTE_NAMES.ASSESSMENT_ACCREDITED],
-    ['/assessment/advanced', ROUTE_NAMES.ASSESSMENT_ADVANCED],
+    // An entity's award intro forwards to its award path page (AJ-04), past the maintenance page.
+    ['/assessment/advanced', ROUTE_NAMES.PATHS_AWARD],
   ])('lets a signed-in entity open %s while the homepage is unpublished', async (path, name) => {
     maintenanceOn()
     useAuthStore().setUser(sessionUserFor([ROLES.ENTITY], { id: 'e1' }))

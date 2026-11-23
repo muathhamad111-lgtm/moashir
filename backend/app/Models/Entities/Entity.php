@@ -13,6 +13,7 @@ use App\Enums\Entities\EntityProfileField;
 use App\Enums\Entities\EntityStatus;
 use App\Enums\Entities\EntityType;
 use App\Enums\Entities\OrgSize;
+use App\Enums\Entities\ProfileChangeStatus;
 use App\Enums\Entities\ProfileSection;
 use App\Models\Assessments\Assessment;
 use App\Models\Certificates\Certificate;
@@ -198,19 +199,19 @@ final class Entity extends Model
     }
 
     /**
-     * @return HasMany<EntityProfileChange, $this>
-     */
-    public function profileChanges(): HasMany
-    {
-        return $this->hasMany(EntityProfileChange::class);
-    }
-
-    /**
      * @return HasMany<EmailChangeRequest, $this>
      */
     public function emailChangeRequests(): HasMany
     {
         return $this->hasMany(EmailChangeRequest::class);
+    }
+
+    /**
+     * @return HasOne<EntityProfileChangeRequest, $this>
+     */
+    public function pendingProfileChange(): HasOne
+    {
+        return $this->hasOne(EntityProfileChangeRequest::class)->where('status', ProfileChangeStatus::Pending);
     }
 
     /**

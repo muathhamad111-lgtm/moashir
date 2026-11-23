@@ -42,6 +42,11 @@ final readonly class AcceptInvitation
             $user->forceFill(['status' => UserStatus::Active, 'email_verified_at' => Date::now()])->save();
             $this->applyPassword->handle($user, $acceptance->password);
             $this->terms->accept($user, $acceptance->terms instanceof TermsVersion ? [$acceptance->terms->id] : []);
+
+            if ($acceptance->nda instanceof TermsVersion) {
+                $this->terms->acceptNda($user, $acceptance->nda);
+            }
+
             $this->audit->record(new AuditEntry(AuditEvent::UserActivated, $user));
 
             return $user;

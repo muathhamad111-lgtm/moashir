@@ -2,6 +2,7 @@ import { mkdirSync } from 'node:fs'
 import { test, expect } from '@playwright/test'
 import { seedMockSession, seedSignedIn } from './support/session'
 import { settleFonts } from './support/screenshots'
+import { scoreAndSaveEveryItem } from './support/reviewWork'
 
 const SHOTS = '../agents/tasks/reports/Task-66B'
 const DESKTOP = { width: 1440, height: 900 }
@@ -255,6 +256,8 @@ test.describe('excellence tools — staff and settings', () => {
       `/admin/requests/${UNDER_REVIEW}/review`,
       '.station-row__button, .review-strip__step',
     )
+    // «إكمال التقييم» shows only once every item is answered (operator, 2026-11-22).
+    await scoreAndSaveEveryItem(page)
     await page.locator('.station-row__button, .review-strip__step').last().click()
     await page.locator('[data-testid="review-complete"]').click()
     await expect(page.locator('.modal [data-testid="review-summary"]')).toBeVisible()

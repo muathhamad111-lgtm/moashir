@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use App\Enums\Assessments\AdvancedAssessmentStatus;
 use App\Enums\Audit\AuditEvent;
 use App\Enums\Award\CycleMemberRole;
 use App\Enums\Notifications\NotificationCode;
@@ -145,8 +146,9 @@ it('submits a complete draft, notifies the entity and the followers and allows o
     switchTo($owner)->putJson("/api/v1/assessments/{$draft->id}/cv", ['cv' => accreditedCv($version)])->assertOk();
     uploadEvidence($owner, $draft, $version)->assertCreated();
     switchTo($owner)->postJson("/api/v1/assessments/{$draft->id}/submit")->assertOk()
-        ->assertJsonPath('data.status', 'awaiting_review_assignment')
+        ->assertJsonPath('data.status', 'under_review')
         ->assertJsonPath('data.submitted_at', '2026-11-01T08:00:00+00:00');
+    expect($draft->refresh()->status)->toBe(AdvancedAssessmentStatus::AwaitingReviewAssignment);
 
     expect(financeNoticeSent($owner, NotificationCode::AdvancedSubmitted))->toBeTrue()
         ->and(financeNoticeSent($follower, NotificationCode::AdvancedSubmitted))->toBeTrue()

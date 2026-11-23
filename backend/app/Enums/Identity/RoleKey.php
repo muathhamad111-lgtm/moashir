@@ -58,6 +58,17 @@ enum RoleKey: string
     }
 
     /**
+     * The given roles in catalog order, so a user's roles read the same way in every response and export.
+     *
+     * @param  list<self>  $roles
+     * @return list<self>
+     */
+    public static function inCatalogOrder(array $roles): array
+    {
+        return array_values(array_filter(self::cases(), static fn (self $role): bool => in_array($role, $roles, true)));
+    }
+
+    /**
      * @return list<string>
      */
     public static function values(): array

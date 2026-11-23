@@ -83,7 +83,7 @@ describe('priced and listed path states (Task-80 §3, §4)', () => {
     ).toBe('payments.mine.complete')
     const late = award({
       windowState: 'closed',
-      openRequest: { id: 7, status: 'draft' },
+      openRequest: { id: 7, status: 'draft', isOpen: true },
       windowClosedBeforePayment: true,
     })
     expect(awardStateOf(late)).toBe('latePayment')

@@ -1,6 +1,7 @@
 import { legalVersionsFixture } from '../fixtures/legalVersions'
 import { MockRejection } from '../contract/rejection'
 import { hasMarkup } from '@/utils/legal/markdownBlocks'
+import { ndaVersionsFixture } from '../fixtures/nda'
 
 const DRAFT = 'draft'
 const CURRENT = 'current'
@@ -12,7 +13,11 @@ const STATUS_ORDER = { draft: 0, current: 1, superseded: 2 }
 const state = { versions: [], nextId: 40, publishedInSession: new Set() }
 
 export function resetLegalVersions() {
-  state.versions = structuredClone(legalVersionsFixture)
+  // The staff agreement shares this draft store (kind `nda`), as it shares the API's terms_versions table.
+  state.versions = [
+    ...structuredClone(legalVersionsFixture),
+    ...structuredClone(ndaVersionsFixture),
+  ]
   state.nextId = 40
   state.publishedInSession = new Set()
 }

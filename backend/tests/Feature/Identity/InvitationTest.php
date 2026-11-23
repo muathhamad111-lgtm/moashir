@@ -183,7 +183,7 @@ it('tells the invitation page that a fresh link is usable without returning pers
 
     $this->getJson("/api/v1/auth/invitations/{$token}")
         ->assertOk()
-        ->assertExactJson(['data' => ['usable' => true, 'national_id_masked' => null]]);
+        ->assertExactJson(['data' => ['usable' => true, 'national_id_masked' => null, 'nda' => null]]);
 });
 
 it('answers a used, revoked or unknown link with the same invalid response', function (string $case): void {
@@ -300,7 +300,7 @@ it('shows the invitee the number the administrator entered, masked, and keeps it
     $token = inviteStaff(systemAdmin(), extra: ['national_id' => fictionalNationalId(808)]);
 
     $this->getJson("/api/v1/auth/invitations/{$token}")->assertOk()
-        ->assertExactJson(['data' => ['usable' => true, 'national_id_masked' => '••••••'.substr(fictionalNationalId(808), -4)]]);
+        ->assertExactJson(['data' => ['usable' => true, 'national_id_masked' => '••••••'.substr(fictionalNationalId(808), -4), 'nda' => null]]);
     acceptInvitation($token, $confirmation)->assertOk();
 
     expect(invitee()->national_id)->toBe(fictionalNationalId(808))

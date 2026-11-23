@@ -4,7 +4,8 @@ import { useRoute } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import { useLocale } from '@/composables/useLocale'
 import { useMediaQuery } from '@/composables/useMediaQuery'
-import { useAuthPageTransition, AUTH_SWITCH_STEPS } from '@/composables/auth/useAuthPageTransition'
+import { useAuthPageTransition } from '@/composables/auth/useAuthPageTransition'
+import { useAuthViewport } from '@/composables/auth/useAuthViewport'
 import { useIdleRouteWarmup, useRouteIntentPrefetch } from '@/composables/useRoutePrefetch'
 import { DESKTOP_QUERY } from '@/constants/breakpoints'
 import { ROUTE_NAMES } from '@/constants/routeNames'
@@ -21,9 +22,15 @@ const isSplit = useMediaQuery(DESKTOP_QUERY)
 const rootRef = useTemplateRef('root')
 const viewportRef = useTemplateRef('viewport')
 const contentRef = useTemplateRef('content')
-const { onBeforeLeave, onLeave, onEnter } = useAuthPageTransition({ viewportRef, contentRef })
+const viewport = useAuthViewport(viewportRef, contentRef)
+const { onBeforeLeave, onLeave, onEnter } = useAuthPageTransition(viewport)
 
-useIdleRouteWarmup(Object.keys(AUTH_SWITCH_STEPS))
+// Only the pages a visitor switches to by a link are warmed; the code steps follow a server reply.
+useIdleRouteWarmup([
+  ROUTE_NAMES.AUTH_LOGIN,
+  ROUTE_NAMES.AUTH_REGISTER,
+  ROUTE_NAMES.AUTH_FORGOT_PASSWORD,
+])
 useRouteIntentPrefetch(rootRef)
 
 const isMaintenance = computed(() => route.name === ROUTE_NAMES.PUBLIC_MAINTENANCE)

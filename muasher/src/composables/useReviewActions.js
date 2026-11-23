@@ -19,7 +19,7 @@ const CONFLICT_CODES = [
   CODES.NOT_ASSIGNEE,
 ]
 
-export function useReviewActions({ reviewState, scoreSheet, feedback, askReason }) {
+export function useReviewActions({ reviewState, scoreSheet, feedback, notes, askReason }) {
   const { t } = useI18n()
   const toast = useToast()
   const auth = useAuthStore()
@@ -81,9 +81,22 @@ export function useReviewActions({ reviewState, scoreSheet, feedback, askReason 
       async (extra) => {
         await sendScores(extra)
         await feedback.save(extra)
+        await notes.save(extra)
         return true
       },
       () => toast.success(t('review.toasts.saved')),
+    )
+  }
+
+  // Staff who read the review without scoring it still save their internal notes (operator 2026-11-22).
+  function saveNotes() {
+    return perform(
+      'notes',
+      async (extra) => {
+        await notes.save(extra)
+        return true
+      },
+      () => toast.success(t('review.internalNotes.saved')),
     )
   }
 
@@ -105,6 +118,7 @@ export function useReviewActions({ reviewState, scoreSheet, feedback, askReason 
       async (extra) => {
         await sendScores(extra)
         await feedback.save(extra)
+        await notes.save(extra)
         await assessorReviewService.complete(reviewState.assessment.value.id, extra)
         await reviewState.load({ silent: true })
         return true
@@ -145,6 +159,7 @@ export function useReviewActions({ reviewState, scoreSheet, feedback, askReason 
     busy,
     conflictCode,
     saveAll,
+    saveNotes,
     startReview,
     complete,
     confirmScore,

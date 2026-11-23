@@ -299,10 +299,10 @@ final class User extends Authenticatable implements Auditable, HasLocalePreferen
      */
     public function roleKeys(): array
     {
-        return array_values($this->roles
+        return RoleKey::inCatalogOrder(array_values($this->roles
             ->map(static fn (Role $role): ?RoleKey => RoleKey::tryFrom($role->name))
             ->filter()
-            ->all());
+            ->all()));
     }
 
     /**

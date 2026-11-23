@@ -26,6 +26,7 @@ function themeResource() {
   const scheme = deriveBrandScheme(
     { primary: theme.primaryColor, secondary: theme.secondaryColor },
     theme.colorOverrides,
+    { top: theme.sidebarTopColor, bottom: theme.sidebarBottomColor },
   )
   return { ...theme, scheme, defaultColors: { ...DEFAULT_BRAND_COLORS } }
 }
@@ -53,12 +54,23 @@ function requireOverrides(raw, errors) {
   return Object.fromEntries(entries.map(([key, value]) => [key, normalizeHex(value)]))
 }
 
+// Absent or null follows the brand colours, as UpdateBrandingRequest does.
+function optionalColor(value, field, errors) {
+  if (value === undefined || value === null || value === '') return null
+  errors.check(normalizeHex(value), field, 'hexColor')
+  return normalizeHex(value)
+}
+
 function requireColors(body) {
   const errors = createFieldErrors()
   const colors = {
     primary: normalizeHex(body.primaryColor),
     secondary: normalizeHex(body.secondaryColor),
     overrides: requireOverrides(body.colorOverrides, errors),
+    rail: {
+      top: optionalColor(body.sidebarTopColor, 'sidebarTopColor', errors),
+      bottom: optionalColor(body.sidebarBottomColor, 'sidebarBottomColor', errors),
+    },
   }
   errors.check(colors.primary, 'primaryColor', 'hexColor')
   errors.check(colors.secondary, 'secondaryColor', 'hexColor')

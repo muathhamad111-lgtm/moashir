@@ -5,11 +5,13 @@ declare(strict_types=1);
 namespace App\Actions\Identity;
 
 use App\Enums\Identity\InvitationStatus;
+use App\Models\Identity\TermsVersion;
 use App\Models\Identity\User;
 use App\Models\Identity\UserInvitation;
 use App\Notifications\Identity\StaffInvitationNotification;
 use App\Services\Identity\AuthSettings;
 use App\Services\Identity\SecretHasher;
+use App\Services\Nda\InvitationNda;
 use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Str;
 
@@ -17,7 +19,7 @@ final readonly class IssueInvitation
 {
     private const int TOKEN_LENGTH = 64;
 
-    public function __construct(private AuthSettings $settings, private SecretHasher $hasher) {}
+    public function __construct(private AuthSettings $settings, private SecretHasher $hasher, private InvitationNda $nda) {}
 
     public function handle(User $actor, User $invitee): UserInvitation
     {
@@ -36,7 +38,8 @@ final readonly class IssueInvitation
             'expires_at' => Date::now()->addMinutes($validMinutes),
         ]);
 
-        $invitee->notify(new StaffInvitationNotification($token, $validMinutes));
+        $invitation->setRelation('user', $invitee);
+        $invitee->notify(new StaffInvitationNotification($token, $validMinutes, $this->nda->forInvitation($invitation) instanceof TermsVersion));
 
         return $invitation;
     }

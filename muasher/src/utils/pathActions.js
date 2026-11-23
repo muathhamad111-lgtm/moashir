@@ -10,7 +10,10 @@ import {
 
 const BANK_TRANSFER = 'bank_transfer'
 
-export const PATH_RUNS = Object.freeze({ START_ACCREDITED: 'startAccredited' })
+export const PATH_RUNS = Object.freeze({
+  START_ACCREDITED: 'startAccredited',
+  APPLY_AWARD: 'applyAward',
+})
 
 function action(labelKey, to, icon = 'arrow-right') {
   return { labelKey: `paths.actions.${labelKey}`, to, icon }
@@ -65,7 +68,7 @@ function awardFormRoute(id) {
 
 const AWARD_ACTIONS = {
   [W.AWAITING_PAYMENT]: (path) => action('viewPayment', paymentRoute(path.awaitingPayment)),
-  [W.ELIGIBLE]: () => action('applyAward', { name: R.ASSESSMENT_ADVANCED }),
+  [W.ELIGIBLE]: () => runAction('applyAward', PATH_RUNS.APPLY_AWARD),
   [W.DRAFT]: (path) => action('continueAward', awardFormRoute(path.openRequest.id)),
   [W.NEEDS_COMPLETION]: (path) => action('complete', awardFormRoute(path.openRequest.id)),
   [W.ANNOUNCED]: (path) =>

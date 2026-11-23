@@ -11,6 +11,7 @@ use App\Support\ValueObjects\LocalizedText;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Carbon;
 
@@ -20,12 +21,14 @@ use Illuminate\Support\Carbon;
  * @property string $version
  * @property LocalizedText|null $title
  * @property LocalizedText $body
+ * @property LocalizedText|null $change_summary
  * @property Carbon|null $effective_from
  * @property bool $is_current
  * @property Carbon|null $published_at
  * @property int|null $published_by_user_id
  * @property Carbon $created_at
  * @property Carbon $updated_at
+ * @property int|null $acceptances_count
  */
 final class TermsVersion extends Model
 {
@@ -39,6 +42,7 @@ final class TermsVersion extends Model
         return [
             'title' => LocalizedTextCast::class,
             'body' => LocalizedTextCast::class,
+            'change_summary' => LocalizedTextCast::class,
             'effective_from' => 'date',
             'is_current' => 'boolean',
             'published_at' => 'datetime',
@@ -70,6 +74,14 @@ final class TermsVersion extends Model
     protected function drafts(Builder $query): void
     {
         $query->whereNull('published_at');
+    }
+
+    /**
+     * @return BelongsTo<User, $this>
+     */
+    public function publishedBy(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'published_by_user_id');
     }
 
     /**

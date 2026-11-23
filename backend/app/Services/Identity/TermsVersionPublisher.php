@@ -73,7 +73,7 @@ final readonly class TermsVersionPublisher
             $version = $write();
 
             $this->audit->record(new AuditEntry(
-                AuditEvent::TermsPublished,
+                $kind === TermsKind::Nda ? AuditEvent::NdaPublished : AuditEvent::TermsPublished,
                 $version,
                 ['current_version' => $previous?->version],
                 ['current_version' => $version->version, ...$this->snapshot->of($version)],

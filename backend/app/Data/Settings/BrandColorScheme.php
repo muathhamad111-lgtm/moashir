@@ -14,10 +14,11 @@ final readonly class BrandColorScheme
         public string $primarySoft,
         public string $secondary,
         public string $onSecondary,
+        public BrandRailScheme $rail,
     ) {}
 
     /**
-     * @return array{primary: string, on_primary: string, primary_text: string, primary_hover: string, primary_soft: string, secondary: string, on_secondary: string}
+     * @return array{primary: string, on_primary: string, primary_text: string, primary_hover: string, primary_soft: string, secondary: string, on_secondary: string, rail_top: string, rail_bottom: string, rail_stops: non-empty-list<string>, on_rail: string, on_rail_muted: string, rail_accent: string, rail_glow: int}
      */
     public function toArray(): array
     {
@@ -29,6 +30,7 @@ final readonly class BrandColorScheme
             'primary_soft' => $this->primarySoft,
             'secondary' => $this->secondary,
             'on_secondary' => $this->onSecondary,
+            ...$this->rail->toArray(),
         ];
     }
 }

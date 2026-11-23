@@ -33,6 +33,8 @@ final class AssessmentSettingsResource extends JsonResource
             'advanced_disqualification_score' => $this->resource->advancedDefaults->disqualificationScore->toDisplay(),
             'advanced_initial_review_sla_days' => $this->resource->advancedDefaults->initialReviewSlaDays,
             'committee_entity_data_visibility' => $this->resource->committeeVisibility->value,
+            'advanced_cycle_concurrency' => $this->resource->cycleConcurrency->mode->value,
+            'running_cycles' => $this->resource->cycleConcurrency->runningCyclesToArray(),
             'scale_kind' => $this->resource->scaleKind->value,
             'published_version' => $this->resource->publishedScaleKind === null ? null : [
                 'scale_kind' => $this->resource->publishedScaleKind->value,

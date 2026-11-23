@@ -9,6 +9,7 @@ import { settleFonts } from './support/screenshots'
 import { chooseNamed, namedSelect, openOption } from './support/dropdown'
 import { fillRegistrationEntityStep, goToRegistrationAccountStep } from './support/registration'
 import { openListFilters, searchList } from './support/listFilters'
+import { approvePendingProfileChange } from './support/profileChanges'
 
 const SHOTS = 'e2e/__screenshots__/37b'
 const VIEWPORTS = {
@@ -285,7 +286,9 @@ test.describe('organization profile', () => {
     await signIn(page, testInfo)
   })
 
-  test('saves the identity section with the licence and the founding date', async ({ page }) => {
+  test('sends the identity section with the licence and the founding date for approval', async ({
+    page,
+  }, testInfo) => {
     await seedIncompleteProfile(page)
     await open(page, '/entity/profile', '[data-section="identity"]')
     const percent = page.locator('.profile-completeness__percent')
@@ -297,6 +300,12 @@ test.describe('organization profile', () => {
     await identity.locator('input[name="foundedOn"]').fill('2012-03-01')
     await identity.locator('button[type="submit"]').click()
     await expect(identity.locator('.profile-section__status-text--success')).toBeVisible()
+    await expect(identity.getByTestId('section-pending')).toBeVisible()
+    await expect(percent).toHaveText('75%')
+
+    await approvePendingProfileChange(page, isEn(testInfo) ? 'en' : 'ar')
+    await signIn(page, testInfo)
+    await open(page, '/entity/profile', '[data-section="identity"]')
     await expect(percent).toHaveText('87%')
     await expect(identity.getByTestId('profile-section-state')).toHaveClass(/--complete/)
   })
@@ -314,7 +323,9 @@ test.describe('organization profile', () => {
     await expect(contact.locator('.field__error').first()).toBeVisible()
   })
 
-  test('uploads and removes the organization logo from the identity header', async ({ page }) => {
+  test('sends an uploaded logo for approval and withdraws it from the identity header', async ({
+    page,
+  }) => {
     await open(page, '/entity/profile', '[data-testid="profile-change-logo"]')
     await page.getByTestId('profile-change-logo').click()
     const dialog = page.getByTestId('logo-dialog')
@@ -322,10 +333,12 @@ test.describe('organization profile', () => {
       .locator('.logo-dialog__input')
       .setInputFiles({ name: 'namaa-logo.png', mimeType: 'image/png', buffer: squarePng(240) })
     await expect(dialog.locator('.logo-dialog__image')).toBeVisible()
-    await expect(page.locator('.profile-header__logo-image')).toBeVisible()
+    await expect(dialog.locator('.logo-dialog__pending')).toBeVisible()
+    await expect(page.locator('.profile-header__logo-image')).toHaveCount(0)
+    await expect(page.getByTestId('pending-profile-change')).toBeVisible()
     await page.locator('.modal__footer .btn--ghost').click()
     await page.getByRole('alertdialog').locator('.btn--danger').click()
-    await expect(page.locator('.profile-header__logo-image')).toHaveCount(0)
+    await expect(page.getByTestId('pending-profile-change')).toHaveCount(0)
     await page.getByTestId('profile-change-logo').click()
     await expect(dialog.locator('.logo-dialog__image')).toHaveCount(0)
     await dialog

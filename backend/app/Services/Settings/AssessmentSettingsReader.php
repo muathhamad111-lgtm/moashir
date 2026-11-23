@@ -10,6 +10,7 @@ use App\Models\Criteria\CriteriaVersion;
 use App\Services\Assessments\AccreditedReviewSla;
 use App\Services\Assessments\UploadLimitsReader;
 use App\Services\Award\CommitteeVisibilityReader;
+use App\Services\Award\CycleConcurrencyStateReader;
 use App\Services\Award\CycleDefaultsReader;
 use App\Services\Criteria\CriteriaSettings;
 use App\Services\Files\FileSettings;
@@ -26,6 +27,7 @@ final readonly class AssessmentSettingsReader
         private FileSettings $files,
         private Repository $config,
         private CriteriaSettings $criteria,
+        private CycleConcurrencyStateReader $cycleConcurrency,
     ) {}
 
     public function read(): AssessmentSettingsView
@@ -39,6 +41,7 @@ final readonly class AssessmentSettingsReader
             $this->committeeVisibility->read(),
             $this->criteria->scaleKind(),
             CriteriaVersion::query()->published()->first()?->scale_kind,
+            $this->cycleConcurrency->read(),
         );
     }
 

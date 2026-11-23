@@ -48,6 +48,7 @@ import { sessionCan } from '../stores/sessionPermissions'
 import { REVIEWED_PATHS } from '../stores/assessments/reviewedPaths'
 import {
   assignAssessor,
+  assignmentCycleHint,
   eligibleAssessors,
   reassignAssessor,
 } from '../stores/accredited/assignments'
@@ -220,10 +221,11 @@ export const requestsHandlers = [
     assessmentRoute(({ request }) => {
       const user = signedInActor()
       authorizeListAssessors(user)
-      return envelope(
-        eligibleAssessors(user, new URL(request.url).searchParams, followedPaths(user)),
-        { reasonRules: assignmentReasonRules() },
-      )
+      const query = new URL(request.url).searchParams
+      return envelope(eligibleAssessors(user, query, followedPaths(user)), {
+        reasonRules: assignmentReasonRules(),
+        awardCycle: assignmentCycleHint(user, query),
+      })
     }),
   ),
 

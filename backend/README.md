@@ -1371,6 +1371,7 @@ rollout to 2025-10-01, generates the periods and attaches them to the demo resul
 | GET | `/assessments/{assessment}/review/rounds` | `can:reviewRounds` (`can:review`, never a committee member seated on the request) |
 | POST | `/assessments/{assessment}/start-review`, `/request-completion`, `/complete` | `can:score` (active assignee), `throttle:sensitive` |
 | PUT | `/assessments/{assessment}/review/scores`, `/review/feedback` | `can:score`, `throttle:assessment-write` |
+| PUT | `/assessments/{assessment}/review-notes` | `can:writeReviewNotes` (`requests.notes.write`; see "Internal review notes"), `throttle:assessment-write` |
 | POST | `/assessments/{assessment}/scores/override`, `/reopen`, `/transition/force` | `can:override` (Super Admin only), `throttle:sensitive` |
 | POST | `/assessments/{assessment}/scores/override/preview` | `can:override` (Super Admin only), `throttle:assessment-write` |
 | GET / PUT | `/settings/assessment` | `can:settings.assessment-section.manage` (`settings.assessment.manage`), PUT `throttle:sensitive` |
@@ -2740,6 +2741,24 @@ improvement points, notes per sub-criterion); nothing is stored as a file.
 - Audit `assessment.summary_saved` `{ version, cleared }` (never the text). No notification.
 - `GET /assessments/{id}/review` adds `summary` (assignee and read-only review). Completion never requires it.
 
+### Internal review notes (N1)
+- Table `assessment_review_notes` (append-only, versioned like `assessment_feedback_items`):
+  - columns: `assessment_id` (cascade), `level` `main|sub|point`, `main_criterion_id`, `sub_criterion_id`, `guiding_point_id` (criteria FKs, restrict), `author_user_id` (restrict), `author_role` `super_admin|assessor|follower|admin`, `body`, `version` (>= 1), `change_reason`, `superseded_at`, `created_at`;
+  - CHECKs on the level, the level/id consistency, a non-blank body, the version and the author role;
+  - partial unique index `assessment_review_notes_current` = one current row per (assessment, unit, author);
+  - trigger `moashir_guard_supersede_once()` plus the truncate guard.
+- Staff only. The entity never sees the notes. They are separate from the entity-facing feedback.
+  - Only `GetAssessorReview` / `AssessorReviewResource` and `PUT …/review-notes` read them.
+  - Arch tests forbid `AssessmentReviewNote` / `ReviewNoteSheetReader` everywhere else.
+- Abilities: `readReviewNotes` (Super Admin, or `requests.notes.read` + `review`) and `writeReviewNotes` (open, not frozen; Super Admin, or `requests.notes.write` + read + queue follower of the path or the active assignee).
+- `GET /assessments/{id}/review` adds `can_write_review_notes` (always) and `review_notes` (readers only; key omitted otherwise).
+- `PUT /assessments/{id}/review-notes { notes: [{ level, main_criterion_id, sub_criterion_id, guiding_point_id, body }] (1..500), reason? }`:
+  - body ≤ `moashir.assessment.review_note_max_chars` = 500, trimmed; empty or `null` clears the caller's own note; reason required for the Super Admin;
+  - answers `{ can_write_review_notes, review_notes }`;
+  - 409 `state.transition_illegal` / `entity.deleted` inside the lock.
+- Audit `assessment.review_notes_saved` `{ changed, levels }` (never the text).
+- Permanent entity deletion removes the notes of all its reviewed requests (`ReviewedRequestEraser`).
+
 ## Excellence level on staff lists, dashboards and the entity home (Task-67)
 
 **Level rule (one place).** `Entity::levelCertificate()` is a has-one-of-many relation: the entity's ACCREDITED
@@ -3300,7 +3319,8 @@ apply SRI (`crossorigin="anonymous"`) to a script loaded from that CDN — the l
 - Horizon defines a `staging` environment; `HORIZON_MAX_PROCESSES` caps the workers on a shared server.
 - `composer install --no-dev --optimize-autoloader`, `php artisan migrate --force`,
   `php artisan config:cache route:cache event:cache`, `php artisan horizon:terminate` after release.
-- The scheduler runs `moashir:expire-invitations`, `moashir:prune-otp-codes`, `moashir:prune-password-reset-links` (hourly),
+- The scheduler runs `moashir:expire-invitations`, `moashir:prune-otp-codes`, `moashir:prune-password-reset-links`,
+  `moashir:send-nda-reminders` (hourly, on one server),
   `moashir:assessments:sweep-criteria-update-holds` and `moashir:assessments:open-paid-requests` (every 10 minutes),
   `moashir:assessments:flag-overdue` and `moashir:assessments:purge-evidence-bundles` (hourly),
   `moashir:assessments:expire-completion-requests` and `moashir:award:advance-cycles` (every minute),
@@ -3383,3 +3403,7 @@ apply SRI (`crossorigin="anonymous"`) to a script loaded from that CDN — the l
   `content.insights.manage`). New settings keys `insights.gap_thresholds`, `insights.maturity_bands`,
   `finance.vat_registration_number` read their defaults until saved. No new package or environment variable. After the
   deploy the System Administrator should set the VAT registration number; receipts issued before carry no row.
+- N1 (internal review notes): migration `2026_11_24_100000_create_assessment_review_notes_table` (append-only, attaches the existing `moashir_guard_supersede_once()`; reversible).
+  - Re-run the `assessment_review_notes` lines of `database/sql/production-roles.sql` (column-level UPDATE on `superseded_at` only).
+  - Then `php artisan moashir:permissions:sync`, which grants the two new keys `requests.notes.read` and `requests.notes.write` to `assessor`, `request_follower` and `system_admin`.
+  - No new package or environment variable.

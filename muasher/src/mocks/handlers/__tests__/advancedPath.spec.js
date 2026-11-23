@@ -6,6 +6,7 @@ import { resetEntitiesMock } from '@/mocks/stores/entityMockReset'
 import { findEntity } from '@/mocks/stores/entitiesStore'
 import { findAssessment, resetAssessmentsStore } from '@/mocks/stores/assessments/assessmentsStore'
 import { findCycle } from '@/mocks/stores/award/cycleStore'
+import { transition } from '@/mocks/stores/assessments/statusHistory'
 import { notificationsStore } from '@/mocks/stores/notificationsStore'
 import { discardQueuedJobs } from '@/mocks/stores/mockQueue'
 import { MOCK_API_BASE, clearMockSession, seedMockSession, wireFetch } from '@/test-utils/mockApi'
@@ -27,7 +28,7 @@ const NOTES = 'يرجى استكمال وصف منهجية العمل وإرفا
 const REASON = 'سحب الطلب بناءً على خطاب رسمي من الجهة.'
 const OVERRIDE = 'أظهرت الشواهد أثرًا مجتمعيًا واضحًا يبرر التأهيل استثناءً.'
 
-const CURRENT_KEYS = ['cycle', 'eligibility', 'previous', 'request']
+const CURRENT_KEYS = ['cycle', 'eligibility', 'open_cycles', 'previous', 'request']
 const FILTERING_ROW_KEYS = [
   'decision',
   'entity',
@@ -194,10 +195,8 @@ describe('advanced path mock — entity', () => {
     )
     findCycle(31).regionIds = [1, 2, 3, 4]
     const submitted = await call('POST', `/assessments/${draft.id}/submit`, {})
-    expect(submitted.body.data).toMatchObject({
-      status: 'awaiting_review_assignment',
-      is_open: true,
-    })
+    expect(submitted.body.data).toMatchObject({ status: 'under_review', is_open: true })
+    expect(findAssessment(draft.id).status).toBe('awaiting-review-assignment')
     expect(
       notificationsStore.some(
         (item) => item.code === 'ADV-04' && item.recipientRole === 'request_follower',
@@ -248,7 +247,7 @@ describe('advanced path mock — entity', () => {
       id: '5a3c7e21-9201-4c8d-8e9f-000000000099',
     })
     const resubmitted = await call('POST', '/assessments/9201/submit', {})
-    expect(resubmitted.body.data.status).toBe('awaiting_review_assignment')
+    expect(resubmitted.body.data.status).toBe('under_review')
     expect(findAssessment(9201).completionRequests[0].status).toBe('resubmitted')
   })
 
@@ -263,6 +262,66 @@ describe('advanced path mock — entity', () => {
     })
     findCycle(31).announcedAt = new Date().toISOString()
     expect((await call('GET', '/assessments/9204')).body.data.status).toBe('awaiting_filtering')
+  })
+
+  it('masks the award stage a request left on withdrawal until announcement, per viewer', async () => {
+    const record = findAssessment(9204)
+    record.transitions.push(
+      transition(
+        'awaiting-filtering',
+        'qualified-for-committee',
+        'qualify',
+        record.updatedAt,
+        'staff',
+        13,
+      ),
+      transition('qualified-for-committee', 'withdrawn', 'withdraw', record.updatedAt, 'staff', 8),
+    )
+    record.status = 'withdrawn'
+    const seen = async (viewer) => {
+      seedMockSession(viewer)
+      const history = (await call('GET', '/assessments/9204')).body.data.status_history
+      return history.flatMap((step) => [step.from, step.to])
+    }
+    expect(await seen(RUWAD)).not.toContain('qualified_for_committee')
+    expect(await seen(RUWAD)).not.toContain('awaiting_filtering')
+    expect(await seen(RUWAD)).toContain('under_review')
+    expect(await seen(ASSESSOR)).not.toContain('qualified_for_committee')
+    expect(await seen(FOLLOWER)).toContain('qualified_for_committee')
+    findCycle(31).announcedAt = new Date().toISOString()
+    expect(await seen(RUWAD)).toContain('qualified_for_committee')
+    expect(await seen(ASSESSOR)).toContain('qualified_for_committee')
+  })
+
+  it('masks the initial review states as under review for the owner only', async () => {
+    seedMockSession({ id: 6004, roles: ['entity'], entityId: 6004 })
+    expect((await call('GET', '/assessments/9203')).body.data.status).toBe('under_review')
+    seedMockSession({ id: 6002, roles: ['entity'], entityId: 6002 })
+    const record = (await call('GET', '/assessments/9202')).body.data
+    expect(record).toMatchObject({ status: 'under_review', is_open: true })
+    expect(record.status_history.map((step) => step.to)).not.toContain('under_initial_assessment')
+    expect(record.status_history.find((step) => step.verb === 'submit')).toMatchObject({
+      to: 'under_review',
+    })
+    expect(record.status_history.map((step) => step.verb)).not.toContain('assign')
+    seedMockSession(ASSESSOR)
+    expect((await call('GET', '/assessments/9202')).body.data.status).toBe(
+      'under_initial_assessment',
+    )
+  })
+
+  it('keeps both owner rules together: the submission reads under review and a step out of it masks its origin', async () => {
+    seedMockSession(NAMAA)
+    const record = (await call('GET', '/assessments/9201')).body.data
+    expect(record.status).toBe('needs_completion')
+    expect(record.status_history.map(({ verb, from, to }) => [verb, from, to])).toEqual([
+      ['start', null, 'draft'],
+      ['submit', 'draft', 'under_review'],
+      ['return_for_completion', 'under_review', 'needs_completion'],
+    ])
+    seedMockSession(FOLLOWER)
+    const staff = (await call('GET', '/assessments/9201')).body.data.status_history
+    expect(staff.find((step) => step.verb === 'submit').to).toBe('awaiting_review_assignment')
   })
 })
 
@@ -374,7 +433,7 @@ describe('advanced path mock — follower and initial assessor', () => {
     expect(notificationsStore.some((item) => item.code === 'ADV-05')).toBe(true)
   })
 
-  it('runs the shared review engine to the filtering, without the assessor completion request', async () => {
+  it('runs the shared review engine to the filtering; a completion request waits for every score', async () => {
     seedMockSession(ASSESSOR)
     const review = (await call('GET', '/assessments/9202/review')).body.data
     expect(review.mode).toBe('edit')
@@ -386,14 +445,71 @@ describe('advanced path mock — follower and initial assessor', () => {
           deadline_at: inDays(3),
           expiry_outcome: 'decline',
         })
-      ).status,
-    ).toBe(409)
+      ).body.code,
+    ).toBe('scores.incomplete')
     await call('PUT', '/assessments/9202/review/scores', { scores: allUnits(review.criteria) })
     const completed = await call('POST', '/assessments/9202/complete', {})
     expect(completed.body.data).toMatchObject({ status: 'awaiting_filtering', result: null })
     expect(notificationsStore.some((item) => item.code === 'ADV-06')).toBe(true)
     seedMockSession(OUTSIDE_ASSESSOR)
     expect((await call('GET', '/assessments/9202/review')).status).toBe(404)
+  })
+
+  // Operator 2026-11-22 («الاثنان»): after assignment both the initial assessor and the follower ask
+  // for completion, and the resubmission goes back to the same assessor.
+  it('asks the entity for completion from the finished initial review and brings the resubmission back to the same assessor', async () => {
+    seedMockSession(ASSESSOR)
+    const review = (await call('GET', '/assessments/9202/review')).body.data
+    await call('PUT', '/assessments/9202/review/scores', { scores: allUnits(review.criteria) })
+    const body = {
+      notes: NOTES,
+      items: [{ sub_criterion_id: 201, kind: 'cv' }],
+      deadline_at: inDays(3),
+      expiry_outcome: 'decline',
+    }
+    const committeeStart = findCycle(31).committeeStart
+    findCycle(31).committeeStart = inDays(2)
+    const late = await call('POST', '/assessments/9202/request-completion', body)
+    expect(late.body.code).toBe('completion.deadline_after_committee_start')
+    findCycle(31).committeeStart = committeeStart
+    const asked = await call('POST', '/assessments/9202/request-completion', body)
+    expect(asked.body.data.status).toBe('needs_completion')
+    expect(findAssessment(9202).completionRequests.at(-1).resumesTo).toBe(
+      'under-initial-assessment',
+    )
+    expect(notificationsStore.some((item) => item.code === 'ADV-25')).toBe(true)
+
+    seedMockSession({ id: 6002, roles: ['entity'], entityId: 6002 })
+    await call('PUT', '/assessments/9202/cv', {
+      cv: { 201: 'وصف محدّث لمنهجية دراسة الاحتياجات.' },
+    })
+    const resubmitted = await call('POST', '/assessments/9202/submit', {})
+    // The owner reads «under review» until the announcement (AJ-03); the store keeps the real state.
+    expect(resubmitted.body.data.status).toBe('under_review')
+    expect(findAssessment(9202).status).toBe('under-initial-assessment')
+    const history = (await call('GET', '/assessments/9202')).body.data.status_history
+    expect(history.map((step) => step.to)).toContain('needs_completion')
+
+    seedMockSession(ASSESSOR)
+    expect((await call('GET', '/assessments/9202/review')).body.data.mode).toBe('edit')
+  })
+
+  it('lets the follower return an assigned request for completion, keeping its assessor', async () => {
+    seedMockSession(FOLLOWER)
+    const body = {
+      notes: NOTES,
+      items: [{ sub_criterion_id: 201, kind: 'cv' }],
+      deadline_at: inDays(5),
+      expiry_outcome: 'continue_as_submitted',
+    }
+    const returned = await call('POST', '/requests/9202/return-for-completion', body)
+    expect(returned.body.data.status).toBe('needs_completion')
+    expect(returned.body.data.assignment_history[0]).toMatchObject({ status: 'active' })
+    expect(findAssessment(9202).completionRequests.at(-1).resumesTo).toBe(
+      'under-initial-assessment',
+    )
+    findAssessment(9202).completionRequests.at(-1).deadlineAt = inDays(-1)
+    expect((await call('GET', '/requests/9202')).body.data.status).toBe('under_initial_assessment')
   })
 
   it('hides the filtering outcome from an assessor who does not read results', async () => {
@@ -464,12 +580,11 @@ describe('advanced path mock — filtering', () => {
     expect((await call('GET', '/award/cycles/31/filtering/9205')).status).toBe(403)
   })
 
-  it('opens the decisions only after the submissions close and needs a reason below the threshold', async () => {
+  it('opens the decisions while submissions are open, locks the threshold and needs a reason below it', async () => {
+    seedMockSession(SYSTEM_ADMIN)
+    expect((await call('GET', '/award/cycles/31')).body.data.threshold_locked).toBe(false)
     seedMockSession(FILTERING_OFFICER)
-    expect((await call('POST', '/award/cycles/31/filtering/9204/qualify', {})).body.code).toBe(
-      'cycle.filtering_not_open',
-    )
-    closeSubmissions()
+    expect(findCycle(31).status).toBe('submission-open')
     const below = await call('POST', '/award/cycles/31/filtering/9205/qualify', {})
     expect(below).toMatchObject({
       status: 422,
@@ -499,6 +614,12 @@ describe('advanced path mock — filtering', () => {
         .map((item) => item.recipientRole)
         .sort(),
     ).toEqual(['award_secretary', 'system_admin'])
+    seedMockSession(SYSTEM_ADMIN)
+    expect((await call('GET', '/award/cycles/31')).body.data.threshold_locked).toBe(true)
+    expect(
+      (await call('PUT', '/award/cycles/31', { disqualification_score: '70.00' })).body.code,
+    ).toBe('cycle.threshold_locked')
+    seedMockSession(FILTERING_OFFICER)
     const qualified = await call('POST', '/award/cycles/31/filtering/9204/qualify', {
       override_reason: OVERRIDE,
     })
