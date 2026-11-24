@@ -16,7 +16,7 @@
   --color-surface: #f3f9f9;
   --color-white: #ffffff;
   --color-watermark: rgba(158, 108, 53, 0.14);
-  --font-body: 'Moashir Latin', 'Moashir Body', sans-serif;
-  --font-heading: 'Moashir Latin', 'Moashir Heading', 'Moashir Body', sans-serif;
-  --font-latin: 'Moashir Latin', 'Moashir Body', sans-serif;
+  --font-body: 'Moashir Latin', 'Moashir Arabic', 'Moashir Body', sans-serif;
+  --font-heading: 'Moashir Latin', 'Moashir Arabic', 'Moashir Heading', 'Moashir Body', sans-serif;
+  --font-latin: 'Moashir Latin', 'Moashir Arabic', 'Moashir Body', sans-serif;
 }

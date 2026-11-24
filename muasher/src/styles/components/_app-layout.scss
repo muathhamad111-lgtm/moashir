@@ -29,6 +29,8 @@
   }
 }
 
+// The one content container of the back office: it fills the column beside the sidebar, so
+// collapsing the sidebar widens every page the same way. Pages set no outer width or gutter.
 .app-layout__content {
   flex: 1;
   min-inline-size: 0;

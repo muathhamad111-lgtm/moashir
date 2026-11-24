@@ -1,10 +1,12 @@
 $font-family-latin: 'Montserrat';
-$font-family-arabic-body: 'IBM Plex Sans Arabic';
+$font-family-arabic: 'Hacen Maghreb';
+$font-family-arabic-fallback: 'IBM Plex Sans Arabic';
 $font-fallback: system-ui, sans-serif;
 
-$font-arabic: $font-family-latin, $font-family-arabic-body, $font-fallback;
-$font-latin: $font-family-latin, $font-family-arabic-body, $font-fallback;
-$font-heading: $font-family-latin, $font-family-arabic-body, $font-fallback;
+$font-arabic: $font-family-latin, $font-family-arabic, $font-family-arabic-fallback, $font-fallback;
+$font-latin: $font-family-latin, $font-family-arabic, $font-family-arabic-fallback, $font-fallback;
+$font-heading:
+  $font-family-latin, $font-family-arabic, $font-family-arabic-fallback, $font-fallback;
 
 $fw-regular: 400;
 $fw-medium: 500;

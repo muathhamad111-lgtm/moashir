@@ -3,9 +3,6 @@
 .bag,
 .bag-manage {
   @include flex(column, stretch, flex-start, var(--space-6));
-  inline-size: 100%;
-  max-inline-size: var(--size-container-lg, var(--size-prose-max));
-  margin-inline: auto;
   padding-block: var(--space-6);
 }
 
@@ -419,9 +416,6 @@
 
 .bag-comparison {
   @include flex(column, stretch, flex-start, var(--space-6));
-  inline-size: 100%;
-  max-inline-size: var(--size-container-lg, var(--size-prose-max));
-  margin-inline: auto;
   padding-block: var(--space-6);
 }
 
@@ -940,9 +934,6 @@
 }
 
 .bag-details {
-  inline-size: 100%;
-  max-inline-size: var(--size-container-lg, var(--size-prose-max));
-  margin-inline: auto;
   padding-block: var(--space-6);
 }
 

@@ -18,6 +18,8 @@ final class DocumentAssets
         'IBMPlexSansArabic-Regular.ttf' => 'font/ttf',
         'IBMPlexSansArabic-SemiBold.ttf' => 'font/ttf',
         'IBMPlexSansArabic-Bold.ttf' => 'font/ttf',
+        'hacen-maghreb-regular.ttf' => 'font/ttf',
+        'hacen-maghreb-bold.ttf' => 'font/ttf',
     ];
 
     private const string SVG = 'image/svg+xml';
@@ -36,6 +38,15 @@ final class DocumentAssets
         $mime = self::FONTS[$file] ?? throw new InvalidArgumentException('Unknown document font.');
 
         return $this->dataUri('fonts/'.$file, $mime);
+    }
+
+    /**
+     * The licensed fonts are kept out of the public repository, so a checkout may lack them; the
+     * documents then fall back to the open-licence font that follows in the stack.
+     */
+    public function hasFont(string $file): bool
+    {
+        return array_key_exists($file, self::FONTS) && $this->files->exists($this->pathOf('fonts/'.$file));
     }
 
     public function logo(): string
@@ -63,7 +74,12 @@ final class DocumentAssets
         return $this->encoded[$relativePath] ??= sprintf(
             'data:%s;base64,%s',
             $mime,
-            base64_encode($this->files->get($this->app->resourcePath(self::ROOT.'/'.$relativePath))),
+            base64_encode($this->files->get($this->pathOf($relativePath))),
         );
+    }
+
+    private function pathOf(string $relativePath): string
+    {
+        return $this->app->resourcePath(self::ROOT.'/'.$relativePath);
     }
 }

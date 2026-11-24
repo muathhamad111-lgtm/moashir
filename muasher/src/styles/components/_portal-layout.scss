@@ -76,6 +76,8 @@
   }
 }
 
+// The one content container of the entity portal, same rule as `.app-layout__content`: it fills
+// the column beside the side nav; pages and bands set no outer width of their own.
 .portal-layout__main {
   flex: 1;
   min-inline-size: 0;

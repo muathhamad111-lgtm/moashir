@@ -1,9 +1,5 @@
 @use '../mixins' as *;
 
-.branding-page {
-  max-inline-size: var(--size-content-max);
-}
-
 .branding-page__back {
   @include flex(row, center, flex-start, var(--space-2));
   font-size: var(--fs-sm);

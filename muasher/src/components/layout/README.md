@@ -49,6 +49,13 @@ route keeps its path for both audiences:
   `useHeroDots` (the lens follows the cursor, the pattern drifts, the logo stays shielded); below `lg` it draws no
   canvas.
 
+Page width: `<main>` (`.app-layout__content`, `.portal-layout__main`) is the one content container. It
+fills the column beside the sidebar or side nav at every width, so collapsing either widens every page the same
+way; the shell alone sets the gutters (`--tts-page-gutter`, `--tts-body-gap`). A page root or band never sets a
+`max-inline-size`, `margin-inline: auto` or outer `padding-inline`; full-bleed bands pad their own content with
+`portal-gutter`. Only the public layout centres content at `--size-container`
+(`src/styles/__tests__/pageWidth.spec.js` checks this).
+
 Styling: `_sidebar.scss`, `_identity-card.scss`, `_navbar.scss`,
 `_app-layout.scss`, `_portal-layout.scss`, `_portal-top-bar.scss`, `_profile-banner.scss`, `_mobile-tab-bar.scss`, `_public-layout.scss`, `_auth-layout.scss`, `_footer.scss`. No style block or
 inline style in any `.vue`.

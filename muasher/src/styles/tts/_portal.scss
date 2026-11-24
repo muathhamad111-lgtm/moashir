@@ -20,7 +20,6 @@
 
 .profile-banner__inner {
   @include in-tts-shell {
-    max-inline-size: none;
     border-color: tts-status('warning', 'border');
     border-radius: var(--card-radius);
     background-color: tts-status('warning', 'soft');
@@ -84,19 +83,6 @@
 .portal-layout__main h1 {
   @include in-tts-shell {
     letter-spacing: normal;
-  }
-}
-
-.journey-home__content,
-.portal-area__body,
-.entity-profile__loading,
-.entity-profile__body,
-.insights-page__body,
-.notifications-center__body,
-.path-page__body {
-  @include in-tts-shell {
-    max-inline-size: none;
-    padding-inline: 0;
   }
 }
 

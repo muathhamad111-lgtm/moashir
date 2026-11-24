@@ -3,3 +3,7 @@
 @font-face { font-family: 'Moashir Body'; src: url("{{ $assets->font('IBMPlexSansArabic-SemiBold.ttf') }}") format('truetype'); font-weight: 500 600; font-style: normal; }
 @font-face { font-family: 'Moashir Body'; src: url("{{ $assets->font('IBMPlexSansArabic-Bold.ttf') }}") format('truetype'); font-weight: 700 900; font-style: normal; }
 @font-face { font-family: 'Moashir Heading'; src: url("{{ $assets->font('IBMPlexSansArabic-Bold.ttf') }}") format('truetype'); font-weight: 700 900; font-style: normal; }
+@if ($assets->hasFont('hacen-maghreb-regular.ttf') && $assets->hasFont('hacen-maghreb-bold.ttf'))
+@font-face { font-family: 'Moashir Arabic'; src: url("{{ $assets->font('hacen-maghreb-regular.ttf') }}") format('truetype'); font-weight: 100 500; font-style: normal; unicode-range: U+0600-06FF, U+0750-077F, U+0870-088E, U+0890-0891, U+0897-08E1, U+08E3-08FF, U+200C-200E, U+2010-2011, U+204F, U+2E41, U+FB50-FDFF, U+FE70-FE74, U+FE76-FEFC; }
+@font-face { font-family: 'Moashir Arabic'; src: url("{{ $assets->font('hacen-maghreb-bold.ttf') }}") format('truetype'); font-weight: 600 900; font-style: normal; unicode-range: U+0600-06FF, U+0750-077F, U+0870-088E, U+0890-0891, U+0897-08E1, U+08E3-08FF, U+200C-200E, U+2010-2011, U+204F, U+2E41, U+FB50-FDFF, U+FE70-FE74, U+FE76-FEFC; }
+@endif

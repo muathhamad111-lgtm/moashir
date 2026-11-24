@@ -2,8 +2,6 @@
 
 .accredited-result {
   @include flex(column, stretch, flex-start, var(--space-5));
-  max-inline-size: var(--size-content-max);
-  margin-inline: auto;
 }
 
 .accredited-result__eyebrow {

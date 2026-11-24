@@ -3,18 +3,7 @@
 .portal-more,
 .portal-help {
   @include flex(column, stretch, flex-start, var(--space-5));
-  max-inline-size: var(--size-container);
-  margin-inline: auto;
   padding-block: var(--space-6) var(--space-10);
-  padding-inline: var(--space-4);
-
-  @include respond-to('md') {
-    padding-inline: var(--space-8);
-  }
-
-  @include respond-to('xl') {
-    padding-inline: var(--space-0);
-  }
 }
 
 .portal-more__header,

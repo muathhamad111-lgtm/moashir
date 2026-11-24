@@ -1,15 +1,12 @@
 @use 'respond' as *;
 
-// The portal's shared inline gutter (Task-78): 16 px on phones, 32 px from md, and on xl the
-// content centres inside the container width without dropping below 32 px.
+// The portal's shared inline gutter inside full-bleed bands: 16 px on phones, 32 px from md.
+// Page width is the shell's job (`.portal-layout__main` fills the column), so bands never
+// centre a narrower container of their own.
 @mixin portal-gutter {
   padding-inline: var(--space-4);
 
   @include respond-to('md') {
     padding-inline: var(--space-8);
-  }
-
-  @include respond-to('xl') {
-    padding-inline: max(var(--space-8), calc((100% - var(--size-container)) / 2));
   }
 }

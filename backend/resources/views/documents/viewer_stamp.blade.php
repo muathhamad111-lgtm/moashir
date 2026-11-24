@@ -14,7 +14,7 @@ html, body { margin: 0; padding: 0; background: transparent; }
 .sheet { position: relative; overflow: hidden; break-after: page; }
 .sheet:last-child { break-after: auto; }
 .stamp { position: absolute; inset: 0; display: block; }
-.stamp text { fill: rgb(10, 35, 37); fill-opacity: 0.22; font-family: 'Moashir Latin', 'Moashir Body', sans-serif; font-weight: 600; }
+.stamp text { fill: rgb(10, 35, 37); fill-opacity: 0.22; font-family: 'Moashir Latin', 'Moashir Arabic', 'Moashir Body', sans-serif; font-weight: 600; }
 </style>
 </head>
 <body>

@@ -44,3 +44,7 @@ playwright-report-integration/
 
 # Local Netlify folder
 .netlify
+
+# Hacen Maghreb (HacenType commercial licence): served by the platform, never published.
+# The deploy kit builds from the working tree, so the servers still get them.
+/src/assets/fonts/hacen-maghreb-*

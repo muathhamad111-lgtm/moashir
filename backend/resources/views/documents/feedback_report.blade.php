@@ -11,7 +11,7 @@
 @section('title', __('documents.feedback_report.title').' — '.($data['number'] ?? ''))
 
 @section('styles')
-@page { size: 210mm 297mm; margin: 16mm 14mm 18mm; @bottom-center { content: "{{ __('documents.page') }} " counter(page) " {{ __('documents.of') }} " counter(pages); font-family: 'Moashir Latin', 'Moashir Body', sans-serif; font-size: 8.5pt; color: #607070; } }
+@page { size: 210mm 297mm; margin: 16mm 14mm 18mm; @bottom-center { content: "{{ __('documents.page') }} " counter(page) " {{ __('documents.of') }} " counter(pages); font-family: 'Moashir Latin', 'Moashir Arabic', 'Moashir Body', sans-serif; font-size: 8.5pt; color: #607070; } }
 .report__head { display: flex; align-items: center; justify-content: space-between; padding-bottom: 4mm; border-bottom: 0.6mm solid var(--color-primary); }
 .report__logo { height: 17mm; }
 .report__title h1 { font-weight: 900; font-size: 21pt; }

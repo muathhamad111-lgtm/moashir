@@ -66,15 +66,7 @@
   display: grid;
   grid-template-columns: minmax(0, 1fr);
   gap: var(--space-5);
-  inline-size: 100%;
-  max-inline-size: calc(var(--size-container) + var(--space-8) * 2);
-  margin-inline: auto;
   padding-block: var(--space-6) var(--space-10);
-  padding-inline: var(--space-4);
-
-  @include respond-to('md') {
-    padding-inline: var(--space-8);
-  }
 
   > * {
     min-inline-size: 0;
