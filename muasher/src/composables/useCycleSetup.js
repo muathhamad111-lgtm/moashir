@@ -3,9 +3,15 @@ import { useI18n } from 'vue-i18n'
 import { useUnsavedGuard } from '@/composables/useUnsavedGuard'
 import { SETUP_STEPS, attentionStep, lacksInitialAssessor } from '@/utils/award/cycleSetup'
 
-function useSetupSteps(cycle) {
+// An existing cycle may be opened at a given step (`?step=`); otherwise it opens where it needs attention.
+function startingStep(cycle, requested) {
+  const index = SETUP_STEPS.indexOf(requested)
+  return cycle && index >= 0 ? index : SETUP_STEPS.indexOf(attentionStep(cycle))
+}
+
+function useSetupSteps(cycle, requested) {
   const { t } = useI18n()
-  const at = ref(SETUP_STEPS.indexOf(attentionStep(cycle.value)))
+  const at = ref(startingStep(cycle.value, requested))
   const reached = ref(at.value)
   const dirty = ref(false)
   const guard = useUnsavedGuard(dirty, {
@@ -36,8 +42,8 @@ function useSetupSteps(cycle) {
   return { at, stepKey, stepItems, dirty, moveTo, goTo }
 }
 
-export function useCycleSetup(cycle) {
-  const steps = useSetupSteps(cycle)
+export function useCycleSetup(cycle, requestedStep) {
+  const steps = useSetupSteps(cycle, requestedStep)
   const pending = shallowRef({})
   const identityErrors = shallowRef({})
 

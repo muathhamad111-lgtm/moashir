@@ -1,13 +1,12 @@
-import { toCanonicalStatus } from '@/utils/canonicalStatus'
 import { boundTree } from '../assessments/assessmentsStore'
 import {
   computeSelfResult,
   decimalRaw,
   displayPercent,
-  rawPercent,
-  scaleMaximumHundredths,
+  scaleResource,
   scorableUnits,
   unitKey,
+  unitRawPercent,
 } from '../assessments/selfScoring'
 import { boundSubsOf, presentEvidence } from '../accredited/accreditedRecords'
 import { cvBySubId, evidenceList } from '../accredited/accreditedSerializers'
@@ -84,7 +83,7 @@ function scoresByGroup(row, record, units) {
     if (raw === undefined) return
     groups[SCORE_GROUPS[unit.level]][String(unit.id)] = {
       rawValue: decimalRaw(raw),
-      percent: displayPercent(rawPercent(raw, record.scaleKind)),
+      percent: displayPercent(unitRawPercent(raw, unit, record.scaleKind)),
     }
   })
   return groups
@@ -95,10 +94,7 @@ export function committeeScoresResource(row, record) {
   return {
     assignmentId: row.id,
     status: row.status,
-    scale: {
-      kind: toCanonicalStatus(record.scaleKind),
-      maximum: decimalRaw(scaleMaximumHundredths(record.scaleKind)),
-    },
+    scale: scaleResource(record.scaleKind),
     scores: scoresByGroup(row, record, units),
     progress: committeeProgressOf(row, record),
     percent: percentOf(row),

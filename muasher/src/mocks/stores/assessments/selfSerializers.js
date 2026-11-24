@@ -1,7 +1,6 @@
 import { cycleRefOf } from '../award/cycleRef'
 import { SCORE_LEVELS } from '@/constants/assessment'
 import { pathLabelOf } from '../../fixtures/pathLabels'
-import { toCanonicalStatus } from '@/utils/canonicalStatus'
 import { entitySummary } from '../entitySerializers'
 import { findMain, findPoint, findSub } from '../criteriaStore'
 import { boundTree, entityOf, exposesResult, isFrozen, isOpen, sheetOf } from './assessmentsStore'
@@ -16,10 +15,10 @@ import {
   decimalWeight,
   displayEarned,
   displayPercent,
-  rawPercent,
-  scaleMaximumHundredths,
+  scaleResource,
   scorableUnits,
   unitKey,
+  unitRawPercent,
 } from './selfScoring'
 
 function resultSummary(result) {
@@ -63,7 +62,7 @@ function scoresByLevel(record, units) {
     if (raw === undefined) return
     byLevel[unit.level][String(unit.id)] = {
       rawValue: decimalRaw(raw),
-      percent: displayPercent(rawPercent(raw, record.scaleKind)),
+      percent: displayPercent(unitRawPercent(raw, unit, record.scaleKind)),
     }
   })
   return { subs: byLevel[SCORE_LEVELS.SUB], points: byLevel[SCORE_LEVELS.POINT] }
@@ -82,10 +81,7 @@ export function scoresResource(record) {
   const units = scorableUnits(boundTree(record))
   return {
     assessment: assessmentResource(record),
-    scale: {
-      kind: toCanonicalStatus(record.scaleKind),
-      maximum: decimalRaw(scaleMaximumHundredths(record.scaleKind)),
-    },
+    scale: scaleResource(record.scaleKind),
     scores: scoresByLevel(record, units),
     progress: scoringProgressOf(record),
   }

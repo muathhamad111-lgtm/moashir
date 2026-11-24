@@ -1,5 +1,5 @@
 <script setup>
-import { computed } from 'vue'
+import { computed, inject } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useRoute, RouterLink } from 'vue-router'
 import { useHead } from '@unhead/vue'
@@ -19,10 +19,12 @@ import { ROUTE_NAMES } from '@/constants/routeNames'
 import { localizedText } from '@/utils/localizedText'
 import { linkedStatus } from '@/utils/award/linkedStatus'
 import AppIcon from '@/components/ui/AppIcon.vue'
+import { CYCLE_WORKSPACE } from '@/utils/award/cycleWorkspace'
 
 const { t, locale } = useI18n()
 const route = useRoute()
 const cycleId = computed(() => Number(route.params.id))
+const embedded = Boolean(inject(CYCLE_WORKSPACE, null))
 const {
   items,
   status,
@@ -76,17 +78,20 @@ const filterState = { filters: filters.filters, setFilter, sort: filters.sort, s
 
 <template>
   <section class="cycles-page">
-    <header class="cycles-page__header">
+    <header class="cycles-page__header" :class="{ 'is-embedded': embedded }">
       <div>
         <RouterLink
+          v-if="!embedded"
           class="cycle-editor__back"
           :to="{ name: ROUTE_NAMES.AWARD_FILTERING, query: { list: 1 } }"
         >
           <AppIcon name="arrow-left" />
           {{ t('filtering.queue.back') }}
         </RouterLink>
-        <h1 class="cycles-page__title">{{ t('filtering.queue.title') }}</h1>
-        <p v-if="cycle" class="cycles-page__subtitle">
+        <component :is="embedded ? 'h2' : 'h1'" class="cycles-page__title">
+          {{ t('filtering.queue.title') }}
+        </component>
+        <p v-if="cycle && !embedded" class="cycles-page__subtitle">
           {{ localizedText(cycle.name, locale) }} <bdi class="u-ltr">{{ cycle.year }}</bdi>
           <CycleStatusBadge :status="cycle.status" />
         </p>

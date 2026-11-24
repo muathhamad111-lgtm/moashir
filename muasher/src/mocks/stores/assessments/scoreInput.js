@@ -1,7 +1,8 @@
-import { SCORE_LEVELS } from '@/constants/assessment'
+import { SCALE_KINDS, SCORE_LEVELS } from '@/constants/assessment'
 import { EVALUATION_TYPES } from '@/constants/criteria'
 import { assessmentReject, fieldMessage } from './assessmentRejection'
 import {
+  acceptsRawHundredths,
   decimalRaw,
   parseRawHundredths,
   scaleMaximumHundredths,
@@ -15,6 +16,7 @@ const REASON_MAX = 1000
 const NUMERIC = /^-?\d+(?:\.\d+)?$/
 const DECIMAL_0_2 = /^-?\d+(?:\.\d{1,2})?$/
 const GROUPS = { subs: SCORE_LEVELS.SUB, points: SCORE_LEVELS.POINT }
+const UNSTAMPED_CEILING = scaleMaximumHundredths(SCALE_KINDS.RELATIVE)
 
 function isPlainObject(value) {
   return Object.prototype.toString.call(value) === '[object Object]'
@@ -67,7 +69,8 @@ function collectScoresErrors(errors, body, presence, maximum) {
 
 export function validateScoreRequest(body, record, presence) {
   const errors = {}
-  collectScoresErrors(errors, body, presence, scaleMaximumHundredths(record.scaleKind))
+  const ceiling = scaleMaximumHundredths(record.scaleKind) ?? UNSTAMPED_CEILING
+  collectScoresErrors(errors, body, presence, ceiling)
   collectReasonError(errors, body.reason)
   if (Object.keys(errors).length) throw assessmentReject.validation(errors)
   return {
@@ -94,7 +97,8 @@ export function parseScoreSheet(scores, tree, scaleKind) {
   Object.entries(GROUPS).forEach(([group, level]) => {
     Object.entries(scores[group] ?? {}).forEach(([key, value]) => {
       const field = `scores.${group}.${key}`
-      if (!units.has(unitKey(level, key))) {
+      const unit = units.get(unitKey(level, key))
+      if (!unit) {
         reasons[field] =
           level === SCORE_LEVELS.SUB && throughPoints.has(key)
             ? 'score.use_points'
@@ -103,7 +107,7 @@ export function parseScoreSheet(scores, tree, scaleKind) {
       }
       if (value === null) return
       const raw = parseRawHundredths(String(value))
-      if (raw === null || raw > scaleMaximumHundredths(scaleKind))
+      if (raw === null || !acceptsRawHundredths(raw, unit, scaleKind))
         reasons[field] = 'score.out_of_range'
       else sheet.set(unitKey(level, key), raw)
     })

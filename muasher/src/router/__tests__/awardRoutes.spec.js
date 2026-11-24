@@ -55,18 +55,48 @@ describe('award routes — the links of the award notifications', () => {
     expect(await visit('/admin/award/cycles')).toBe(R.AWARD_CYCLES)
     expect(await visit('/admin/award/cycles/new')).toBe(R.AWARD_CYCLE_NEW)
     expect(await visit('/admin/award/cycles/31')).toBe(R.AWARD_CYCLE)
-    expect(await visit('/admin/award/cycles/31/setup')).toBe(R.AWARD_CYCLE)
+    expect(await visit('/admin/award/cycles/31/setup')).toBe(R.AWARD_CYCLE_SETUP)
     signIn([ROLES.REQUEST_FOLLOWER])
     expect(await visit('/admin/award/cycles/31')).toBe(R.AWARD_CYCLE)
+    expect(await visit('/admin/award/cycles/31/setup')).toBe(R.AWARD_CYCLE_SETUP)
     expect(await visit('/admin/award/cycles/new')).toBe(R.ERRORS_FORBIDDEN)
   })
 
-  it('sends the old cycle page to its setup wizard and keeps the query (B2)', async () => {
+  it('opens the cycle page from a notice link instead of the setup wizard, keeping the query (B2.1)', async () => {
     signIn([ROLES.SYSTEM_ADMIN])
-    expect((await landOn('/admin/award/cycles/31?from=notice')).fullPath).toBe(
-      '/admin/award/cycles/31/setup?from=notice',
-    )
+    const cyclePage = await landOn('/admin/award/cycles/31?from=notice')
+    expect(cyclePage.fullPath).toBe('/admin/award/cycles/31?from=notice')
+    expect(cyclePage.name).toBe(R.AWARD_CYCLE)
+    expect((await landOn('/admin/award/cycles/31/setup?step=dates')).query).toEqual({
+      step: 'dates',
+    })
     expect((await landOn('/admin/award/cycles/new')).fullPath).toBe('/admin/award/cycles/new')
+  })
+
+  it('opens every stage of a cycle inside the one cycle page', async () => {
+    signIn([ROLES.AWARD_SECRETARY])
+    for (const stage of [
+      '',
+      '/filtering',
+      '/committee',
+      '/secretary',
+      '/results',
+      '/results/national',
+    ]) {
+      const landed = await landOn(`/admin/award/cycles/31${stage}`)
+      expect(landed.matched[0].path).toBe('/admin/award/cycles/:id(\\d+)')
+      expect(landed.matched).toHaveLength(2)
+    }
+    const standalone = {
+      '/setup': R.AWARD_CYCLE_SETUP,
+      '/filtering/9205': R.AWARD_FILTERING_DETAIL,
+      '/secretary/9205': R.AWARD_SECRETARY_REVIEW,
+    }
+    for (const [page, name] of Object.entries(standalone)) {
+      const landed = await landOn(`/admin/award/cycles/31${page}`)
+      expect(landed.name).toBe(name)
+      expect(landed.matched).toHaveLength(1)
+    }
   })
 
   it('gives the filtering screens to the filtering readers only and denies unknown permission keys', async () => {

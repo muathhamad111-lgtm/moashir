@@ -1,6 +1,7 @@
 export const COMMITTEE_SCENARIOS = {
   QUALIFIED: 'qualified',
   COMMITTEE: 'committee',
+  COMMITTEE_UNSTAMPED: 'committee-unstamped',
   RESULTS: 'results',
   ANNOUNCED: 'announced',
 }
@@ -37,6 +38,35 @@ const NOTE = 'وصف المنهجية واضح ومدعوم بالشواهد، �
 const GENERAL_NOTE = 'أداء مؤسسي متوازن مع فرص تحسين في التحول الرقمي وقياس رضا المستفيدين.'
 const OPINION = 'أرى أن المتوسط يعكس مستوى الجهة بدقة، مع ملاحظة تميزها في الحوكمة والشفافية.'
 
+const COMMITTEE_PLAN = {
+  cycle: { status: 'committee-assessment', committeeStarted: true, offsets: ACTIVE_OFFSETS },
+  seated: true,
+  records: {
+    aboveThreshold: {
+      status: 'under-committee-assessment',
+      rows: [
+        { status: 'in-progress', values: STRONG, count: 4, note: NOTE },
+        { status: 'not-started' },
+        { status: 'completed', values: SOUND, generalNote: GENERAL_NOTE },
+      ],
+    },
+    belowThreshold: { status: 'awaiting-secretary-approval', rows: ALL_DONE },
+    underInitialAssessment: {
+      status: 'committee-discussion',
+      rows: MIXED,
+      discussion: { mode: 'session', deadlineOffset: 5, opinion: OPINION },
+    },
+  },
+}
+
+const UNSTAMPED_COMMITTEE_PLAN = {
+  ...COMMITTEE_PLAN,
+  records: {
+    ...COMMITTEE_PLAN.records,
+    aboveThreshold: { ...COMMITTEE_PLAN.records.aboveThreshold, unstamped: true },
+  },
+}
+
 export const SCENARIO_PLANS = {
   [COMMITTEE_SCENARIOS.QUALIFIED]: {
     cycle: {
@@ -50,26 +80,8 @@ export const SCENARIO_PLANS = {
       belowThreshold: { status: 'qualified-for-committee' },
     },
   },
-  [COMMITTEE_SCENARIOS.COMMITTEE]: {
-    cycle: { status: 'committee-assessment', committeeStarted: true, offsets: ACTIVE_OFFSETS },
-    seated: true,
-    records: {
-      aboveThreshold: {
-        status: 'under-committee-assessment',
-        rows: [
-          { status: 'in-progress', values: STRONG, count: 4, note: NOTE },
-          { status: 'not-started' },
-          { status: 'completed', values: SOUND, generalNote: GENERAL_NOTE },
-        ],
-      },
-      belowThreshold: { status: 'awaiting-secretary-approval', rows: ALL_DONE },
-      underInitialAssessment: {
-        status: 'committee-discussion',
-        rows: MIXED,
-        discussion: { mode: 'session', deadlineOffset: 5, opinion: OPINION },
-      },
-    },
-  },
+  [COMMITTEE_SCENARIOS.COMMITTEE]: COMMITTEE_PLAN,
+  [COMMITTEE_SCENARIOS.COMMITTEE_UNSTAMPED]: UNSTAMPED_COMMITTEE_PLAN,
   [COMMITTEE_SCENARIOS.RESULTS]: {
     cycle: {
       status: 'awaiting-secretary',

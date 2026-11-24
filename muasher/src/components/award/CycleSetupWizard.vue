@@ -1,7 +1,7 @@
 <script setup>
 import { computed, provide, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { useRouter } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import Card from '@/components/ui/Card.vue'
 import WizardStepper from '@/components/wizard/WizardStepper.vue'
 import CycleSetupStepForm from './CycleSetupStepForm.vue'
@@ -11,6 +11,8 @@ import CycleStaffPanel from './CycleStaffPanel.vue'
 import CycleStepCounter from './CycleStepCounter.vue'
 import { useCycleSetup } from '@/composables/useCycleSetup'
 import { useCycleStaff } from '@/composables/useCycleStaff'
+import { useCycleCommittee } from '@/composables/useCycleCommittee'
+import { useCycleCommitteeSelection } from '@/composables/useCycleCommitteeSelection'
 import { useCycleAuthority } from '@/composables/useCycleAuthority'
 import { useToast } from '@/composables/useToast'
 import { CYCLE_STATUSES } from '@/constants/advanced'
@@ -19,18 +21,18 @@ import { SETUP_STEPS, SETUP_STEP_FIELDS, STEP_COUNTER, isFormStep } from '@/util
 
 const props = defineProps({
   editor: { type: Object, required: true },
-  transitions: { type: Object, required: true },
   reasonExtra: { type: Function, required: true },
-  canReopen: { type: Boolean, default: false },
 })
 
-const emit = defineEmits(['reopen'])
 const { t } = useI18n()
 const router = useRouter()
+const route = useRoute()
 const toast = useToast()
 const { cycle, regions } = props.editor
-const setup = useCycleSetup(cycle)
-const staff = useCycleStaff({ editor: props.editor, reasonExtra: props.reasonExtra })
+const setup = useCycleSetup(cycle, route.query.step)
+const roster = useCycleCommittee(cycle)
+const committee = useCycleCommitteeSelection({ cycle, roster })
+const staff = useCycleStaff({ editor: props.editor, reasonExtra: props.reasonExtra, committee })
 const { isSystemAdministrator, canCreate } = useCycleAuthority()
 
 const editable = computed(() =>
@@ -74,12 +76,16 @@ function onNext(detail) {
 function onCreated(detail) {
   props.editor.apply(detail)
   setup.created()
-  router.replace({ name: ROUTE_NAMES.AWARD_CYCLE, params: { id: detail.id } })
+  router.replace({ name: ROUTE_NAMES.AWARD_CYCLE_SETUP, params: { id: detail.id } })
+}
+
+function showCycle() {
+  router.push({ name: ROUTE_NAMES.AWARD_CYCLE, params: { id: cycle.value.id } })
 }
 
 function saveDraft() {
   toast.success(t('cycles.setup.draftSaved'))
-  router.push({ name: ROUTE_NAMES.AWARD_CYCLES })
+  showCycle()
 }
 </script>
 
@@ -114,7 +120,12 @@ function saveDraft() {
       />
     </Card>
     <div v-else-if="onTeam" class="cycle-setup__team">
-      <CycleStaffPanel v-if="cycle.revealsStaff" :staff="staff" :editable="editable" />
+      <CycleStaffPanel
+        v-if="cycle.revealsStaff"
+        :staff="staff"
+        :committee="committee"
+        :editable="editable"
+      />
       <template v-else>
         <h2 class="cycle-summary__title">
           {{ t('cycles.setup.steps.team') }}
@@ -133,12 +144,11 @@ function saveDraft() {
       v-else
       :cycle="cycle"
       :regions-total="regions.length"
-      :transitions="transitions"
-      :can-reopen="canReopen"
+      :committee="roster.names.value"
       @edit="setup.goToStep"
       @previous="setup.previous"
-      @reopen="emit('reopen')"
       @save-draft="saveDraft"
+      @finish="showCycle"
     />
   </div>
 </template>

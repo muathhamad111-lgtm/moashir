@@ -31,9 +31,7 @@ const cv = computed(() => evaluation.value.cv[String(props.sub.id)] ?? '')
 const files = computed(() => evidenceOfSub(evaluation.value.evidence, props.sub.id))
 const typeOf = (node) => props.workspace.scoreSheet.typeOf(node)
 const units = computed(() =>
-  usesPoints.value
-    ? props.sub.points.map((point) => unitOf(SCORE_LEVELS.POINT, point))
-    : [unitOf(SCORE_LEVELS.SUB, props.sub)],
+  props.workspace.state.units.value.filter((unit) => unit.subId === props.sub.id),
 )
 const note = computed(() => props.workspace.notes.noteOf(props.sub.id))
 const noteError = computed(() =>
@@ -41,14 +39,6 @@ const noteError = computed(() =>
     ? t('award.common.maxChars', { max: COMMITTEE_LIMITS.NOTE_MAX })
     : '',
 )
-
-function unitOf(level, node) {
-  return {
-    level,
-    id: node.id,
-    label: level === SCORE_LEVELS.POINT ? node.description : node.name,
-  }
-}
 
 function text(content) {
   return localizedText(content, locale.value)

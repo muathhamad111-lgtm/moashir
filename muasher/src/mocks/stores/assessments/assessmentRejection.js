@@ -41,7 +41,8 @@ export const assessmentReject = {
       fields: Object.fromEntries(
         missing.map((unit) => [`scores.${unit.level}s.${unit.id}`, single('scores.item_missing')]),
       ),
-      meta: { missing },
+      // The API sends only level, id and code (ScorableUnit::toArray), whatever the units carry here.
+      meta: { missing: missing.map(({ level, id, code }) => ({ level, id, code })) },
     }),
   requestOpen: (assessmentId) =>
     new MockRejection(409, 'accredited.request_open', { meta: { assessmentId } }),

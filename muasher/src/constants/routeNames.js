@@ -36,6 +36,7 @@ export const ROUTE_NAMES = {
   REQUESTS_EVIDENCE_BUNDLE: 'requests.evidenceBundle',
   AWARD_CYCLES: 'award.cycles',
   AWARD_CYCLE: 'award.cycle',
+  AWARD_CYCLE_SETUP: 'award.cycle.setup',
   AWARD_CYCLE_NEW: 'award.cycle.new',
   AWARD_FILTERING_QUEUE: 'award.filtering.queue',
   AWARD_FILTERING_DETAIL: 'award.filtering.detail',

@@ -1,4 +1,4 @@
-import { EVALUATION_TYPES } from '@/constants/criteria'
+import { EVALUATION_TYPES, SCORING_TYPES } from '@/constants/criteria'
 
 export const criteriaSeedLabel = {
   ar: 'نموذج التميز المؤسسي - الإصدار الأول',
@@ -168,6 +168,7 @@ export const criteriaSeedFixture = [
         weight: '250.00',
         distributeEqually: false,
         evaluationType: EVALUATION_TYPES.DIRECT,
+        scoringType: SCORING_TYPES.ACHIEVEMENT,
         hasCv: true,
         attachments: [
           {

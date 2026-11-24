@@ -104,7 +104,7 @@ function seedTree() {
         weight: toHundredths(seedSub.weight),
         distributeEqually: seedSub.distributeEqually,
         evaluationType: seedSub.evaluationType,
-        scoringType: SEED_SCORING_TYPE,
+        scoringType: seedSub.scoringType ?? SEED_SCORING_TYPE,
         defaultPointScoringType: SEED_SCORING_TYPE,
         hasCv: seedSub.hasCv,
         assessorNoteLabel: null,

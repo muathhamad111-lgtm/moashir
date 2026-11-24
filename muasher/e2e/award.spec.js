@@ -324,6 +324,8 @@ test.describe('Award staff screens', () => {
     }
     await expect(page.locator('.cycle-staff')).toBeVisible()
     await page.locator('.cycle-setup__next').click()
+    await page.locator('[data-testid="cycle-save-draft"]').click()
+    await expect(page).toHaveURL(/\/admin\/award\/cycles\/\d+$/)
     await expect(page.locator('.cycle-actions')).toContainText(
       text(testInfo, 'Submissions cannot open yet', 'لا يمكن فتح التقديم بعد'),
     )
@@ -337,11 +339,15 @@ test.describe('Award staff screens', () => {
   }, testInfo) => {
     await signIn(page, testInfo, USERS.systemAdmin)
     await page.goto('/admin/award/cycles/31')
+    await expect(page).toHaveURL(/\/admin\/award\/cycles\/31$/)
+    await page.locator('[data-testid="cycle-edit"]').click()
     await expect(page).toHaveURL(/\/admin\/award\/cycles\/31\/setup$/)
     await page.locator('.cycle-summary__section[data-step="dates"] .btn').click()
     await expect(page.locator('input[name="submissionStart"]')).toBeDisabled()
     await expect(page.locator('input[name="submissionEnd"]')).toBeEnabled()
     await page.locator('.wizard__button').last().click()
+    await page.locator('[data-testid="cycle-finish"]').click()
+    await expect(page).toHaveURL(/\/admin\/award\/cycles\/31$/)
     await page
       .locator('.cycle-actions button', {
         hasText: text(testInfo, 'Close submissions', 'إغلاق التقديم'),
@@ -388,11 +394,15 @@ test.describe('Award staff screens', () => {
     // One cycle in progress: the picker opens it directly (phase 1).
     await expect(page).toHaveURL(/\/admin\/award\/cycles\/31\/filtering/)
     await expect(page).toHaveURL(/\/admin\/award\/cycles\/31\/filtering$/)
+    await expect(page.locator('.cycle-tabs__tab.is-active')).toHaveAttribute(
+      'data-tab',
+      'filtering',
+    )
     const rows = page.locator('.table:not(.table--loading) tbody .table__row')
     await expect(rows).toHaveCount(2)
     await expect(page.locator('.filtering-threshold')).toContainText('60.00')
     // Decisions are open while submissions are open (operator, 2026-11-22): no window notice.
-    await expect(page.locator('.assessment-notice')).toHaveCount(0)
+    await expect(page.locator('.cycles-page .assessment-notice')).toHaveCount(0)
     await shot(page, 'award-filtering-queue', testInfo)
     await rows.last().locator('.cycle-table__link').click()
     await expect(page.locator('.request-facts')).toBeVisible()
@@ -402,7 +412,7 @@ test.describe('Award staff screens', () => {
     await expect(page.locator('.filtering-actions .btn--primary')).toBeEnabled()
     await shot(page, 'award-filtering-detail', testInfo)
     await page.goto('/admin/award/cycles/30/filtering')
-    await expect(page.locator('.assessment-notice').first()).toContainText(
+    await expect(page.locator('.cycles-page .assessment-notice').first()).toContainText(
       text(testInfo, 'Filtering has ended', 'انتهت مرحلة التصفية'),
     )
     expect(errors).toEqual([])
@@ -425,9 +435,11 @@ test.describe('Award staff screens', () => {
     await expect(page.locator('.cycle-setup__title-row')).toContainText(
       text(testInfo, 'Submissions closed', 'التقديم مغلق'),
     )
-    await page
-      .locator('.cycle-actions a', { hasText: text(testInfo, 'Open the filtering', 'فتح التصفية') })
-      .click()
+    await page.locator('.cycle-tabs__tab[data-tab="filtering"]').click()
+    await expect(page).toHaveURL(/\/admin\/award\/cycles\/31\/filtering$/)
+    await expect(page.locator('.cycle-setup__title-row')).toContainText(
+      text(testInfo, 'Submissions closed', 'التقديم مغلق'),
+    )
     await page
       .locator('.table__row', { hasText: 'ADV-' })
       .filter({ has: page.locator('.badge--danger') })

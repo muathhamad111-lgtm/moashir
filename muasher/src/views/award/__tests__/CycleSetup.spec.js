@@ -6,6 +6,7 @@ import AppCombobox from '@/components/form/AppCombobox.vue'
 import { createTestGlobals } from '@/test-utils'
 import { sessionUserFor } from '@/test-utils/session'
 import { useAuthStore } from '@/stores/auth'
+import { useToast } from '@/composables/useToast'
 import { formatHijriDate, startOfRiyadhDay } from '@/utils/datetime'
 
 const service = vi.hoisted(() => ({
@@ -18,8 +19,15 @@ const service = vi.hoisted(() => ({
   syncInitialAssessors: vi.fn(),
 }))
 const confirm = vi.hoisted(() => vi.fn())
+const committee = vi.hoisted(() => ({
+  listMembers: vi.fn(),
+  listCandidates: vi.fn(),
+  appoint: vi.fn(),
+  remove: vi.fn(),
+}))
 
 vi.mock('@/services/awardCycleService', () => ({ awardCycleService: service }))
+vi.mock('@/services/committeeService', () => ({ committeeService: committee }))
 vi.mock('@/services/regionsService', () => ({
   regionsService: {
     listRegions: vi.fn().mockResolvedValue({
@@ -87,6 +95,10 @@ async function mountSetup(path) {
   return { wrapper, router: globals.router }
 }
 
+function comboboxNamed(wrapper, name) {
+  return wrapper.findAllComponents(AppCombobox).find((box) => box.props('name') === name)
+}
+
 function fieldOf(wrapper, name) {
   return wrapper.findAll('.field').find((candidate) => candidate.find(`[name="${name}"]`).exists())
 }
@@ -127,6 +139,9 @@ beforeEach(() => {
     },
   })
   confirm.mockResolvedValue(false)
+  committee.listMembers.mockResolvedValue({ data: [], meta: { canManage: true } })
+  committee.listCandidates.mockResolvedValue({ data: [{ id: 27, name: 'David Nguyen' }] })
+  committee.appoint.mockResolvedValue({ data: {} })
 })
 
 afterEach(() => {
@@ -144,6 +159,7 @@ describe('CycleSetup — create (R-4)', () => {
     )
     expect(wrapper.find('.cycle-setup__counter').exists()).toBe(false)
     expect(wrapper.find('legend .cycle-setup__step-counter').text()).toBe('(الخطوة 1 من 7)')
+    expect(wrapper.find('.cycle-actions').exists()).toBe(false)
 
     await submitStep(wrapper)
     await vi.waitFor(() => expect(wrapper.find('.field__error').exists()).toBe(true))
@@ -194,6 +210,69 @@ describe('CycleSetup — create (R-4)', () => {
 })
 
 describe('CycleSetup — edit', () => {
+  it('leaves the stage actions to the cycle page on every step', async () => {
+    service.get.mockResolvedValue({
+      data: detail({ status: 'submission-open', initialAssessors: [ASSESSOR] }),
+    })
+    const { wrapper } = await mountSetup('/admin/award/cycles/32/setup')
+    expect(wrapper.find('.cycle-summary').exists()).toBe(true)
+    expect(wrapper.find('.cycle-actions').exists()).toBe(false)
+    await wrapper.findAll('.wizard__button')[0].trigger('click')
+    await flushPromises()
+    expect(stepForm(wrapper, 'identity').exists()).toBe(true)
+    expect(wrapper.find('.cycle-actions').exists()).toBe(false)
+    expect(wrapper.text()).not.toContain('إغلاق التقديم')
+  })
+
+  it('leads back to the cycle page from an existing cycle and to the list from a new one', async () => {
+    service.get.mockResolvedValue({ data: detail({ initialAssessors: [ASSESSOR] }) })
+    const existing = await mountSetup('/admin/award/cycles/32/setup')
+    const back = existing.wrapper.find('.cycle-editor__back')
+    expect(back.attributes('href')).toBe('/admin/award/cycles/32')
+    expect(back.text()).toContain('العودة إلى الدورة')
+    existing.wrapper.unmount()
+    const fresh = await mountSetup('/admin/award/cycles/new')
+    expect(fresh.wrapper.find('.cycle-editor__back').attributes('href')).toBe('/admin/award/cycles')
+  })
+
+  it('opens an existing cycle at the step named in the link', async () => {
+    service.get.mockResolvedValue({ data: detail({ initialAssessors: [ASSESSOR] }) })
+    const dates = await mountSetup('/admin/award/cycles/32/setup?step=dates')
+    expect(stepForm(dates.wrapper, 'dates').exists()).toBe(true)
+    expect(dates.wrapper.find('legend .cycle-setup__step-counter').text()).toBe('(الخطوة 2 من 7)')
+    dates.wrapper.unmount()
+    const unknown = await mountSetup('/admin/award/cycles/32/setup?step=elsewhere')
+    expect(unknown.wrapper.find('.cycle-summary').exists()).toBe(true)
+    unknown.wrapper.unmount()
+    const fresh = await mountSetup('/admin/award/cycles/new?step=dates')
+    expect(stepForm(fresh.wrapper, 'identity').exists()).toBe(true)
+  })
+
+  it('saves the draft and opens the cycle page', async () => {
+    service.get.mockResolvedValue({ data: detail({ initialAssessors: [ASSESSOR] }) })
+    const { wrapper, router } = await mountSetup('/admin/award/cycles/32/setup')
+    expect(wrapper.find('[data-testid="cycle-finish"]').exists()).toBe(false)
+    await wrapper.find('[data-testid="cycle-save-draft"]').trigger('click')
+    await vi.waitFor(() =>
+      expect(router.currentRoute.value.fullPath).toBe('/admin/award/cycles/32'),
+    )
+    expect(useToast().toasts.map((item) => item.message)).toContain('حُفظت الدورة مسودةً.')
+  })
+
+  it('goes back to the cycle page from the review of a running cycle', async () => {
+    service.get.mockResolvedValue({
+      data: detail({ status: 'submission-open', initialAssessors: [ASSESSOR] }),
+    })
+    const { wrapper, router } = await mountSetup('/admin/award/cycles/32/setup')
+    expect(wrapper.find('[data-testid="cycle-save-draft"]').exists()).toBe(false)
+    const finish = wrapper.find('[data-testid="cycle-finish"]')
+    expect(finish.text()).toBe('العودة إلى الدورة')
+    await finish.trigger('click')
+    await vi.waitFor(() =>
+      expect(router.currentRoute.value.fullPath).toBe('/admin/award/cycles/32'),
+    )
+  })
+
   it('opens at the team while no active initial assessor is linked, otherwise at the review', async () => {
     service.get.mockResolvedValue({ data: detail() })
     const draft = await mountSetup('/admin/award/cycles/32/setup')
@@ -218,14 +297,59 @@ describe('CycleSetup — edit', () => {
     expect(wrapper.find('.cycle-staff').exists()).toBe(true)
     expect(wrapper.find('.cycle-staff button.btn--secondary').exists()).toBe(false)
     expect(wrapper.find('.cycle-staff .cycle-setup__step-counter').text()).toBe('(الخطوة 6 من 7)')
-    wrapper.findAllComponents(AppCombobox).at(-1).vm.$emit('update:modelValue', [10])
+    comboboxNamed(wrapper, 'staff-initial_assessor').vm.$emit('update:modelValue', [10])
     await flushPromises()
     await wrapper.find('.cycle-setup__next').trigger('click')
     await vi.waitFor(() =>
       expect(service.syncInitialAssessors).toHaveBeenCalledWith(32, { assessorIds: [10] }),
     )
     expect(service.syncMembers).not.toHaveBeenCalled()
+    expect(committee.appoint).not.toHaveBeenCalled()
     await vi.waitFor(() => expect(wrapper.find('.cycle-summary').exists()).toBe(true))
+  })
+
+  it('appoints the chosen committee assessors with the team and lists them on the review', async () => {
+    service.get.mockResolvedValue({ data: detail() })
+    service.syncInitialAssessors.mockResolvedValue({
+      data: detail({ initialAssessors: [ASSESSOR], updatedAt: '2026-11-23T11:00:00Z' }),
+    })
+    const { wrapper } = await mountSetup('/admin/award/cycles/32/setup')
+    const field = wrapper.find('[data-testid="cycle-committee"]')
+    expect(field.text()).toContain('مقيّمو اللجنة')
+    expect(field.text()).toContain('اختياري، ويمكن تعيينهم لاحقًا من تبويب لجنة المقيّمين.')
+    expect(committee.listMembers).toHaveBeenCalledWith(32)
+    expect(committee.listCandidates).toHaveBeenCalledWith(32, {})
+    expect(comboboxNamed(wrapper, 'staff-committee').props('disabled')).toBe(false)
+    comboboxNamed(wrapper, 'staff-initial_assessor').vm.$emit('update:modelValue', [10])
+    comboboxNamed(wrapper, 'staff-committee').vm.$emit('update:modelValue', [27])
+    await flushPromises()
+    committee.listMembers.mockResolvedValue({
+      data: [{ id: 5, user: { id: 27, name: 'David Nguyen' }, status: 'active' }],
+      meta: { canManage: true },
+    })
+    await wrapper.find('.cycle-setup__next').trigger('click')
+    await vi.waitFor(() => expect(committee.appoint).toHaveBeenCalledWith(32, { userId: 27 }))
+    await vi.waitFor(() => expect(wrapper.find('.cycle-summary').exists()).toBe(true))
+    const team = wrapper.find('.cycle-summary__section[data-step="team"]')
+    expect(team.text()).toContain('مقيّمو اللجنة')
+    expect(team.text()).toContain('David Nguyen')
+  })
+
+  it('keeps the committee read only once the committee assessment started', async () => {
+    service.get.mockResolvedValue({
+      data: detail({ status: 'committee-assessment', initialAssessors: [ASSESSOR] }),
+    })
+    const { wrapper } = await mountSetup('/admin/award/cycles/32/setup')
+    expect(wrapper.find('.cycle-summary__section[data-step="team"]').text()).toContain(
+      'لم يُعيَّن بعد',
+    )
+    await wrapper.findAll('.wizard__button')[5].trigger('click')
+    await flushPromises()
+    expect(comboboxNamed(wrapper, 'staff-committee').props('disabled')).toBe(true)
+    expect(wrapper.find('[data-testid="cycle-committee-locked"]').text()).toContain(
+      'تُدار اللجنة من تبويب لجنة المقيّمين',
+    )
+    expect(committee.listCandidates).not.toHaveBeenCalled()
   })
 
   it('stops on a refused team change and shows the conflict on its field', async () => {
@@ -239,9 +363,8 @@ describe('CycleSetup — edit', () => {
     }
     service.syncMembers.mockRejectedValue(conflict)
     const { wrapper } = await mountSetup('/admin/award/cycles/32/setup')
-    const comboboxes = wrapper.findAllComponents(AppCombobox)
-    comboboxes.at(1).vm.$emit('update:modelValue', [10])
-    comboboxes.at(-1).vm.$emit('update:modelValue', [10])
+    comboboxNamed(wrapper, 'staff-award_secretary').vm.$emit('update:modelValue', [10])
+    comboboxNamed(wrapper, 'staff-initial_assessor').vm.$emit('update:modelValue', [10])
     await flushPromises()
     await wrapper.find('.cycle-setup__next').trigger('click')
     await vi.waitFor(() => expect(service.syncMembers).toHaveBeenCalledTimes(1))
@@ -299,6 +422,7 @@ describe('CycleSetup — edit', () => {
       }),
     })
     const { wrapper } = await mountSetup('/admin/award/cycles/32/setup')
+    expect(wrapper.find('.cycle-summary').exists()).toBe(true)
     await wrapper.findAll('.wizard__button')[1].trigger('click')
     await flushPromises()
     expect(lockStateOf(wrapper, 'submissionStart')).toEqual([true, true, true, true])

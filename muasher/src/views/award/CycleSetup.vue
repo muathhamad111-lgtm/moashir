@@ -11,10 +11,7 @@ import AppIcon from '@/components/ui/AppIcon.vue'
 import CycleStatusBadge from '@/components/award/CycleStatusBadge.vue'
 import CycleSetupWizard from '@/components/award/CycleSetupWizard.vue'
 import { useCycleEditor } from '@/composables/useCycleEditor'
-import { useCycleTransitions } from '@/composables/useCycleTransitions'
-import { useCycleAuthority } from '@/composables/useCycleAuthority'
 import { useSuperAdminReason } from '@/composables/useSuperAdminReason'
-import { AWARD_LIMITS } from '@/constants/advanced'
 import { ROUTE_NAMES } from '@/constants/routeNames'
 import { localizedText } from '@/utils/localizedText'
 
@@ -24,15 +21,18 @@ const cycleId = computed(() => (route.params.id ? Number(route.params.id) : null
 const editor = useCycleEditor(cycleId)
 const { status, errorMessage, cycle } = editor
 const { prompt: reasonPrompt, reasonExtra } = useSuperAdminReason()
-const transitions = useCycleTransitions({ editor, reasonExtra })
-const { canReopen } = useCycleAuthority()
-const reopenOpen = ref(false)
 const loads = ref(0)
 
 const title = computed(() =>
   cycle.value
     ? `${localizedText(cycle.value.name, locale.value)} ${cycle.value.year ?? ''}`.trim()
     : t('cycles.setup.newTitle'),
+)
+
+const backTo = computed(() =>
+  cycleId.value
+    ? { name: ROUTE_NAMES.AWARD_CYCLE, params: { id: cycleId.value } }
+    : { name: ROUTE_NAMES.AWARD_CYCLES },
 )
 
 useHead({ title: () => title.value })
@@ -51,9 +51,9 @@ watch(cycleId, (id) => {
 <template>
   <section class="cycle-setup">
     <header class="cycle-setup__header">
-      <RouterLink class="cycle-editor__back" :to="{ name: ROUTE_NAMES.AWARD_CYCLES }">
+      <RouterLink class="cycle-editor__back" :to="backTo">
         <AppIcon name="arrow-left" />
-        {{ t('cycles.editor.back') }}
+        {{ cycleId ? t('cycles.setup.backToCycle') : t('cycles.editor.back') }}
       </RouterLink>
       <div class="cycle-setup__title-row">
         <h1 class="cycle-setup__title">
@@ -76,30 +76,13 @@ watch(cycleId, (id) => {
       :title="t('cycles.editor.blockedTitle')"
       :message="errorMessage || t('cycles.editor.blockedMessage')"
     />
-    <CycleSetupWizard
-      v-else
-      :key="loads"
-      :editor="editor"
-      :transitions="transitions"
-      :reason-extra="reasonExtra"
-      :can-reopen="canReopen"
-      @reopen="reopenOpen = true"
-    />
+    <CycleSetupWizard v-else :key="loads" :editor="editor" :reason-extra="reasonExtra" />
     <ReasonDialog
       v-model="reasonPrompt.open.value"
       :title="t('cycles.reason.title')"
       :submit-label="t('actions.confirm')"
       :action="reasonPrompt.provide"
       action-name="cycles.superAdminReason"
-    />
-    <ReasonDialog
-      v-model="reopenOpen"
-      :title="t('cycles.actions.reopen.title')"
-      :subtitle="t('cycles.actions.reopen.message')"
-      :submit-label="t('cycles.actions.reopen.confirm')"
-      :min-length="AWARD_LIMITS.REOPEN_REASON_MIN"
-      :action="transitions.reopen"
-      action-name="cycles.reopen"
     />
   </section>
 </template>

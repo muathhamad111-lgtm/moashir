@@ -4,10 +4,12 @@ import { useI18n } from 'vue-i18n'
 import Card from '@/components/ui/Card.vue'
 import AppCombobox from '@/components/form/AppCombobox.vue'
 import CycleStepCounter from './CycleStepCounter.vue'
+import CycleCommitteeField from './CycleCommitteeField.vue'
 import { CANDIDATE_ROLES, MEMBER_ROLES } from '@/constants/advanced'
 
 const props = defineProps({
   staff: { type: Object, required: true },
+  committee: { type: Object, required: true },
   editable: { type: Boolean, default: false },
 })
 
@@ -58,5 +60,6 @@ onMounted(() => {
         @update:model-value="staff.select(CANDIDATE_ROLES.INITIAL_ASSESSOR, $event)"
       />
     </section>
+    <CycleCommitteeField :committee="committee" :editable="editable" />
   </Card>
 </template>

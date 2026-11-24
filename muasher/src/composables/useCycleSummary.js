@@ -3,11 +3,12 @@ import { useI18n } from 'vue-i18n'
 import { formatRiyadhDate } from '@/utils/datetime'
 import { localizedText } from '@/utils/localizedText'
 import { summarySections } from '@/utils/award/cycleSummary'
+import { overviewFacts, detailGroups } from '@/utils/award/cycleOverview'
 
-export function useCycleSummary(cycle, regionsTotal) {
+function useCycleFormat(regionsTotal) {
   const { t, locale } = useI18n()
 
-  function formatter() {
+  return function formatter() {
     const empty = t('cycles.setup.review.empty')
     const plain = (value) =>
       value === null || value === undefined || value === '' ? empty : String(value)
@@ -24,6 +25,19 @@ export function useCycleSummary(cycle, regionsTotal) {
       list: (names) => names.filter(Boolean).join(t('common.listSeparator')) || empty,
     }
   }
+}
 
-  return computed(() => summarySections(toValue(cycle), formatter()))
+export function useCycleSummary(cycle, regionsTotal, committee) {
+  const formatter = useCycleFormat(regionsTotal)
+  return computed(() => summarySections(toValue(cycle), formatter(), toValue(committee)))
+}
+
+// The view page: the key facts on top, then the remaining sections grouped into compact cards.
+export function useCycleOverview(cycle, regionsTotal, committee) {
+  const formatter = useCycleFormat(regionsTotal)
+  const facts = computed(() => overviewFacts(toValue(cycle), formatter()))
+  const groups = computed(() =>
+    detailGroups(summarySections(toValue(cycle), formatter(), toValue(committee)), formatter()),
+  )
+  return { facts, groups }
 }

@@ -1,11 +1,14 @@
 import { readCookie } from '../../contract/cookies'
 import { versionTree } from '../criteriaSerializers'
 import { findVersion } from '../criteriaStore'
+import { isAchievement } from '@/utils/assessments/scoringTypes'
 import {
+  ACHIEVED_HUNDREDTHS,
   computeSelfResult,
   displayPercent,
   parseRawHundredths,
   scorableUnits,
+  stampedTypeOf,
   unitKey,
 } from '../assessments/selfScoring'
 import { ACTORS, transition } from '../assessments/statusHistory'
@@ -34,13 +37,19 @@ export function activeScenario() {
   return typeof document === 'undefined' ? null : readCookie(MOCK_SCENARIO_COOKIE)
 }
 
-function scoresFrom(tree, values, count = null) {
+function seededRaw(unit, value, scaleKind) {
+  const raw = parseRawHundredths(value)
+  if (!isAchievement(stampedTypeOf(unit, scaleKind))) return raw
+  return raw > 0 ? ACHIEVED_HUNDREDTHS : 0
+}
+
+function scoresFrom(tree, scaleKind, { values, count = null }) {
   const units = scorableUnits(tree)
   const scored = count === null ? units : units.slice(0, count)
   return Object.fromEntries(
     scored.map((unit, index) => [
       unitKey(unit.level, unit.id),
-      parseRawHundredths(values[index % values.length]),
+      seededRaw(unit, values[index % values.length], scaleKind),
     ]),
   )
 }
@@ -62,7 +71,7 @@ function shiftCycle(cycle, plan, anchor) {
 
 function completeInitialStage(record, tree, anchor) {
   if (record.result) return
-  record.scores = scoresFrom(tree, ['8.00', '7.50', '8.50', '7.00'])
+  record.scores = scoresFrom(tree, record.scaleKind, { values: ['8.00', '7.50', '8.50', '7.00'] })
   record.result = {
     version: 1,
     criteriaVersionId: record.criteriaVersionId,
@@ -127,7 +136,7 @@ function seatsOf(cycle, anchor) {
 }
 
 function rowOf(seat, record, tree, spec, anchor) {
-  const scores = spec.values ? scoresFrom(tree, spec.values, spec.count ?? null) : {}
+  const scores = spec.values ? scoresFrom(tree, record.scaleKind, spec) : {}
   const completed = spec.status === 'completed'
   const percent = completed
     ? computeSelfResult(tree, new Map(Object.entries(scores)), record.scaleKind).percent
@@ -156,6 +165,7 @@ function applyRecordPlan(record, plan, seats, anchor) {
   const tree = versionTree(findVersion(record.criteriaVersionId))
   completeInitialStage(record, tree, anchor)
   qualify(record, anchor, plan)
+  if (plan.unstamped) record.scaleKind = null
   if (plan.outcome === 'not_qualified') return moveTo(record, S.NOT_QUALIFIED, anchor)
   const rows = (plan.rows ?? []).map((spec, index) =>
     rowOf(seats[index], record, tree, spec, anchor),

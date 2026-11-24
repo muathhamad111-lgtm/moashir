@@ -6,6 +6,7 @@ const DESKTOP = { width: 1280, height: 800 }
 const LOAD_TIMEOUT = 15_000
 const SYSTEM_ADMIN = { id: 1, roles: ['system_admin'] }
 const RUNNING_CYCLE = 31
+const COMMITTEE_ASSESSOR = 'David Nguyen'
 
 function isEn(testInfo) {
   return testInfo.project.name === 'chromium-en-ltr'
@@ -135,6 +136,23 @@ async function chooseFee(page, testInfo) {
   await next(page)
 }
 
+async function pickCommitteeAssessor(page, testInfo) {
+  const field = page.locator('[data-testid="cycle-committee"]')
+  await expect(field).toContainText(
+    say(
+      testInfo,
+      'Optional. You can appoint them later from the Committee tab.',
+      'اختياري، ويمكن تعيينهم لاحقًا من تبويب لجنة المقيّمين.',
+    ),
+  )
+  await field.locator('.dropdown-combobox__input').click()
+  await page.getByRole('option', { name: COMMITTEE_ASSESSOR }).click()
+  const done = page.locator('.dropdown-sheet__done')
+  if (await done.isVisible()) await done.click()
+  else await page.keyboard.press('Escape')
+  await expect(field).toContainText(COMMITTEE_ASSESSOR)
+}
+
 async function passSettingSteps(page, testInfo) {
   await expectStep(page, testInfo, 4, 'deadlines')
   await expect(page.locator('input[name="initialReviewSlaDays"]')).toHaveValue('14')
@@ -142,13 +160,55 @@ async function passSettingSteps(page, testInfo) {
   await chooseFee(page, testInfo)
   await expectStep(page, testInfo, 6)
   await expect(page.locator('.cycle-staff')).toBeVisible()
+  await pickCommitteeAssessor(page, testInfo)
   await next(page)
+}
+
+async function expectCommitteeOnReview(page, testInfo) {
+  const team = page.locator('.cycle-summary__section[data-step="team"]')
+  await expect(team).toContainText(say(testInfo, 'Committee assessors', 'مقيّمو اللجنة'))
+  await expect(team).toContainText(COMMITTEE_ASSESSOR)
+}
+
+async function expectCommitteeTab(page) {
+  await page.locator('.cycle-tabs__tab[data-tab="committee"]').click()
+  await expect(page).toHaveURL(/\/admin\/award\/cycles\/\d+\/committee$/)
+  await expect(page.locator('.cycle-tabs__tab.is-active')).toHaveAttribute('data-tab', 'committee')
+  await expect(
+    page.locator('.table:not(.table--loading) tbody .table__row', { hasText: COMMITTEE_ASSESSOR }),
+  ).toHaveCount(1)
 }
 
 async function expectLinearStepper(page, viewport) {
   const stepper = page.locator('.cycle-setup__stepper')
   if (viewport === PHONE) await expect(stepper).toBeHidden()
   else await expect(stepper.locator('.wizard__button').nth(2)).toBeDisabled()
+}
+
+async function expectNewCyclePage(page, testInfo) {
+  await expect(page).toHaveURL(/\/admin\/award\/cycles\/\d+$/)
+  await expect(page.locator('h1')).toContainText(
+    say(testInfo, 'Moashir Award for the Northern Regions', 'دورة جائزة مؤشر للمناطق الشمالية'),
+  )
+  await expect(page.locator('.cycle-overview__fact')).toHaveCount(6)
+  await expect(page.locator('.cycle-overview__fact[data-fact="fee"]')).toContainText(
+    say(testInfo, 'Paid: SAR 450.00 before VAT', 'مدفوع: 450.00 ر.س قبل الضريبة'),
+  )
+  await expect(page.locator('.cycle-tabs__tab.is-active')).toHaveAttribute('data-tab', 'details')
+  await expect(page.locator('.cycle-tabs__tab')).toHaveCount(2)
+  await expect(page.locator('.cycle-setup__header .cycle-actions .btn--primary')).toBeDisabled()
+}
+
+async function expectRunningCyclePage(page, testInfo) {
+  await expect(page.locator('.cycle-overview')).toBeVisible({ timeout: LOAD_TIMEOUT })
+  await expect(page.locator('.cycle-tabs__tab')).toHaveCount(3)
+  await expect(page.locator('.cycle-tabs__tab.is-active')).toHaveAttribute('data-tab', 'details')
+  await expect(
+    page.locator('.cycle-setup__header .cycle-actions').getByRole('button', {
+      name: say(testInfo, 'Close submissions', 'إغلاق التقديم'),
+    }),
+  ).toBeVisible()
+  await expect(page.locator('.cycle-summary')).toHaveCount(0)
 }
 
 async function expectActionsInReach(page, viewport) {
@@ -181,24 +241,37 @@ for (const viewport of [DESKTOP, PHONE]) {
         'Moashir Award for the Northern Regions',
       )
       await expect(page.locator('.cycle-summary__row.is-missing')).toHaveCount(1)
-      await expect(page.locator('.cycle-actions .btn--primary')).toBeDisabled()
+      await expectCommitteeOnReview(page, testInfo)
+      await expect(page.locator('.cycle-actions')).toHaveCount(0)
       await expectActionsInReach(page, viewport)
       expect(await pageOverflow(page)).toBe(0)
       await shot(page, `award-cycle-setup-review-${viewport.width}`, testInfo)
       await page.locator('[data-testid="cycle-save-draft"]').click()
+      await expectNewCyclePage(page, testInfo)
+      await expect(page.locator('.cycle-detail-card[data-group="team"]')).toContainText(
+        COMMITTEE_ASSESSOR,
+      )
+      expect(await pageOverflow(page)).toBe(0)
+      await expectCommitteeTab(page)
+      await page.locator('.cycle-setup__header .cycle-editor__back').click()
       await expect(page).toHaveURL(/\/admin\/award\/cycles$/)
       await expect(page.locator('.table:not(.table--loading) tbody .table__row')).toHaveCount(4)
     })
 
-    test('edits a cycle open for submissions with its locked fields read only', async ({
+    test('opens a running cycle on its page and edits it with its locked fields read only', async ({
       page,
     }, testInfo) => {
       await signIn(page, testInfo, viewport)
       await page.goto(`/admin/award/cycles/${RUNNING_CYCLE}`)
+      await expectRunningCyclePage(page, testInfo)
+      await page.locator('[data-testid="cycle-edit"]').click()
       await expect(page).toHaveURL(new RegExp(`/admin/award/cycles/${RUNNING_CYCLE}/setup$`))
       await expect(page.locator('.cycle-summary')).toBeVisible({ timeout: LOAD_TIMEOUT })
+      await expect(page.locator('.cycle-actions')).toHaveCount(0)
+      await expect(page.locator('.cycle-tabs')).toHaveCount(0)
       await page.locator('.cycle-summary__section[data-step="dates"] .btn').click()
       await expectStep(page, testInfo, 2, 'dates')
+      await expect(page.locator('.cycle-actions')).toHaveCount(0)
       await expect(
         dateGroup(page, 'submissionStart').locator('.datepicker__segment:disabled'),
       ).toHaveCount(3)
@@ -227,6 +300,23 @@ for (const viewport of [DESKTOP, PHONE]) {
       await expectStep(page, testInfo, 5, 'fee')
       await expect(page.locator('input[name="entryFeePaid"]')).toBeDisabled()
       await expect(page.locator('[data-testid="cycle-fee-locked"]')).toBeVisible()
+      expect(await pageOverflow(page)).toBe(0)
+      await page.locator('.cycle-setup__header .cycle-editor__back').click()
+      await expect(page).toHaveURL(new RegExp(`/admin/award/cycles/${RUNNING_CYCLE}$`))
+      await expect(page.locator('.cycle-overview')).toBeVisible()
+    })
+
+    test('opens the setup of a running cycle straight at the step named in the link', async ({
+      page,
+    }, testInfo) => {
+      await signIn(page, testInfo, viewport)
+      await page.goto(`/admin/award/cycles/${RUNNING_CYCLE}/setup?step=dates`)
+      await expect(page.locator('form[data-step="dates"]')).toBeVisible({ timeout: LOAD_TIMEOUT })
+      await expectStep(page, testInfo, 2, 'dates')
+      await expect(
+        dateGroup(page, 'submissionStart').locator('.datepicker__segment:disabled'),
+      ).toHaveCount(3)
+      await expect(page.locator('.cycle-actions')).toHaveCount(0)
       expect(await pageOverflow(page)).toBe(0)
     })
   })

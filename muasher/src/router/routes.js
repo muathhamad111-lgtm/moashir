@@ -347,12 +347,73 @@ export const appRoutes = [
     },
   },
   {
+    // The cycle workspace (operator, 2026-11-24): its stages open as tabs under one shared header.
     path: '/admin/award/cycles/:id(\\d+)',
-    redirect: (to) => ({ name: ROUTE_NAMES.AWARD_CYCLE, params: to.params, query: to.query }),
+    component: () => import('@/views/award/CycleWorkspace.vue'),
+    meta: {
+      layout: 'app',
+      requiresAuth: true,
+    },
+    children: [
+      {
+        path: '',
+        name: ROUTE_NAMES.AWARD_CYCLE,
+        component: () => import('@/views/award/CycleDetail.vue'),
+        meta: {
+          titleKey: 'routes.award.cycle.title',
+          requiresAuth: true,
+        },
+      },
+      {
+        path: 'filtering',
+        name: ROUTE_NAMES.AWARD_FILTERING_QUEUE,
+        component: () => import('@/views/award/FilteringQueue.vue'),
+        meta: {
+          titleKey: 'routes.award.filteringQueue.title',
+          requiresAuth: true,
+        },
+      },
+      {
+        path: 'committee',
+        name: ROUTE_NAMES.AWARD_COMMITTEE_ROSTER,
+        component: () => import('@/views/award/CommitteeRoster.vue'),
+        meta: {
+          titleKey: 'routes.award.committeeRoster.title',
+          requiresAuth: true,
+        },
+      },
+      {
+        path: 'secretary',
+        name: ROUTE_NAMES.AWARD_SECRETARY_DESK,
+        component: () => import('@/views/award/SecretaryDesk.vue'),
+        meta: {
+          titleKey: 'routes.award.secretaryDesk.title',
+          requiresAuth: true,
+        },
+      },
+      {
+        path: 'results',
+        name: ROUTE_NAMES.AWARD_RESULTS_BOARD,
+        component: () => import('@/views/award/ResultsBoard.vue'),
+        meta: {
+          titleKey: 'routes.award.resultsBoard.title',
+          requiresAuth: true,
+        },
+      },
+      {
+        path: 'results/national',
+        name: ROUTE_NAMES.AWARD_NATIONAL,
+        component: () => import('@/views/award/NationalBoard.vue'),
+        meta: {
+          titleKey: 'routes.award.national.title',
+          requiresAuth: true,
+        },
+      },
+    ],
   },
   {
     path: '/admin/award/cycles/:id(\\d+)/setup',
-    name: ROUTE_NAMES.AWARD_CYCLE,
+    name: ROUTE_NAMES.AWARD_CYCLE_SETUP,
     component: () => import('@/views/award/CycleSetup.vue'),
     meta: {
       layout: 'app',
@@ -369,16 +430,6 @@ export const appRoutes = [
       titleKey: 'routes.award.filtering.title',
       requiresAuth: true,
       picker: { key: 'filtering', target: ROUTE_NAMES.AWARD_FILTERING_QUEUE },
-    },
-  },
-  {
-    path: '/admin/award/cycles/:id(\\d+)/filtering',
-    name: ROUTE_NAMES.AWARD_FILTERING_QUEUE,
-    component: () => import('@/views/award/FilteringQueue.vue'),
-    meta: {
-      layout: 'app',
-      titleKey: 'routes.award.filteringQueue.title',
-      requiresAuth: true,
     },
   },
   {
@@ -400,16 +451,6 @@ export const appRoutes = [
       titleKey: 'routes.award.committeeManagement.title',
       requiresAuth: true,
       picker: { key: 'committee', target: ROUTE_NAMES.AWARD_COMMITTEE_ROSTER },
-    },
-  },
-  {
-    path: '/admin/award/cycles/:id(\\d+)/committee',
-    name: ROUTE_NAMES.AWARD_COMMITTEE_ROSTER,
-    component: () => import('@/views/award/CommitteeRoster.vue'),
-    meta: {
-      layout: 'app',
-      titleKey: 'routes.award.committeeRoster.title',
-      requiresAuth: true,
     },
   },
   {
@@ -454,16 +495,6 @@ export const appRoutes = [
     },
   },
   {
-    path: '/admin/award/cycles/:id(\\d+)/secretary',
-    name: ROUTE_NAMES.AWARD_SECRETARY_DESK,
-    component: () => import('@/views/award/SecretaryDesk.vue'),
-    meta: {
-      layout: 'app',
-      titleKey: 'routes.award.secretaryDesk.title',
-      requiresAuth: true,
-    },
-  },
-  {
     path: '/admin/award/cycles/:id(\\d+)/secretary/:assessment(\\d+)',
     name: ROUTE_NAMES.AWARD_SECRETARY_REVIEW,
     component: () => import('@/views/award/SecretaryRequest.vue'),
@@ -482,26 +513,6 @@ export const appRoutes = [
       titleKey: 'routes.award.results.title',
       requiresAuth: true,
       picker: { key: 'results', target: ROUTE_NAMES.AWARD_RESULTS_BOARD },
-    },
-  },
-  {
-    path: '/admin/award/cycles/:id(\\d+)/results',
-    name: ROUTE_NAMES.AWARD_RESULTS_BOARD,
-    component: () => import('@/views/award/ResultsBoard.vue'),
-    meta: {
-      layout: 'app',
-      titleKey: 'routes.award.resultsBoard.title',
-      requiresAuth: true,
-    },
-  },
-  {
-    path: '/admin/award/cycles/:id(\\d+)/results/national',
-    name: ROUTE_NAMES.AWARD_NATIONAL,
-    component: () => import('@/views/award/NationalBoard.vue'),
-    meta: {
-      layout: 'app',
-      titleKey: 'routes.award.national.title',
-      requiresAuth: true,
     },
   },
   {

@@ -77,6 +77,12 @@ async function rowOf(person, assessmentId) {
   return body.data.find((row) => row.assessment_id === assessmentId)
 }
 
+function achievementSubOf(criteria) {
+  return criteria.mains
+    .flatMap((main) => main.subs)
+    .find((sub) => sub.scoring_type === 'achievement')
+}
+
 async function scoreAndSubmit(person, assessmentId) {
   const row = await rowOf(person, assessmentId)
   const evaluation = (await call('GET', `/committee/me/assignments/${row.id}`)).body.data
@@ -128,6 +134,32 @@ describe('committee mock — roster', () => {
     expect(
       (await call('POST', '/award/cycles/31/committee/members', { user_id: 29 })).body.code,
     ).toBe('reason_required')
+  })
+
+  it('appoints and removes committee assessors on a draft cycle created in the setup wizard', async () => {
+    resetWorld(null)
+    seedMockSession(P.SYSTEM_ADMIN)
+    const day = (days) => new Date(Date.now() + days * 86400000).toISOString()
+    const created = await call('POST', '/award/cycles', {
+      name: { ar: 'دورة جديدة', en: 'New cycle' },
+      submission_start: day(300),
+      submission_end: day(340),
+      committee_start: day(350),
+      committee_end: day(380),
+    })
+    expect(created.status).toBe(201)
+    expect(created.body.data.status).toBe('draft')
+    const roster = `/award/cycles/${created.body.data.id}/committee`
+    expect((await call('GET', roster)).body).toMatchObject({ data: [], meta: { can_manage: true } })
+    const candidates = (await call('GET', `${roster}/candidates`)).body.data
+    expect(candidates.map((person) => person.id)).toContain(P.DAVID.id)
+    const appointed = await call('POST', `${roster}/members`, { user_id: P.DAVID.id })
+    expect(appointed.status).toBe(201)
+    expect((await call('GET', roster)).body.data.map((seat) => seat.user.id)).toEqual([P.DAVID.id])
+    const removed = await call('DELETE', `${roster}/members/${appointed.body.data.id}`, {})
+    expect(removed.status).toBe(204)
+    const seats = (await call('GET', roster)).body.data
+    expect(seats.filter((seat) => seat.status === 'active')).toEqual([])
   })
 
   it('starts the committee only with an active seat and distributes every qualified request', async () => {
@@ -325,6 +357,44 @@ describe('committee mock — blind evaluation', () => {
     expect(findAssessment(9204).status).toBe('awaiting-secretary-approval')
     expect(findAssessment(9204).committeeAverageId).not.toBeNull()
     expect(findCycle(31).status).toBe('committee-assessment')
+  })
+
+  it('serves a null scale for an unstamped request and checks each score against its own type', async () => {
+    resetWorld('committee-unstamped')
+    const mine = await rowOf(P.DAVID, 9204)
+    const { body } = await call('GET', `/committee/me/assignments/${mine.id}`)
+    expect(body.data.scale).toBeNull()
+    const achievement = achievementSubOf(body.data.criteria)
+    const path = `/committee/me/assignments/${mine.id}/scores`
+    const refused = await call('PUT', path, { scores: { subs: { [achievement.id]: '8' } } })
+    expect(refused.status).toBe(422)
+    expect(refused.body.code).toBe('score.out_of_range')
+    expect(refused.body.errors).toHaveProperty(`scores.subs.${achievement.id}`)
+    const half = await call('PUT', path, { scores: { subs: { [achievement.id]: '0.5' } } })
+    expect(half.body.code).toBe('score.out_of_range')
+    const saved = await call('PUT', path, { scores: { subs: { [achievement.id]: '1' } } })
+    expect(saved.status).toBe(200)
+    expect(saved.body.data.scale).toBeNull()
+    expect(saved.body.data.scores.subs[achievement.id]).toEqual({
+      raw_value: '1.00',
+      percent: '100.00',
+    })
+  })
+
+  it('types every item by the scale stamp of a stamped request', async () => {
+    resetWorld('committee')
+    const mine = await rowOf(P.DAVID, 9204)
+    const { body } = await call('GET', `/committee/me/assignments/${mine.id}`)
+    expect(body.data.scale).toEqual({ kind: 'of_10', maximum: '10.00' })
+    const achievement = achievementSubOf(body.data.criteria)
+    const saved = await call('PUT', `/committee/me/assignments/${mine.id}/scores`, {
+      scores: { subs: { [achievement.id]: '8' } },
+    })
+    expect(saved.status).toBe(200)
+    expect(saved.body.data.scores.subs[achievement.id]).toEqual({
+      raw_value: '8.00',
+      percent: '80.00',
+    })
   })
 
   it('exposes the active seats as session committee appointments', async () => {

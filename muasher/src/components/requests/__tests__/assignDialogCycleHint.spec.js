@@ -37,7 +37,7 @@ describe('AssignAssessorDialog — award cycle without initial assessors', () =>
       'No initial assessor is linked to this award cycle yet',
     )
     const link = document.querySelector('.assign-dialog__cycle-link a')
-    expect(link.getAttribute('href')).toBe('/admin/award/cycles/31/setup')
+    expect(link.getAttribute('href')).toBe('/admin/award/cycles/31')
     expect(document.querySelector('.assign-dialog__path').textContent).toContain(
       'initial assessors linked to the award cycle',
     )

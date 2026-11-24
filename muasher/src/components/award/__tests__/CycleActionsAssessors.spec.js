@@ -4,7 +4,7 @@ import { setActivePinia } from 'pinia'
 import { createTestGlobals } from '@/test-utils'
 import { useAuthStore } from '@/stores/auth'
 import { sessionUserFor } from '@/test-utils/session'
-import CycleActionsCard from '../CycleActionsCard.vue'
+import CycleStageActions from '../CycleStageActions.vue'
 
 const CYCLE = {
   id: 31,
@@ -21,7 +21,7 @@ function render(cycle, locale = 'en') {
   const globals = createTestGlobals({ locale })
   setActivePinia(globals.pinia)
   useAuthStore(globals.pinia).setUser(sessionUserFor(['system_admin']))
-  return mount(CycleActionsCard, {
+  return mount(CycleStageActions, {
     props: { cycle },
     global: { plugins: globals.plugins },
     attachTo: document.body,
@@ -32,7 +32,7 @@ afterEach(() => {
   document.body.innerHTML = ''
 })
 
-describe('CycleActionsCard — initial assessors', () => {
+describe('CycleStageActions — initial assessors', () => {
   it('keeps a draft without a linked initial assessor closed and says why', () => {
     const draft = render({ ...CYCLE, status: 'draft' })
     expect(draft.text()).toContain('Link the initial assessors before opening')

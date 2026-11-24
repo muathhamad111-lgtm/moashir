@@ -7138,7 +7138,6 @@
     "actions": {
       "title": "Cycle stage",
       "readOnly": "You can follow this cycle. Its stage is managed by the System Administrator and the award secretaries of the cycle.",
-      "filtering": "Open the filtering",
       "open": {
         "label": "Open submissions",
         "title": "Open the submissions?",
@@ -7184,11 +7183,6 @@
         "confirm": "Start",
         "done": "The committee assessment started."
       },
-      "links": {
-        "committee": "Assessors committee",
-        "secretary": "Secretary desk",
-        "results": "Results"
-      },
       "needsAssessors": {
         "title": "Link the initial assessors before opening",
         "message": "The cycle opens only once at least one initial assessor is linked in the Initial assessors panel, so its requests can be assigned."
@@ -7216,6 +7210,13 @@
       },
       "assessors": {
         "title": "Initial assessors"
+      },
+      "committee": {
+        "title": "Assessors committee",
+        "label": "Committee assessors",
+        "hint": "Optional. You can appoint them later from the Committee tab.",
+        "locked": "The committee assessment has started. Manage the committee from the Committee tab, where substitution follows its own rules.",
+        "none": "Not appointed yet"
       },
       "saved": "The cycle team was saved."
     },
@@ -7282,6 +7283,23 @@
         "freeState": "The cycle is free: no entry fee.",
         "free": "Free",
         "paidAmount": "Paid: SAR {amount} before VAT"
+      },
+      "backToCycle": "Back to the cycle"
+    },
+    "detail": {
+      "title": "Cycle details",
+      "edit": "Edit the cycle",
+      "overview": "Key details",
+      "conditions": "Conditions and deadlines"
+    },
+    "workspace": {
+      "label": "Cycle sections",
+      "tabs": {
+        "details": "Details",
+        "filtering": "Filtering",
+        "committee": "Committee",
+        "secretary": "Secretary desk",
+        "results": "Results"
       }
     }
   },

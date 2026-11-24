@@ -76,7 +76,7 @@ function useStaffCandidates(cycle) {
   return { loading, optionsFor, loadCandidates }
 }
 
-export function useCycleStaff({ editor, reasonExtra }) {
+export function useCycleStaff({ editor, reasonExtra, committee }) {
   const { t } = useI18n()
   const toast = useToast()
   const cycle = computed(() => editor.cycle.value)
@@ -95,11 +95,14 @@ export function useCycleStaff({ editor, reasonExtra }) {
         serverSelection(cycle.value)[CANDIDATE_ROLES.INITIAL_ASSESSOR],
       ),
   )
-  const dirty = computed(() => membersChanged.value || assessorsChanged.value)
+  const dirty = computed(
+    () => membersChanged.value || assessorsChanged.value || committee.dirty.value,
+  )
 
   function reset() {
     selection.value = serverSelection(cycle.value)
     errors.value = {}
+    committee.reset()
   }
 
   function select(role, ids) {
@@ -135,6 +138,7 @@ export function useCycleStaff({ editor, reasonExtra }) {
       const extra = await reasonExtra()
       if (extra === null) return false
       await send(extra)
+      await committee.save(extra)
       reset()
       toast.success(t('cycles.staff.saved'))
       return true

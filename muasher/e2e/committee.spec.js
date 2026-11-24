@@ -78,6 +78,10 @@ test.describe('Award committee roster and start', () => {
     await page.goto('/admin/award/committee/manage')
     await page.locator('a[href$="/admin/award/cycles/31/committee"]').click()
     await expect(page).toHaveURL(/\/admin\/award\/cycles\/31\/committee$/)
+    await expect(page.locator('.cycle-tabs__tab.is-active')).toHaveAttribute(
+      'data-tab',
+      'committee',
+    )
     await expect(page.locator('.empty-state')).toBeVisible()
     for (const name of [
       'David Nguyen',
@@ -93,7 +97,8 @@ test.describe('Award committee roster and start', () => {
     await expect(rows(page)).toHaveCount(2)
     await shot(page, 'committee-roster', testInfo)
     await page.locator('.sidebar a[href="/admin/award/cycles"]').click()
-    await page.locator('a[href="/admin/award/cycles/31/setup"]').first().click()
+    await page.locator('a[href="/admin/award/cycles/31"]').first().click()
+    await expect(page).toHaveURL(/\/admin\/award\/cycles\/31$/)
     await page
       .locator('.cycle-actions button', {
         hasText: text(testInfo, 'Start the committee assessment', 'بدء تقييم اللجنة'),
@@ -103,7 +108,8 @@ test.describe('Award committee roster and start', () => {
     await expect(page.locator('.cycle-setup__title-row')).toContainText(
       text(testInfo, 'Committee assessment', 'تقييم اللجنة'),
     )
-    await page.locator('.cycle-actions a[href="/admin/award/cycles/31/committee"]').click()
+    await page.locator('.cycle-tabs__tab[data-tab="committee"]').click()
+    await expect(page).toHaveURL(/\/admin\/award\/cycles\/31\/committee$/)
     await expect(rows(page).first()).toContainText(
       text(testInfo, '0 of 2 submitted', 'أُرسل 0 من 2'),
     )
@@ -147,6 +153,39 @@ test.describe('Committee assessor', () => {
       text(testInfo, 'Read only', 'للقراءة فقط'),
     )
     await expect(page.locator('.committee-actions .btn--primary')).toHaveCount(0)
+    expect(errors).toEqual([])
+  })
+
+  test('scores an achievement item of a request without a scale stamp as achieved', async ({
+    page,
+  }, testInfo) => {
+    const errors = trackConsole(page)
+    await signIn(page, testInfo, USERS.david, 'committee-unstamped')
+    await page.goto('/admin/committee/assignments')
+    await rows(page)
+      .filter({ hasText: text(testInfo, 'Ruwad Education Foundation', 'مؤسسة رواد التعليم') })
+      .locator('a.btn')
+      .click()
+    const item = page.locator('.review-sub', {
+      hasText: text(
+        testInfo,
+        'Excellence Culture and Leading by Example',
+        'ثقافة التميز والقيادة بالقدوة',
+      ),
+    })
+    const choice = item.locator('.achievement-score')
+    await expect(choice).toBeVisible()
+    await expect(item.locator('input[inputmode="decimal"]')).toHaveCount(0)
+    await choice.getByLabel(text(testInfo, 'Achieved', 'متحقق'), { exact: true }).check()
+    await page.locator('.committee-actions .btn--secondary').click()
+    await expect(page.locator('.review-actions__status')).toContainText(
+      text(testInfo, 'Everything is saved', 'كل شيء محفوظ'),
+    )
+    await expect(choice.locator('.achievement-score__hint')).toHaveText(
+      text(testInfo, 'Saved: Achieved', 'محفوظ: متحقق'),
+    )
+    await expect(choice.locator('input[value="1"]')).toBeChecked()
+    await shot(page, 'committee-achievement-unstamped', testInfo)
     expect(errors).toEqual([])
   })
 

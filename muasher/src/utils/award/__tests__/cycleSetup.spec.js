@@ -148,6 +148,21 @@ describe('cycle setup summary', () => {
     )
   })
 
+  it('lists the committee assessors in the team, never as missing, once the roster is read', () => {
+    const teamOf = (committee) =>
+      summarySections(CYCLE, format, committee).find((section) => section.key === 'team').rows
+    const committeeRow = (committee) => teamOf(committee).find((row) => row.key === 'committee')
+    expect(committeeRow(['David Nguyen', 'عمر'])).toMatchObject({
+      label: 'cycles.staff.committee.label',
+      value: 'David Nguyen, عمر',
+    })
+    expect(committeeRow([])).toMatchObject({ value: 'cycles.staff.committee.none' })
+    expect(committeeRow([]).missing).toBeFalsy()
+    expect(teamOf([]).filter((row) => row.missing)).toHaveLength(1)
+    expect(committeeRow(null)).toBeUndefined()
+    expect(committeeRow(undefined)).toBeUndefined()
+  })
+
   it('leaves the team out for a reader who does not see it', () => {
     const keys = summarySections({ ...CYCLE, revealsStaff: false }, format).map((s) => s.key)
     expect(keys).not.toContain('team')

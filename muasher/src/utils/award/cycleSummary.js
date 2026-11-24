@@ -49,6 +49,7 @@ function conditions(cycle, format) {
       value: format.plain(cycle.conditions.minEntityAgeYears),
     },
     {
+      key: 'threshold',
       label: format.t('cycles.form.disqualificationScore'),
       value: format.plain(cycle.conditions.disqualificationScore),
     },
@@ -86,7 +87,15 @@ function memberRow(cycle, role, format) {
   return { label: format.t(`cycles.staff.roles.${role}`), value: format.list(names) }
 }
 
-function team(cycle, format) {
+function committeeRow(committee, format) {
+  return {
+    key: 'committee',
+    label: format.t('cycles.staff.committee.label'),
+    value: committee.length ? format.list(committee) : format.t('cycles.staff.committee.none'),
+  }
+}
+
+function team(cycle, format, committee) {
   const missing = lacksInitialAssessor(cycle)
   const assessors = cycle.initialAssessors.filter((link) => link.isActive).map((link) => link.name)
   return [
@@ -96,17 +105,18 @@ function team(cycle, format) {
       value: missing ? format.t('cycles.setup.review.missingAssessor') : format.list(assessors),
       missing,
     },
+    ...(Array.isArray(committee) ? [committeeRow(committee, format)] : []),
   ]
 }
 
 const SECTIONS = { identity, dates, conditions, deadlines, fee, team }
 
-export function summarySections(cycle, format) {
+export function summarySections(cycle, format, committee = null) {
   return Object.entries(SECTIONS)
     .filter(([key]) => key !== 'team' || cycle.revealsStaff)
     .map(([key, build]) => ({
       key,
       title: format.t(`cycles.setup.steps.${key}`),
-      rows: build(cycle, format),
+      rows: build(cycle, format, committee),
     }))
 }

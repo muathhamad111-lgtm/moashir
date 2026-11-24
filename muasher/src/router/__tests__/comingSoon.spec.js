@@ -25,9 +25,10 @@ const AWARD_SCREENS = [
   ROUTE_NAMES.ASSESSMENT_ADVANCED_FORM,
   ROUTE_NAMES.ASSESSMENT_ADVANCED_PAY,
   ROUTE_NAMES.AWARD_CYCLES,
+  ROUTE_NAMES.AWARD_CYCLE_SETUP,
   ROUTE_NAMES.AWARD_COMMITTEE,
-  ROUTE_NAMES.AWARD_SECRETARY_DESK,
-  ROUTE_NAMES.AWARD_RESULTS_BOARD,
+  ROUTE_NAMES.AWARD_SECRETARY,
+  ROUTE_NAMES.AWARD_RESULTS,
 ]
 
 const PHASE_ONE = [
@@ -116,6 +117,7 @@ describe('demo-only screens', () => {
     expect(appRoutes.filter((route) => route.meta?.demoOnly).map(({ name }) => name)).toEqual(
       DEMO_ONLY,
     )
+    expect(AWARD_SCREENS.filter((name) => !find(appRoutes, name))).toEqual([])
     expect(
       replacedAmong(withComingSoonScreens(appRoutes, BUILD_POSTURES.REAL), AWARD_SCREENS),
     ).toEqual([])
