@@ -3,7 +3,7 @@ import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 import Badge from '@/components/ui/Badge.vue'
 import BaseTextarea from '@/components/form/BaseTextarea.vue'
-import RawScoreField from '@/components/assessment/RawScoreField.vue'
+import ReviewScoreControl from '@/components/review/ReviewScoreControl.vue'
 import ReviewEvidenceList from '@/components/review/ReviewEvidenceList.vue'
 import CommitteePriorScores from './CommitteePriorScores.vue'
 import IndicatorGuidance from '@/components/assessment/IndicatorGuidance.vue'
@@ -75,7 +75,7 @@ function text(content) {
     />
     <div class="review-sub__scores">
       <div v-for="unit in units" :key="scoreFieldName(unit)" class="review-sub__point">
-        <RawScoreField
+        <ReviewScoreControl
           :name="scoreFieldName(unit)"
           :label="
             unit.level === SCORE_LEVELS.POINT

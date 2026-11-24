@@ -36,6 +36,11 @@
   text-align: center;
 }
 
+// As a whole page (a route that failed to load), the shell sets the inline gutters.
+:is(.app-layout__content, .portal-layout__main) > .error-state {
+  padding-inline: 0;
+}
+
 .error-state__art {
   font-size: var(--fs-4xl);
   color: var(--color-danger);

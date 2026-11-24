@@ -44,6 +44,14 @@ export const ACHIEVEMENT_SUB = {
   scoringType: 'achievement',
 }
 
+export const RELATIVE_SUB = {
+  ...SCORE_SUB,
+  id: 104,
+  code: 'M1.4',
+  name: { ar: 'الأثر النسبي', en: 'Relative impact' },
+  scoringType: 'relative',
+}
+
 const CRITERIA = {
   mains: [
     {
@@ -77,7 +85,7 @@ function priorOf(scores) {
   }
 }
 
-export function committeeEvaluationOf({ scale = null, prior = null } = {}) {
+export function committeeEvaluationOf({ scale = null, prior = null, subs = null } = {}) {
   return toEvaluation({
     assignmentId: 7,
     status: 'in-progress',
@@ -99,7 +107,7 @@ export function committeeEvaluationOf({ scale = null, prior = null } = {}) {
       isSubstitute: prior !== null,
     },
     mode: 'edit',
-    criteria: CRITERIA,
+    criteria: subs ? { mains: [{ ...CRITERIA.mains[0], subs }] } : CRITERIA,
     cv: {},
     evidence: [],
     notes: { subs: {}, general: null },

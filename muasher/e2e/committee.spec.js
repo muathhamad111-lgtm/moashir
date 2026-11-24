@@ -173,18 +173,20 @@ test.describe('Committee assessor', () => {
         'ثقافة التميز والقيادة بالقدوة',
       ),
     })
-    const choice = item.locator('.achievement-score')
+    const choice = item.locator('.review-achievement')
+    const achieved = choice.getByRole('radio', {
+      name: text(testInfo, 'Achieved', 'متحقق'),
+      exact: true,
+    })
     await expect(choice).toBeVisible()
     await expect(item.locator('input[inputmode="decimal"]')).toHaveCount(0)
-    await choice.getByLabel(text(testInfo, 'Achieved', 'متحقق'), { exact: true }).check()
+    await achieved.click()
     await page.locator('.committee-actions .btn--secondary').click()
     await expect(page.locator('.review-actions__status')).toContainText(
       text(testInfo, 'Everything is saved', 'كل شيء محفوظ'),
     )
-    await expect(choice.locator('.achievement-score__hint')).toHaveText(
-      text(testInfo, 'Saved: Achieved', 'محفوظ: متحقق'),
-    )
-    await expect(choice.locator('input[value="1"]')).toBeChecked()
+    await expect(achieved).toHaveAttribute('aria-checked', 'true')
+    await expect(choice.locator('.review-score__unsaved')).toHaveCount(0)
     await shot(page, 'committee-achievement-unstamped', testInfo)
     expect(errors).toEqual([])
   })

@@ -58,7 +58,7 @@ describe('CommitteeWorkspace scoring types', () => {
   it('gives the field and the prior scores the same typed unit', async () => {
     const wrapper = await mountWorkspace(committeeEvaluationOf({ prior: PRIOR_SCORES }), 'en')
     const panel = wrapper.find('#committee-sub-103')
-    expect(panel.find('.achievement-score').exists()).toBe(true)
+    expect(panel.find('.review-achievement').exists()).toBe(true)
     expect(panel.find('input[inputmode="decimal"]').exists()).toBe(false)
     expect(priorRowOf(wrapper, 103).text()).toContain('Achieved')
     const scorePanel = wrapper.find('#committee-sub-102')

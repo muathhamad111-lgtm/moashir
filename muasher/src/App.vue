@@ -4,6 +4,7 @@ import { useHead } from '@unhead/vue'
 import { useI18n } from 'vue-i18n'
 import { useRoute } from 'vue-router'
 import AppToast from '@/components/feedback/AppToast.vue'
+import AppUpdateBanner from '@/components/feedback/AppUpdateBanner.vue'
 import ConfirmModal from '@/components/modal/ConfirmModal.vue'
 import SuccessModal from '@/components/modal/SuccessModal.vue'
 import AppLayout from '@/components/layout/AppLayout.vue'
@@ -110,6 +111,7 @@ useHead({
   </router-view>
   <AppLoadingScreen v-if="showsBootScreen" variant="screen" :shows-mark="bootMarkVisible" />
   <AppToast />
+  <AppUpdateBanner />
   <ConfirmModal />
   <SuccessModal />
   <AccountCompletionHost v-if="!isBooting" />

@@ -1,7 +1,10 @@
 @use '../mixins' as *;
 
+$table-fit-below: 60rem;
+
 .table-wrap {
   position: relative;
+  container: data-table / inline-size;
   inline-size: 100%;
   overflow-x: auto;
   border: var(--border-width) solid var(--theme-border);
@@ -88,6 +91,19 @@
   white-space: nowrap;
 }
 
+// A list narrower than a laptop column (the sidebar open at 1280 px) lets its row actions wrap
+// instead of scrolling the whole table sideways; with room to spare they stay on one line.
+@container data-table (max-width: #{$table-fit-below}) {
+  .table__cell--actions {
+    inline-size: auto;
+    white-space: normal;
+  }
+
+  .row-actions {
+    flex-wrap: wrap;
+  }
+}
+
 // A sortable heading: the label and its direction as one button; an unsorted column shows a
 // faint arrow so the header reads as clickable.
 .table__sort {
@@ -138,10 +154,6 @@ $table-stack-below: 40rem;
 
 @mixin stacked-action-size {
   min-block-size: var(--size-touch-target);
-}
-
-.table-wrap--stacked {
-  container: data-table / inline-size;
 }
 
 @container data-table (max-width: #{$table-stack-below}) {

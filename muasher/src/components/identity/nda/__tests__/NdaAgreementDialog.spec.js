@@ -79,6 +79,24 @@ describe('mandatory agreement modal', () => {
     expect(wrapper.find('[role="dialog"]').exists()).toBe(true)
   })
 
+  it('keeps the approve button in one place first in the footer, with the hint beside it until the end', async () => {
+    const wrapper = await mountHost()
+    const footer = () => wrapper.get('.modal__footer').element
+    const accept = () => wrapper.get('[data-testid="nda-accept"]')
+
+    expect(footer().firstElementChild).toBe(accept().element)
+    expect(accept().attributes('aria-describedby')).toBe('nda-accept-hint')
+    expect(wrapper.get('#nda-accept-hint').text()).toBe(
+      'Scroll to the end of the agreement to accept.',
+    )
+
+    await scrollToEnd(wrapper)
+    expect(footer().firstElementChild).toBe(accept().element)
+    expect(accept().attributes('disabled')).toBeUndefined()
+    expect(accept().attributes('aria-describedby')).toBeUndefined()
+    expect(wrapper.find('#nda-accept-hint').exists()).toBe(false)
+  })
+
   it('enables the single approve button only once the text was scrolled to the end', async () => {
     const wrapper = await mountHost()
     const accept = wrapper.get('[data-testid="nda-accept"]')

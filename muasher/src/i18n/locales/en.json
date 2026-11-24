@@ -5188,7 +5188,12 @@
     "opensInNewTab": " (opens in a new tab)",
     "copyPlatformLink": "Copy the platform link",
     "platformLinkCopied": "Platform link copied",
-    "platformLinkCopyFailed": "Could not copy the link. Open the preview and copy it from the address bar"
+    "platformLinkCopyFailed": "Could not copy the link. Open the preview and copy it from the address bar",
+    "update": {
+      "message": "A new version of the platform is available.",
+      "reload": "Reload the page",
+      "later": "Later"
+    }
   },
   "account": {
     "title": "My account",
@@ -10598,7 +10603,7 @@
       "version": "Version {version}",
       "changes": "Summary of changes",
       "textLabel": "Agreement text",
-      "scrollHint": "Scroll the text to the end to enable acceptance.",
+      "scrollHint": "Scroll to the end of the agreement to accept.",
       "accept": "I accept the agreement",
       "loadFailed": "The agreement could not be loaded. Try again."
     },
