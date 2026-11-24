@@ -106,7 +106,7 @@ describe('Sidebar', () => {
     expect(wrapper.text()).not.toContain('طلبات تغيير البريد')
     expect(wrapper.text()).not.toContain('الإشعارات')
     const captions = wrapper.findAll('.sidebar__caption').map((el) => el.text())
-    expect(captions).toEqual(['طلبات التقييم', 'الجائزة'])
+    expect(captions).toEqual(['طلبات التقييم', 'إدارة الجائزة'])
     const group = wrapper.find('.sidebar__group')
     expect(group.attributes('role')).toBe('group')
     expect(group.attributes('aria-labelledby')).toBe('sidebar-group-assessment')

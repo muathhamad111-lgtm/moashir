@@ -70,8 +70,6 @@ export const SECRETARY_SORTS = ['-submitted_at', 'submitted_at', '-average', 'av
 
 export const DEFAULT_SECRETARY_SORT = '-submitted_at'
 
-export const DRAFT_CYCLE_CHOICES = { KEEP: 'keep', MOVE: 'move' }
-
 export const COMMITTEE_LIMITS = {
   REASON_MIN: 10,
   REASON_MAX: 1000,

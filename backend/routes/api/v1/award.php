@@ -5,6 +5,7 @@ declare(strict_types=1);
 use App\Enums\Identity\Ability;
 use App\Http\Controllers\Api\V1\Award\AwardCycleController;
 use App\Http\Controllers\Api\V1\Award\AwardResultsController;
+use App\Http\Controllers\Api\V1\Award\BulkQualificationController;
 use App\Http\Controllers\Api\V1\Award\CommitteeMembershipController;
 use App\Http\Controllers\Api\V1\Award\CommitteeRosterController;
 use App\Http\Controllers\Api\V1\Award\CycleCandidatesController;
@@ -48,6 +49,8 @@ Route::middleware(['auth:sanctum', 'session.timeouts', 'mfa', 'password.current'
             Route::post('{cycle}/reopen', [CycleTransitionController::class, 'reopen'])->middleware(['can:reopen,cycle', 'throttle:sensitive'])->name('reopen');
 
             Route::get('{cycle}/filtering', [FilteringController::class, 'index'])->middleware('can:viewFiltering,cycle')->name('filtering.index');
+            Route::get('{cycle}/filtering/qualify-eligible', [BulkQualificationController::class, 'show'])->middleware('can:'.Ability::QualifyEligibleRequests->value.',cycle')->name('filtering.qualify-eligible.preview');
+            Route::post('{cycle}/filtering/qualify-eligible', [BulkQualificationController::class, 'store'])->middleware(['can:'.Ability::QualifyEligibleRequests->value.',cycle', 'throttle:sensitive'])->name('filtering.qualify-eligible');
             Route::get('{cycle}/filtering/{assessment}', [FilteringController::class, 'show'])->middleware('can:viewFilteringRequest,cycle,assessment')->name('filtering.show');
             Route::post('{cycle}/filtering/{assessment}/qualify', [FilteringDecisionController::class, 'qualify'])->middleware(['can:decideFiltering,cycle,assessment', 'throttle:sensitive'])->name('filtering.qualify');
             Route::post('{cycle}/filtering/{assessment}/disqualify', [FilteringDecisionController::class, 'disqualify'])->middleware(['can:decideFiltering,cycle,assessment', 'throttle:sensitive'])->name('filtering.disqualify');

@@ -48,6 +48,7 @@ use App\Policies\Assessments\EvidenceFilePolicy;
 use App\Policies\Audit\AuditPolicy;
 use App\Policies\Award\AwardCyclePolicy;
 use App\Policies\Award\AwardResultsPolicy;
+use App\Policies\Award\BulkFilteringPolicy;
 use App\Policies\Award\CommitteeAssignmentPolicy;
 use App\Policies\Award\CommitteeDiscussionPolicy;
 use App\Policies\Award\CommitteePolicy;
@@ -187,6 +188,7 @@ final class AuthorizationServiceProvider extends ServiceProvider
         Gate::define(Ability::UnapproveRegionResults->value, [AwardResultsPolicy::class, 'unapproveRegion']);
         Gate::define(Ability::ApproveNationalResults->value, [AwardResultsPolicy::class, 'approveNational']);
         Gate::define(Ability::AnnounceAwardResults->value, [AwardResultsPolicy::class, 'announce']);
+        Gate::define(Ability::QualifyEligibleRequests->value, [BulkFilteringPolicy::class, 'qualifyEligible']);
 
         Horizon::auth(static fn (Request $request): bool => $request->user() instanceof User && $request->user()->isSuperAdmin());
 

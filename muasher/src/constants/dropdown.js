@@ -12,12 +12,17 @@ export const DROPDOWN_PLACEMENTS = Object.freeze({
   filter: 'filter',
   menu: 'menu',
   panel: 'panel',
+  calendar: 'calendar',
 })
 
 export const END_ALIGNED_PLACEMENTS = Object.freeze([
   DROPDOWN_PLACEMENTS.menu,
   DROPDOWN_PLACEMENTS.panel,
 ])
+
+export const UNCAPPED_PLACEMENTS = Object.freeze([DROPDOWN_PLACEMENTS.calendar])
+
+export const FIT_ALIGNED_PLACEMENTS = Object.freeze([DROPDOWN_PLACEMENTS.calendar])
 
 export const SELECT_VARIANTS = Object.freeze({
   field: 'field',

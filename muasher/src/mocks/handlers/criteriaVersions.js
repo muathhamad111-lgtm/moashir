@@ -7,13 +7,8 @@ import { versionResource, workspaceTree } from '../stores/criteriaSerializers'
 import { createDraft, discardDraft } from '../stores/criteriaVersions'
 import { publicationPreview } from '../stores/criteriaPreview'
 import { correctTexts, publishVersion } from '../stores/criteriaPublishing'
-import { interpolate, requestLocale } from '../stores/criteriaRejection'
-import { FieldCollector } from '../stores/criteriaValidation'
-import {
-  DRAFT_CYCLE_CHOICES,
-  cycleBindingsSummary,
-  moveDraftCycles,
-} from '../stores/award/cycleBindings'
+import { interpolate, reject, requestLocale } from '../stores/criteriaRejection'
+import { cycleBindingsSummary, moveDraftCycles } from '../stores/award/cycleBindings'
 import {
   CRITERIA_PERMISSIONS as CAN,
   actorWith,
@@ -25,13 +20,8 @@ import {
 
 const BASE = '/api/v1/criteria/versions'
 
-function draftCyclesChoice(body) {
-  const value = body.draftCycles ?? 'keep'
-  if (DRAFT_CYCLE_CHOICES.includes(value)) return value
-  const errors = new FieldCollector()
-  errors.add('draftCycles', 'field.invalid')
-  errors.assertValid()
-  return value
+function assertNoDraftCyclesChoice(body) {
+  if (Object.hasOwn(body, 'draftCycles')) throw reject.draftCyclesFollowPublished()
 }
 
 function withMessage(entry, locale) {
@@ -159,13 +149,12 @@ export const criteriaVersionHandlers = [
       const actor = actorWith(CAN.PUBLISH)
       const version = found(findVersion(params.versionId))
       const body = await readBody(request)
-      const draftCycles = draftCyclesChoice(body)
-      const before = cycleBindingsSummary()
+      assertNoDraftCyclesChoice(body)
       const outcome = publishVersion(actor, version, body)
-      const movedCycleIds = draftCycles === 'move' ? moveDraftCycles(outcome.version.id) : []
+      const movedCycleIds = moveDraftCycles(outcome.version.id)
       return envelope(versionResource(outcome.version), {
         ...outcome.meta,
-        awardCycles: { ...before, draftCycles, movedCycleIds },
+        awardCycles: { ...cycleBindingsSummary(), movedCycleIds },
       })
     }),
   ),

@@ -311,3 +311,48 @@ export function disqualifyRequest(user, cycle, record, body) {
     isOverride: false,
   })
 }
+
+// «تأهيل كل من بلغ حد التأهل»: every request awaiting filtering that reaches the threshold, minus the ones the
+// officer assessed; each goes through the single qualify path, as on the API.
+export function qualificationCandidates(user, cycle) {
+  const reaching = allAssessments().filter(
+    (record) =>
+      record.awardCycleId === cycle.id &&
+      record.status === ADVANCED_STATES.AWAITING_FILTERING &&
+      !isFrozen(record) &&
+      meetsThreshold(record, cycle) === true,
+  )
+  const own = reaching.filter(
+    (record) => !user.superAdmin && initialAssessorOf(record)?.id === user.id,
+  )
+  return {
+    eligible: reaching.filter((record) => !own.includes(record)),
+    ownAssessments: own.length,
+  }
+}
+
+export function bulkPreview(user, cycle) {
+  const { eligible, ownAssessments } = qualificationCandidates(user, cycle)
+  return {
+    count: eligible.length,
+    thresholdPercent: cycle.disqualificationScore,
+    ownAssessments,
+    requests: eligible.map((record) => ({
+      id: record.id,
+      number: record.number,
+      initialPercent: snapshotResource(record).percent,
+    })),
+  }
+}
+
+export function qualifyEligible(user, cycle, body) {
+  if (!OPEN_FOR_DECISIONS.includes(cycle.status))
+    throw assessmentReject.coded(409, 'cycle.filtering_not_open')
+  if (user.superAdmin && !trimmed(body.reason)) throw assessmentReject.reasonRequired()
+  const qualifiedIds = []
+  for (const record of qualificationCandidates(user, cycle).eligible) {
+    qualifyRequest(user, cycle, record, { reason: body.reason })
+    qualifiedIds.push(record.id)
+  }
+  return { qualified: qualifiedIds.length, qualifiedIds, skipped: [] }
+}

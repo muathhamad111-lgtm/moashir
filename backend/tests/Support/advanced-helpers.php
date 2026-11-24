@@ -161,7 +161,7 @@ function initiallyAssessedRequest(AwardCycle $cycle, CriteriaVersion $version, U
  * @param  array<string, mixed>  $overrides
  * @return array<string, mixed>
  */
-function cyclePayload(CriteriaVersion $version, Region $region, array $overrides = []): array
+function cyclePayload(Region $region, array $overrides = []): array
 {
     return [
         'name' => ['ar' => 'دورة جائزة التميز المؤسسي 2026', 'en' => 'Institutional Excellence Award 2026'],
@@ -171,7 +171,6 @@ function cyclePayload(CriteriaVersion $version, Region $region, array $overrides
         'committee_end' => '2027-01-20T20:59:00+00:00',
         'announcement_at' => '2027-02-01T06:00:00+00:00',
         'region_ids' => [$region->id],
-        'criteria_version_id' => $version->id,
         ...$overrides,
     ];
 }

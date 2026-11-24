@@ -20,7 +20,7 @@ const cycle = {
   name: { ar: 'دورة الجائزة', en: 'Award cycle' },
   year: 2026,
   status: 'submission-open',
-  criteriaVersionId: 1,
+  description: { ar: 'تعريف الدورة', en: 'Cycle description' },
   scaleKind: 'of-10',
   submissionStart: '2026-09-30T21:00:00Z',
   submissionEnd: '2026-12-15T20:59:00Z',
@@ -34,19 +34,20 @@ const cycle = {
 }
 
 describe('cycle form values and payloads', () => {
-  it('starts a new cycle from the defaults and the published version, without a scale of its own, and edits use Riyadh date keys', () => {
+  it('starts a new cycle from the defaults without a criteria version of its own, and edits use Riyadh date keys', () => {
     const fresh = cycleFormValues(null, {
       defaults: { minEntityAgeYears: 3, disqualificationScore: '60.00', initialReviewSlaDays: 14 },
-      published: { versionId: 4 },
     })
+    expect(fresh).not.toHaveProperty('criteriaVersionId')
     expect(fresh).toMatchObject({
-      criteriaVersionId: 4,
+      description: { ar: '', en: '' },
       minEntityAgeYears: '3',
       disqualificationScore: '60.00',
       initialReviewSlaDays: '14',
       regionIds: [],
     })
     expect(cycleFormValues(cycle, {})).toMatchObject({
+      description: { ar: 'تعريف الدورة', en: 'Cycle description' },
       submissionStart: '2026-10-01',
       submissionEnd: '2026-12-15',
       committeeStart: '2027-01-04',
@@ -65,12 +66,12 @@ describe('cycle form values and payloads', () => {
       submissionEnd: '2026-12-15T20:59:00.000Z',
       minEntityAgeYears: 3,
       disqualificationScore: '60.00',
-      criteriaVersionId: 1,
+      description: { ar: 'تعريف الدورة', en: 'Cycle description' },
     })
+    expect(create).not.toHaveProperty('criteriaVersionId')
     const changed = changedCyclePayload(
       {
         ...values,
-        criteriaVersionId: '1',
         submissionStart: '2026-09-01',
         disqualificationScore: '65',
       },
@@ -78,6 +79,54 @@ describe('cycle form values and payloads', () => {
       { includeParticipation: true, locked: lockedCycleFields('submission-open') },
     )
     expect(changed).toEqual({ disqualificationScore: '65.00' })
+  })
+
+  it('sends a blank description as cleared on update and leaves it out on create', () => {
+    const values = cycleFormValues(cycle, {})
+    const blank = { ...values, description: { ar: '  ', en: '' } }
+    expect(cyclePayload(blank, { includeParticipation: false })).not.toHaveProperty('description')
+    expect(
+      changedCyclePayload(blank, values, {
+        includeParticipation: false,
+        locked: lockedCycleFields('submission-open'),
+      }),
+    ).toEqual({ description: null })
+    expect(
+      changedCyclePayload({ ...values, description: { ar: ' نص جديد ', en: 'New text' } }, values, {
+        includeParticipation: false,
+        locked: lockedCycleFields('closed'),
+      }),
+    ).toEqual({})
+  })
+
+  it('reads a fee of 0 as free and a positive fee as paid, and sends 0 for a free cycle', async () => {
+    expect(cycleFormValues({ ...cycle, entryFee: '0.00' }, {})).toMatchObject({
+      entryFeePaid: false,
+      entryFee: '',
+    })
+    const paid = cycleFormValues({ ...cycle, entryFee: '750.00' }, {})
+    expect(paid).toMatchObject({ entryFeePaid: true, entryFee: '750.00' })
+    const options = { includeParticipation: false, locked: lockedCycleFields('draft') }
+    expect(changedCyclePayload({ ...paid, entryFeePaid: false }, paid, options)).toEqual({
+      entryFee: '0.00',
+    })
+    expect(changedCyclePayload({ ...paid, entryFee: '800' }, paid, options)).toEqual({
+      entryFee: '800.00',
+    })
+    expect(changedCyclePayload({ ...paid, entryFee: '0' }, paid, options)).not.toHaveProperty(
+      'entryFeePaid',
+    )
+    const schema = cycleSchema(t)
+    const valid = cycleFormValues(cycle, {})
+    await expect(schema.validate({ ...valid, entryFeePaid: true, entryFee: '0' })).rejects.toThrow(
+      'cycles.validation.entryFee',
+    )
+    await expect(schema.validate({ ...valid, entryFeePaid: true, entryFee: '' })).rejects.toThrow(
+      'cycles.validation.entryFee',
+    )
+    await expect(
+      schema.validate({ ...valid, entryFeePaid: false, entryFee: '' }),
+    ).resolves.toBeTruthy()
   })
 
   it('locks the fields by stage', () => {
@@ -106,6 +155,15 @@ describe('cycle form values and payloads', () => {
     await expect(schema.validate({ ...valid, initialReviewSlaDays: '121' })).rejects.toThrow(
       'cycles.validation.between',
     )
+    await expect(schema.validate({ ...valid, description: { ar: 'نص', en: '' } })).rejects.toThrow(
+      'cycles.validation.descriptionPair',
+    )
+    await expect(
+      schema.validate({ ...valid, description: { ar: 'ت'.repeat(2001), en: 'Text' } }),
+    ).rejects.toThrow('entities.validation.maxChars')
+    await expect(
+      schema.validate({ ...valid, description: { ar: '', en: '' } }),
+    ).resolves.toBeTruthy()
   })
 })
 

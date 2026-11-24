@@ -173,6 +173,9 @@
       "monthLabel": "{label}: month",
       "yearLabel": "{label}: year",
       "openCalendar": "Choose {label} from the calendar",
+      "previousMonth": "Previous month",
+      "nextMonth": "Next month",
+      "dialogLabel": "{label} calendar",
       "incomplete": "Complete the date with the day, month and year."
     },
     "fileUpload": {
@@ -226,7 +229,10 @@
       "done": "Done | Done — 1 selected | Done — {count} selected",
       "search": "Search {label}",
       "searchPlaceholder": "Type to search",
-      "labelSeparator": ":"
+      "labelSeparator": ":",
+      "selectAll": "Select all",
+      "clearAll": "Clear all",
+      "selectedOf": "{count} of {total}"
     },
     "success": {
       "title": "Completed successfully"
@@ -732,17 +738,7 @@
       "noRunning": "No award cycle is running now.",
       "newCyclesOnly": "The changes you publish apply to new award cycles only.",
       "draftsTitle": "One draft cycle is being prepared: | {count} draft cycles are being prepared:",
-      "choiceLegend": "What should happen to the draft cycles?",
-      "choices": {
-        "keep": {
-          "title": "Keep them on their current version",
-          "description": "The draft cycles keep the criteria version they were created with."
-        },
-        "move": {
-          "title": "Move them to the new version",
-          "description": "Every draft cycle is bound to the version you are publishing now."
-        }
-      }
+      "draftsFollow": "Draft cycles follow the published version and are fixed when they open."
     },
     "workspace": {
       "subtitle": "Pick a main criterion in the strip to see its sub-criteria, indicators and weights, and open any item to see or edit it.",
@@ -5186,7 +5182,7 @@
     "groups": {
       "entity": "Entity workspace",
       "assessment": "Assessment requests",
-      "award": "Award"
+      "award": "Award management"
     },
     "previewPlatform": "Preview platform",
     "opensInNewTab": " (opens in a new tab)",
@@ -7086,9 +7082,7 @@
     },
     "editor": {
       "title": "Award cycle",
-      "newTitle": "New award cycle",
       "back": "Back to the cycles",
-      "settings": "Cycle settings",
       "missingTitle": "Cycle not found",
       "missingMessage": "The cycle does not exist or is not available to you.",
       "blockedTitle": "Access denied",
@@ -7096,11 +7090,11 @@
     },
     "form": {
       "sections": {
-        "basics": "Cycle name",
+        "basics": "Identity",
         "windows": "Dates",
-        "assessment": "Regions and criteria",
-        "conditions": "Entry conditions and deadlines",
-        "fee": "Cycle entry fee"
+        "conditions": "Entry conditions",
+        "fee": "Cycle entry fee",
+        "deadlines": "Initial assessment deadline"
       },
       "nameAr": "Name in Arabic",
       "nameEn": "Name in English",
@@ -7115,41 +7109,31 @@
       "lockedHint": "Locked at the current stage of the cycle",
       "regions": "Regions covered",
       "regionsHint": "Only entities of these regions can apply. A region with requests cannot be removed.",
-      "criteriaVersion": "Criteria version",
-      "criteriaVersionHint": "Requests of the cycle stay on this version, even when the criteria are published again.",
-      "publishedVersion": "Version {number} (published)",
-      "boundVersion": "Bound version (reference {id})",
       "minEntityAgeYears": "Minimum entity age in years",
       "disqualificationScore": "Qualification threshold (%)",
-      "disqualificationScoreHint": "Initial results below this percentage need a recorded reason to qualify. Default 60.",
       "thresholdLockedHint": "This cycle has filtering decisions, so its qualification threshold can no longer change.",
       "initialReviewSlaDays": "Initial assessment deadline in days",
       "initialReviewSlaDaysHint": "Counted from the assignment of the initial assessor",
       "participationCertificate": "Participation certificate",
       "participationCertificateHint": "Entities that complete the initial assessment receive a participation certificate.",
       "participationReserved": "Only the System Administrator turns this setting on or off.",
-      "create": "Create the cycle",
-      "save": "Save the changes",
       "created": "The cycle was created as a draft.",
       "updated": "The cycle was updated.",
-      "noChanges": "There are no changes to save.",
       "entryFee": "Entry fee before VAT (SAR)",
-      "entryFeeHint": "0 means free entry. The fee is fixed on each payment when it is created.",
-      "entryFeeDefaultHint": "Leave it empty to use the default award price from Path prices. 0 means free entry.",
       "entryFeeLocked": "The fee cannot change once the submission window has opened."
     },
     "validation": {
       "between": "Enter a whole number from {min} to {max}.",
       "score": "Enter a percentage from 0 to 100 with up to two decimals.",
       "regions": "Choose at least one region.",
-      "version": "No published criteria version is available.",
       "order": {
         "submissionEnd": "The submission end must come after the submission start.",
         "committeeStart": "The committee assessment must start on or after the submission end.",
         "committeeEnd": "The committee assessment end must come after its start.",
         "announcementAt": "The announcement must come on or after the committee assessment end."
       },
-      "entryFee": "Enter a number with at most two decimals, or 0 for free entry."
+      "entryFee": "Enter an amount above zero with at most two decimals.",
+      "descriptionPair": "Write the description in both languages, or leave both empty."
     },
     "actions": {
       "title": "Cycle stage",
@@ -7228,18 +7212,77 @@
         "initial_assessor": "Initial assessors"
       },
       "members": {
-        "title": "Members",
-        "save": "Save the members",
-        "saved": "The members were saved."
+        "title": "Members"
       },
       "assessors": {
-        "title": "Initial assessors",
-        "save": "Save the initial assessors",
-        "saved": "The initial assessors were saved."
-      }
+        "title": "Initial assessors"
+      },
+      "saved": "The cycle team was saved."
     },
     "reason": {
       "title": "Reason for this action"
+    },
+    "setup": {
+      "newTitle": "New award cycle",
+      "counter": "(Step {step} of {total})",
+      "steps": {
+        "identity": "Identity",
+        "dates": "Dates",
+        "conditions": "Conditions",
+        "deadlines": "Deadlines and capacity",
+        "fee": "Fee",
+        "team": "Team",
+        "review": "Review"
+      },
+      "next": "Next",
+      "previous": "Previous",
+      "saveAndNext": "Save and continue",
+      "createDraft": "Create the draft and continue",
+      "saveDraft": "Save as draft",
+      "draftSaved": "The cycle is saved as a draft.",
+      "identity": {
+        "description": "Cycle description",
+        "descriptionAr": "Description in Arabic",
+        "descriptionEn": "Description in English",
+        "descriptionHint": "Plain text shown to entities below the general award introduction. Separate paragraphs with an empty line."
+      },
+      "regions": {
+        "choose": "Choose the regions",
+        "count": "{count} of {total} regions",
+        "locked": "Has requests, so it cannot be removed"
+      },
+      "deadlines": {
+        "later": "The assignment deadline, the start deadline and the maximum requests per assessor will be added here soon."
+      },
+      "team": {
+        "hidden": "The System Administrator and the cycle's Award Secretaries manage the team of this cycle."
+      },
+      "locks": {
+        "readOnly": "You can view this cycle only. The System Administrator and the cycle's Award Secretaries edit it.",
+        "closed": "The cycle is closed, so its settings cannot change.",
+        "draftOnly": "Some fields can change only before submissions open.",
+        "untilSubmissionsClose": "Some fields can no longer change once submissions close.",
+        "untilCommittee": "Some fields can no longer change once the committee assessment starts.",
+        "stage": "Some fields are locked at the current stage of the cycle."
+      },
+      "review": {
+        "title": "Cycle summary",
+        "edit": "Edit",
+        "editStep": "Edit {step}",
+        "empty": "—",
+        "on": "On",
+        "off": "Off",
+        "window": "{start} to {end}",
+        "missingAssessor": "No initial assessor is linked yet, and the cycle cannot open without one."
+      },
+      "fee": {
+        "label": "Entry fee",
+        "paid": "Paid",
+        "paidState": "The cycle is paid: enter the fee before VAT.",
+        "freeState": "The cycle is free: no entry fee.",
+        "free": "Free",
+        "paidAmount": "Paid: SAR {amount} before VAT"
+      }
     }
   },
   "filtering": {
@@ -7346,6 +7389,14 @@
       "figures": "Initial result {initial}%, threshold {threshold}%",
       "reason": "Reason:",
       "note": "Note:"
+    },
+    "bulk": {
+      "action": "Qualify every request at the threshold ({count})",
+      "confirmTitle": "Qualify {count} requests?",
+      "confirmMessage": "{count} requests whose initial result reaches the qualification threshold ({threshold}%) will be qualified for the assessors committee. A decision is recorded for each and the entities are notified. Requests below the threshold stay for an individual decision.",
+      "confirm": "Qualify the requests",
+      "done": "{count} requests were qualified.",
+      "ownNote": "The action leaves out {count} requests you assessed yourself; another filtering officer decides them."
     }
   },
   "award": {

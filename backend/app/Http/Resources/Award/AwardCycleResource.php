@@ -28,6 +28,7 @@ final class AwardCycleResource extends JsonResource
         return [
             'id' => $cycle->id,
             'name' => $cycle->name->toArray(),
+            'description' => $cycle->description?->toArray(),
             'year' => $cycle->year,
             'status' => $cycle->status->value,
             'criteria_version_id' => $cycle->criteria_version_id,

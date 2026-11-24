@@ -1,40 +1,44 @@
 import { describe, expect, it } from 'vitest'
-import { defineComponent, h } from 'vue'
+import { defineComponent, h, nextTick } from 'vue'
 import { mount } from '@vue/test-utils'
 import { useForm } from 'vee-validate'
 import CycleFeeFields from '@/components/award/CycleFeeFields.vue'
 import { createTestGlobals } from '@/test-utils'
 
-function factory(props) {
+function factory(initialValues, locked = new Set(), locale = 'ar') {
   const Host = defineComponent({
     setup() {
-      useForm({ initialValues: { entryFee: '500.00' } })
-      return () => h(CycleFeeFields, props)
+      useForm({ initialValues })
+      return () => h(CycleFeeFields, { locked })
     },
   })
-  return mount(Host, { global: createTestGlobals({ locale: 'ar' }) })
+  return mount(Host, { global: createTestGlobals({ locale }) })
 }
 
 describe('CycleFeeFields', () => {
-  it('lets a draft cycle edit its fee and locks it with the reason once applications open', () => {
-    const editable = factory({ locked: new Set(), quote: null, isNew: false })
-    expect(editable.find('input[name="entryFee"]').attributes('disabled')).toBeUndefined()
-    expect(editable.find('[data-testid="cycle-fee-locked"]').exists()).toBe(false)
-    const locked = factory({
-      locked: new Set(['entryFee']),
-      quote: {
-        priceBeforeVat: '500.00',
-        vatRate: '15.00',
-        vatAmount: '75.00',
-        total: '575.00',
-        currency: 'SAR',
-      },
-      isNew: false,
-    })
+  it('asks only for the amount before VAT once the cycle is paid', async () => {
+    const free = factory({ entryFeePaid: false, entryFee: '' })
+    expect(free.find('input[name="entryFee"]').exists()).toBe(false)
+    expect(free.text()).toContain('الدورة مجانية: لا رسوم دخول.')
+    await free.find('input[name="entryFeePaid"]').setValue(true)
+    await nextTick()
+    expect(free.find('input[name="entryFee"]').exists()).toBe(true)
+    expect(free.find('.pricing-breakdown').exists()).toBe(false)
+    expect(free.text()).not.toContain('0 يعني')
+  })
+
+  it('shows a paid fee in English with its value', () => {
+    const paid = factory({ entryFeePaid: true, entryFee: '750.00' }, new Set(), 'en')
+    expect(paid.find('input[name="entryFee"]').element.value).toBe('750.00')
+    expect(paid.text()).toContain('Paid')
+  })
+
+  it('keeps a locked fee read only with the reason once applications open', () => {
+    const locked = factory({ entryFeePaid: true, entryFee: '500.00' }, new Set(['entryFee']))
+    expect(locked.find('input[name="entryFeePaid"]').attributes('disabled')).toBeDefined()
     expect(locked.find('input[name="entryFee"]').attributes('disabled')).toBeDefined()
     expect(locked.find('[data-testid="cycle-fee-locked"]').text()).toBe(
       'لا تُعدَّل الرسوم بعد فتح نافذة التقديم.',
     )
-    expect(locked.find('.pricing-breakdown').text()).toContain('575.00')
   })
 })

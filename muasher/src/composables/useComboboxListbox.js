@@ -87,6 +87,7 @@ export function useComboboxListbox({ props, emit, isCompact, focusInput, listRef
   }
 
   function remove(option) {
+    if (option.disabled) return
     emit(
       'update:modelValue',
       selectedValues.value.filter((value) => !sameValue(value, option.value)),

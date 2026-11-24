@@ -43,7 +43,7 @@ export async function fillCompletionMessage(page, notes, { outcome = 0 } = {}) {
   const sheet = completionSheet(page)
   await sheet.locator('textarea[name="notes"]').fill(notes)
   await sheet
-    .locator('input[type="date"]')
+    .locator('input[name="deadline"]')
     .fill(new Date(Date.now() + 7 * 86400000).toISOString().slice(0, 10))
   await sheet.locator('.radio-group input').nth(outcome).check()
 }

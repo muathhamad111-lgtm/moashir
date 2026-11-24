@@ -8,12 +8,16 @@ import { ROUTE_NAMES as R } from '@/constants/routeNames'
 import { ROLES } from '@/constants/roles'
 import { sessionUserFor } from '@/test-utils/session'
 
-async function visit(path) {
+async function landOn(path) {
   const router = createRouter({ history: createMemoryHistory(), routes })
   setupGuards(router)
   await router.push(path)
   await router.isReady()
-  return router.currentRoute.value.name
+  return router.currentRoute.value
+}
+
+async function visit(path) {
+  return (await landOn(path)).name
 }
 
 function signIn(roles, extra = {}) {
@@ -51,9 +55,18 @@ describe('award routes — the links of the award notifications', () => {
     expect(await visit('/admin/award/cycles')).toBe(R.AWARD_CYCLES)
     expect(await visit('/admin/award/cycles/new')).toBe(R.AWARD_CYCLE_NEW)
     expect(await visit('/admin/award/cycles/31')).toBe(R.AWARD_CYCLE)
+    expect(await visit('/admin/award/cycles/31/setup')).toBe(R.AWARD_CYCLE)
     signIn([ROLES.REQUEST_FOLLOWER])
     expect(await visit('/admin/award/cycles/31')).toBe(R.AWARD_CYCLE)
     expect(await visit('/admin/award/cycles/new')).toBe(R.ERRORS_FORBIDDEN)
+  })
+
+  it('sends the old cycle page to its setup wizard and keeps the query (B2)', async () => {
+    signIn([ROLES.SYSTEM_ADMIN])
+    expect((await landOn('/admin/award/cycles/31?from=notice')).fullPath).toBe(
+      '/admin/award/cycles/31/setup?from=notice',
+    )
+    expect((await landOn('/admin/award/cycles/new')).fullPath).toBe('/admin/award/cycles/new')
   })
 
   it('gives the filtering screens to the filtering readers only and denies unknown permission keys', async () => {

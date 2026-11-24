@@ -178,6 +178,7 @@ final class EntityPathsPresenter
         return [
             'id' => $cycle->id,
             'name' => $cycle->name->toArray(),
+            'description' => $cycle->description?->toArray(),
             'submission_start' => $cycle->submission_start->toIso8601String(),
             'submission_end' => $cycle->submission_end->toIso8601String(),
             'announcement_at' => $cycle->announcement_at?->toIso8601String(),

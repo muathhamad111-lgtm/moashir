@@ -1,6 +1,12 @@
 import { apiClient } from '@/api/client'
 import { domainRequests } from './domainRequest'
-import { toFilteringDetail, toFilteringMeta, toFilteringRow } from './mappers/award'
+import {
+  toBulkOutcome,
+  toBulkPreview,
+  toFilteringDetail,
+  toFilteringMeta,
+  toFilteringRow,
+} from './mappers/award'
 
 const { read, write } = domainRequests('filtering', 'filtering')
 
@@ -41,6 +47,24 @@ export const filteringService = {
       ),
       toFilteringRow,
     )
+  },
+
+  // «تأهيل كل من بلغ حد التأهل»: the preview is read by deciders only, so 403/404 just hide the action.
+  eligible(cycleId) {
+    return read(
+      'eligible',
+      () => apiClient.get(`/award/cycles/${cycleId}/filtering/qualify-eligible`),
+      undefined,
+      [403, 404],
+    ).then((envelope) => ({ ...envelope, data: toBulkPreview(envelope.data) }))
+  },
+
+  qualifyEligible(cycleId, payload = {}) {
+    return write(
+      'qualifyEligible',
+      () => apiClient.post(`/award/cycles/${cycleId}/filtering/qualify-eligible`, payload),
+      payload,
+    ).then((envelope) => ({ ...envelope, data: toBulkOutcome(envelope.data) }))
   },
 
   disqualify(cycleId, assessmentId, payload) {

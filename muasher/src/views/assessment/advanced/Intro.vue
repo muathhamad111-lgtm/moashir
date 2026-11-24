@@ -5,6 +5,7 @@ import { RouterLink } from 'vue-router'
 import { useHead } from '@unhead/vue'
 import PublicCycleCard from '@/components/award/PublicCycleCard.vue'
 import AdvancedIntroContent from '@/components/award/AdvancedIntroContent.vue'
+import CycleDescriptionText from '@/components/award/CycleDescriptionText.vue'
 import AwardCycleChooser from '@/components/award/AwardCycleChooser.vue'
 import { useAdvancedIntro } from '@/composables/useAdvancedIntro'
 import { ROUTE_NAMES } from '@/constants/routeNames'
@@ -46,5 +47,6 @@ onMounted(intro.load)
       </aside>
     </div>
     <AdvancedIntroContent />
+    <CycleDescriptionText :cycle="displayedCycle" />
   </section>
 </template>

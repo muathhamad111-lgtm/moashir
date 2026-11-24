@@ -79,7 +79,7 @@ export const CYCLE_FILTERING_STATUSES = [
 ]
 
 export const CYCLE_FIELD_GROUPS = {
-  DRAFT_ONLY: ['submissionStart', 'criteriaVersionId', 'scaleKind'],
+  DRAFT_ONLY: ['submissionStart', 'scaleKind'],
   UNTIL_SUBMISSIONS_CLOSE: [
     'submissionEnd',
     'regionIds',
@@ -132,6 +132,7 @@ export const DEFAULT_FILTERING_SORT = '-initial_percent'
 
 export const AWARD_LIMITS = {
   NAME_MAX: 200,
+  DESCRIPTION_MAX: 2000,
   YEAR_MIN: 2000,
   YEAR_MAX: 2200,
   REGIONS_MIN: 1,
@@ -164,7 +165,7 @@ export const AWARD_CODES = {
   DATES_UNORDERED: 'cycle.dates_unordered',
   FIELD_LOCKED: 'cycle.field_locked',
   REGION_HAS_REQUESTS: 'cycle.region_has_requests',
-  VERSION_NOT_PUBLISHED: 'cycle.criteria_version_not_published',
+  NO_PUBLISHED_CRITERIA: 'cycle.no_published_criteria',
   PARTICIPATION_RESERVED: 'cycle.participation_setting_reserved',
   WINDOW_PASSED: 'cycle.submission_window_passed',
   REQUESTS_PENDING: 'cycle.requests_pending',

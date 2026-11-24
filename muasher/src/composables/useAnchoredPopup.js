@@ -1,5 +1,11 @@
 import { onScopeDispose, toValue, watch } from 'vue'
-import { DROPDOWN_METRICS, END_ALIGNED_PLACEMENTS, POPUP_SIDES } from '@/constants/dropdown'
+import {
+  DROPDOWN_METRICS,
+  END_ALIGNED_PLACEMENTS,
+  FIT_ALIGNED_PLACEMENTS,
+  POPUP_SIDES,
+  UNCAPPED_PLACEMENTS,
+} from '@/constants/dropdown'
 import { computePlacement, isRectInView } from '@/utils/dropdown/placement'
 import { rootFontSize, toPixels } from '@/utils/dropdown/cssLength'
 
@@ -17,6 +23,18 @@ function metricsInPixels() {
   return Object.fromEntries(
     Object.entries(DROPDOWN_METRICS).map(([key, length]) => [key, toPixels(length, remSize)]),
   )
+}
+
+function metricsFor(placement) {
+  const metrics = metricsInPixels()
+  if (!UNCAPPED_PLACEMENTS.includes(placement)) return metrics
+  return { ...metrics, maxBlock: Infinity, flipMin: Infinity }
+}
+
+function alignmentOf(placement) {
+  if (END_ALIGNED_PLACEMENTS.includes(placement)) return 'end'
+  if (FIT_ALIGNED_PLACEMENTS.includes(placement)) return 'fit'
+  return 'start'
 }
 
 function viewportSize() {
@@ -95,8 +113,8 @@ export function useAnchoredPopup({
         popup: { inlineSize: popupElement.offsetWidth, blockSize: popupElement.scrollHeight },
         viewport: viewportSize(),
         direction: getComputedStyle(anchorElement).direction,
-        align: END_ALIGNED_PLACEMENTS.includes(toValue(placement)) ? 'end' : 'start',
-        metrics: metricsInPixels(),
+        align: alignmentOf(toValue(placement)),
+        metrics: metricsFor(toValue(placement)),
       }),
     )
   }

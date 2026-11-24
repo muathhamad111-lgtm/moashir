@@ -1,7 +1,6 @@
 @use '../mixins' as *;
 
-.cycles-page,
-.cycle-editor {
+.cycles-page {
   @include flex(column, stretch, flex-start, var(--space-5));
 }
 
@@ -17,8 +16,7 @@
   color: var(--theme-accent-text);
 }
 
-.cycles-page__title,
-.cycle-editor__title {
+.cycles-page__title {
   margin: 0;
   font-size: var(--fs-3xl);
   color: var(--theme-heading);
@@ -55,10 +53,6 @@
   color: var(--theme-text-muted);
 }
 
-.cycle-editor__header {
-  @include flex(column, flex-start, flex-start, var(--space-2));
-}
-
 .cycle-editor__back {
   @include flex(row, center, flex-start, var(--space-2));
   min-block-size: var(--size-touch-target);
@@ -67,26 +61,6 @@
 
   &:focus-visible {
     @include focus-ring;
-  }
-}
-
-.cycle-editor__title-row {
-  @include flex(row, center, flex-start, var(--space-3));
-  flex-wrap: wrap;
-}
-
-.cycle-editor__aside {
-  @include flex(column, stretch, flex-start, var(--space-4));
-}
-
-.cycle-editor__layout {
-  display: grid;
-  gap: var(--space-5);
-  grid-template-columns: 1fr;
-
-  @include respond-to(lg) {
-    grid-template-columns: minmax(0, 1fr) minmax(0, var(--size-panel));
-    align-items: start;
   }
 }
 
@@ -126,6 +100,15 @@
   display: grid;
   gap: var(--space-4);
   grid-template-columns: repeat(auto-fit, minmax(var(--size-control-min), 1fr));
+
+  // Date fields need room for day, month, year and the calendar button: two columns only when both fit.
+  &--dates {
+    grid-template-columns: repeat(auto-fit, minmax(var(--size-date-field-min), 1fr));
+
+    .field__hint {
+      white-space: pre-line;
+    }
+  }
 }
 
 .cycle-form__actions,

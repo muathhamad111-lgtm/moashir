@@ -19,6 +19,7 @@
 @use 'components/dropdown-field';
 @use 'components/icon-field';
 @use 'components/datepicker';
+@use 'components/date-calendar';
 @use 'components/checkbox';
 @use 'components/radio';
 @use 'components/file-upload';
@@ -232,6 +233,7 @@
 @use 'components/advanced-intro';
 @use 'components/award-cycle-choices';
 @use 'components/cycles';
+@use 'components/cycle-setup';
 @use 'components/filtering';
 @use 'components/staff-dashboard';
 @use 'components/dashboard-widgets';

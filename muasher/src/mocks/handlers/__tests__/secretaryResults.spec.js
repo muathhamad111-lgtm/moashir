@@ -314,7 +314,7 @@ describe('results mock — regional, national and announcement', () => {
 })
 
 describe('criteria mock — award cycles on publication (Session 19)', () => {
-  it('lists the running and draft cycles on the check and moves drafts on request', async () => {
+  it('lists the running and draft cycles on the check and always moves the drafts', async () => {
     resetWorld(null)
     seedMockSession({ id: 3, roles: ['criteria_officer'] })
     const draft = (await call('POST', '/criteria/versions', {})).body.data
@@ -325,24 +325,22 @@ describe('criteria mock — award cycles on publication (Session 19)', () => {
       drafts: [{ id: 32 }],
     })
     seedMockSession(P.SYSTEM_ADMIN)
-    expect(
-      (
-        await call('POST', `/criteria/versions/${draft.id}/publish`, {
-          confirm: true,
-          scope: 'new_only',
-          draft_cycles: 'later',
-        })
-      ).status,
-    ).toBe(422)
+    for (const choice of ['keep', 'move']) {
+      const refused = await call('POST', `/criteria/versions/${draft.id}/publish`, {
+        confirm: true,
+        scope: 'new_only',
+        draft_cycles: choice,
+      })
+      expect(refused.status).toBe(422)
+      expect(refused.body.code).toBe('criteria.draft_cycles_follow_published')
+      expect(refused.body.errors).toHaveProperty('draft_cycles')
+    }
     const published = await call('POST', `/criteria/versions/${draft.id}/publish`, {
       confirm: true,
       scope: 'new_only',
-      draft_cycles: 'move',
     })
-    expect(published.body.meta.award_cycles).toMatchObject({
-      draft_cycles: 'move',
-      moved_cycle_ids: [32],
-    })
+    expect(published.body.meta.award_cycles).toMatchObject({ moved_cycle_ids: [32] })
+    expect(published.body.meta.award_cycles).not.toHaveProperty('draft_cycles')
     expect(findCycle(32).criteriaVersionId).toBe(draft.id)
     expect(findCycle(31).criteriaVersionId).not.toBe(draft.id)
   })

@@ -21,7 +21,7 @@ function stepState(index) {
 }
 
 function select(index) {
-  if (!props.clickable || index === props.currentIndex) return
+  if (!props.clickable || props.steps[index].disabled || index === props.currentIndex) return
   emit('select', index)
 }
 </script>
@@ -38,7 +38,7 @@ function select(index) {
         type="button"
         class="wizard__button"
         :aria-current="index === currentIndex ? 'step' : undefined"
-        :disabled="!clickable || undefined"
+        :disabled="!clickable || steps[index].disabled || undefined"
         @click="select(index)"
       >
         <span class="wizard__marker" aria-hidden="true">

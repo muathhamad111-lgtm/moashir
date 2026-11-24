@@ -3,15 +3,23 @@
 .datepicker {
   @include flex(row, center, flex-start, var(--space-1));
   position: relative;
+  // In a narrow column the segments give way, so the calendar button always stays inside the frame.
+  min-inline-size: 0;
 
   &:focus-within {
     @include focus-ring;
     border-color: var(--theme-accent);
   }
+
+  &.is-open {
+    border-color: var(--theme-accent);
+  }
 }
 
 .datepicker__segment {
+  flex: 0 1 var(--size-date-segment);
   inline-size: var(--size-date-segment);
+  min-inline-size: 0;
   padding: 0;
   border: 0;
   background: transparent;
@@ -20,6 +28,7 @@
   text-align: center;
 
   &--year {
+    flex-basis: var(--size-date-year);
     inline-size: var(--size-date-year);
   }
 
@@ -38,6 +47,7 @@
 
 .datepicker__calendar {
   @include flex(row, center, center);
+  flex-shrink: 0;
   margin-inline-start: auto;
   padding: var(--space-1);
   border: 0;
@@ -57,10 +67,4 @@
   &:disabled {
     cursor: not-allowed;
   }
-}
-
-.datepicker__native {
-  @include visually-hidden;
-  inset-block-end: 0;
-  inset-inline-end: 0;
 }

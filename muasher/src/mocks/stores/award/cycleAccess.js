@@ -134,6 +134,14 @@ export function authorizeDecideFiltering(user, cycle, record) {
   throw assessmentReject.forbidden()
 }
 
+// The cycle-wide filtering decisions (bulk qualification): the same deciders as a single request.
+export function authorizeDecideFilteringInCycle(user, cycle) {
+  requireCycle(cycle)
+  if (canDecideFiltering(user, cycle)) return
+  authorizeViewFiltering(user, cycle)
+  throw assessmentReject.forbidden()
+}
+
 export function authorizeAdvancedEntity(user) {
   if (user.entityId === null || !sessionCan(AWARD_PERMISSIONS.ADVANCED_MANAGE))
     throw assessmentReject.forbidden()

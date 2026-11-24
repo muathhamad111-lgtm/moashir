@@ -57,6 +57,17 @@ describe('useValidatedForm', () => {
     expect(logger.breadcrumb).toHaveBeenCalledWith('form', 'test.submit', { fields: ['name'] })
   })
 
+  it('ignores a second submit made while the first is still validating', async () => {
+    const submit = vi.fn()
+    const form = harness(submit)()
+    form.setFieldValue('name', 'جمعية البر')
+    const first = form.onSubmit()
+    const second = form.onSubmit()
+    await Promise.all([first, second])
+    await flushPromises()
+    expect(submit).toHaveBeenCalledTimes(1)
+  })
+
   it('captures failures to Sentry with the payload SHAPE and maps server field errors', async () => {
     const error = new Error('422')
     error.normalized = {

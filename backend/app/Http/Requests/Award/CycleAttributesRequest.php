@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Http\Requests\Award;
 
 use App\Data\Award\CycleAttributes;
+use App\Data\Award\CycleDescriptionChange;
 use App\Rules\PriceOrFreeBeforeVat;
 use App\Support\ScalarValue;
 use App\Support\ValueObjects\LocalizedText;
@@ -18,6 +19,8 @@ abstract class CycleAttributesRequest extends FormRequest
 {
     private const string SCORE_FORMAT = 'regex:/^\d{1,3}(\.\d{1,2})?$/';
 
+    private const int DESCRIPTION_MAX = 2000;
+
     /**
      * @return array<string, mixed>
      */
@@ -28,14 +31,17 @@ abstract class CycleAttributesRequest extends FormRequest
             'name.ar' => ['required_with:name', 'string', 'max:200'],
             'name.en' => ['required_with:name', 'string', 'max:200'],
             'year' => ['sometimes', 'nullable', 'integer', 'between:2000,2200'],
+            'description' => ['sometimes', 'nullable', 'array:ar,en'],
+            'description.ar' => ['required_with:description', 'string', 'max:'.self::DESCRIPTION_MAX],
+            'description.en' => ['required_with:description', 'string', 'max:'.self::DESCRIPTION_MAX],
             'submission_start' => [$presence, 'date'],
             'submission_end' => [$presence, 'date'],
             'committee_start' => [$presence, 'date'],
             'committee_end' => [$presence, 'date'],
             'announcement_at' => ['sometimes', 'nullable', 'date'],
-            'region_ids' => [$presence, 'array', 'min:1', 'max:13'],
+            'region_ids' => ['sometimes', 'array', 'min:1', 'max:13'],
             'region_ids.*' => ['required', 'integer', 'distinct', Rule::exists('regions', 'id')->where('is_active', true)],
-            'criteria_version_id' => [$presence, 'integer', 'min:1'],
+            'criteria_version_id' => ['prohibited'],
             'min_entity_age_years' => ['sometimes', 'nullable', 'integer', 'between:0,100'],
             'disqualification_score' => ['sometimes', 'nullable', 'numeric', 'between:0,100', self::SCORE_FORMAT],
             'initial_review_sla_days' => ['sometimes', 'nullable', 'integer', 'between:1,120'],
@@ -52,18 +58,27 @@ abstract class CycleAttributesRequest extends FormRequest
             $this->filled('year') ? $this->integer('year') : null,
             $this->dates(),
             $this->has('region_ids') ? array_values(array_map(static fn (mixed $id): int => ScalarValue::int($id), (array) $this->input('region_ids'))) : null,
-            $this->filled('criteria_version_id') ? $this->integer('criteria_version_id') : null,
             $this->filled('min_entity_age_years') ? $this->integer('min_entity_age_years') : null,
             $this->filled('disqualification_score') ? Percent::of($this->string('disqualification_score')->toString()) : null,
             $this->filled('initial_review_sla_days') ? $this->integer('initial_review_sla_days') : null,
             $this->has('participation_certificate_enabled') ? $this->boolean('participation_certificate_enabled') : null,
             $this->filled('entry_fee') ? new Money($this->string('entry_fee')->toString()) : null,
+            $this->descriptionChange(),
         );
     }
 
     public function reason(): ?string
     {
         return $this->filled('reason') ? $this->string('reason')->trim()->toString() : null;
+    }
+
+    private function descriptionChange(): ?CycleDescriptionChange
+    {
+        if (! $this->has('description')) {
+            return null;
+        }
+
+        return new CycleDescriptionChange($this->filled('description') ? LocalizedText::fromArray((array) $this->input('description')) : null);
     }
 
     /**

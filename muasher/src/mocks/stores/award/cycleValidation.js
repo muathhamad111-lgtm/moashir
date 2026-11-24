@@ -13,6 +13,8 @@ const REQUIRED_DATES = ['submissionStart', 'submissionEnd', 'committeeStart', 'c
 const SCALE_KINDS = ['of-10', 'relative']
 const SCORE_FORMAT = /^\d{1,3}(\.\d{1,2})?$/
 const NAME_MAX = 200
+const DESCRIPTION_MAX = 2000
+const DESCRIPTION_LOCALES = ['ar', 'en']
 const REGIONS_MAX = 13
 
 function has(body, field) {
@@ -50,6 +52,22 @@ function nameErrors(body, required, errors) {
     if (!text || text.length > NAME_MAX)
       errors[`name.${locale}`] = [
         fieldMessage('validation.between_chars', { min: 1, max: NAME_MAX }, 'name'),
+      ]
+  })
+}
+
+function descriptionErrors(body, errors) {
+  if (!has(body, 'description') || body.description === null) return
+  const keys = isPlainObject(body.description) ? Object.keys(body.description) : null
+  if (!keys || keys.some((key) => !DESCRIPTION_LOCALES.includes(key))) {
+    errors.description = [fieldMessage('validation.invalid', {}, 'description')]
+    return
+  }
+  DESCRIPTION_LOCALES.forEach((locale) => {
+    const text = typeof body.description[locale] === 'string' ? body.description[locale].trim() : ''
+    if (!text || text.length > DESCRIPTION_MAX)
+      errors[`description.${locale}`] = [
+        fieldMessage('validation.between_chars', { min: 1, max: DESCRIPTION_MAX }, 'description'),
       ]
   })
 }
@@ -127,12 +145,11 @@ function feeErrors(body, errors) {
 export function cycleErrors(body, { required }) {
   const errors = {}
   nameErrors(body, required, errors)
+  descriptionErrors(body, errors)
   dateErrors(body, required, errors)
-  regionErrors(body, required, errors)
-  if (has(body, 'criteriaVersionId') || required) {
-    if (!isPositiveInteger(body.criteriaVersionId))
-      errors.criteriaVersionId = [fieldMessage('validation.required', {}, 'criteriaVersionId')]
-  }
+  regionErrors(body, false, errors)
+  if (has(body, 'criteriaVersionId'))
+    errors.criteriaVersionId = [fieldMessage('validation.prohibited', {}, 'criteriaVersionId')]
   conditionErrors(body, errors)
   feeErrors(body, errors)
   if (has(body, 'status')) errors.status = [fieldMessage('validation.invalid', {}, 'toStatus')]

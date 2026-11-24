@@ -1,73 +1,69 @@
 <script setup>
 import { computed, onMounted, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { useRoute, useRouter, RouterLink } from 'vue-router'
+import { RouterLink, useRoute } from 'vue-router'
 import { useHead } from '@unhead/vue'
-import Card from '@/components/ui/Card.vue'
 import PageLoading from '@/components/feedback/PageLoading.vue'
 import ErrorState from '@/components/feedback/ErrorState.vue'
 import EmptyState from '@/components/feedback/EmptyState.vue'
 import ReasonDialog from '@/components/modal/ReasonDialog.vue'
+import AppIcon from '@/components/ui/AppIcon.vue'
 import CycleStatusBadge from '@/components/award/CycleStatusBadge.vue'
-import CycleForm from '@/components/award/CycleForm.vue'
-import CycleActionsCard from '@/components/award/CycleActionsCard.vue'
-import CycleStaffPanel from '@/components/award/CycleStaffPanel.vue'
+import CycleSetupWizard from '@/components/award/CycleSetupWizard.vue'
 import { useCycleEditor } from '@/composables/useCycleEditor'
 import { useCycleTransitions } from '@/composables/useCycleTransitions'
-import { useCycleStaff } from '@/composables/useCycleStaff'
 import { useCycleAuthority } from '@/composables/useCycleAuthority'
 import { useSuperAdminReason } from '@/composables/useSuperAdminReason'
 import { AWARD_LIMITS } from '@/constants/advanced'
 import { ROUTE_NAMES } from '@/constants/routeNames'
 import { localizedText } from '@/utils/localizedText'
-import AppIcon from '@/components/ui/AppIcon.vue'
 
 const { t, locale } = useI18n()
 const route = useRoute()
-const router = useRouter()
 const cycleId = computed(() => (route.params.id ? Number(route.params.id) : null))
 const editor = useCycleEditor(cycleId)
-const { status, errorMessage, cycle, published, regions, openBlock, isNew, initialValues, locked } =
-  editor
+const { status, errorMessage, cycle } = editor
 const { prompt: reasonPrompt, reasonExtra } = useSuperAdminReason()
 const transitions = useCycleTransitions({ editor, reasonExtra })
-const staff = useCycleStaff({ editor, reasonExtra })
-const { isSystemAdministrator, canCreate, canReopen } = useCycleAuthority()
+const { canReopen } = useCycleAuthority()
 const reopenOpen = ref(false)
+const loads = ref(0)
 
 const title = computed(() =>
-  isNew.value
-    ? t('cycles.editor.newTitle')
-    : `${localizedText(cycle.value?.name, locale.value)} ${cycle.value?.year ?? ''}`.trim(),
+  cycle.value
+    ? `${localizedText(cycle.value.name, locale.value)} ${cycle.value.year ?? ''}`.trim()
+    : t('cycles.setup.newTitle'),
 )
-const editable = computed(() => (isNew.value ? canCreate.value : Boolean(cycle.value?.canManage)))
 
-useHead({ title: () => title.value || t('cycles.editor.title') })
+useHead({ title: () => title.value })
 
-function onCreated(detail) {
-  router.replace({ name: ROUTE_NAMES.AWARD_CYCLE, params: { id: detail.id } })
+async function load() {
+  await editor.load()
+  loads.value += 1
 }
 
-onMounted(editor.load)
-watch(cycleId, editor.load)
+onMounted(load)
+watch(cycleId, (id) => {
+  if (cycle.value?.id !== id) load()
+})
 </script>
 
 <template>
-  <section class="cycle-editor">
-    <header class="cycle-editor__header">
+  <section class="cycle-setup">
+    <header class="cycle-setup__header">
       <RouterLink class="cycle-editor__back" :to="{ name: ROUTE_NAMES.AWARD_CYCLES }">
         <AppIcon name="arrow-left" />
         {{ t('cycles.editor.back') }}
       </RouterLink>
-      <div class="cycle-editor__title-row">
-        <h1 class="cycle-editor__title">
+      <div class="cycle-setup__title-row">
+        <h1 class="cycle-setup__title">
           {{ status === 'ready' ? title : t('cycles.editor.title') }}
         </h1>
         <CycleStatusBadge v-if="cycle" :status="cycle.status" />
       </div>
     </header>
     <PageLoading v-if="status === 'loading'" />
-    <ErrorState v-else-if="status === 'error'" :message="errorMessage" @retry="editor.load" />
+    <ErrorState v-else-if="status === 'error'" :message="errorMessage" @retry="load" />
     <EmptyState
       v-else-if="status === 'missing'"
       icon="folder"
@@ -80,42 +76,15 @@ watch(cycleId, editor.load)
       :title="t('cycles.editor.blockedTitle')"
       :message="errorMessage || t('cycles.editor.blockedMessage')"
     />
-    <div v-else class="cycle-editor__layout">
-      <Card class="cycle-editor__main" :title="t('cycles.editor.settings')">
-        <CycleForm
-          :key="cycle?.updatedAt ?? 'new'"
-          :cycle-id="cycleId"
-          :initial-values="initialValues"
-          :locked="locked"
-          :regions="regions"
-          :published="published"
-          :can-set-participation="isSystemAdministrator"
-          :threshold-locked="cycle?.thresholdLocked === true"
-          :editable="editable"
-          :reason-extra="reasonExtra"
-          :fee-quote="cycle?.entryFeeQuote ?? null"
-          @created="onCreated"
-          @updated="editor.apply"
-          @locked="editor.lockFields"
-        />
-      </Card>
-      <aside v-if="cycle" class="cycle-editor__aside">
-        <CycleActionsCard
-          :cycle="cycle"
-          :busy="transitions.busy.value"
-          :open-block="openBlock"
-          :blocked="transitions.blocked.value"
-          :can-reopen="canReopen"
-          @run="transitions.confirmAndRun"
-          @reopen="reopenOpen = true"
-        />
-        <CycleStaffPanel
-          v-if="cycle.revealsStaff"
-          :staff="staff"
-          :editable="cycle.canManage && cycle.status !== 'closed'"
-        />
-      </aside>
-    </div>
+    <CycleSetupWizard
+      v-else
+      :key="loads"
+      :editor="editor"
+      :transitions="transitions"
+      :reason-extra="reasonExtra"
+      :can-reopen="canReopen"
+      @reopen="reopenOpen = true"
+    />
     <ReasonDialog
       v-model="reasonPrompt.open.value"
       :title="t('cycles.reason.title')"

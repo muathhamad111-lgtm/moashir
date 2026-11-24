@@ -279,9 +279,9 @@ export const assessmentMessages = {
     ar: 'لا يمكن إزالة منطقة لديها طلبات في هذه الدورة.',
     en: 'A region that already has requests in this cycle cannot be removed.',
   },
-  'cycle.criteria_version_not_published': {
-    ar: 'اختر إصدار المعايير المنشور.',
-    en: 'Choose the published criteria version.',
+  'cycle.no_published_criteria': {
+    ar: 'لا يوجد إصدار منشور للمعايير. انشر المعايير قبل إنشاء دورة الجائزة.',
+    en: 'No criteria version is published. Publish the criteria before creating an award cycle.',
   },
   'cycle.participation_setting_reserved': {
     ar: 'لا يفعّل شهادة المشاركة في الدورة أو يوقفها إلا مدير النظام.',
@@ -472,6 +472,7 @@ export const assessmentAttributes = {
   toStatus: { ar: 'الحالة المستهدفة', en: 'target status' },
   settings: { ar: 'الإعداد', en: 'setting' },
   name: { ar: 'اسم الدورة', en: 'cycle name' },
+  description: { ar: 'تعريف الدورة', en: 'cycle description' },
   year: { ar: 'السنة', en: 'year' },
   submissionStart: { ar: 'بداية التقديم', en: 'submission start' },
   submissionEnd: { ar: 'نهاية التقديم', en: 'submission end' },

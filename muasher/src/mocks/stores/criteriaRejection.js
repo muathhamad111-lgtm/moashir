@@ -70,6 +70,10 @@ export const reject = {
     new CriteriaRejection(422, 'criteria.clone_source_invalid', {
       fields: { cloneFromVersionId: [fieldMessage('criteria.clone_source_invalid')] },
     }),
+  draftCyclesFollowPublished: () =>
+    new CriteriaRejection(422, 'criteria.draft_cycles_follow_published', {
+      fields: { draftCycles: [fieldMessage('criteria.draft_cycles_follow_published')] },
+    }),
   scopeRequired: () =>
     new CriteriaRejection(422, 'criteria.scope_required', {
       fields: { scope: [fieldMessage('criteria.scope_required')] },

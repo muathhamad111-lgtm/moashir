@@ -95,8 +95,8 @@ export const criteriaService = {
       { expectedStatuses: DOMAIN_REJECTION },
     )
   },
-  publishVersion(versionId, { scope = null, reason = null, draftCycles = null } = {}) {
-    const payload = { confirm: true, scope, reason, ...(draftCycles ? { draftCycles } : {}) }
+  publishVersion(versionId, { scope = null, reason = null } = {}) {
+    const payload = { confirm: true, scope, reason }
     return write(
       'publishVersion',
       () => apiClient.post(`/criteria/versions/${versionId}/publish`, payload),

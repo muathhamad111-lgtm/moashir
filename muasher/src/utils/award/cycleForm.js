@@ -1,4 +1,4 @@
-import { array, boolean, number, object, string } from 'yup'
+import { array, boolean, object, string } from 'yup'
 import {
   AWARD_LIMITS,
   CYCLE_FIELD_GROUPS,
@@ -24,46 +24,57 @@ const DATE_BOUNDARY = {
   committeeEnd: endOfRiyadhDay,
   announcementAt: startOfRiyadhDay,
 }
-const NUMBER_FIELDS = ['year', 'minEntityAgeYears', 'initialReviewSlaDays', 'criteriaVersionId']
+const NUMBER_FIELDS = ['year', 'minEntityAgeYears', 'initialReviewSlaDays']
 
 function dateKeyOf(value) {
   return value ? riyadhDateKey(value) : ''
 }
 
-export function cycleFormValues(cycle, { defaults, published }) {
+const FREE_FEE = '0'
+
+function feeValues(entryFee) {
+  const paid = Number(entryFee ?? 0) > 0
+  return { entryFeePaid: paid, entryFee: paid ? entryFee : '' }
+}
+
+function descriptionValue(description) {
+  return { ar: description?.ar ?? '', en: description?.en ?? '' }
+}
+
+export function cycleFormValues(cycle, { defaults }) {
   if (!cycle) {
     return {
       name: { ar: '', en: '' },
       year: '',
+      description: descriptionValue(null),
       submissionStart: '',
       submissionEnd: '',
       committeeStart: '',
       committeeEnd: '',
       announcementAt: '',
       regionIds: [],
-      criteriaVersionId: published?.versionId ?? null,
       minEntityAgeYears: String(defaults?.minEntityAgeYears ?? ''),
       disqualificationScore: defaults?.disqualificationScore ?? '',
       initialReviewSlaDays: String(defaults?.initialReviewSlaDays ?? ''),
       participationCertificateEnabled: false,
-      entryFee: defaults?.entryFee ?? '',
+      ...feeValues(defaults?.entryFee),
     }
   }
   return {
     name: { ar: cycle.name?.ar ?? '', en: cycle.name?.en ?? '' },
     year: String(cycle.year ?? ''),
+    description: descriptionValue(cycle.description),
     submissionStart: dateKeyOf(cycle.submissionStart),
     submissionEnd: dateKeyOf(cycle.submissionEnd),
     committeeStart: dateKeyOf(cycle.committeeStart),
     committeeEnd: dateKeyOf(cycle.committeeEnd),
     announcementAt: dateKeyOf(cycle.announcementAt),
     regionIds: cycle.regions.map((region) => region.id),
-    criteriaVersionId: cycle.criteriaVersionId,
     minEntityAgeYears: String(cycle.conditions.minEntityAgeYears ?? ''),
     disqualificationScore: cycle.conditions.disqualificationScore ?? '',
     initialReviewSlaDays: String(cycle.initialReviewSlaDays ?? ''),
     participationCertificateEnabled: cycle.participationCertificateEnabled,
-    entryFee: cycle.entryFee ?? '',
+    ...feeValues(cycle.entryFee),
   }
 }
 
@@ -76,6 +87,18 @@ function integerField(t, min, max) {
       t('cycles.validation.between', { min, max }),
       (value) => !value || (/^\d+$/.test(value) && Number(value) >= min && Number(value) <= max),
     )
+}
+
+function descriptionText(t, other) {
+  return string()
+    .trim()
+    .max(
+      AWARD_LIMITS.DESCRIPTION_MAX,
+      t('entities.validation.maxChars', { max: AWARD_LIMITS.DESCRIPTION_MAX }),
+    )
+    .test('pair', t('cycles.validation.descriptionPair'), function check(value) {
+      return Boolean(value) || !this.parent[other]?.trim()
+    })
 }
 
 function orderedDate(t, [field, previous, inclusive], required) {
@@ -119,13 +142,13 @@ export function cycleSchema(t) {
             Number(value) >= AWARD_LIMITS.YEAR_MIN &&
             Number(value) <= AWARD_LIMITS.YEAR_MAX),
       ),
+    description: object({ ar: descriptionText(t, 'en'), en: descriptionText(t, 'ar') }),
     submissionStart: string().required(t('validation.required')),
     submissionEnd: dates.submissionEnd,
     committeeStart: dates.committeeStart,
     committeeEnd: dates.committeeEnd,
     announcementAt: dates.announcementAt,
     regionIds: array().min(AWARD_LIMITS.REGIONS_MIN, t('cycles.validation.regions')),
-    criteriaVersionId: number().nullable().required(t('cycles.validation.version')),
     minEntityAgeYears: integerField(t, AWARD_LIMITS.AGE_MIN, AWARD_LIMITS.AGE_MAX),
     disqualificationScore: string()
       .trim()
@@ -137,20 +160,35 @@ export function cycleSchema(t) {
       ),
     initialReviewSlaDays: integerField(t, AWARD_LIMITS.SLA_MIN, AWARD_LIMITS.SLA_MAX),
     participationCertificateEnabled: boolean(),
+    entryFeePaid: boolean(),
     entryFee: string()
       .transform((value) => toWesternDigits(value ?? '').trim())
-      .test(
-        'fee',
-        t('cycles.validation.entryFee'),
-        (value) => !value || FINANCE_SETTINGS_RULES.PRICE_INPUT_PATTERN.test(value),
-      ),
+      .test('fee', t('cycles.validation.entryFee'), function check(value) {
+        return !this.parent.entryFeePaid || isPaidFee(value)
+      }),
   })
+}
+
+function isPaidFee(value) {
+  return FINANCE_SETTINGS_RULES.PRICE_INPUT_PATTERN.test(value ?? '') && Number(value) > 0
+}
+
+function withFeeChoice(values) {
+  if (!Object.hasOwn(values, 'entryFeePaid')) return values
+  const { entryFeePaid, ...rest } = values
+  return { ...rest, entryFee: entryFeePaid ? values.entryFee : FREE_FEE }
+}
+
+function descriptionWire(value) {
+  const text = { ar: value.ar.trim(), en: value.en.trim() }
+  return text.ar || text.en ? text : null
 }
 
 function wireValue(field, value) {
   if (Object.hasOwn(DATE_BOUNDARY, field)) return value ? DATE_BOUNDARY[field](value) : null
   if (NUMBER_FIELDS.includes(field)) return value === '' || value === null ? null : Number(value)
   if (field === 'name') return { ar: value.ar.trim(), en: value.en.trim() }
+  if (field === 'description') return descriptionWire(value)
   if (field === 'disqualificationScore') return Number(value).toFixed(2)
   if (field === 'entryFee') return value === '' || value === null ? null : priceString(value)
   return value
@@ -163,10 +201,12 @@ function payloadFields(values, { includeParticipation }) {
 }
 
 function omitted(field, values) {
+  if (field === 'description') return descriptionWire(values.description) === null
   return ['year', 'entryFee'].includes(field) && (values[field] ?? '') === ''
 }
 
-export function cyclePayload(values, { includeParticipation }) {
+export function cyclePayload(choice, { includeParticipation }) {
+  const values = withFeeChoice(choice)
   return Object.fromEntries(
     payloadFields(values, { includeParticipation })
       .filter((field) => !omitted(field, values))
@@ -178,7 +218,9 @@ function sameValue(left, right) {
   return JSON.stringify(left) === JSON.stringify(right)
 }
 
-export function changedCyclePayload(values, initial, { includeParticipation, locked }) {
+export function changedCyclePayload(choice, initialChoice, { includeParticipation, locked }) {
+  const values = withFeeChoice(choice)
+  const initial = withFeeChoice(initialChoice)
   return Object.fromEntries(
     payloadFields(values, { includeParticipation })
       .filter(
@@ -197,6 +239,7 @@ export function lockedCycleFields(status) {
     return new Set([
       'name',
       'year',
+      'description',
       ...Object.values(CYCLE_FIELD_GROUPS).flat(),
       'announcementAt',
       'participationCertificateEnabled',

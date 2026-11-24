@@ -125,7 +125,6 @@ test('the staff of the award cycle sign in and a new entity registers', async ()
 
 test('the administrator prepares and opens an award cycle with its members and initial assessor', async () => {
   const { page } = sessions.admin
-  const criteria = await apiOk(page, 'GET', '/assessments/criteria')
   const regions = await apiOk(page, 'GET', '/regions')
   flow.assessorId = await userIdOf(page, STAFF.assessor)
   const cycle = await apiOk(page, 'POST', '/award/cycles', {
@@ -136,7 +135,6 @@ test('the administrator prepares and opens an award cycle with its members and i
       committee_start: inDays(40),
       committee_end: inDays(60),
       region_ids: regions.data.map((region) => region.id),
-      criteria_version_id: criteria.data.version_id,
     },
   })
   flow.cycleId = cycle.data.id
@@ -241,7 +239,7 @@ test('the administrator appoints the committee assessor and starts the committee
   await page.goto(`/admin/award/cycles/${flow.cycleId}`)
   await page.locator('.cycle-actions button', { hasText: 'بدء تقييم اللجنة' }).click()
   await decisionAction(page).click()
-  await expect(page.locator('.cycle-editor__title-row')).toContainText('تقييم اللجنة')
+  await expect(page.locator('.cycle-setup__title-row')).toContainText('تقييم اللجنة')
   expect(watch.unexpected([GUEST_SESSION_PROBE, ...FOOTER_LEGAL_PROBES])).toEqual([])
 })
 

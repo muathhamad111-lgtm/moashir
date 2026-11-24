@@ -17,6 +17,7 @@ import PathPrimaryAction from '@/components/paths/PathPrimaryAction.vue'
 import AwardCycleCard from '@/components/paths/AwardCycleCard.vue'
 import PathRequestsList from '@/components/paths/PathRequestsList.vue'
 import AwardOpenCyclesList from '@/components/paths/AwardOpenCyclesList.vue'
+import CycleDescriptionText from '@/components/award/CycleDescriptionText.vue'
 import { usePathNames } from '@/composables/usePathNames'
 import { useAwardApplication } from '@/composables/useAwardApplication'
 import { useAwardCycleChoice } from '@/composables/useAwardCycleChoice'
@@ -104,6 +105,7 @@ onMounted(reload)
       </PathHeaderCard>
     </PathHeader>
     <div class="path-page__body">
+      <CycleDescriptionText v-if="visible" :cycle="award.cycle" />
       <ErrorState
         v-if="status === 'error' && !paths"
         :message="t('paths.pages.loadError')"

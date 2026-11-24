@@ -8,6 +8,7 @@ import { ADVANCED_STATES, isAdvancedOpen } from './advancedStates'
 import { allCycles } from './cycleStore'
 import { awardReject } from './awardRejection'
 import { assertMayStart, openBlockOf } from './cycleConcurrency'
+import { followPublished, publishedVersion } from './cycleCriteria'
 import {
   announceCycleClosed,
   announceCycleOpenDeferred,
@@ -41,7 +42,7 @@ function requestsOf(cycle) {
 
 function openSubmissions(cycle, at) {
   const startsLater = Date.parse(cycle.submissionStart) > Date.parse(at)
-  Object.assign(cycle, {
+  Object.assign(cycle, followPublished(cycle), {
     status: 'submission-open',
     openedAt: at,
     submissionStart: startsLater ? at : cycle.submissionStart,
@@ -91,6 +92,7 @@ export function openCycle(user, cycle, body) {
   if (!hasActiveAssessor(cycle))
     throw assessmentReject.coded(422, 'cycle.no_initial_assessors', 'initialAssessorIds')
   assertMayStart(cycle, 'submission-open')
+  publishedVersion()
   openSubmissions(cycle, nowIso())
   return cycle
 }

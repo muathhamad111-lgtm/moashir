@@ -113,6 +113,35 @@ describe('useAnchoredPopup', () => {
     expect(variable(popup, '--dropdown-inline-start')).toBe('1116px')
   })
 
+  it('gives a calendar month its full height and flips it above when it fits better there', async () => {
+    const anchor = anchorAt({ left: 200, top: 500 })
+    const calendar = popupOf({ inlineSize: 340, blockSize: 380 })
+    const { isOpen } = setup({ anchor, popup: calendar, placement: 'calendar' })
+    isOpen.value = true
+    await nextTick()
+    expect(calendar.dataset.side).toBe('above')
+    expect(variable(calendar, '--dropdown-max-block-size')).toBe('488px')
+
+    const list = popupOf({ inlineSize: 300, blockSize: 380 })
+    const field = setup({ anchor, popup: list })
+    field.isOpen.value = true
+    await nextTick()
+    expect(list.dataset.side).toBe('below')
+    expect(variable(list, '--dropdown-max-block-size')).toBe('320px')
+  })
+
+  it('ends a calendar at the field end edge when the start edge leaves no room (RTL and LTR)', async () => {
+    const ltrField = anchorAt({ left: 1107, top: 100, width: 221 })
+    const ltrCalendar = popupOf({ inlineSize: 340, blockSize: 380 })
+    setup({ anchor: ltrField, popup: ltrCalendar, placement: 'calendar' }).isOpen.value = true
+    const rtlField = anchorAt({ left: 112, top: 100, width: 221, direction: 'rtl' })
+    const rtlCalendar = popupOf({ inlineSize: 340, blockSize: 380 })
+    setup({ anchor: rtlField, popup: rtlCalendar, placement: 'calendar' }).isOpen.value = true
+    await nextTick()
+    expect(variable(ltrCalendar, '--dropdown-inline-start')).toBe('988px')
+    expect(variable(rtlCalendar, '--dropdown-inline-start')).toBe('988px')
+  })
+
   it('repositions on scroll and dismisses when the field leaves the view', async () => {
     let top = 100
     const anchor = anchorAt({ left: 200, top })

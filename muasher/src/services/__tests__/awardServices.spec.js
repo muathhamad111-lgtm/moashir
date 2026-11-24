@@ -30,6 +30,7 @@ const cycleWire = {
   year: 2026,
   status: 'submission-open',
   criteriaVersionId: 1,
+  description: null,
   scaleKind: 'of-10',
   submissionStart: '2026-10-01T00:00:00Z',
   submissionEnd: '2026-12-15T20:59:00Z',
@@ -83,6 +84,33 @@ describe('awardCycleService', () => {
       revealsStaff: false,
       members: [],
       initialAssessors: [],
+    })
+  })
+
+  it('maps the cycle description and the locked regions (B2)', async () => {
+    apiClient.get.mockResolvedValue(
+      answer({
+        ...cycleWire,
+        description: { ar: 'تعريف الدورة', en: 'Cycle description' },
+        lockedRegionIds: [1],
+        canManage: true,
+      }),
+    )
+    expect((await awardCycleService.get(31)).data).toMatchObject({
+      description: { ar: 'تعريف الدورة', en: 'Cycle description' },
+      lockedRegionIds: [1],
+    })
+    apiClient.get.mockResolvedValue(answer({ ...cycleWire, description: null }))
+    expect((await awardCycleService.get(31)).data).toMatchObject({
+      description: null,
+      lockedRegionIds: [],
+    })
+    apiClient.get.mockResolvedValue(
+      answer({ id: 31, description: { ar: 'تعريف', en: 'Text' }, regions: [], conditions: {} }),
+    )
+    expect((await awardCycleService.getCurrent()).data.description).toEqual({
+      ar: 'تعريف',
+      en: 'Text',
     })
   })
 

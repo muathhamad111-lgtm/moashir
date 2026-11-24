@@ -316,19 +316,12 @@ describe('entity result and criteria publication', () => {
     expect(data.award).toMatchObject({ status: 'national-winner', nationalRank: 1 })
   })
 
-  it('sends the draft cycle choice only when given', async () => {
+  it('publishes without a draft cycle choice, since draft cycles follow the published version', async () => {
     apiClient.post.mockResolvedValue(answer({ id: 4 }))
-    await criteriaService.publishVersion(4, { scope: 'new_only', draftCycles: 'move' })
+    await criteriaService.publishVersion(4, { scope: 'new_only' })
     expect(apiClient.post).toHaveBeenLastCalledWith('/criteria/versions/4/publish', {
       confirm: true,
       scope: 'new_only',
-      reason: null,
-      draftCycles: 'move',
-    })
-    await criteriaService.publishVersion(4, { scope: 'all' })
-    expect(apiClient.post).toHaveBeenLastCalledWith('/criteria/versions/4/publish', {
-      confirm: true,
-      scope: 'all',
       reason: null,
     })
   })

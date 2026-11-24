@@ -113,6 +113,33 @@ describe('Task-79 contract mappers', () => {
     expect(board.nextStep.context.periodEndsOn).toBe('2027-03-31')
   })
 
+  it('maps the description of the award cycle shown on the award path (R-5)', () => {
+    const award = (cycle) =>
+      toEntityBoard(
+        fromWire({
+          ...BOARD,
+          widgets: BOARD.widgets.map((widget) =>
+            widget.key === 'paths'
+              ? { ...widget, data: { ...widget.data, award: { ...widget.data.award, cycle } } }
+              : widget,
+          ),
+        }),
+      ).paths.award.cycle
+    const cycle = {
+      id: 31,
+      name: { ar: 'الدورة', en: 'Cycle' },
+      submission_start: '2027-01-01T00:00:00+00:00',
+      submission_end: '2027-02-01T00:00:00+00:00',
+      regions: [],
+      entry_fee: null,
+    }
+    expect(award({ ...cycle, description: { ar: 'تعريف', en: 'Text' } }).description).toEqual({
+      ar: 'تعريف',
+      en: 'Text',
+    })
+    expect(award({ ...cycle, description: null }).description).toBeNull()
+  })
+
   it('maps the periodic, submission, apply and pricing keys of accredited/current', () => {
     const current = toAccreditedCurrent(
       fromWire({

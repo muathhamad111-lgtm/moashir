@@ -1,12 +1,12 @@
-import { CRITERIA_VERSION_STATUSES } from '@/constants/criteria'
 import { assessmentReject } from '../assessments/assessmentRejection'
 import { allAssessments } from '../assessments/assessmentsStore'
-import { findVersion } from '../criteriaStore'
+import { activeRegions } from '../regionsStore'
 import { sessionCan } from '../sessionPermissions'
 import { nowIso } from '../accredited/accreditedRecords'
 import { throwIfErrors, trimmed } from '../accredited/accreditedValidation'
 import { cycleDefaults, defaultEntryFee } from './cycleDefaults'
 import { insertCycle } from './cycleStore'
+import { followPublished, publishedVersion } from './cycleCriteria'
 import { managesEveryCycle } from './cycleAccess'
 import {
   DATE_FIELDS,
@@ -21,7 +21,7 @@ const RIYADH_OFFSET_MS = 3 * 60 * 60 * 1000
 const SECRETARY_PERMISSION = 'award.secretary.decide'
 
 const FIELD_STAGES = {
-  draftOnly: { fields: ['submissionStart', 'criteriaVersionId', 'scaleKind'], statuses: ['draft'] },
+  draftOnly: { fields: ['submissionStart', 'scaleKind'], statuses: ['draft'] },
   untilSubmissionsClose: {
     fields: ['submissionEnd', 'regionIds', 'minEntityAgeYears', 'disqualificationScore'],
     statuses: ['draft', 'submission-open'],
@@ -35,10 +35,10 @@ const FIELD_STAGES = {
 
 const EDITABLE_FIELDS = [
   'name',
+  'description',
   'year',
   ...DATE_FIELDS,
   'regionIds',
-  'criteriaVersionId',
   'scaleKind',
   'minEntityAgeYears',
   'disqualificationScore',
@@ -71,10 +71,8 @@ function assertParticipation(user, body) {
   }
 }
 
-function assertPublishedVersion(versionId) {
-  if (findVersion(versionId)?.status !== CRITERIA_VERSION_STATUSES.PUBLISHED) {
-    throw assessmentReject.coded(422, 'cycle.criteria_version_not_published', 'criteriaVersionId')
-  }
+function descriptionOf(value) {
+  return value ? { ar: value.ar.trim(), en: value.en.trim() } : null
 }
 
 function isoOf(value) {
@@ -86,11 +84,11 @@ function attributesOf(body) {
   if (Object.hasOwn(body, 'name'))
     attributes.name = { ar: body.name.ar.trim(), en: body.name.en.trim() }
   if (filled(body.year)) attributes.year = Number(body.year)
+  if (Object.hasOwn(body, 'description')) attributes.description = descriptionOf(body.description)
   DATE_FIELDS.forEach((field) => {
     if (Object.hasOwn(body, field)) attributes[field] = isoOf(body[field])
   })
   if (Object.hasOwn(body, 'regionIds')) attributes.regionIds = body.regionIds.map(Number)
-  if (filled(body.criteriaVersionId)) attributes.criteriaVersionId = Number(body.criteriaVersionId)
   if (filled(body.scaleKind)) attributes.scaleKind = body.scaleKind
   if (filled(body.minEntityAgeYears)) attributes.minEntityAgeYears = Number(body.minEntityAgeYears)
   if (filled(body.disqualificationScore))
@@ -113,13 +111,15 @@ export function createCycle(user, body) {
   throwIfErrors(storeDateOrderErrors(body))
   assertReason(user, body)
   assertParticipation(user, body)
-  assertPublishedVersion(body.criteriaVersionId)
+  const version = publishedVersion()
   const attributes = attributesOf(body)
-  const version = findVersion(attributes.criteriaVersionId)
   const at = nowIso()
   return insertCycle({
     year: riyadhYear(attributes.submissionStart),
+    description: null,
     announcementAt: null,
+    regionIds: activeRegions().map((region) => region.id),
+    criteriaVersionId: version.id,
     scaleKind: version.scaleKind,
     ...cycleDefaults(),
     entryFee: defaultEntryFee(),
@@ -180,8 +180,6 @@ export function updateCycle(user, cycle, body) {
   const touched = Object.keys(attributes).filter((field) => EDITABLE_FIELDS.includes(field))
   const locked = touched.filter((field) => !isEditable(cycle.status, field))
   if (locked.length) throw awardReject.fieldsLocked(locked.map(wireName))
-  if (attributes.criteriaVersionId !== undefined)
-    assertPublishedVersion(attributes.criteriaVersionId)
   const dates = Object.fromEntries(
     DATE_FIELDS.map((field) => [
       field,
@@ -193,6 +191,6 @@ export function updateCycle(user, cycle, body) {
   if (attributes.regionIds) assertRegionsKept(cycle, attributes.regionIds)
   assertThresholdOpen(cycle, attributes)
   if (changedFields(cycle, attributes).length)
-    Object.assign(cycle, attributes, { updatedAt: nowIso() })
+    Object.assign(cycle, attributes, followPublished(cycle), { updatedAt: nowIso() })
   return cycle
 }

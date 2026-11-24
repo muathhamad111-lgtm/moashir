@@ -93,14 +93,14 @@ test.describe('Award committee roster and start', () => {
     await expect(rows(page)).toHaveCount(2)
     await shot(page, 'committee-roster', testInfo)
     await page.locator('.sidebar a[href="/admin/award/cycles"]').click()
-    await page.locator('a[href="/admin/award/cycles/31"]').first().click()
+    await page.locator('a[href="/admin/award/cycles/31/setup"]').first().click()
     await page
       .locator('.cycle-actions button', {
         hasText: text(testInfo, 'Start the committee assessment', 'بدء تقييم اللجنة'),
       })
       .click()
     await page.locator('.modal .btn--primary').click()
-    await expect(page.locator('.cycle-editor__title-row')).toContainText(
+    await expect(page.locator('.cycle-setup__title-row')).toContainText(
       text(testInfo, 'Committee assessment', 'تقييم اللجنة'),
     )
     await page.locator('.cycle-actions a[href="/admin/award/cycles/31/committee"]').click()
@@ -317,7 +317,7 @@ test.describe('Users, settings and criteria alignment', () => {
     expect(errors).toEqual([])
   })
 
-  test('the criteria review explains that the running cycle keeps its version and offers keep or move', async ({
+  test('the criteria review explains that the running cycle keeps its version and the drafts follow the published one', async ({
     page,
   }, testInfo) => {
     const errors = trackConsole(page)
@@ -336,9 +336,13 @@ test.describe('Users, settings and criteria alignment', () => {
       text(testInfo, 'stays on its criteria version', 'تبقى دورة الجائزة الجارية'),
     )
     const dialog = page.locator('.criteria-review-page')
-    await expect(dialog.locator('.cycle-bindings__option')).toHaveCount(2)
-    await expect(dialog.locator('.cycle-bindings__option.is-selected')).toContainText(
-      text(testInfo, 'Keep them on their current version', 'إبقاؤها على إصدارها الحالي'),
+    await expect(dialog.locator('.cycle-bindings input[type="radio"]')).toHaveCount(0)
+    await expect(dialog.locator('[data-testid="cycle-bindings-drafts-follow"]')).toHaveText(
+      text(
+        testInfo,
+        'Draft cycles follow the published version and are fixed when they open.',
+        'دورات المسودة تتبع الإصدار المنشور تلقائيًا وتُثبَّت عند فتحها.',
+      ),
     )
     await shot(page, 'criteria-publish-cycles', testInfo)
     expect(errors).toEqual([])

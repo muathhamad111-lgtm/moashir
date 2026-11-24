@@ -30,6 +30,7 @@ const CYCLE_KEYS = [
   'counts',
   'created_at',
   'criteria_version_id',
+  'description',
   'entry_fee',
   'entry_fee_editable',
   'entry_fee_quote',
@@ -52,6 +53,7 @@ const PUBLIC_KEYS = [
   'committee_end',
   'committee_start',
   'conditions',
+  'description',
   'id',
   'is_accepting_applications',
   'name',
@@ -84,7 +86,6 @@ function newCycleBody(overrides = {}) {
     committee_start: inDays(350),
     committee_end: inDays(380),
     region_ids: [6, 7],
-    criteria_version_id: 1,
     ...overrides,
   }
 }
@@ -113,6 +114,7 @@ describe('award cycles mock — reads and scope', () => {
       is_accepting_applications: true,
       conditions: { min_entity_age_years: 3 },
     })
+    expect(body.data.description.ar).toContain('تكرّم هذه الدورة')
     expect(keys(body.data.conditions)).toEqual(['min_entity_age_years'])
     expect(body.data.regions.map((region) => region.code)).toEqual([
       'riyadh',
@@ -220,26 +222,21 @@ describe('award cycles mock — create and edit', () => {
     ])
   })
 
-  it('refuses invalid bodies, unordered dates, an unpublished version and a reserved setting', async () => {
+  it('refuses invalid bodies, unordered dates, a chosen criteria version and a reserved setting', async () => {
     seedMockSession(SECRETARY)
     const invalid = await call('POST', '/award/cycles', { name: { ar: '' } })
     expect(invalid.status).toBe(422)
     expect(Object.keys(invalid.body.errors)).toEqual(
-      expect.arrayContaining([
-        'name.ar',
-        'name.en',
-        'submission_start',
-        'region_ids',
-        'criteria_version_id',
-      ]),
+      expect.arrayContaining(['name.ar', 'name.en', 'submission_start']),
     )
+    expect(invalid.body.errors).not.toHaveProperty('region_ids')
     expect(
       (await call('POST', '/award/cycles', newCycleBody({ committee_start: inDays(320) }))).body
         .errors,
     ).toHaveProperty('committee_start')
-    expect(
-      (await call('POST', '/award/cycles', newCycleBody({ criteria_version_id: 999 }))).body.code,
-    ).toBe('cycle.criteria_version_not_published')
+    const chosen = await call('POST', '/award/cycles', newCycleBody({ criteria_version_id: 1 }))
+    expect(chosen.status).toBe(422)
+    expect(chosen.body.errors).toHaveProperty('criteria_version_id')
     const reserved = await call(
       'POST',
       '/award/cycles',
@@ -264,16 +261,10 @@ describe('award cycles mock — create and edit', () => {
 
   it('locks the stage fields of a running cycle and re-checks the dates as a whole', async () => {
     seedMockSession(SYSTEM_ADMIN)
-    const locked = await call('PUT', '/award/cycles/31', {
-      submission_start: inDays(-40),
-      criteria_version_id: 1,
-    })
+    const locked = await call('PUT', '/award/cycles/31', { submission_start: inDays(-40) })
     expect(locked).toMatchObject({
       status: 409,
-      body: {
-        code: 'cycle.field_locked',
-        meta: { locked_fields: ['submission_start', 'criteria_version_id'] },
-      },
+      body: { code: 'cycle.field_locked', meta: { locked_fields: ['submission_start'] } },
     })
     expect((await call('PUT', '/award/cycles/31', { submission_end: inDays(-1) })).body.code).toBe(
       'cycle.dates_unordered',
@@ -291,6 +282,85 @@ describe('award cycles mock — create and edit', () => {
     expect(
       (await call('PUT', '/award/cycles/30', { name: { ar: 'اسم', en: 'Name' } })).body.code,
     ).toBe('cycle.field_locked')
+  })
+
+  it('binds a new cycle to the published version, covers every region by default and keeps its description', async () => {
+    seedMockSession(SYSTEM_ADMIN)
+    const published = (await call('GET', '/award/cycles/32')).body.data.criteria_version_id
+    const body = newCycleBody({
+      description: { ar: ' تعريف الدورة ', en: 'Cycle description' },
+    })
+    delete body.region_ids
+    const created = (await call('POST', '/award/cycles', body)).body.data
+    expect(created).toMatchObject({
+      criteria_version_id: published,
+      description: { ar: 'تعريف الدورة', en: 'Cycle description' },
+      locked_region_ids: [],
+    })
+    expect(created.regions).toHaveLength(13)
+  })
+
+  it('saves one step at a time, updates and clears the description and refuses half of it', async () => {
+    seedMockSession(SYSTEM_ADMIN)
+    const described = await call('PUT', '/award/cycles/32', {
+      description: { ar: 'تعريف', en: 'Description' },
+    })
+    expect(described.body.data.description).toEqual({ ar: 'تعريف', en: 'Description' })
+    expect(described.body.data.name.en).toBe('Next Moashir Institutional Excellence Award')
+    const half = await call('PUT', '/award/cycles/32', { description: { ar: 'تعريف' } })
+    expect(half.status).toBe(422)
+    expect(half.body.errors).toHaveProperty(['description.en'])
+    const long = await call('PUT', '/award/cycles/32', {
+      description: { ar: 'ت'.repeat(2001), en: 'Text' },
+    })
+    expect(long.body.errors).toHaveProperty(['description.ar'])
+    const cleared = await call('PUT', '/award/cycles/32', { description: null })
+    expect(cleared.body.data.description).toBeNull()
+    const step = await call('PUT', '/award/cycles/32', { initial_review_sla_days: 21 })
+    expect(step.body.data).toMatchObject({
+      initial_review_sla_days: 21,
+      conditions: { min_entity_age_years: 3 },
+    })
+  })
+
+  it('moves a draft to the published version on save and keeps a running cycle on its own', async () => {
+    seedMockSession(SYSTEM_ADMIN)
+    const published = findCycle(32).criteriaVersionId
+    findCycle(32).criteriaVersionId = 999
+    findCycle(31).criteriaVersionId = 999
+    expect(
+      (await call('PUT', '/award/cycles/32', { year: 2028 })).body.data.criteria_version_id,
+    ).toBe(published)
+    expect(
+      (await call('PUT', '/award/cycles/31', { initial_review_sla_days: 20 })).body.data
+        .criteria_version_id,
+    ).toBe(999)
+  })
+
+  it('moves a draft to the published version when it opens', async () => {
+    seedMockSession(SYSTEM_ADMIN)
+    const published = findCycle(32).criteriaVersionId
+    Object.assign(findCycle(31), { status: 'closed', closedFromStatus: 'submission-open' })
+    Object.assign(findCycle(32), {
+      criteriaVersionId: 999,
+      initialAssessors: [{ assessorId: 10, isActive: true }],
+    })
+    const opened = await call('POST', '/award/cycles/32/open', {})
+    expect(opened.status).toBe(200)
+    expect(opened.body.data).toMatchObject({
+      status: 'submission_open',
+      criteria_version_id: published,
+    })
+  })
+
+  it('lists the regions that already have requests as locked', async () => {
+    seedMockSession(SYSTEM_ADMIN)
+    const cycle = (await call('GET', '/award/cycles/31')).body.data
+    expect(cycle.locked_region_ids.length).toBeGreaterThan(0)
+    expect(
+      cycle.locked_region_ids.every((id) => cycle.regions.some((region) => region.id === id)),
+    ).toBe(true)
+    expect((await call('GET', '/award/cycles/32')).body.data.locked_region_ids).toEqual([])
   })
 
   it('lets a secretary manage only the cycles of their membership', async () => {

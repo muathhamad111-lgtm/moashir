@@ -52,12 +52,10 @@ async function submit() {
   logger.breadcrumb('form', 'criteria.reviewDialog.submit', {
     scope: scope.value,
     hasReason: Boolean(reason.value),
-    draftCycles: cycles.instruction().draftCycles ?? null,
   })
   const outcome = await publish(props.version, {
     scope: replacesPublished.value ? scope.value : null,
     reason: reason.value.trim() || null,
-    ...cycles.instruction(),
   })
   if (outcome) emit('published', outcome)
 }
@@ -70,13 +68,7 @@ async function submit() {
     novalidate
     @submit.prevent="submit"
   >
-    <CriteriaCycleBindings
-      v-if="cycles.isRelevant.value"
-      v-model:choice="cycles.choice.value"
-      :bindings="cycles.bindings.value"
-      :disabled="submitting"
-      show-choice
-    />
+    <CriteriaCycleBindings v-if="cycles.isRelevant.value" :bindings="cycles.bindings.value" />
     <template v-if="replacesPublished">
       <CriteriaScopeChoice
         v-model="scope"

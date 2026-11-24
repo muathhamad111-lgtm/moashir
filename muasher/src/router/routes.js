@@ -339,7 +339,7 @@ export const appRoutes = [
   {
     path: '/admin/award/cycles/new',
     name: ROUTE_NAMES.AWARD_CYCLE_NEW,
-    component: () => import('@/views/award/CycleEditor.vue'),
+    component: () => import('@/views/award/CycleSetup.vue'),
     meta: {
       layout: 'app',
       titleKey: 'routes.award.cycleNew.title',
@@ -348,8 +348,12 @@ export const appRoutes = [
   },
   {
     path: '/admin/award/cycles/:id(\\d+)',
+    redirect: (to) => ({ name: ROUTE_NAMES.AWARD_CYCLE, params: to.params, query: to.query }),
+  },
+  {
+    path: '/admin/award/cycles/:id(\\d+)/setup',
     name: ROUTE_NAMES.AWARD_CYCLE,
-    component: () => import('@/views/award/CycleEditor.vue'),
+    component: () => import('@/views/award/CycleSetup.vue'),
     meta: {
       layout: 'app',
       titleKey: 'routes.award.cycle.title',

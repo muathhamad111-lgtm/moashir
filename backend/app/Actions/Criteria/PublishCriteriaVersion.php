@@ -7,7 +7,6 @@ namespace App\Actions\Criteria;
 use App\Contracts\Criteria\CycleCriteriaBindings;
 use App\Data\Criteria\PublishInstruction;
 use App\Data\Criteria\PublishOutcome;
-use App\Enums\Criteria\DraftCyclesChoice;
 use App\Exceptions\Criteria\CriteriaVersionRejected;
 use App\Models\Criteria\CriteriaVersion;
 use App\Models\Identity\User;
@@ -47,7 +46,7 @@ final readonly class PublishCriteriaVersion
             }
 
             $outcome = $this->publication->publish($actor, $draft, $previous, new PublishInstruction($scope, $instruction->reason));
-            $moved = $instruction->draftCycles === DraftCyclesChoice::Move ? $this->cycles->moveDrafts($draft) : [];
+            $moved = $this->cycles->moveDrafts($draft);
 
             return new PublishOutcome($outcome->version, $outcome->editEvent, $outcome->effect, $outcome->changeCount, $this->cycles->summary(), $moved);
         });

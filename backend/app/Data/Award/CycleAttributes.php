@@ -22,12 +22,12 @@ final readonly class CycleAttributes
         public ?int $year = null,
         public array $dates = [],
         public ?array $regionIds = null,
-        public ?int $criteriaVersionId = null,
         public ?int $minEntityAgeYears = null,
         public ?Percent $disqualificationScore = null,
         public ?int $initialReviewSlaDays = null,
         public ?bool $participationCertificateEnabled = null,
         public ?Money $entryFee = null,
+        public ?CycleDescriptionChange $description = null,
     ) {}
 
     /**
@@ -38,13 +38,12 @@ final readonly class CycleAttributes
         return array_filter([
             'name' => $this->name,
             'year' => $this->year,
-            'criteria_version_id' => $this->criteriaVersionId,
             'min_entity_age_years' => $this->minEntityAgeYears,
             'disqualification_score' => $this->disqualificationScore,
             'initial_review_sla_days' => $this->initialReviewSlaDays,
             'participation_certificate_enabled' => $this->participationCertificateEnabled,
             'entry_fee' => $this->entryFee?->amount,
-        ], static fn (mixed $value): bool => $value !== null) + $this->dates;
+        ], static fn (mixed $value): bool => $value !== null) + $this->dates + $this->descriptionValue();
     }
 
     /**
@@ -64,5 +63,13 @@ final readonly class CycleAttributes
     public function isEmpty(): bool
     {
         return $this->touchedFields() === [];
+    }
+
+    /**
+     * @return array<string, LocalizedText|null>
+     */
+    private function descriptionValue(): array
+    {
+        return $this->description instanceof CycleDescriptionChange ? ['description' => $this->description->text] : [];
     }
 }

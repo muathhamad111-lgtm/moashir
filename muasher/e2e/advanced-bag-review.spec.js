@@ -206,7 +206,7 @@ test.describe('Advanced — staff', () => {
   test('award cycle editor (31) renders clean', async ({ page }, testInfo) => {
     await reviewPage(page, testInfo, {
       path: '/admin/award/cycles/31',
-      titleSelector: '.cycle-editor__title',
+      titleSelector: '.cycle-setup__title',
       name: 'award-cycle-setup',
       session: STAFF,
     })

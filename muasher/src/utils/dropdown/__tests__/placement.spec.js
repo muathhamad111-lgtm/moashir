@@ -113,6 +113,44 @@ describe('inlineStartFor', () => {
   })
 })
 
+describe('inlineStartFor with the fit alignment (the calendar)', () => {
+  it('starts at the field start edge while the panel fits there', () => {
+    expect(
+      inlineStartFor({
+        edges: { start: 400, end: 620 },
+        inlineSize: 340,
+        viewportWidth: 1440,
+        align: 'fit',
+        margin: 8,
+      }),
+    ).toBe(400)
+  })
+
+  it('ends at the field end edge when the start edge would push it out of the viewport', () => {
+    expect(
+      inlineStartFor({
+        edges: { start: 1107, end: 1328 },
+        inlineSize: 340,
+        viewportWidth: 1440,
+        align: 'fit',
+        margin: 8,
+      }),
+    ).toBe(1328 - 340)
+  })
+
+  it('still keeps the viewport margin when neither field edge leaves room', () => {
+    expect(
+      inlineStartFor({
+        edges: { start: 100, end: 300 },
+        inlineSize: 380,
+        viewportWidth: 390,
+        align: 'fit',
+        margin: 8,
+      }),
+    ).toBe(8)
+  })
+})
+
 describe('computePlacement', () => {
   it('places a field list under its field, from the right edge in RTL, with a capped height', () => {
     const placement = computePlacement({

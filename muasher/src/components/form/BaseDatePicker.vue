@@ -1,7 +1,8 @@
 <script setup>
-import { computed, ref, toRef } from 'vue'
+import { computed, ref, toRef, useId } from 'vue'
 import { useI18n } from 'vue-i18n'
 import FormField from './FormField.vue'
+import DateCalendarPopover from './DateCalendarPopover.vue'
 import AppIcon from '@/components/ui/AppIcon.vue'
 import { useDateSegments } from '@/composables/useDateSegments'
 import { DATE_SEGMENTS } from '@/utils/dateSegments'
@@ -21,7 +22,10 @@ const props = defineProps({
 const emit = defineEmits(['update:modelValue', 'blur'])
 
 const { t } = useI18n()
-const native = ref(null)
+const calendarId = `${useId()}-calendar`
+const controlRef = ref(null)
+const calendarButtonRef = ref(null)
+const isCalendarOpen = ref(false)
 const {
   segments,
   incomplete,
@@ -36,6 +40,7 @@ const {
 const shownError = computed(
   () => props.error || (incomplete.value ? t('components.datePicker.incomplete') : ''),
 )
+const isCalendarShown = computed(() => isCalendarOpen.value && !props.disabled)
 
 function onGroupFocusout(event) {
   if (event.currentTarget.contains(event.relatedTarget)) return
@@ -43,9 +48,23 @@ function onGroupFocusout(event) {
   emit('blur', event)
 }
 
-function openCalendar() {
-  if (typeof native.value?.showPicker === 'function') native.value.showPicker()
-  else native.value?.click()
+function dismissCalendar() {
+  isCalendarOpen.value = false
+}
+
+function closeCalendar() {
+  dismissCalendar()
+  calendarButtonRef.value?.focus()
+}
+
+function toggleCalendar() {
+  if (isCalendarOpen.value) closeCalendar()
+  else isCalendarOpen.value = true
+}
+
+function onCalendarSelect(iso) {
+  setFromIso(iso)
+  closeCalendar()
 }
 </script>
 
@@ -61,7 +80,9 @@ function openCalendar() {
     filled
   >
     <div
+      ref="controlRef"
       class="field__control datepicker"
+      :class="{ 'is-open': isCalendarShown }"
       role="group"
       :aria-label="label"
       :aria-describedby="describedBy"
@@ -78,6 +99,7 @@ function openCalendar() {
           inputmode="numeric"
           autocomplete="off"
           dir="ltr"
+          :name="index === 0 ? name : undefined"
           :value="segments[segment.key]"
           :placeholder="t(`components.datePicker.${segment.key}`)"
           :aria-label="t(`components.datePicker.${segment.key}Label`, { label })"
@@ -89,27 +111,31 @@ function openCalendar() {
         />
       </template>
       <button
+        ref="calendarButtonRef"
         type="button"
         class="datepicker__calendar"
+        aria-haspopup="dialog"
+        :aria-expanded="isCalendarShown ? 'true' : 'false'"
+        :aria-controls="isCalendarShown ? calendarId : undefined"
         :aria-label="t('components.datePicker.openCalendar', { label })"
         :title="t('components.datePicker.openCalendar', { label })"
         :disabled="disabled"
-        @click="openCalendar"
+        @click="toggleCalendar"
       >
         <AppIcon name="calendar" />
       </button>
-      <input
-        ref="native"
-        class="datepicker__native"
-        type="date"
-        tabindex="-1"
-        aria-hidden="true"
-        :name="name"
-        :value="modelValue"
-        :min="min || undefined"
-        :max="max || undefined"
-        :disabled="disabled"
-        @input="setFromIso($event.target.value)"
+      <DateCalendarPopover
+        :open="isCalendarShown"
+        :anchor="controlRef"
+        :boundary="calendarButtonRef"
+        :panel-id="calendarId"
+        :selected="modelValue"
+        :min="min"
+        :max="max"
+        :label="label"
+        @select="onCalendarSelect"
+        @close="closeCalendar"
+        @dismiss="dismissCalendar"
       />
     </div>
   </FormField>

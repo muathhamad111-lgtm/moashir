@@ -153,14 +153,15 @@ describe('award cycle bindings of a criteria version', () => {
     const { api } = withSetup(() => useCycleBindings())
     await api.load(4)
     expect(api.isRelevant.value).toBe(true)
-    expect(api.instruction()).toEqual({})
+    expect(api.hasDrafts.value).toBe(false)
+    expect(api).not.toHaveProperty('instruction')
+    expect(api).not.toHaveProperty('choice')
     criteriaService.checkVersion.mockResolvedValue({
       data: {},
       meta: { awardCycles: { running: null, drafts: [{ id: 32, name: { ar: 'م', en: 'D' } }] } },
     })
     await api.load(4)
-    api.choice.value = 'move'
-    expect(api.instruction()).toEqual({ draftCycles: 'move' })
+    expect(api.hasDrafts.value).toBe(true)
     criteriaService.checkVersion.mockRejectedValue(new Error('offline'))
     await api.load(4)
     expect(api.isRelevant.value).toBe(false)

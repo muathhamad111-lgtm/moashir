@@ -33,6 +33,7 @@ function seededCycle(fixture, version, anchor) {
   return {
     id: fixture.id,
     name: { ...fixture.name },
+    description: fixture.description ? { ...fixture.description } : null,
     year: new Date(dates.submissionStart).getUTCFullYear(),
     status: fixture.status,
     criteriaVersionId: version?.id ?? null,

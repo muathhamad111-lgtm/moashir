@@ -1,7 +1,12 @@
 import { onBeforeUnmount, onMounted } from 'vue'
-import { onBeforeRouteLeave, onBeforeRouteUpdate } from 'vue-router'
+import { onBeforeRouteLeave, onBeforeRouteUpdate, useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import { useConfirm } from '@/composables/useConfirm'
+
+function guardEveryPath(router, allowLeaving) {
+  const remove = router.beforeEach((to, from) => to.path === from.path || allowLeaving())
+  onBeforeUnmount(remove)
+}
 
 // `leavesOnUpdate(to)` also guards in-route navigation (a query change) that would drop the edits.
 export function useUnsavedGuard(
@@ -12,6 +17,7 @@ export function useUnsavedGuard(
     title = null,
     confirmLabel = null,
     leavesOnUpdate = null,
+    acrossRoutes = false,
   } = {},
 ) {
   const { t } = useI18n()
@@ -35,7 +41,8 @@ export function useUnsavedGuard(
     event.returnValue = ''
   }
 
-  onBeforeRouteLeave(allowLeaving)
+  if (acrossRoutes) guardEveryPath(useRouter(), allowLeaving)
+  else onBeforeRouteLeave(allowLeaving)
   if (leavesOnUpdate) onBeforeRouteUpdate((to) => (leavesOnUpdate(to) ? allowLeaving() : true))
   onMounted(() => window.addEventListener('beforeunload', onBeforeUnload))
   onBeforeUnmount(() => window.removeEventListener('beforeunload', onBeforeUnload))

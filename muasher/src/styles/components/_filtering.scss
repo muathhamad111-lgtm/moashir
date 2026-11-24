@@ -1,5 +1,21 @@
 @use '../mixins' as *;
 
+.filtering-queue__side {
+  @include flex(column, flex-end, flex-start, var(--space-2));
+}
+
+.bulk-qualify {
+  @include flex(column, flex-end, flex-start, var(--space-1));
+}
+
+.bulk-qualify__note {
+  margin: 0;
+  max-inline-size: 28rem;
+  font-size: var(--fs-sm);
+  color: var(--theme-text-muted);
+  text-align: end;
+}
+
 .filtering-threshold {
   @include flex(row, center, flex-start, var(--space-2));
   margin: 0;

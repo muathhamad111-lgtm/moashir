@@ -31,6 +31,7 @@ use Illuminate\Support\Carbon;
 /**
  * @property int $id
  * @property LocalizedText $name
+ * @property LocalizedText|null $description
  * @property int $year
  * @property AwardCycleStatus $status
  * @property int $criteria_version_id
@@ -73,7 +74,7 @@ final class AwardCycle extends Model
      * @var list<string>
      */
     protected $fillable = [
-        'name', 'year', 'status', 'criteria_version_id', 'scale_kind', 'submission_start', 'submission_end',
+        'name', 'description', 'year', 'status', 'criteria_version_id', 'scale_kind', 'submission_start', 'submission_end',
         'committee_start', 'committee_end', 'announcement_at', 'min_entity_age_years', 'disqualification_score',
         'initial_review_sla_days', 'participation_certificate_enabled', 'created_by_user_id', 'entry_fee',
     ];
@@ -90,6 +91,7 @@ final class AwardCycle extends Model
     {
         return [
             'name' => LocalizedTextCast::class,
+            'description' => LocalizedTextCast::class,
             'year' => 'integer',
             'status' => AwardCycleStatus::class,
             'criteria_version_id' => 'integer',

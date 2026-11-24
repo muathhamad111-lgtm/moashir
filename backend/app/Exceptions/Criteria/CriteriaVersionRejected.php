@@ -58,6 +58,13 @@ final class CriteriaVersionRejected extends ApiException
         ]));
     }
 
+    public static function draftCyclesFollowPublished(): self
+    {
+        return new self(new ApiError(Response::HTTP_UNPROCESSABLE_ENTITY, 'criteria.draft_cycles_follow_published', [
+            'draft_cycles' => [__('errors.criteria.draft_cycles_follow_published')],
+        ]));
+    }
+
     public static function scopeRequired(): self
     {
         return new self(new ApiError(Response::HTTP_UNPROCESSABLE_ENTITY, 'criteria.scope_required', [

@@ -16,6 +16,7 @@ import {
   authorizeAdvancedEntity,
   authorizeCreateCycle,
   authorizeDecideFiltering,
+  authorizeDecideFilteringInCycle,
   authorizeDeleteDraft,
   authorizeFilteringRequest,
   authorizeManageCycle,
@@ -40,10 +41,12 @@ import {
   reopenCycle,
 } from '../stores/award/cycleTransitions'
 import {
+  bulkPreview,
   disqualifyRequest,
   filteringDetail,
   filteringQueue,
   filteringRow,
+  qualifyEligible,
   qualifyRequest,
 } from '../stores/award/filtering'
 import {
@@ -185,6 +188,16 @@ export const awardHandlers = [
     }),
   ),
 
+  // Before the detail route: `qualify-eligible` would otherwise bind as an assessment id.
+  http.get(
+    `${CYCLE}/filtering/qualify-eligible`,
+    cycleRoute(({ params }) => {
+      const user = signedInActor()
+      const cycle = boundCycle(params)
+      authorizeDecideFilteringInCycle(user, cycle)
+      return envelope(bulkPreview(user, cycle))
+    }),
+  ),
   http.get(
     FILTERING,
     cycleRoute(({ params }) => {
@@ -196,6 +209,15 @@ export const awardHandlers = [
     }),
   ),
 
+  http.post(
+    `${CYCLE}/filtering/qualify-eligible`,
+    cycleRoute(async ({ params, request }) => {
+      const user = signedInActor()
+      const cycle = boundCycle(params)
+      authorizeDecideFilteringInCycle(user, cycle)
+      return envelope(qualifyEligible(user, cycle, await readJson(request)))
+    }),
+  ),
   http.post(`${FILTERING}/qualify`, decisionRoute(qualifyRequest)),
   http.post(`${FILTERING}/disqualify`, decisionRoute(disqualifyRequest)),
 

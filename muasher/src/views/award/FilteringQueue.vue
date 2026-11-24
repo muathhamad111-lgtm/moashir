@@ -11,6 +11,7 @@ import AssessmentNotice from '@/components/assessment/AssessmentNotice.vue'
 import CycleStatusBadge from '@/components/award/CycleStatusBadge.vue'
 import FilteringFilters from '@/components/award/FilteringFilters.vue'
 import FilteringTable from '@/components/award/FilteringTable.vue'
+import BulkQualifyAction from '@/components/award/BulkQualifyAction.vue'
 import { useFilteringQueue } from '@/composables/useFilteringQueue'
 import { FILTERING_STATUSES } from '@/constants/advanced'
 import { FILTERING_WINDOW, filteringWindowOf } from '@/utils/award/filteringWindow'
@@ -90,10 +91,18 @@ const filterState = { filters: filters.filters, setFilter, sort: filters.sort, s
           <CycleStatusBadge :status="cycle.status" />
         </p>
       </div>
-      <p v-if="summary" class="filtering-threshold" role="note">
-        <AppIcon name="gauge" />
-        {{ t('filtering.threshold.label', { value: summary.disqualificationScore }) }}
-      </p>
+      <div class="filtering-queue__side">
+        <p v-if="summary" class="filtering-threshold" role="note">
+          <AppIcon name="gauge" />
+          {{ t('filtering.threshold.label', { value: summary.disqualificationScore }) }}
+        </p>
+        <BulkQualifyAction
+          :key="summary?.counts?.awaitingFiltering ?? 0"
+          :cycle-id="cycleId"
+          :window-open="windowState === FILTERING_WINDOW.OPEN"
+          @done="load"
+        />
+      </div>
     </header>
     <AssessmentNotice
       v-if="windowState !== FILTERING_WINDOW.OPEN"

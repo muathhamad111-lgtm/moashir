@@ -306,6 +306,9 @@ return [
         'city_id' => [
             'not_in_region' => 'Choose an active city of the selected region.',
         ],
+        'criteria_version_id' => [
+            'prohibited' => 'The platform sets the criteria version of a cycle: it follows the published version while the cycle is a draft and is fixed when submissions open.',
+        ],
         'official_email' => [
             'prohibited' => 'The official e-mail is changed from "Change e-mail", not from this section.',
         ],

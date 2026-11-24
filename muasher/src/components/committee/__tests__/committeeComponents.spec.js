@@ -147,7 +147,7 @@ describe('committee display components', () => {
     expect(settling.find('.btn--primary').attributes('disabled')).toBeUndefined()
   })
 
-  it('explains the running cycle and offers keep or move for the draft cycles', async () => {
+  it('explains the running cycle and says the draft cycles follow the published version', () => {
     const bindings = {
       running: {
         id: 31,
@@ -158,11 +158,13 @@ describe('committee display components', () => {
       requestsStayOnCycleVersion: true,
       drafts: [{ id: 32, name: { ar: 'مسودة', en: 'Next award' } }],
     }
-    const wrapper = render(CriteriaCycleBindings, { bindings, choice: 'keep', showChoice: true })
+    const wrapper = render(CriteriaCycleBindings, { bindings })
     expect(wrapper.text()).toContain('«Award 2026» stays on its criteria version')
     expect(wrapper.text()).toContain('Next award')
-    await wrapper.findAll('.cycle-bindings__input')[1].trigger('change')
-    expect(wrapper.emitted('update:choice')).toEqual([['move']])
+    expect(wrapper.find('[data-testid="cycle-bindings-drafts-follow"]').text()).toBe(
+      'Draft cycles follow the published version and are fixed when they open.',
+    )
+    expect(wrapper.find('input[type="radio"]').exists()).toBe(false)
   })
 })
 

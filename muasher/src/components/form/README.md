@@ -5,10 +5,15 @@ BaseFileUpload, FormField — see `references/06-architecture.md`. Validation is
 (one schema per form). Styling only via `src/styles/components/_inputs.scss`.
 
 `BaseDatePicker` (and `FieldDate`) is three Western-digit boxes (day / month / year, in the reading
-direction) plus a calendar button that opens the browser picker of a hidden native date input. The
-native field is not shown because Chrome in Arabic renders its placeholder reversed. Arabic digits
-are converted while typing; the value is `YYYY-MM-DD` once the date is complete, `''` otherwise.
-Styling: `_datepicker.scss`.
+direction) plus a calendar button. Arabic digits are converted while typing, and a whole date typed
+or pasted into one box fills all three; the value is `YYYY-MM-DD` once the date is complete, `''`
+otherwise. The field `name` sits on the day box. The button opens `DateCalendarPopover`: the in-app
+Gregorian calendar (`DateCalendar`, WAI-ARIA APG date picker dialog: a labelled dialog with a
+`role="grid"` month, the week starting on Sunday, `min`/`max` days disabled, arrows / PageUp /
+PageDown / Home / End / Enter, Esc and focus return). It opens next to the field in the browser top
+layer and as a bottom sheet below the `md` breakpoint, like the dropdown family. Month math lives in
+`utils/calendarMonth.js`, names come from `Intl` in the active locale. Styling: `_datepicker.scss`,
+`_date-calendar.scss`.
 
 Dropdown family (Task-56, WAI-ARIA APG patterns, one popup surface for every kind):
 
@@ -17,6 +22,9 @@ Dropdown family (Task-56, WAI-ARIA APG patterns, one popup surface for every kin
   (vee-validate) and `committee/RankSelect` wrap it.
 - `AppCombobox` is the editable combobox: local filter, `remote` search (debounced `search` event)
   and `multiple` with removable tags. `FieldIconSelect` wraps it with translated icon names.
+  With `multiple`, `select-all` adds «تحديد الكل / إلغاء الكل» and a count (`count-label` overrides
+  the generic «N من M»). A disabled option that is selected stays as a locked tag; its `hint` is the
+  tag tooltip and «إلغاء الكل» keeps it.
 - Both open in the browser top layer next to their field (`useAnchoredPopup`), so dialogs and
   table scroll containers never clip them, and as a bottom sheet below the `md` breakpoint.
 - Styling: `_dropdown-field.scss`, `_dropdown-option.scss`, `_dropdown-surface.scss`,

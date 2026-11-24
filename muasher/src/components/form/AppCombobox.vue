@@ -9,6 +9,7 @@ import FormField from '@/components/form/FormField.vue'
 import DropdownSurface from '@/components/ui/DropdownSurface.vue'
 import DropdownListbox from '@/components/ui/DropdownListbox.vue'
 import DropdownTag from '@/components/ui/DropdownTag.vue'
+import DropdownSelectAll from '@/components/ui/DropdownSelectAll.vue'
 import BaseButton from '@/components/ui/BaseButton.vue'
 import AppIcon from '@/components/ui/AppIcon.vue'
 
@@ -25,6 +26,9 @@ const props = defineProps({
   loading: { type: Boolean, default: false },
   multiple: { type: Boolean, default: false },
   remote: { type: Boolean, default: false },
+  selectAll: { type: Boolean, default: false },
+  countLabel: { type: String, default: '' },
+  describedBy: { type: String, default: '' },
 })
 
 const emit = defineEmits(['update:modelValue', 'search', 'open', 'close', 'blur'])
@@ -128,7 +132,8 @@ watch(
           v-for="option in combo.selectedOptions.value"
           :key="valueKey(option.value)"
           :label="option.label"
-          :disabled="disabled"
+          :disabled="disabled || Boolean(option.disabled)"
+          :locked-hint="option.disabled ? (option.hint ?? '') : ''"
           @remove="onRemove(option)"
         />
       </template>
@@ -146,7 +151,7 @@ watch(
         v-bind="comboboxAria"
         :aria-haspopup="isCompact ? 'dialog' : 'listbox'"
         :aria-activedescendant="isCompact ? undefined : activeDescendant"
-        :aria-describedby="describedBy"
+        :aria-describedby="[props.describedBy, describedBy].filter(Boolean).join(' ') || undefined"
         :aria-invalid="invalid || undefined"
         :aria-required="required || undefined"
         @input="combo.onInput"
@@ -159,6 +164,14 @@ watch(
         class="dropdown-combobox__chevron"
       />
     </div>
+    <DropdownSelectAll
+      v-if="multiple && selectAll"
+      :options="options"
+      :model-value="combo.selectedValues.value"
+      :count-label="countLabel"
+      :disabled="disabled"
+      @update:model-value="emit('update:modelValue', $event)"
+    />
     <DropdownSurface
       :open="combo.isOpen.value"
       :anchor="controlRef"
@@ -192,6 +205,8 @@ watch(
           v-for="option in combo.selectedOptions.value"
           :key="valueKey(option.value)"
           :label="option.label"
+          :disabled="Boolean(option.disabled)"
+          :locked-hint="option.disabled ? (option.hint ?? '') : ''"
           @remove="combo.remove(option)"
         />
       </div>

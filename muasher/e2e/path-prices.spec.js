@@ -180,20 +180,27 @@ test.describe('path prices in «إدارة المسارات» and the priced sel
   })
 })
 
+async function openFeeStep(page, cycleId) {
+  await open(page, `/admin/award/cycles/${cycleId}/setup`, '.cycle-setup__wizard')
+  await page.locator('.wizard__button').nth(4).click()
+  await expect(page.locator('[data-testid="cycle-fee"]')).toBeVisible()
+}
+
 test.describe('award entry fee', () => {
   test('the fee is editable on a draft cycle and locked once applications open', async ({
     page,
   }, testInfo) => {
     await signIn(page, testInfo, USERS.admin)
-    await open(page, '/admin/award/cycles/32', '[data-testid="cycle-fee"]')
+    await openFeeStep(page, 32)
     const fee = page.locator('[data-testid="cycle-fee"]')
     await expect(fee.locator('input[name="entryFee"]')).toHaveValue('750.00')
     await expect(fee.locator('input[name="entryFee"]')).toBeEnabled()
-    await expect(fee.locator('.pricing-breakdown')).toContainText('862.50')
+    await expect(fee.locator('input[name="entryFeePaid"]')).toBeChecked()
+    await expect(fee.locator('.pricing-breakdown')).toHaveCount(0)
     await shot(page, '04-cycle-fee-editable', testInfo)
     await elementShot(fee, '04b-cycle-fee-field-editable', testInfo)
-    await open(page, '/admin/award/cycles/31', '[data-testid="cycle-fee"]')
-    await expect(fee.locator('input[name="entryFee"]')).toBeDisabled()
+    await openFeeStep(page, 31)
+    await expect(fee.locator('input[name="entryFeePaid"]')).toBeDisabled()
     await expect(page.locator('[data-testid="cycle-fee-locked"]')).toContainText(
       say(testInfo, 'cannot change once', 'لا تُعدَّل الرسوم'),
     )

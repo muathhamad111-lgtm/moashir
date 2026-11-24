@@ -47,6 +47,7 @@ enum Ability: string
     case UnapproveRegionResults = 'award.results-board.unapprove-region';
     case ApproveNationalResults = 'award.results-board.approve-national';
     case AnnounceAwardResults = 'award.results-board.announce';
+    case QualifyEligibleRequests = 'award.filtering.qualify-eligible';
     case ViewDashboard = 'dashboard.summary.view';
     case ViewExecutiveOverview = 'dashboard.overview.view';
 }

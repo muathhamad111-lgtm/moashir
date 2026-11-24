@@ -2,6 +2,7 @@ import { POPUP_SIDES } from '@/constants/dropdown'
 
 const RTL = 'rtl'
 const END = 'end'
+const FIT = 'fit'
 
 export function inlineEdges(rect, viewportWidth, direction) {
   return direction === RTL
@@ -19,9 +20,16 @@ export function chooseSide({ anchor, contentBlockSize, viewportHeight, metrics }
     : { side: POPUP_SIDES.below, space: below }
 }
 
+function preferredStart({ edges, inlineSize, align, furthest }) {
+  const endAligned = edges.end - inlineSize
+  if (align === END) return endAligned
+  if (align === FIT && edges.start > furthest) return endAligned
+  return edges.start
+}
+
 export function inlineStartFor({ edges, inlineSize, viewportWidth, align, margin }) {
-  const preferred = align === END ? edges.end - inlineSize : edges.start
   const furthest = viewportWidth - inlineSize - margin
+  const preferred = preferredStart({ edges, inlineSize, align, furthest })
   return Math.max(margin, Math.min(preferred, furthest))
 }
 

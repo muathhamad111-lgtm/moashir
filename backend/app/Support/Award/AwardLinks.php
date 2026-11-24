@@ -8,7 +8,7 @@ final class AwardLinks
 {
     public static function cycle(int $cycleId): string
     {
-        return '/admin/award/cycles/'.$cycleId;
+        return '/admin/award/cycles/'.$cycleId.'/setup';
     }
 
     public static function committee(int $cycleId): string

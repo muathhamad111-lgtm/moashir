@@ -175,8 +175,10 @@ describe('cycle editor and transitions', () => {
     await fresh.api.load()
     expect(fresh.api.initialValues.value).toMatchObject({
       disqualificationScore: '60.00',
-      criteriaVersionId: 1,
+      description: { ar: '', en: '' },
     })
+    expect(fresh.api.initialValues.value).not.toHaveProperty('criteriaVersionId')
+    expect(fresh.api).not.toHaveProperty('published')
     expect(fresh.api.openBlock.value).toBeNull()
     expect(awardCycleService.getCurrent).not.toHaveBeenCalled()
     const block = {

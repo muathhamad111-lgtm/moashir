@@ -1,70 +1,32 @@
 <script setup>
-import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
+import CycleStepCounter from './CycleStepCounter.vue'
 import FieldInput from '@/components/form/FieldInput.vue'
-import FieldSelect from '@/components/form/FieldSelect.vue'
 import FieldToggle from '@/components/form/FieldToggle.vue'
-import FieldCheckboxGroup from '@/components/form/FieldCheckboxGroup.vue'
-import { localizedText } from '@/utils/localizedText'
+import CycleRegionsField from './CycleRegionsField.vue'
 
-const props = defineProps({
+defineProps({
   locked: { type: Object, required: true },
   regions: { type: Array, required: true },
-  published: { type: Object, default: null },
-  versionId: { type: Number, default: null },
+  lockedRegionIds: { type: Array, default: () => [] },
   canSetParticipation: { type: Boolean, default: false },
   thresholdLocked: { type: Boolean, default: false },
 })
 
-const { t, locale } = useI18n()
-
-const regionOptions = computed(() =>
-  props.regions.map((region) => ({
-    value: region.id,
-    label: localizedText(region.name, locale.value),
-    disabled: props.locked.has('regionIds'),
-  })),
-)
-const versionOptions = computed(() => {
-  if (
-    props.published &&
-    (props.versionId === null || props.versionId === props.published.versionId)
-  ) {
-    return [
-      {
-        value: props.published.versionId,
-        label: t('cycles.form.publishedVersion', { number: props.published.versionNumber }),
-      },
-    ]
-  }
-  return props.versionId === null
-    ? []
-    : [{ value: props.versionId, label: t('cycles.form.boundVersion', { id: props.versionId }) }]
-})
+const { t } = useI18n()
 </script>
 
 <template>
   <fieldset class="cycle-form__section">
-    <legend class="cycle-form__legend">{{ t('cycles.form.sections.assessment') }}</legend>
-    <FieldCheckboxGroup
-      name="regionIds"
-      :label="t('cycles.form.regions')"
-      :options="regionOptions"
-      :hint="t('cycles.form.regionsHint')"
+    <legend class="cycle-form__legend">
+      {{ t('cycles.form.sections.conditions') }}
+      <CycleStepCounter />
+    </legend>
+    <CycleRegionsField
+      :regions="regions"
+      :locked-region-ids="lockedRegionIds"
+      :disabled="locked.has('regionIds')"
     />
-    <div class="cycle-form__grid">
-      <FieldSelect
-        name="criteriaVersionId"
-        :label="t('cycles.form.criteriaVersion')"
-        :options="versionOptions"
-        :hint="t('cycles.form.criteriaVersionHint')"
-        required
-        :disabled="locked.has('criteriaVersionId')"
-      />
-    </div>
-  </fieldset>
-  <fieldset class="cycle-form__section">
-    <legend class="cycle-form__legend">{{ t('cycles.form.sections.conditions') }}</legend>
     <div class="cycle-form__grid">
       <FieldInput
         name="minEntityAgeYears"
@@ -79,22 +41,9 @@ const versionOptions = computed(() => {
         :label="t('cycles.form.disqualificationScore')"
         inputmode="decimal"
         input-dir="ltr"
-        :hint="
-          thresholdLocked
-            ? t('cycles.form.thresholdLockedHint')
-            : t('cycles.form.disqualificationScoreHint')
-        "
+        :hint="thresholdLocked ? t('cycles.form.thresholdLockedHint') : ''"
         required
         :disabled="locked.has('disqualificationScore')"
-      />
-      <FieldInput
-        name="initialReviewSlaDays"
-        :label="t('cycles.form.initialReviewSlaDays')"
-        inputmode="numeric"
-        input-dir="ltr"
-        :hint="t('cycles.form.initialReviewSlaDaysHint')"
-        required
-        :disabled="locked.has('initialReviewSlaDays')"
       />
     </div>
     <FieldToggle

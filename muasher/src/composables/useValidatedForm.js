@@ -38,7 +38,7 @@ export function useValidatedForm({
     toast.error(normalized?.message || i18n.global.t('errors.unexpected'))
   }
 
-  const onSubmit = form.handleSubmit(async (values) => {
+  const handleValidSubmit = form.handleSubmit(async (values) => {
     if (submitting.value) return
     submitting.value = true
     serverErrors.value = {}
@@ -53,6 +53,14 @@ export function useValidatedForm({
       submitting.value = false
     }
   })
+
+  // vee-validate marks the form as submitting before its asynchronous validation. A second submit during that
+  // validation would otherwise run too, after the first one has already moved the screen on.
+  function onSubmit(event) {
+    if (!form.isSubmitting.value) return handleValidSubmit(event)
+    if (event instanceof Event) event.preventDefault()
+    return Promise.resolve()
+  }
 
   function resetForm(...args) {
     serverErrors.value = {}

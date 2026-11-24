@@ -34,7 +34,18 @@ export function useDateSegments(modelValue, emitValue) {
     if (segment) inputs[segment.key]?.focus()
   }
 
+  function takeWholeDate(index, event, whole) {
+    event.target.value = whole[DATE_SEGMENTS[index].key]
+    segments.value = whole
+    publish()
+  }
+
   function onSegmentInput(index, event) {
+    const whole = segmentsFromText(event.target.value)
+    if (whole) {
+      takeWholeDate(index, event, whole)
+      return
+    }
     const { segments: next, lastIndex } = spillDigits(segments.value, index, event.target.value)
     event.target.value = next[DATE_SEGMENTS[index].key]
     segments.value = next

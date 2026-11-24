@@ -1,8 +1,6 @@
 import { allAssessments, isOpen } from '../assessments/assessmentsStore'
 import { allCycles, runningCycles } from './cycleStore'
 
-export const DRAFT_CYCLE_CHOICES = ['keep', 'move']
-
 function bindingOf(cycle) {
   const openRequests = allAssessments().filter(
     (record) => record.awardCycleId === cycle.id && isOpen(record),

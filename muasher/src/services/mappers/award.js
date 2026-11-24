@@ -2,7 +2,8 @@ import { toAssessment, toEntitySummary } from './assessments'
 import { toAccreditedResult } from './accredited'
 import { toAssessorReview } from './review'
 import { toPlace } from './requests'
-import { toOpenCycleOption, toPriceQuote } from './paths'
+import { toOpenCycleOption } from './paths'
+import { toCycleDescription } from './cycleDescription'
 
 function toPerson(raw) {
   if (!raw) return null
@@ -18,6 +19,7 @@ export function toCycle(raw = {}) {
   return {
     id: raw.id ?? null,
     name: raw.name ?? null,
+    description: toCycleDescription(raw.description),
     year: raw.year ?? null,
     status: raw.status ?? null,
     criteriaVersionId: raw.criteriaVersionId ?? null,
@@ -34,7 +36,6 @@ export function toCycle(raw = {}) {
     initialReviewSlaDays: raw.initialReviewSlaDays ?? null,
     participationCertificateEnabled: raw.participationCertificateEnabled === true,
     entryFee: raw.entryFee ?? null,
-    entryFeeQuote: toPriceQuote(raw.entryFeeQuote),
     entryFeeEditable: raw.entryFeeEditable === true,
     regions: (raw.regions ?? []).map(toPlace),
     counts: toCounts(raw.counts),
@@ -71,6 +72,7 @@ function toOpenBlock(raw) {
 export function toCycleDetail(raw = {}) {
   const detail = {
     ...toCycle(raw),
+    lockedRegionIds: raw.lockedRegionIds ?? [],
     canManage: raw.canManage === true,
     thresholdLocked: raw.thresholdLocked === true,
     openBlock: toOpenBlock(raw.openBlock),
@@ -95,6 +97,7 @@ export function toPublicCycle(raw) {
   return {
     id: raw.id ?? null,
     name: raw.name ?? null,
+    description: toCycleDescription(raw.description),
     year: raw.year ?? null,
     status: raw.status ?? null,
     isAcceptingApplications: raw.isAcceptingApplications === true,
@@ -232,5 +235,26 @@ export function toCycleBindings(raw) {
     running: toCycleBinding(raw?.running),
     requestsStayOnCycleVersion: raw?.requestsStayOnCycleVersion !== false,
     drafts: (raw?.drafts ?? []).map(toCycleBinding),
+  }
+}
+
+export function toBulkPreview(raw = {}) {
+  return {
+    count: raw.count ?? 0,
+    thresholdPercent: raw.thresholdPercent ?? null,
+    ownAssessments: raw.ownAssessments ?? 0,
+    requests: (raw.requests ?? []).map((request) => ({
+      id: request.id,
+      number: request.number ?? '',
+      initialPercent: request.initialPercent ?? null,
+    })),
+  }
+}
+
+export function toBulkOutcome(raw = {}) {
+  return {
+    qualified: raw.qualified ?? 0,
+    qualifiedIds: raw.qualifiedIds ?? [],
+    skipped: (raw.skipped ?? []).map((item) => ({ id: item.id, reason: item.reason })),
   }
 }

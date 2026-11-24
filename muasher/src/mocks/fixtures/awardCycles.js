@@ -54,6 +54,10 @@ export const awardCyclesFixture = [
   {
     id: AWARD_CYCLE_IDS.running,
     name: { ar: 'دورة جائزة مؤشر للتميز المؤسسي', en: 'Moashir Institutional Excellence Award' },
+    description: {
+      ar: 'تكرّم هذه الدورة الجهات التي حققت أثرًا مستدامًا في خدمة المستفيدين خلال العامين الماضيين.\n\nتشمل الدورة المناطق الأربع الأولى، وتُعلن نتائجها بعد اعتماد أمين الجائزة.',
+      en: 'This cycle honours the entities that achieved a lasting impact for their beneficiaries over the past two years.\n\nThe cycle covers the first four regions, and its results are announced after the Award Secretary approves them.',
+    },
     status: 'submission-open',
     closedFromStatus: null,
     offsets: {

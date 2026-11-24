@@ -39,6 +39,10 @@ export const criteriaErrorMessages = {
     ar: 'لا يمكن نشر المعايير قبل اتساق الأوزان.',
     en: 'The criteria cannot be published until the weights are consistent.',
   },
+  'criteria.draft_cycles_follow_published': {
+    ar: 'لم يعد اختيار مصير دورات المسودة متاحًا: تتبع دورات المسودة الإصدار المنشور تلقائيًا وتُثبَّت عند فتحها. أعيدوا النشر دون هذا الحقل.',
+    en: 'The draft cycle choice is no longer available: draft cycles follow the published version and are fixed when they open. Publish again without this field.',
+  },
   'criteria.scope_required': {
     ar: 'اختر نطاق تطبيق التعديل: جميع التقييمات، أو الطلبات الجديدة فقط، أو إعادة تعيين الطلبات المفتوحة.',
     en: 'Choose where this change applies: all assessments, new requests only, or reset the open requests.',

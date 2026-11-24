@@ -1,4 +1,5 @@
 import { toRequestStatus } from './accreditedStatus'
+import { toCycleDescription } from './cycleDescription'
 
 export function toPeriod(raw) {
   if (!raw) return null
@@ -169,6 +170,7 @@ function toCycle(raw) {
   return {
     id: raw.id ?? null,
     name: raw.name ?? null,
+    description: toCycleDescription(raw.description),
     submissionStart: raw.submissionStart ?? null,
     submissionEnd: raw.submissionEnd ?? null,
     announcementAt: raw.announcementAt ?? null,

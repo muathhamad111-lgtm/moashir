@@ -24,6 +24,7 @@ function cycleResource(cycle) {
   return {
     id: cycle.id,
     name: { ...cycle.name },
+    description: cycle.description ? { ...cycle.description } : null,
     submissionStart: cycle.submissionStart,
     submissionEnd: cycle.submissionEnd,
     announcementAt: cycle.announcementAt ?? null,

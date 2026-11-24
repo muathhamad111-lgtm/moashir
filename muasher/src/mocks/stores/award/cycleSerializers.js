@@ -21,6 +21,15 @@ function requestsOf(cycle) {
   return allAssessments().filter((record) => record.awardCycleId === cycle.id)
 }
 
+function descriptionOf(cycle) {
+  return cycle.description ? { ...cycle.description } : null
+}
+
+function lockedRegionIdsOf(cycle) {
+  const ids = requestsOf(cycle).map((record) => record.regionId)
+  return [...new Set(ids)].filter((id) => cycle.regionIds.includes(id)).sort((a, b) => a - b)
+}
+
 function countsOf(cycle) {
   const requests = requestsOf(cycle)
   return {
@@ -33,6 +42,7 @@ export function cycleResource(cycle, { withCounts = false } = {}) {
   return {
     id: cycle.id,
     name: { ...cycle.name },
+    description: descriptionOf(cycle),
     year: cycle.year,
     status: cycle.status,
     criteriaVersionId: cycle.criteriaVersionId,
@@ -64,6 +74,7 @@ export function cycleResource(cycle, { withCounts = false } = {}) {
 export function cycleDetailResource(cycle, viewer) {
   const detail = {
     ...cycleResource(cycle),
+    lockedRegionIds: lockedRegionIdsOf(cycle),
     canManage: canManage(viewer, cycle),
     thresholdLocked: hasFilteringDecisions(cycle),
     openBlock: cycle.status === DRAFT_STATUS ? openBlockOf(cycle) : null,
@@ -88,6 +99,7 @@ export function publicCycleResource(cycle, now = Date.now()) {
   return {
     id: cycle.id,
     name: { ...cycle.name },
+    description: descriptionOf(cycle),
     year: cycle.year,
     status: cycle.status,
     isAcceptingApplications: acceptsApplications(cycle, now),

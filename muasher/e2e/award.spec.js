@@ -250,8 +250,10 @@ test.describe('Award staff screens', () => {
     await dialog.locator('.completion-dialog__option input[type="checkbox"]').first().check()
     await nextCompletionStep(page)
     await dialog.locator('textarea[name="notes"]').fill(RETURN_NOTES)
-    const deadline = dialog.locator('input[type="date"]')
-    await deadline.fill(await deadline.getAttribute('min'))
+    await dialog.locator('.datepicker__calendar').click()
+    await expect(dialog.locator('.date-calendar [aria-current="date"]')).toBeFocused()
+    await page.keyboard.press('Enter')
+    await expect(dialog.locator('.date-calendar')).toHaveCount(0)
     await nextCompletionStep(page)
     await shot(page, 'award-follower-return', testInfo)
     await dialog.locator('button[type="submit"]').click()
@@ -302,25 +304,30 @@ test.describe('Award staff screens', () => {
     await page.goto('/admin/award/cycles')
     await expect(page.locator('.table:not(.table--loading) tbody .table__row')).toHaveCount(3)
     await page.locator('.cycles-page__header .btn--primary').click()
-    await expect(page.locator('.cycle-form')).toBeVisible()
-    await expect(page.locator('input[name="disqualificationScore"]')).toHaveValue('60.00')
-    await page.locator('input[name="name.ar"]').fill('دورة جائزة مؤشر التجريبية للمناطق الشمالية')
+    await expect(page.locator('form[data-step="identity"]')).toBeVisible()
+    await page.locator('input[name="name.ar"]').fill('دورة جائزة مؤشر للمناطق الشمالية')
     await page.locator('input[name="name.en"]').fill('Moashir Award for the Northern Regions')
+    await shot(page, 'award-cycle-editor-new', testInfo)
+    await page.locator('.cycle-setup__next').click()
     const year = new Date().getFullYear() + 2
     await page.locator('input[name="submissionStart"]').fill(`${year}-02-01`)
     await page.locator('input[name="submissionEnd"]').fill(`${year}-03-15`)
     await page.locator('input[name="committeeStart"]').fill(`${year}-04-01`)
     await page.locator('input[name="committeeEnd"]').fill(`${year}-05-15`)
-    await page.locator('.checkbox-group input[type="checkbox"]').nth(5).check()
-    await page.locator('.checkbox-group input[type="checkbox"]').nth(6).check()
-    await shot(page, 'award-cycle-editor-new', testInfo)
-    await page.locator('.cycle-form__actions .btn--primary').click()
-    await expect(page).toHaveURL(/\/admin\/award\/cycles\/\d+$/)
+    await page.locator('.cycle-setup__next').click()
+    await expect(page).toHaveURL(/\/admin\/award\/cycles\/\d+\/setup$/)
+    await expect(page.locator('form[data-step="conditions"]')).toBeVisible()
+    await expect(page.locator('input[name="disqualificationScore"]')).toHaveValue('60.00')
+    for (const step of ['conditions', 'deadlines', 'fee']) {
+      await expect(page.locator(`form[data-step="${step}"]`)).toBeVisible()
+      await page.locator('.cycle-setup__next').click()
+    }
+    await expect(page.locator('.cycle-staff')).toBeVisible()
+    await page.locator('.cycle-setup__next').click()
     await expect(page.locator('.cycle-actions')).toContainText(
       text(testInfo, 'Submissions cannot open yet', 'لا يمكن فتح التقديم بعد'),
     )
     await expect(page.locator('.cycle-actions .btn--primary')).toBeDisabled()
-    await expect(page.locator('.cycle-staff')).toBeVisible()
     await shot(page, 'award-cycle-editor', testInfo)
     expect(errors).toEqual([])
   })
@@ -330,15 +337,18 @@ test.describe('Award staff screens', () => {
   }, testInfo) => {
     await signIn(page, testInfo, USERS.systemAdmin)
     await page.goto('/admin/award/cycles/31')
+    await expect(page).toHaveURL(/\/admin\/award\/cycles\/31\/setup$/)
+    await page.locator('.cycle-summary__section[data-step="dates"] .btn').click()
     await expect(page.locator('input[name="submissionStart"]')).toBeDisabled()
     await expect(page.locator('input[name="submissionEnd"]')).toBeEnabled()
+    await page.locator('.wizard__button').last().click()
     await page
       .locator('.cycle-actions button', {
         hasText: text(testInfo, 'Close submissions', 'إغلاق التقديم'),
       })
       .click()
     await page.locator('.modal .btn--primary').click()
-    await expect(page.locator('.cycle-editor__title-row')).toContainText(
+    await expect(page.locator('.cycle-setup__title-row')).toContainText(
       text(testInfo, 'Submissions closed', 'التقديم مغلق'),
     )
     await page
@@ -412,7 +422,7 @@ test.describe('Award staff screens', () => {
     const reason = page.locator('.modal').filter({ has: page.locator('textarea[name="reason"]') })
     await reason.locator('textarea').fill(SUPER_REASON)
     await reason.locator('button[type="submit"]').click()
-    await expect(page.locator('.cycle-editor__title-row')).toContainText(
+    await expect(page.locator('.cycle-setup__title-row')).toContainText(
       text(testInfo, 'Submissions closed', 'التقديم مغلق'),
     )
     await page

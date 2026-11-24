@@ -56,12 +56,12 @@ function startAwardPayment(User $owner, AwardCycle $cycle, array $payload = []):
 
 it('sets the cycle entry fee from the award default price and locks it once the submission window opens', function (): void {
     Date::setTestNow('2026-11-01 08:00:00');
-    $version = publishedAccreditedCriteria();
+    publishedAccreditedCriteria();
     setServicePrice(PaymentPurpose::Award, '300.00');
     $admin = systemAdmin();
 
     switchTo($admin)->getJson('/api/v1/award/cycles/default-conditions')->assertOk()->assertJsonPath('data.entry_fee', '300.00');
-    $id = switchTo($admin)->postJson('/api/v1/award/cycles', cyclePayload($version, Region::factory()->create()))->assertCreated()
+    $id = switchTo($admin)->postJson('/api/v1/award/cycles', cyclePayload(Region::factory()->create()))->assertCreated()
         ->assertJsonPath('data.entry_fee', '300.00')
         ->assertJsonPath('data.entry_fee_quote.total', '345.00')
         ->assertJsonPath('data.entry_fee_editable', true)

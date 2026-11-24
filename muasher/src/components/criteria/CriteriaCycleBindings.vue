@@ -2,21 +2,15 @@
 import { computed, useId } from 'vue'
 import { useI18n } from 'vue-i18n'
 import CycleStatusBadge from '@/components/award/CycleStatusBadge.vue'
-import { DRAFT_CYCLE_CHOICES } from '@/constants/committee'
 import { localizedText } from '@/utils/localizedText'
 import AppIcon from '@/components/ui/AppIcon.vue'
 
 const props = defineProps({
   bindings: { type: Object, required: true },
-  choice: { type: String, default: DRAFT_CYCLE_CHOICES.KEEP },
-  showChoice: { type: Boolean, default: false },
-  disabled: { type: Boolean, default: false },
 })
 
-const emit = defineEmits(['update:choice'])
 const { t, locale } = useI18n()
 const baseId = useId()
-const choices = computed(() => Object.values(DRAFT_CYCLE_CHOICES))
 const running = computed(() => props.bindings.running)
 </script>
 
@@ -52,32 +46,9 @@ const running = computed(() => props.bindings.running)
           {{ localizedText(draft.name, locale) }}
         </li>
       </ul>
-      <fieldset v-if="showChoice" class="cycle-bindings__choice" :disabled="disabled">
-        <legend class="cycle-bindings__legend">{{ t('criteria.cycles.choiceLegend') }}</legend>
-        <label
-          v-for="value in choices"
-          :key="value"
-          class="cycle-bindings__option"
-          :class="{ 'is-selected': choice === value }"
-        >
-          <input
-            class="cycle-bindings__input"
-            type="radio"
-            :name="`${baseId}-draft-cycles`"
-            :value="value"
-            :checked="choice === value"
-            @change="emit('update:choice', value)"
-          />
-          <span class="cycle-bindings__option-text">
-            <span class="cycle-bindings__option-title">{{
-              t(`criteria.cycles.choices.${value}.title`)
-            }}</span>
-            <span class="cycle-bindings__option-description">{{
-              t(`criteria.cycles.choices.${value}.description`)
-            }}</span>
-          </span>
-        </label>
-      </fieldset>
+      <p class="cycle-bindings__hint" data-testid="cycle-bindings-drafts-follow">
+        {{ t('criteria.cycles.draftsFollow') }}
+      </p>
     </template>
   </section>
 </template>

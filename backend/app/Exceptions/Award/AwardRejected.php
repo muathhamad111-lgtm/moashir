@@ -34,9 +34,9 @@ final class AwardRejected extends ApiException
         return self::fieldError('cycle.region_has_requests', 'region_ids');
     }
 
-    public static function criteriaVersionNotPublished(): self
+    public static function noPublishedCriteria(): self
     {
-        return self::fieldError('cycle.criteria_version_not_published', 'criteria_version_id');
+        return new self(new ApiError(Response::HTTP_CONFLICT, 'cycle.no_published_criteria'));
     }
 
     public static function participationSettingReserved(): self
