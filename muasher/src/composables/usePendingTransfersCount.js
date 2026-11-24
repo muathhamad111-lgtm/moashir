@@ -1,7 +1,7 @@
 import { onMounted, ref } from 'vue'
 import { bankTransfersService } from '@/services/bankTransfersService'
 
-// How many bank transfers wait for review, for the badge on the «بانتظار الاعتماد» tab.
+// How many bank transfers wait for review, for the banner above the finance list.
 export function usePendingTransfersCount({ enabled }) {
   const count = ref(null)
 

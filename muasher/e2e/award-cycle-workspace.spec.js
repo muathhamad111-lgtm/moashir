@@ -45,7 +45,7 @@ async function expectActiveTab(page, key) {
 async function expectSharedHeader(page, title) {
   await expect(page.locator('h1')).toHaveCount(1)
   await expect(page.locator('h1')).toHaveText(title)
-  await expect(page.locator('.cycle-setup__header .cycle-actions')).toBeVisible()
+  await expect(page.locator('.cycle-setup__header .cycle-actions__buttons')).toBeVisible()
   await expect(page.locator('.cycles-page .cycle-editor__back')).toHaveCount(0)
 }
 

@@ -50,10 +50,22 @@ describe('FinanceOverviewCards', () => {
     await cards[0].findAll('.finance-overview__cell')[1].trigger('click')
     await cards[2].findAll('.finance-overview__cell')[1].trigger('click')
     expect(wrapper.emitted('select')).toEqual([
-      [{ status: 'under_review' }],
+      [{ status: 'under_review', type: '' }],
       [{ status: 'under_review', type: 'bank_transfer' }],
     ])
     expect(cards[0].findAll('.finance-overview__cell')[1].attributes('aria-label')).toContain('2')
+  })
+
+  it('shows the status filtering the list as pressed, on its own card only', () => {
+    const wrapper = mountCards({
+      stats: STATS,
+      active: { status: 'under_review', type: 'bank_transfer' },
+    })
+    const cards = wrapper.findAll('.finance-overview__split-card')
+    const pressed = wrapper.findAll('.finance-overview__cell[aria-pressed="true"]')
+    expect(pressed).toHaveLength(1)
+    expect(cards[2].findAll('.finance-overview__cell')[1].attributes('aria-pressed')).toBe('true')
+    expect(cards[0].findAll('.finance-overview__cell')[1].attributes('aria-pressed')).toBe('false')
   })
 
   it('shows placeholders while the figures load', () => {

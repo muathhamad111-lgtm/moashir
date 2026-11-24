@@ -159,6 +159,10 @@ describe('TransactionFilters', () => {
   })
 })
 
+function viewOnly() {
+  return [{ key: 'view', label: 'View details', icon: 'eye' }]
+}
+
 describe('TransactionsTable', () => {
   const ROW = {
     id: 'p-9',
@@ -174,7 +178,11 @@ describe('TransactionsTable', () => {
   }
 
   it('shows the operation, the entity, the amount with its VAT, the payment, the status and the date', () => {
-    const wrapper = mountWith(TransactionsTable, { items: [ROW], status: 'success' })
+    const wrapper = mountWith(TransactionsTable, {
+      actionsFor: viewOnly,
+      items: [ROW],
+      status: 'success',
+    })
     const headers = wrapper.findAll('th').map((header) => header.text())
     expect(headers).toEqual([
       'Operation',
@@ -201,6 +209,7 @@ describe('TransactionsTable', () => {
 
   it('identifies the entity by its initials and number, never by an e-mail', () => {
     const wrapper = mountWith(TransactionsTable, {
+      actionsFor: viewOnly,
       items: [{ ...ROW, entity: { ...ROW.entity, email: 'owner@namaa.sa' } }],
       status: 'success',
     })
@@ -212,6 +221,7 @@ describe('TransactionsTable', () => {
 
   it('hides the columns the viewer turned off and sorts by amount and date', async () => {
     const wrapper = mountWith(TransactionsTable, {
+      actionsFor: viewOnly,
       items: [ROW],
       status: 'success',
       sort: '-created_at',
@@ -227,6 +237,7 @@ describe('TransactionsTable', () => {
 
   it('explains the status when the pointer rests on it', async () => {
     const wrapper = mountWith(TransactionsTable, {
+      actionsFor: viewOnly,
       items: [{ ...ROW, status: 'failed' }],
       status: 'success',
     })
@@ -235,14 +246,18 @@ describe('TransactionsTable', () => {
     expect(wrapper.find('[role="tooltip"]').text()).toContain('declined the operation')
   })
 
-  it('opens the receipt from an eye icon', async () => {
-    const wrapper = mountWith(TransactionsTable, { items: [ROW], status: 'success' })
-    const view = wrapper.find('.transactions-table__view')
+  it('offers the row actions as icon buttons named after the operation', async () => {
+    const wrapper = mountWith(TransactionsTable, {
+      actionsFor: viewOnly,
+      items: [ROW],
+      status: 'success',
+    })
+    const view = wrapper.find('[data-action="view"]')
     expect(view.element.tagName).toBe('BUTTON')
     expect(view.attributes('aria-label')).toBe('View details — PAY-2026-000009')
     expect(view.find('.btn__label').exists()).toBe(false)
     await view.trigger('click')
-    expect(wrapper.emitted('view')[0][0].id).toBe('p-9')
+    expect(wrapper.emitted('action')[0][0]).toEqual({ key: 'view', item: ROW })
   })
 })
 

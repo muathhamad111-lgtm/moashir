@@ -100,7 +100,7 @@ test.describe('Award committee roster and start', () => {
     await page.locator('a[href="/admin/award/cycles/31"]').first().click()
     await expect(page).toHaveURL(/\/admin\/award\/cycles\/31$/)
     await page
-      .locator('.cycle-actions button', {
+      .locator('.cycle-actions__buttons button', {
         hasText: text(testInfo, 'Start the committee assessment', 'بدء تقييم اللجنة'),
       })
       .click()

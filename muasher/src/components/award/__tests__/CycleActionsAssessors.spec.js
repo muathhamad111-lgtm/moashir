@@ -4,7 +4,7 @@ import { setActivePinia } from 'pinia'
 import { createTestGlobals } from '@/test-utils'
 import { useAuthStore } from '@/stores/auth'
 import { sessionUserFor } from '@/test-utils/session'
-import CycleStageActions from '../CycleStageActions.vue'
+import { CycleStagePanel } from './cycleStagePanel'
 
 const CYCLE = {
   id: 31,
@@ -21,7 +21,7 @@ function render(cycle, locale = 'en') {
   const globals = createTestGlobals({ locale })
   setActivePinia(globals.pinia)
   useAuthStore(globals.pinia).setUser(sessionUserFor(['system_admin']))
-  return mount(CycleStageActions, {
+  return mount(CycleStagePanel, {
     props: { cycle },
     global: { plugins: globals.plugins },
     attachTo: document.body,

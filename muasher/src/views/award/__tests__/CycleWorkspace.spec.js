@@ -117,7 +117,9 @@ describe('CycleWorkspace — the shared header', () => {
     const edit = header.find('[data-testid="cycle-edit"]')
     expect(edit.attributes('href')).toBe('/admin/award/cycles/31/setup')
     expect(edit.text()).toContain('تعديل الدورة')
-    expect(header.find('.cycle-actions').text()).toContain('إغلاق التقديم')
+    expect(header.find('.cycle-detail__actions .cycle-actions__buttons').text()).toContain(
+      'إغلاق التقديم',
+    )
     expect(wrapper.find('nav.cycle-tabs').attributes('aria-label')).toBe('أقسام الدورة')
     expect(tabKeys(wrapper)).toEqual(['details', 'filtering', 'committee'])
     expect(wrapper.find('nav.cycle-tabs').element.compareDocumentPosition(header.element)).toBe(
@@ -136,7 +138,7 @@ describe('CycleWorkspace — the shared header', () => {
       cycle: detail({ canManage: false }),
     })
     expect(reader.wrapper.find('[data-testid="cycle-edit"]').exists()).toBe(false)
-    expect(reader.wrapper.find('.cycle-actions button').exists()).toBe(false)
+    expect(reader.wrapper.find('.cycle-actions__buttons button').exists()).toBe(false)
     expect(reader.wrapper.find('.cycle-actions__note').exists()).toBe(true)
   })
 

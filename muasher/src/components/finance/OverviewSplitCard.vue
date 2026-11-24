@@ -4,7 +4,7 @@ import AppIcon from '@/components/ui/AppIcon.vue'
 import Skeleton from '@/components/feedback/Skeleton.vue'
 import LedgerStatusBadge from './LedgerStatusBadge.vue'
 
-// A total next to its split by status; each status is a button that filters the operations list.
+// A total next to its split by status; each status is a toggle that filters the operations list.
 defineProps({
   icon: { type: String, required: true },
   label: { type: String, required: true },
@@ -13,6 +13,8 @@ defineProps({
   paidTotal: { type: String, default: '' },
   loading: { type: Boolean, default: false },
   formatCount: { type: Function, required: true },
+  // The status of this card that filters the list now ('' when none).
+  active: { type: String, default: '' },
 })
 
 const emit = defineEmits(['select'])
@@ -34,6 +36,7 @@ const { t } = useI18n()
         <button
           type="button"
           class="finance-overview__cell"
+          :aria-pressed="cell.status === active"
           :aria-label="
             t('finance.page.cards.filterBy', {
               status: t(`finance.operations.statuses.${cell.status}.label`),

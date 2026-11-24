@@ -4,7 +4,7 @@ import { setActivePinia } from 'pinia'
 import { createTestGlobals } from '@/test-utils'
 import { useAuthStore } from '@/stores/auth'
 import { sessionUserFor } from '@/test-utils/session'
-import CycleStageActions from '../CycleStageActions.vue'
+import { CycleStagePanel } from './cycleStagePanel'
 import CycleStatusBadge from '../CycleStatusBadge.vue'
 import FilteringDecisionDialog from '../FilteringDecisionDialog.vue'
 import FilteringDecisionList from '../FilteringDecisionList.vue'
@@ -55,20 +55,20 @@ describe('public award intro components', () => {
 describe('cycle staff components', () => {
   it('offers the stage actions to managers and explains a blocked opening', () => {
     const labels = (wrapper) => wrapper.findAll('button').map((button) => button.text())
-    expect(labels(render(CycleStageActions, { cycle }, { roles: ['system_admin'] }))).toEqual([
+    expect(labels(render(CycleStagePanel, { cycle }, { roles: ['system_admin'] }))).toEqual([
       'Close submissions',
     ])
     expect(
       labels(
         render(
-          CycleStageActions,
+          CycleStagePanel,
           { cycle: { ...cycle, status: 'submission-closed' } },
           { roles: ['system_admin'] },
         ),
       ),
     ).toEqual(['Start the committee assessment', 'Close the cycle'])
     const draft = render(
-      CycleStageActions,
+      CycleStagePanel,
       {
         cycle: {
           ...cycle,
@@ -86,7 +86,7 @@ describe('cycle staff components', () => {
     expect(
       labels(
         render(
-          CycleStageActions,
+          CycleStagePanel,
           { cycle: { ...cycle, canManage: false } },
           { roles: ['filtering_officer'] },
         ),
@@ -95,7 +95,7 @@ describe('cycle staff components', () => {
     expect(
       labels(
         render(
-          CycleStageActions,
+          CycleStagePanel,
           { cycle: { ...cycle, status: 'closed' }, canReopen: true },
           { roles: [] },
         ),
@@ -107,12 +107,11 @@ describe('cycle staff components', () => {
     'leaves the stage pages of a %s cycle to the cycle tabs, with no links among the actions',
     (status) => {
       const actions = render(
-        CycleStageActions,
+        CycleStagePanel,
         { cycle: { ...cycle, status } },
         { roles: ['award_secretary'] },
       )
-      expect(actions.element.tagName).toBe('SECTION')
-      expect(actions.classes()).toContain('cycle-actions')
+      expect(actions.find('.cycle-actions__buttons').attributes('role')).toBe('group')
       expect(actions.findAll('a')).toHaveLength(0)
       expect(actions.text()).not.toContain('Open the filtering')
     },
@@ -120,7 +119,7 @@ describe('cycle staff components', () => {
 
   it('words a blocked opening after the active concurrency setting and never blocks in concurrent mode', () => {
     const staggered = render(
-      CycleStageActions,
+      CycleStagePanel,
       {
         cycle: { ...cycle, id: 32, status: 'draft' },
         openBlock: { code: 'cycle.another_open_for_submission', concurrency: 'staggered', cycle },
@@ -130,7 +129,7 @@ describe('cycle staff components', () => {
     expect(staggered.text()).toContain('Applications are open in Cycle 2026')
     expect(staggered.find('.btn--primary').attributes('disabled')).toBeDefined()
     const arabic = render(
-      CycleStageActions,
+      CycleStagePanel,
       {
         cycle: { ...cycle, id: 32, status: 'draft' },
         openBlock: { code: 'cycle.another_open_for_submission', concurrency: 'staggered', cycle },
@@ -139,14 +138,14 @@ describe('cycle staff components', () => {
     )
     expect(arabic.text()).toContain('التقديم مفتوح في دورة 2026')
     const concurrent = render(
-      CycleStageActions,
+      CycleStagePanel,
       { cycle: { ...cycle, id: 32, status: 'draft' }, openBlock: null },
       { roles: ['system_admin'] },
     )
     expect(concurrent.text()).not.toContain('Submissions cannot open yet')
     expect(concurrent.find('.btn--primary').attributes('disabled')).toBeUndefined()
     const refused = render(
-      CycleStageActions,
+      CycleStagePanel,
       {
         cycle: { ...cycle, id: 32, status: 'draft' },
         blocked: { code: 'cycle.another_open_for_submission', cycleId: 31 },
@@ -184,7 +183,7 @@ describe('cycle staff components', () => {
 
   it('lists the requests that block the close', () => {
     const blocked = render(
-      CycleStageActions,
+      CycleStagePanel,
       {
         cycle: { ...cycle, status: 'submission-closed' },
         blocked: {

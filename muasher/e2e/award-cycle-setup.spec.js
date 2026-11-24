@@ -196,7 +196,9 @@ async function expectNewCyclePage(page, testInfo) {
   )
   await expect(page.locator('.cycle-tabs__tab.is-active')).toHaveAttribute('data-tab', 'details')
   await expect(page.locator('.cycle-tabs__tab')).toHaveCount(2)
-  await expect(page.locator('.cycle-setup__header .cycle-actions .btn--primary')).toBeDisabled()
+  await expect(
+    page.locator('.cycle-setup__header .cycle-actions__buttons .btn--primary'),
+  ).toBeDisabled()
 }
 
 async function expectRunningCyclePage(page, testInfo) {
@@ -204,7 +206,7 @@ async function expectRunningCyclePage(page, testInfo) {
   await expect(page.locator('.cycle-tabs__tab')).toHaveCount(3)
   await expect(page.locator('.cycle-tabs__tab.is-active')).toHaveAttribute('data-tab', 'details')
   await expect(
-    page.locator('.cycle-setup__header .cycle-actions').getByRole('button', {
+    page.locator('.cycle-setup__header .cycle-actions__buttons').getByRole('button', {
       name: say(testInfo, 'Close submissions', 'إغلاق التقديم'),
     }),
   ).toBeVisible()
@@ -242,7 +244,7 @@ for (const viewport of [DESKTOP, PHONE]) {
       )
       await expect(page.locator('.cycle-summary__row.is-missing')).toHaveCount(1)
       await expectCommitteeOnReview(page, testInfo)
-      await expect(page.locator('.cycle-actions')).toHaveCount(0)
+      await expect(page.locator('.cycle-actions, .cycle-actions__buttons')).toHaveCount(0)
       await expectActionsInReach(page, viewport)
       expect(await pageOverflow(page)).toBe(0)
       await shot(page, `award-cycle-setup-review-${viewport.width}`, testInfo)
@@ -267,11 +269,11 @@ for (const viewport of [DESKTOP, PHONE]) {
       await page.locator('[data-testid="cycle-edit"]').click()
       await expect(page).toHaveURL(new RegExp(`/admin/award/cycles/${RUNNING_CYCLE}/setup$`))
       await expect(page.locator('.cycle-summary')).toBeVisible({ timeout: LOAD_TIMEOUT })
-      await expect(page.locator('.cycle-actions')).toHaveCount(0)
+      await expect(page.locator('.cycle-actions, .cycle-actions__buttons')).toHaveCount(0)
       await expect(page.locator('.cycle-tabs')).toHaveCount(0)
       await page.locator('.cycle-summary__section[data-step="dates"] .btn').click()
       await expectStep(page, testInfo, 2, 'dates')
-      await expect(page.locator('.cycle-actions')).toHaveCount(0)
+      await expect(page.locator('.cycle-actions, .cycle-actions__buttons')).toHaveCount(0)
       await expect(
         dateGroup(page, 'submissionStart').locator('.datepicker__segment:disabled'),
       ).toHaveCount(3)
@@ -316,7 +318,7 @@ for (const viewport of [DESKTOP, PHONE]) {
       await expect(
         dateGroup(page, 'submissionStart').locator('.datepicker__segment:disabled'),
       ).toHaveCount(3)
-      await expect(page.locator('.cycle-actions')).toHaveCount(0)
+      await expect(page.locator('.cycle-actions, .cycle-actions__buttons')).toHaveCount(0)
       expect(await pageOverflow(page)).toBe(0)
     })
   })

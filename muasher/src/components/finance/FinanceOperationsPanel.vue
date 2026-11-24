@@ -14,12 +14,14 @@ import { PERMISSIONS } from '@/constants/permissionKeys'
 import { TRANSACTION_COLUMNS } from '@/constants/finance'
 import { transactionColumns } from '@/utils/finance/transactionColumns'
 
-// The «العمليات» tab: every operation, searchable, filterable, sortable and exportable.
+// The finance list: every operation, searchable, filterable, sortable and exportable, with the
+// actions each row's status allows.
 const props = defineProps({
   operations: { type: Object, required: true },
+  actionsFor: { type: Function, required: true },
 })
 
-const emit = defineEmits(['view'])
+const emit = defineEmits(['action'])
 const { t } = useI18n()
 const { can } = usePermissions()
 const exporter = useTransactionsExport()
@@ -89,9 +91,10 @@ const filterState = { filters: filters.filters, setFilter, sort: filters.sort, s
       :error-message="errorMessage"
       :sort="filters.sort.value"
       :is-visible="columns.isVisible"
+      :actions-for="actionsFor"
       @retry="load"
       @sort="setSort"
-      @view="emit('view', $event)"
+      @action="emit('action', $event)"
     />
     <Pagination
       v-if="status === 'success' && pagination.lastPage > 1"

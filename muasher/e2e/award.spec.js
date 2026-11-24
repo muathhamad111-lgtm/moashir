@@ -329,7 +329,7 @@ test.describe('Award staff screens', () => {
     await expect(page.locator('.cycle-actions')).toContainText(
       text(testInfo, 'Submissions cannot open yet', 'لا يمكن فتح التقديم بعد'),
     )
-    await expect(page.locator('.cycle-actions .btn--primary')).toBeDisabled()
+    await expect(page.locator('.cycle-actions__buttons .btn--primary')).toBeDisabled()
     await shot(page, 'award-cycle-editor', testInfo)
     expect(errors).toEqual([])
   })
@@ -349,7 +349,7 @@ test.describe('Award staff screens', () => {
     await page.locator('[data-testid="cycle-finish"]').click()
     await expect(page).toHaveURL(/\/admin\/award\/cycles\/31$/)
     await page
-      .locator('.cycle-actions button', {
+      .locator('.cycle-actions__buttons button', {
         hasText: text(testInfo, 'Close submissions', 'إغلاق التقديم'),
       })
       .click()
@@ -358,7 +358,7 @@ test.describe('Award staff screens', () => {
       text(testInfo, 'Submissions closed', 'التقديم مغلق'),
     )
     await page
-      .locator('.cycle-actions button', {
+      .locator('.cycle-actions__buttons button', {
         hasText: text(testInfo, 'Close the cycle', 'إغلاق الدورة'),
       })
       .click()
@@ -373,7 +373,7 @@ test.describe('Award staff screens', () => {
     await signIn(page, testInfo, USERS.superAdmin)
     await page.goto('/admin/award/cycles/30')
     await page
-      .locator('.cycle-actions button', {
+      .locator('.cycle-actions__buttons button', {
         hasText: text(testInfo, 'Reopen the cycle', 'إعادة فتح الدورة'),
       })
       .click()
@@ -424,7 +424,7 @@ test.describe('Award staff screens', () => {
     await signIn(page, testInfo, USERS.superAdmin)
     await page.goto('/admin/award/cycles/31')
     await page
-      .locator('.cycle-actions button', {
+      .locator('.cycle-actions__buttons button', {
         hasText: text(testInfo, 'Close submissions', 'إغلاق التقديم'),
       })
       .click()

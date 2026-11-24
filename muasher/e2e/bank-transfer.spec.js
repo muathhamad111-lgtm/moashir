@@ -227,7 +227,7 @@ test('Finance approves the selected transfers at once', async ({ page }, testInf
   await signIn(page, testInfo, USERS.finance)
   await page.goto('/finance/transfers')
   await expect(page.locator('.transfer-queue__table tbody tr')).toHaveCount(3)
-  await expect(page.locator('.tabs__tab.is-active .tabs__badge')).toHaveText('3')
+  await expect(page.getByTestId('finance-pending')).toContainText('3')
   await expect(underReviewCount(page)).toHaveText('3')
   const filters = await openListFilters(page)
   await filters.locator('.transfer-filters [role="combobox"]').first().click()

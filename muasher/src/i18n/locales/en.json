@@ -6283,7 +6283,8 @@
         "date": "Date",
         "receipt": "Receipt no."
       },
-      "view": "View details"
+      "view": "View details",
+      "viewReceipt": "View receipt"
     },
     "transaction": {
       "title": "Transaction details",
@@ -6426,7 +6427,8 @@
         "refund_recorded": "Refund recorded",
         "manual_settle": "Manual settlement",
         "order_cancelled": "Order cancelled to change the payment method"
-      }
+      },
+      "pageSubtitle": "What the payment gateway and the verification jobs reported, for support."
     },
     "settings": {
       "saved": "The finance settings were saved.",
@@ -6750,7 +6752,7 @@
           "definition": "The gateway or the bank declined the operation, such as insufficient funds or an expired card."
         },
         "cancelled": {
-          "label": "Cancelled",
+          "label": "Cancelled or expired",
           "definition": "The order expired or the entity cancelled it before paying."
         },
         "refunded": {
@@ -6762,11 +6764,6 @@
     "page": {
       "title": "Finance",
       "subtitle": "Track payments and approve bank transfers",
-      "tabs": {
-        "operations": "Operations",
-        "transfers": "Awaiting approval",
-        "events": "Payment events"
-      },
       "cards": {
         "revenue": "Total revenue",
         "revenueDetail": "Including VAT {vat} · Refunded {refunded}",
@@ -6783,6 +6780,10 @@
           "rejected": "Rejected",
           "failed": "Payment failed"
         }
+      },
+      "pending": {
+        "message": "No transfers awaiting approval | {count} transfer awaiting approval | {count} transfers awaiting approval",
+        "show": "Show them"
       }
     },
     "receiptModal": {
@@ -7052,7 +7053,6 @@
     },
     "list": {
       "title": "Award cycles",
-      "subtitle": "Prepare the cycles, their dates, conditions and staff. The award cycle concurrency setting decides how many cycles run together; the next one can be prepared as a draft.",
       "new": "New cycle",
       "searchPlaceholder": "Search by cycle name",
       "emptyTitle": "No award cycles",

@@ -7,6 +7,7 @@ import AppIcon from '@/components/ui/AppIcon.vue'
 import BaseButton from '@/components/ui/BaseButton.vue'
 import CycleStatusBadge from '@/components/award/CycleStatusBadge.vue'
 import CycleStageActions from '@/components/award/CycleStageActions.vue'
+import CycleStageButtons from '@/components/award/CycleStageButtons.vue'
 import { useCycleEditor } from '@/composables/useCycleEditor'
 import { useCycleTabs } from '@/composables/useCycleTabs'
 import { useCycleTransitions } from '@/composables/useCycleTransitions'
@@ -57,25 +58,31 @@ watch(cycleId, () => editor.load())
           <h1 class="cycle-setup__title">{{ title }}</h1>
           <CycleStatusBadge v-if="cycle" :status="cycle.status" />
         </div>
-        <BaseButton
-          v-if="status === 'ready' && editable"
-          variant="secondary"
-          icon="pen"
-          data-testid="cycle-edit"
-          :to="{ name: ROUTE_NAMES.AWARD_CYCLE_SETUP, params: { id: cycleId } }"
-        >
-          {{ t('cycles.detail.edit') }}
-        </BaseButton>
+        <div v-if="status === 'ready' && cycle" class="cycle-detail__actions">
+          <BaseButton
+            v-if="editable"
+            variant="secondary"
+            icon="pen"
+            data-testid="cycle-edit"
+            :to="{ name: ROUTE_NAMES.AWARD_CYCLE_SETUP, params: { id: cycleId } }"
+          >
+            {{ t('cycles.detail.edit') }}
+          </BaseButton>
+          <CycleStageButtons
+            :cycle="cycle"
+            :busy="transitions.busy.value"
+            :open-block="cycle.openBlock"
+            :can-reopen="canReopen"
+            @run="transitions.confirmAndRun"
+            @reopen="reopenOpen = true"
+          />
+        </div>
       </div>
       <CycleStageActions
         v-if="status === 'ready' && cycle"
         :cycle="cycle"
-        :busy="transitions.busy.value"
         :open-block="cycle.openBlock"
         :blocked="transitions.blocked.value"
-        :can-reopen="canReopen"
-        @run="transitions.confirmAndRun"
-        @reopen="reopenOpen = true"
       />
     </header>
     <nav class="cycle-tabs" :aria-label="t('cycles.workspace.label')">

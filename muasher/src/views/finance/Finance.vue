@@ -2,85 +2,113 @@
 import { computed, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useHead } from '@unhead/vue'
-import { useRoute, useRouter } from 'vue-router'
+import { useRouter } from 'vue-router'
 import Card from '@/components/ui/Card.vue'
-import Tabs from '@/components/ui/Tabs.vue'
+import AppIcon from '@/components/ui/AppIcon.vue'
 import FinancePageHeader from '@/components/finance/FinancePageHeader.vue'
 import FinanceOverviewCards from '@/components/finance/FinanceOverviewCards.vue'
 import FinanceOperationsPanel from '@/components/finance/FinanceOperationsPanel.vue'
+import PendingTransfersBanner from '@/components/finance/PendingTransfersBanner.vue'
 import TransferQueuePanel from '@/components/finance/TransferQueuePanel.vue'
-import PaymentEventsPanel from '@/components/finance/PaymentEventsPanel.vue'
 import TransactionReceiptModal from '@/components/finance/TransactionReceiptModal.vue'
+import TransferReviewModal from '@/components/finance/TransferReviewModal.vue'
+import ApproveTransferDialog from '@/components/finance/ApproveTransferDialog.vue'
+import RejectTransferDialog from '@/components/finance/RejectTransferDialog.vue'
 import { useTransactions } from '@/composables/useTransactions'
+import { useFinanceCardStats } from '@/composables/useFinanceCardStats'
 import { usePendingTransfersCount } from '@/composables/usePendingTransfersCount'
+import { useTransactionRowActions } from '@/composables/useTransactionRowActions'
+import { useTransferDecisions } from '@/composables/useTransferDecisions'
 import { usePermissions } from '@/composables/usePermissions'
-import { FINANCE_TABS } from '@/constants/finance'
+import { PAYMENT_CHANNELS } from '@/constants/payments'
 import { ROUTE_NAMES } from '@/constants/routeNames'
 import { accessFor } from '@/constants/routeAccess'
-import { formatNumber } from '@/utils/formatNumber'
+import {
+  TRANSACTION_ROW_ACTIONS as A,
+  isPendingTransfer,
+} from '@/utils/finance/transactionRowActions'
 
-// «المالية»: the overview cards above three tabs. Each tab keeps its own address, so the old links
-// (and the permission guard of each) still work.
-const TAB_ROUTES = Object.freeze({
-  [FINANCE_TABS.OPERATIONS]: ROUTE_NAMES.FINANCE_TRANSACTIONS,
-  [FINANCE_TABS.TRANSFERS]: ROUTE_NAMES.FINANCE_TRANSFERS,
-  [FINANCE_TABS.EVENTS]: ROUTE_NAMES.FINANCE_PAYMENT_EVENTS,
-})
-
+// «المالية»: one list of every operation, newest first. The status cards filter it; each row offers
+// the actions its status allows. Filtered to the transfers waiting for approval, the list is the
+// review queue (with its bulk decisions and proof checks), which is also all a reviewer without the
+// operations permission sees.
 const props = defineProps({
-  tab: {
-    type: String,
-    required: true,
-    validator: (value) => Object.values(FINANCE_TABS).includes(value),
-  },
+  // Opened from the old «بانتظار الاعتماد» address: the list starts on the pending transfers.
+  pending: { type: Boolean, default: false },
 })
 
-const { t, n } = useI18n()
-const route = useRoute()
+const PENDING_FILTER = Object.freeze({
+  status: 'under_review',
+  type: PAYMENT_CHANNELS.BANK_TRANSFER,
+})
+const NO_FILTER = Object.freeze({ status: '', type: '' })
+
+const { t } = useI18n()
 const router = useRouter()
 const { canAccess } = usePermissions()
 
-const allowed = Object.fromEntries(
-  Object.entries(TAB_ROUTES).map(([tab, name]) => [tab, canAccess(accessFor(name))]),
-)
-const operations = allowed[FINANCE_TABS.OPERATIONS] ? useTransactions() : null
-const pending = usePendingTransfersCount({ enabled: allowed[FINANCE_TABS.TRANSFERS] })
+const seesOperations = canAccess(accessFor(ROUTE_NAMES.FINANCE_TRANSACTIONS))
+const seesTransfers = canAccess(accessFor(ROUTE_NAMES.FINANCE_TRANSFERS))
+const operations = seesOperations ? useTransactions() : null
+const cards = operations ? useFinanceCardStats(operations) : null
+const pendingCount = usePendingTransfersCount({ enabled: seesTransfers })
+const { actionsFor } = useTransactionRowActions()
+const decisions = useTransferDecisions({ onDecided: refresh })
 const viewing = ref(null)
+const reviewing = ref(null)
 
 useHead({ title: () => t('finance.page.title') })
 
-const tabs = computed(() =>
-  Object.values(FINANCE_TABS)
-    .filter((tab) => allowed[tab])
-    .map((tab) => ({
-      value: tab,
-      label: t(`finance.page.tabs.${tab}`),
-      badge:
-        tab === FINANCE_TABS.TRANSFERS && pending.count.value
-          ? formatNumber(n, pending.count.value)
-          : '',
-    })),
+const activeFilter = computed(() => ({
+  status: operations?.filters.filters.status ?? '',
+  type: operations?.filters.filters.type ?? '',
+}))
+const showingPending = computed(
+  () =>
+    !operations ||
+    (activeFilter.value.status === PENDING_FILTER.status &&
+      activeFilter.value.type === PENDING_FILTER.type),
 )
 
-function openTab(tab) {
-  if (tab === props.tab) return
-  router.replace({
-    name: TAB_ROUTES[tab],
-    query: tab === FINANCE_TABS.OPERATIONS ? route.query : {},
-  })
-  if (tab === FINANCE_TABS.OPERATIONS) operations?.load()
-}
+const showsQueue = computed(() => showingPending.value && seesTransfers)
 
-function filterOperations({ status, type = '' }) {
+function applyFilter({ status, type }) {
   operations.setFilter('type', type)
   operations.setFilter('status', status)
-  openTab(FINANCE_TABS.OPERATIONS)
 }
 
-// A decision changes the pending count and the figures of the overview cards.
-function onDecided() {
-  pending.load()
+// A card toggles its filter: a second click on the same status shows every operation again.
+function toggleFilter(next) {
+  const same = activeFilter.value.status === next.status && activeFilter.value.type === next.type
+  applyFilter(same ? NO_FILTER : next)
+}
+
+if (props.pending && operations) applyFilter(PENDING_FILTER)
+
+function refresh() {
+  pendingCount.load()
   operations?.load()
+}
+
+function openOnPage(item, action) {
+  router.push({ name: ROUTE_NAMES.FINANCE_TRANSACTION, params: { id: item.id }, query: { action } })
+}
+
+const ROW_ACTIONS = {
+  [A.VIEW]: (item) => {
+    if (isPendingTransfer(item) && seesTransfers) reviewing.value = item.id
+    else viewing.value = item.id
+  },
+  [A.APPROVE]: (item) => decisions.openApprove([item]),
+  [A.REJECT]: (item) => decisions.openReject([item]),
+  [A.REFUND]: (item) => openOnPage(item, 'refund'),
+  [A.SETTLE]: (item) => openOnPage(item, 'settle'),
+}
+
+function decideFromReview(kind, transfer) {
+  reviewing.value = null
+  if (kind === 'approve') decisions.openApprove([transfer])
+  else decisions.openReject([transfer])
 }
 </script>
 
@@ -92,23 +120,34 @@ function onDecided() {
       :subtitle="t('finance.page.subtitle')"
     />
 
-    <FinanceOverviewCards
-      v-if="operations"
-      :stats="operations.stats.value"
-      :loading="operations.status.value === 'loading' && !operations.stats.value"
-      @select="filterOperations"
+    <PendingTransfersBanner
+      v-if="pendingCount.count.value"
+      :count="pendingCount.count.value"
+      :showing="showingPending"
+      @show="applyFilter(PENDING_FILTER)"
     />
 
-    <Card class="finance-page__tabs">
-      <Tabs :model-value="tab" :tabs="tabs" @update:model-value="openTab">
-        <FinanceOperationsPanel
-          v-if="tab === FINANCE_TABS.OPERATIONS && operations"
-          :operations="operations"
-          @view="viewing = $event.id"
-        />
-        <TransferQueuePanel v-else-if="tab === FINANCE_TABS.TRANSFERS" @decided="onDecided" />
-        <PaymentEventsPanel v-else-if="tab === FINANCE_TABS.EVENTS" />
-      </Tabs>
+    <FinanceOverviewCards
+      v-if="operations"
+      :stats="cards.stats.value"
+      :loading="operations.status.value === 'loading' && !cards.stats.value"
+      :active="activeFilter"
+      @select="toggleFilter"
+    />
+
+    <p v-if="decisions.conflict.value" class="transfers-page__conflict" role="alert">
+      <AppIcon name="warning-triangle" />
+      {{ t(`finance.transfers.conflict.${decisions.conflict.value.replace('.', '_')}`) }}
+    </p>
+
+    <Card class="finance-page__list">
+      <TransferQueuePanel v-if="showsQueue" @decided="refresh" />
+      <FinanceOperationsPanel
+        v-else
+        :operations="operations"
+        :actions-for="actionsFor"
+        @action="ROW_ACTIONS[$event.key]?.($event.item)"
+      />
     </Card>
 
     <TransactionReceiptModal
@@ -117,6 +156,27 @@ function onDecided() {
       :model-value="true"
       :payment-id="viewing"
       @update:model-value="viewing = null"
+    />
+    <TransferReviewModal
+      v-if="reviewing"
+      :key="reviewing"
+      :model-value="true"
+      :payment-id="reviewing"
+      @update:model-value="reviewing = null"
+      @approve="decideFromReview('approve', $event)"
+      @reject="decideFromReview('reject', $event)"
+    />
+    <ApproveTransferDialog
+      v-model="decisions.approveOpen.value"
+      :targets="decisions.approveTargets.value"
+      :asks-reason="decisions.asksReason.value"
+      :action="decisions.approve"
+    />
+    <RejectTransferDialog
+      v-model="decisions.rejectOpen.value"
+      :targets="decisions.rejectTargets.value"
+      :asks-reason="decisions.asksReason.value"
+      :action="decisions.reject"
     />
   </section>
 </template>

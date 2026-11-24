@@ -128,6 +128,12 @@ $overview-cell-min: 6.5rem;
     background-color: var(--theme-accent-soft);
   }
 
+  // The status filtering the list below: pressed until clicked again.
+  &[aria-pressed='true'] {
+    background-color: var(--theme-accent-soft);
+    box-shadow: inset 0 calc(var(--border-width) * -3) 0 var(--theme-accent);
+  }
+
   &:focus-visible {
     @include focus-ring;
   }

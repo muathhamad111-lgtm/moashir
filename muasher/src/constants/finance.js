@@ -121,12 +121,6 @@ export const EVENT_RESULT_VARIANTS = Object.freeze({
 })
 
 // The finance page's tabs: operations, the bank-transfer approval queue and the gateway events log.
-export const FINANCE_TABS = Object.freeze({
-  OPERATIONS: 'operations',
-  TRANSFERS: 'transfers',
-  EVENTS: 'events',
-})
-
 // Badge colour of a ledger status (the statuses the operations filter and the overview cards use).
 export const LEDGER_STATUS_VARIANTS = Object.freeze({
   paid: 'success',
@@ -139,6 +133,9 @@ export const LEDGER_STATUS_VARIANTS = Object.freeze({
 })
 
 // The statuses each overview card splits its operations into.
+// Each card always shows its main statuses; any other status that occurs is added after them,
+// so a card's cells always add up to its total. `awaiting_payment` is the API's own grouping of
+// the created and pending orders (both read «بانتظار الدفع»).
 export const OVERVIEW_STATUSES = Object.freeze({
   all: ['paid', 'under_review', 'awaiting_payment', 'rejected', 'failed'],
   electronic: ['paid', 'awaiting_payment', 'failed'],

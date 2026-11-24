@@ -19,6 +19,53 @@ const STATS = {
   },
 }
 
+// As the summary API sends it: every ledger status, zeros included (created and pending folded into
+// awaiting_payment). The operator's case: six electronic operations, five paid and one expired.
+const API_STATS = {
+  transactionsCount: 11,
+  statusCounts: {
+    paid: 7,
+    underReview: 1,
+    awaitingPayment: 0,
+    rejected: 0,
+    failed: 0,
+    cancelled: 1,
+    refunded: 2,
+  },
+  channels: {
+    electronic: {
+      count: 6,
+      paidTotal: '5750.00',
+      statusCounts: {
+        paid: 5,
+        underReview: 0,
+        awaitingPayment: 0,
+        rejected: 0,
+        failed: 0,
+        cancelled: 1,
+        refunded: 0,
+      },
+    },
+    bankTransfer: {
+      count: 5,
+      paidTotal: '2300.00',
+      statusCounts: {
+        paid: 2,
+        underReview: 1,
+        awaitingPayment: 0,
+        rejected: 0,
+        failed: 0,
+        cancelled: 0,
+        refunded: 2,
+      },
+    },
+  },
+}
+
+function sumOf(cells) {
+  return cells.reduce((total, cell) => total + cell.count, 0)
+}
+
 describe('finance overview figures', () => {
   it('splits all operations by the ledger statuses, in the cards order', () => {
     expect(overallSplit(STATS)).toEqual([
@@ -53,5 +100,20 @@ describe('entityInitials', () => {
     expect(entityInitials('Ruwad Al-Ataa Foundation')).toBe('RA')
     expect(entityInitials('Namaa Charity')).toBe('NC')
     expect(entityInitials('')).toBe('')
+  })
+
+  it('adds every status that occurs to the cards, so each card adds up to its total', () => {
+    const electronic = channelSummary(API_STATS, 'electronic')
+    const bank = channelSummary(API_STATS, 'bank_transfer')
+    expect(sumOf(electronic.cells)).toBe(electronic.count)
+    expect(sumOf(bank.cells)).toBe(bank.count)
+    expect(sumOf(overallSplit(API_STATS))).toBe(API_STATS.transactionsCount)
+    expect(electronic.cells.map((cell) => cell.status)).toEqual([
+      'paid',
+      'awaiting_payment',
+      'failed',
+      'cancelled',
+    ])
+    expect(bank.cells.at(-1)).toEqual({ status: 'refunded', count: 2 })
   })
 })

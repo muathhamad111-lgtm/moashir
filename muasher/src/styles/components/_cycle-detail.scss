@@ -12,6 +12,14 @@
   align-self: stretch;
 }
 
+// «تعديل الدورة» and the stage actions share one row at the inline end; on a phone they wrap
+// under the title.
+.cycle-detail__actions,
+.cycle-detail__actions .cycle-actions__buttons {
+  @include flex(row, center, flex-end, var(--space-3));
+  flex-wrap: wrap;
+}
+
 .cycle-setup__header .cycle-actions {
   align-self: stretch;
   padding-block-start: var(--space-2);

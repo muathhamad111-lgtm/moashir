@@ -9,10 +9,13 @@ import { channelSummary, overallSplit } from '@/utils/finance/overviewStats'
 import { formatAmount } from '@/utils/payments/amountFormat'
 import { withLatinNumerals } from '@/utils/numerals'
 
-// Revenue, the operations by status and one card per payment channel. A status cell filters the list.
+// Revenue, the operations by status and one card per payment channel. A status cell toggles the
+// list filter: the one in force shows pressed.
 const props = defineProps({
   stats: { type: Object, default: null },
   loading: { type: Boolean, default: false },
+  // The card filter in force: a status, and the channel when it came from a channel card.
+  active: { type: Object, default: () => ({ status: '', type: '' }) },
 })
 
 const emit = defineEmits(['select'])
@@ -61,7 +64,8 @@ const revenueDetail = computed(() =>
         :cells="overallSplit(stats)"
         :loading="loading"
         :format-count="count"
-        @select="emit('select', { status: $event })"
+        :active="active.type ? '' : active.status"
+        @select="emit('select', { status: $event, type: '' })"
       />
     </div>
     <div class="finance-overview__row finance-overview__row--channels">
@@ -75,6 +79,7 @@ const revenueDetail = computed(() =>
         :paid-total="money(channel.paidTotal)"
         :loading="loading"
         :format-count="count"
+        :active="active.type === channel.channel ? active.status : ''"
         @select="emit('select', { status: $event, type: channel.channel })"
       />
     </div>

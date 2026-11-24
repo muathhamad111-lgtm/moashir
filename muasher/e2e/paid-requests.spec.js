@@ -124,7 +124,7 @@ for (const viewport of [DESKTOP, MOBILE]) {
     await page.setViewportSize(viewport)
     await signIn(page, testInfo, USERS.finance)
     await page.goto('/finance/transactions')
-    await expect(page.locator('.transactions-table__view').first()).toBeVisible()
+    await expect(page.locator('.table__row [data-action="view"]').first()).toBeVisible()
     expect(await horizontalOverflow(page)).toBeLessThanOrEqual(0)
   })
 }

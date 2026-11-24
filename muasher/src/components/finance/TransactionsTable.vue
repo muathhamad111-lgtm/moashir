@@ -2,7 +2,7 @@
 import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 import DataTable from '@/components/data-list/DataTable.vue'
-import BaseButton from '@/components/ui/BaseButton.vue'
+import RowActions from '@/components/data-list/RowActions.vue'
 import Badge from '@/components/ui/Badge.vue'
 import MoneyAmount from '@/components/payments/MoneyAmount.vue'
 import PaymentStatusBadge from '@/components/payments/PaymentStatusBadge.vue'
@@ -12,6 +12,7 @@ import { STATUS_DEFINITION_KEY } from '@/constants/finance'
 import { formatRiyadhDate, formatRiyadhTime } from '@/utils/datetime'
 import { entityInitials } from '@/utils/finance/entityInitials'
 import { transactionColumns } from '@/utils/finance/transactionColumns'
+import { TRANSACTION_INLINE_ACTIONS } from '@/utils/finance/transactionRowActions'
 
 const props = defineProps({
   items: { type: Array, required: true },
@@ -20,9 +21,11 @@ const props = defineProps({
   sort: { type: String, default: '' },
   isVisible: { type: Function, default: () => true },
   emptyMessage: { type: String, default: '' },
+  // The row's actions by its status and the viewer's permissions (useTransactionRowActions).
+  actionsFor: { type: Function, required: true },
 })
 
-const emit = defineEmits(['retry', 'sort', 'view'])
+const emit = defineEmits(['retry', 'sort', 'action'])
 const { t, locale } = useI18n()
 
 // The labels the column chooser lists too; the operation and actions columns are always shown.
@@ -124,20 +127,12 @@ function nameOf(entity) {
       ><MoneyAmount :value="item.pricing.priceBeforeVat" :currency="item.pricing.currency"
     /></template>
     <template #cell-actions="{ item }">
-      <Tooltip :text="t('finance.transactions.view')">
-        <template #default="{ describedBy }">
-          <BaseButton
-            variant="secondary"
-            size="sm"
-            icon="eye"
-            icon-only
-            class="transactions-table__view"
-            :aria-label="`${t('finance.transactions.view')} — ${item.reference}`"
-            :aria-describedby="describedBy"
-            @click="emit('view', item)"
-          />
-        </template>
-      </Tooltip>
+      <RowActions
+        :actions="actionsFor(item)"
+        :name="item.reference"
+        :inline-keys="TRANSACTION_INLINE_ACTIONS"
+        @select="emit('action', { key: $event, item })"
+      />
     </template>
   </DataTable>
 </template>

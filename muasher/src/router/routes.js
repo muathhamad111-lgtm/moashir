@@ -1,6 +1,5 @@
 import { ROUTE_NAMES } from '@/constants/routeNames'
 import { PORTAL_TOOLS } from '@/constants/portal'
-import { FINANCE_TABS } from '@/constants/finance'
 import { accreditedEntryGuard } from './accreditedEntry'
 import { awardEntryGuard } from './awardEntry'
 import { accountProfileEntryGuard } from './accountProfileEntry'
@@ -747,7 +746,6 @@ export const appRoutes = [
     path: '/finance/transactions',
     name: ROUTE_NAMES.FINANCE_TRANSACTIONS,
     component: () => import('@/views/finance/Finance.vue'),
-    props: { tab: FINANCE_TABS.OPERATIONS },
     meta: { layout: 'app', titleKey: 'routes.finance.transactions.title', requiresAuth: true },
   },
   {
@@ -761,7 +759,7 @@ export const appRoutes = [
     path: '/finance/transfers',
     name: ROUTE_NAMES.FINANCE_TRANSFERS,
     component: () => import('@/views/finance/Finance.vue'),
-    props: { tab: FINANCE_TABS.TRANSFERS },
+    props: { pending: true },
     meta: { layout: 'app', titleKey: 'routes.finance.transfers.title', requiresAuth: true },
   },
   {
@@ -786,8 +784,7 @@ export const appRoutes = [
   {
     path: '/finance/payment-events',
     name: ROUTE_NAMES.FINANCE_PAYMENT_EVENTS,
-    component: () => import('@/views/finance/Finance.vue'),
-    props: { tab: FINANCE_TABS.EVENTS },
+    component: () => import('@/views/finance/PaymentEvents.vue'),
     meta: { layout: 'app', titleKey: 'routes.finance.paymentEvents.title', requiresAuth: true },
   },
   {

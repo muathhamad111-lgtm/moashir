@@ -9,7 +9,7 @@ import { useFinanceList } from '@/composables/useFinanceList'
 import { financeService } from '@/services/financeService'
 import { FINANCE_MODES, PAYMENT_EVENT_RESULTS, PAYMENT_EVENT_SOURCES } from '@/constants/finance'
 
-// The «سجل أحداث الدفع» tab: what the gateway and the verification jobs reported.
+// The payment events log: what the gateway and the verification jobs reported.
 const { t } = useI18n()
 const { items, status, errorMessage, load, filters, paginator, searchInput, setFilter } =
   useFinanceList({

@@ -71,7 +71,6 @@ const filterState = { filters: filters.filters, setFilter, sort: filters.sort, s
       <div>
         <p class="cycles-page__eyebrow">{{ t('advanced.eyebrow') }}</p>
         <h1 class="cycles-page__title">{{ t('cycles.list.title') }}</h1>
-        <p class="cycles-page__subtitle">{{ t('cycles.list.subtitle') }}</p>
       </div>
       <RouterLink
         v-if="canCreate"

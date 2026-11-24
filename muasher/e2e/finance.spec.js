@@ -61,10 +61,10 @@ test('the finance section opens on the operations with their summary cards', asy
   await expect(page).toHaveURL(/\/finance\/transactions$/)
   await expect(page.locator('.finance-overview__card')).toHaveCount(4)
   await expect(page.locator('.finance-nav__link')).toHaveCount(0)
-  await expect(page.locator('.tabs__tab')).toHaveText([
-    isEn(testInfo) ? 'Operations' : 'العمليات',
-    new RegExp(isEn(testInfo) ? 'Awaiting approval' : 'بانتظار الاعتماد'),
-  ])
+  await expect(page.locator('.tabs__tab')).toHaveCount(0)
+  await expect(page.getByTestId('finance-pending')).toContainText(
+    isEn(testInfo) ? '3 transfers awaiting approval' : '3 تحويلات بانتظار الاعتماد',
+  )
   await expect(page.locator('thead th')).toHaveCount(7)
   await expect(page.locator('.table__row').first()).toBeVisible()
   await expect(page.locator('tbody')).not.toContainText('@')
@@ -173,7 +173,7 @@ test('the eye opens the receipt over the list, with its PDF and the full page', 
   const errors = trackConsole(page)
   await seedStaff(page, testInfo, STAFF.financeOfficer)
   await page.goto('/finance/transactions?status=paid')
-  await page.locator('.transactions-table__view').first().click()
+  await page.locator('.table__row [data-action="view"]').first().click()
   const receipt = page.locator('.receipt-modal__body')
   await expect(receipt).toBeVisible()
   await expect(page.locator('.modal__title')).toContainText(isEn(testInfo) ? 'Receipt' : 'إيصال')
@@ -189,14 +189,49 @@ test('the eye opens the receipt over the list, with its PDF and the full page', 
   expect(errors).toEqual([])
 })
 
+test('a status card toggles the list filter, and the list offers each row its own actions', async ({
+  page,
+}, testInfo) => {
+  const errors = trackConsole(page)
+  await seedStaff(page, testInfo, STAFF.financeOfficer)
+  await page.goto('/finance/transactions')
+  await expect(page.locator('.table__row')).toHaveCount(10)
+  const failed = page
+    .locator('.finance-overview__split-card')
+    .first()
+    .locator('.finance-overview__cell')
+    .last()
+  await failed.click()
+  await expect(failed).toHaveAttribute('aria-pressed', 'true')
+  await expect(page.locator('.table__row [data-action="approve"]')).toHaveCount(0)
+  await failed.press('Enter')
+  await expect(failed).toHaveAttribute('aria-pressed', 'false')
+  await expect(page.locator('.table__row')).toHaveCount(10)
+
+  const pendingRow = page.locator('.table__row:has([data-action="approve"])').first()
+  const reference = (
+    await pendingRow.locator('.transactions-table__reference').textContent()
+  ).trim()
+  await pendingRow.locator('[data-action="approve"]').click()
+  await decisionAction(page).click()
+  await closeSuccess(page)
+  await expect(page.getByTestId('finance-pending')).toContainText(
+    isEn(testInfo) ? '2 transfers awaiting approval' : 'تحويلان بانتظار الاعتماد',
+  )
+  await expect(
+    page.locator('.table__row', { hasText: reference }).locator('[data-action="approve"]'),
+  ).toHaveCount(0)
+  expect(errors).toEqual([])
+})
+
 test('a reviewer approves a queued transfer in place and rejects one from its review window', async ({
   page,
 }, testInfo) => {
   const errors = trackConsole(page)
   await seedStaff(page, testInfo, STAFF.financeOfficer)
   await page.goto('/finance/transactions')
-  await page.locator('.tabs__tab').nth(1).click()
-  await expect(page).toHaveURL(/\/finance\/transfers$/)
+  await page.getByTestId('finance-pending').getByRole('button').click()
+  await expect(page.getByTestId('finance-pending').getByRole('button')).toHaveCount(0)
   const rows = page.locator('.transfer-queue__table tbody tr')
   await expect(rows).toHaveCount(3)
   await rows.first().locator('.transfer-queue__approve').click()
@@ -216,16 +251,18 @@ test('a reviewer approves a queued transfer in place and rejects one from its re
   expect(errors).toEqual([])
 })
 
-test('the System Administrator sees the queue read-only and the events as a tab', async ({
+test('the System Administrator sees the queue read-only and opens the events log from the payment settings', async ({
   page,
 }, testInfo) => {
   await seedStaff(page, testInfo, STAFF.systemAdmin)
   await page.goto('/finance/transfers')
   await expect(page.locator('.transfers-page__read-only')).toBeVisible()
   await expect(page.locator('.transfer-queue__approve')).toHaveCount(0)
-  await expect(page.locator('.tabs__tab')).toHaveCount(3)
-  await page.locator('.tabs__tab').nth(2).click()
+  await expect(page.locator('.tabs__tab')).toHaveCount(0)
+  await page.goto('/admin/settings/payment')
+  await page.locator('.integration-form__events-link a').click()
   await expect(page).toHaveURL(/\/finance\/payment-events$/)
+  await expect(page.locator('.finance-overview')).toHaveCount(0)
   await expect(page.locator('.payment-events__ref').first()).toBeVisible()
 })
 
@@ -338,7 +375,7 @@ test('refunds open from the operations, and abandoned carts are listed for their
   await page.goto('/finance/transactions?type=refund')
   await expect(page.locator('.table__row')).toHaveCount(1)
   await expect(page.locator('.filter-dialog__count')).toHaveText('1')
-  await page.locator('.transactions-table__view').first().click()
+  await page.locator('.table__row [data-action="view"]').first().click()
   await expect(page.locator('.receipt-modal__body')).toBeVisible()
   await page.locator('.finance-modal__footer a:has([data-icon="link"])').click()
   await expect(page).toHaveURL(/\/finance\/transactions\/[0-9a-f-]{36}$/)

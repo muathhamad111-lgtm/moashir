@@ -96,7 +96,7 @@ for (const variant of VARIANTS) {
     await page.keyboard.press('Escape')
     await page.goto('/finance/transactions')
     await expect(page.locator('.transaction-filters')).toBeVisible()
-    await expect(page.locator('.transactions-table__view').first()).toBeAttached()
+    await expect(page.locator('.table__row [data-action="view"]').first()).toBeAttached()
     await capture(page, 'c5-transactions', testInfo, variant)
   })
 }

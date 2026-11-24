@@ -1,12 +1,23 @@
-import { OVERVIEW_STATUSES } from '@/constants/finance'
+import { OVERVIEW_STATUSES, TRANSACTION_STATUS_FILTERS } from '@/constants/finance'
 
 // API keys arrive camel-cased (under_review → underReview); the filters keep the snake values.
 function camelOf(key) {
   return key.replace(/_(\w)/g, (_, letter) => letter.toUpperCase())
 }
 
-function cellsOf(statusCounts, statuses) {
-  return statuses.map((status) => ({ status, count: statusCounts?.[camelOf(status)] ?? 0 }))
+function countOf(statusCounts, status) {
+  return statusCounts?.[camelOf(status)] ?? 0
+}
+
+// The card's main statuses, then every other status that has operations, in the filter order.
+function cellsOf(statusCounts, mainStatuses) {
+  const others = TRANSACTION_STATUS_FILTERS.filter(
+    (status) => !mainStatuses.includes(status) && countOf(statusCounts, status) > 0,
+  )
+  return [...mainStatuses, ...others].map((status) => ({
+    status,
+    count: countOf(statusCounts, status),
+  }))
 }
 
 export function overallSplit(stats) {
