@@ -25,9 +25,14 @@
   color: var(--theme-heading);
 }
 
-.users-page__identity,
-.users-page__state {
+.users-page__identity {
   @include flex(column, flex-start, flex-start, var(--space-1));
+}
+
+// The account status and the last sign-in, on one line.
+.users-page__state {
+  @include flex(row, center, flex-start, var(--space-2));
+  flex-wrap: nowrap;
 }
 
 .users-page__name {
@@ -38,8 +43,8 @@
 .users-page__email {
   color: var(--theme-accent-text);
   font-size: var(--fs-sm);
-  overflow-wrap: anywhere;
   text-align: start;
+  text-decoration: none;
 
   &:hover {
     text-decoration: underline;
@@ -48,12 +53,6 @@
   &:focus-visible {
     @include focus-ring;
   }
-}
-
-.users-page__last-login {
-  color: var(--theme-text-muted);
-  font-size: var(--fs-sm);
-  font-variant-numeric: tabular-nums;
 }
 
 .user-form {
@@ -88,7 +87,10 @@
   color: var(--color-danger);
 }
 
-.users-page__roles,
+.users-page__roles {
+  color: var(--theme-text);
+}
+
 .user-form__hint {
   display: flex;
   flex-direction: column;

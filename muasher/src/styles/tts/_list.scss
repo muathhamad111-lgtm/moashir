@@ -36,31 +36,22 @@
   }
 }
 
-:has(> .filter-toolbar + .table-wrap) {
+.data-card {
   @include in-tts-shell {
-    row-gap: var(--space-5);
-  }
-}
-
-.filter-toolbar:has(+ .table-wrap):not(.card .filter-toolbar) {
-  @include in-tts-shell {
-    padding: var(--space-4) var(--space-5);
-    border: var(--border-width) solid tts-neutral(50);
-    border-block-end: 0;
-    border-start-start-radius: var(--card-radius);
-    border-start-end-radius: var(--card-radius);
+    border-color: tts-neutral(50);
     background-color: $tts-white;
   }
 }
 
-.filter-toolbar + .table-wrap:not(.card .table-wrap) {
+.data-card__toolbar,
+.data-card__footer {
   @include in-tts-shell {
-    margin-block-start: calc(var(--space-5) * -1);
-    border-start-start-radius: 0;
-    border-start-end-radius: 0;
+    border-color: tts-neutral(50);
   }
 }
 
+// The toolbar of a list: the search field takes the free space, then the buttons (فلترة, الأعمدة,
+// تصدير) at one size, each with its icon.
 .filter-toolbar__controls {
   @include in-tts-shell {
     flex: 1 1 auto;
@@ -68,18 +59,30 @@
   }
 }
 
-.filter-toolbar__controls > .expandable-search {
+.filter-toolbar__controls > .expandable-search.is-expanded {
   @include in-tts-shell {
+    flex: 1 1 var(--size-search-min);
     order: -1;
+    inline-size: auto;
+    max-inline-size: none;
     margin-inline-end: auto;
   }
 }
 
 .filter-toolbar .expandable-search__field {
   @include in-tts-shell {
-    border-color: transparent;
-    background-color: transparent;
-    padding-inline: 0;
+    min-block-size: var(--size-toolbar-field);
+    padding-inline: var(--space-3) var(--space-2);
+    border-color: tts-neutral(100);
+    border-radius: var(--btn-radius, var(--radius-md));
+    background-color: $tts-white;
+  }
+}
+
+.filter-toolbar :is(.btn, .filter-dialog__toggle, .column-chooser .btn) {
+  @include in-tts-shell {
+    gap: var(--space-2);
+    min-block-size: var(--size-toolbar-field);
   }
 }
 

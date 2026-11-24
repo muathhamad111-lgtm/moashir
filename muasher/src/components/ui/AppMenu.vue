@@ -139,6 +139,7 @@ function onMenuKeydown(event) {
               tag="button"
               type="button"
               role="menuitem"
+              :data-action="action.key"
               tabindex="-1"
               :label="action.label"
               :icon="action.icon"

@@ -147,9 +147,7 @@ test.describe('users path access', () => {
     await searchList(page, 'David')
     const row = page.locator(ROWS).filter({ hasText: 'David Nguyen' })
     await expect(row).toHaveCount(1)
-    await expect(row).toContainText(
-      text(testInfo, 'Not qualified for any path', 'غير مؤهل لأي مسار'),
-    )
+    await expect(row.locator('.path-access-cell')).toHaveText(text(testInfo, 'Not set', 'غير محدد'))
     await row.locator('.dropdown-menu > button').click()
     await page
       .locator('[role="menuitem"]', {
@@ -158,11 +156,13 @@ test.describe('users path access', () => {
       .click()
     await page.locator('.modal .checkbox__input').first().check()
     await page.locator('.modal button[type="submit"]').click()
-    await expect(row.locator('.path-badge--accredited')).toBeVisible()
+    await expect(row.locator('.path-access-cell')).toHaveText(
+      text(testInfo, 'Accredited', 'المعتمد'),
+    )
 
     await searchList(page, 'Laura')
     const follower = page.locator(ROWS).filter({ hasText: 'Laura Bennett' })
-    await expect(follower).toContainText(text(testInfo, 'All paths', 'كل المسارات'))
+    await expect(follower.locator('.path-access-cell')).toHaveText(text(testInfo, 'All', 'الكل'))
     await follower.locator('.dropdown-menu > button').click()
     await page
       .locator('[role="menuitem"]', {
@@ -174,8 +174,9 @@ test.describe('users path access', () => {
     await expect(page.locator('.modal .field__error')).toBeVisible()
     await page.locator('.modal .checkbox__input').nth(1).check()
     await page.locator('.modal button[type="submit"]').click()
-    await expect(follower.locator('.path-badge--advanced')).toBeVisible()
-    await expect(follower.locator('.path-badge--accredited')).toHaveCount(0)
+    await expect(follower.locator('.path-access-cell')).toHaveText(
+      text(testInfo, 'Advanced', 'المتقدم'),
+    )
   })
 })
 

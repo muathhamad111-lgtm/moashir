@@ -22,7 +22,7 @@ const { t } = useI18n()
     :trigger-label="t('components.columns.open')"
   >
     <template #trigger>
-      <AppIcon name="grid-vertical" />
+      <AppIcon name="columns" />
       <span>{{ t('components.columns.open') }}</span>
     </template>
     <template #default="{ headingId }">

@@ -26,8 +26,8 @@ export const USER_ACTIONS = {
   IDENTITY_HISTORY: 'identityHistory',
 }
 
-// Shown as direct row buttons in the users table; the rest live in the row menu.
-export const USER_INLINE_ACTIONS = [USER_ACTIONS.EDIT, USER_ACTIONS.SUSPEND, USER_ACTIONS.ACTIVATE]
+// The users table shows «عرض» on every row; every other action lives in the «⋮» menu.
+export const USER_INLINE_ACTIONS = [USER_ACTIONS.DETAILS]
 
 export const PATH_ACCESS_ACTIONS = [USER_ACTIONS.QUALIFICATIONS, USER_ACTIONS.REQUEST_SCOPE]
 

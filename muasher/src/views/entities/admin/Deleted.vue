@@ -4,6 +4,7 @@ import { onMounted, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useRouter } from 'vue-router'
 import ListToolbar from '@/components/data-list/ListToolbar.vue'
+import DataListCard from '@/components/data-list/DataListCard.vue'
 import Pagination from '@/components/data-list/Pagination.vue'
 import EntityListFilters from '@/components/entities/admin/EntityListFilters.vue'
 import EntityTable from '@/components/entities/admin/EntityTable.vue'
@@ -47,33 +48,39 @@ onMounted(regions.load)
       <p>{{ t('entities.deleted.frozenNotice') }}</p>
     </aside>
 
-    <ListToolbar
-      v-model:search="search"
-      :search-placeholder="t('entities.admin.searchPlaceholder')"
-      :filter-state="filters"
-    >
-      <template #filters="{ draft }">
-        <EntityListFilters :filters="draft" :region-options="regions.regionOptions.value" />
+    <DataListCard>
+      <template #toolbar>
+        <ListToolbar
+          v-model:search="search"
+          :search-placeholder="t('entities.admin.searchPlaceholder')"
+          :filter-state="filters"
+        >
+          <template #filters="{ draft }">
+            <EntityListFilters :filters="draft" :region-options="regions.regionOptions.value" />
+          </template>
+        </ListToolbar>
       </template>
-    </ListToolbar>
 
-    <EntityTable
-      :items="items"
-      :status="status"
-      :error-message="errorMessage"
-      deleted
-      :empty-title="t('entities.deleted.emptyTitle')"
-      :empty-message="t('entities.deleted.emptyMessage')"
-      @retry="load"
-      @action="onAction"
-    />
+      <EntityTable
+        :items="items"
+        :status="status"
+        :error-message="errorMessage"
+        deleted
+        :empty-title="t('entities.deleted.emptyTitle')"
+        :empty-message="t('entities.deleted.emptyMessage')"
+        @retry="load"
+        @action="onAction"
+      />
 
-    <Pagination
-      v-if="status === 'success' && paginator.pagination.lastPage > 1"
-      :page="paginator.pagination.page"
-      :last-page="paginator.pagination.lastPage"
-      @update:page="paginator.setPage($event)"
-    />
+      <template #footer>
+        <Pagination
+          v-if="status === 'success' && paginator.pagination.lastPage > 1"
+          :page="paginator.pagination.page"
+          :last-page="paginator.pagination.lastPage"
+          @update:page="paginator.setPage($event)"
+        />
+      </template>
+    </DataListCard>
 
     <EntityActionsHost ref="actionsHost" @done="load" />
   </section>

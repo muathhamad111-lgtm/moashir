@@ -1,6 +1,7 @@
 <script setup>
 import BaseButton from '@/components/ui/BaseButton.vue'
 import ListToolbar from '@/components/data-list/ListToolbar.vue'
+import DataListCard from '@/components/data-list/DataListCard.vue'
 import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 import DataTable from '@/components/data-list/DataTable.vue'
@@ -58,69 +59,74 @@ const columns = computed(() =>
     <header class="entities-admin__header">
       <div>
         <h1 class="entities-admin__title">{{ t('entities.emailChanges.title') }}</h1>
-        <p class="entities-admin__subtitle">{{ t('entities.emailChanges.subtitle') }}</p>
       </div>
       <BaseButton variant="secondary" icon="arrow-left" :to="{ name: ROUTE_NAMES.ADMIN_ENTITIES }">
         {{ t('entities.admin.backToEntities') }}
       </BaseButton>
     </header>
-    <ListToolbar :searchable="false" :filter-state="filters">
-      <template #filters="{ draft }">
-        <AppSelect
-          :model-value="draft.filters.status"
-          :options="statusOptions"
-          :label="t('entities.filters.status')"
-          @update:model-value="draft.setFilter('status', $event)"
-        />
+    <DataListCard>
+      <template #toolbar>
+        <ListToolbar :searchable="false" :filter-state="filters">
+          <template #filters="{ draft }">
+            <AppSelect
+              :model-value="draft.filters.status"
+              :options="statusOptions"
+              :label="t('entities.filters.status')"
+              @update:model-value="draft.setFilter('status', $event)"
+            />
+          </template>
+        </ListToolbar>
       </template>
-    </ListToolbar>
 
-    <DataTable
-      :columns="columns"
-      :items="items"
-      :status="status"
-      :error-message="errorMessage"
-      :empty-title="t('entities.emailChanges.emptyTitle')"
-      :empty-message="t('entities.emailChanges.emptyMessage')"
-      @retry="load"
-    >
-      <template #cell-entity="{ item }">
-        <router-link
-          v-if="item.entity"
-          class="entity-table__name"
-          :to="{ name: ROUTE_NAMES.ADMIN_ENTITY, params: { id: item.entity.id } }"
+      <DataTable
+        :columns="columns"
+        :items="items"
+        :status="status"
+        :error-message="errorMessage"
+        :empty-title="t('entities.emailChanges.emptyTitle')"
+        :empty-message="t('entities.emailChanges.emptyMessage')"
+        @retry="load"
+      >
+        <template #cell-entity="{ item }">
+          <router-link
+            v-if="item.entity"
+            class="entity-table__name"
+            :to="{ name: ROUTE_NAMES.ADMIN_ENTITY, params: { id: item.entity.id } }"
+          >
+            {{ entityName(item) }}
+          </router-link>
+        </template>
+        <template #cell-oldEmail="{ item }"
+          ><span class="u-ltr">{{ item.oldEmail }}</span></template
         >
-          {{ entityName(item) }}
-        </router-link>
-      </template>
-      <template #cell-oldEmail="{ item }"
-        ><span class="u-ltr">{{ item.oldEmail }}</span></template
-      >
-      <template #cell-newEmail="{ item }"
-        ><span class="u-ltr">{{ item.newEmail }}</span></template
-      >
-      <template #cell-requestedAt="{ item }">{{ dateTime(item.requestedAt) }}</template>
-      <template #cell-status="{ item }"><StatusBadge :status="item.status" /></template>
-      <template #cell-actions="{ item }">
-        <RowActions
-          v-if="item.status === EMAIL_CHANGE_STATUSES.AWAITING_APPROVAL"
-          :actions="decisionActions"
-          :name="entityName(item)"
-          :inline-keys="DECISION_KEYS"
-          @select="decide($event, item)"
-        />
-        <span v-else-if="item.decisionReason" class="entities-admin__muted">{{
-          item.decisionReason
-        }}</span>
-      </template>
-    </DataTable>
+        <template #cell-newEmail="{ item }"
+          ><span class="u-ltr">{{ item.newEmail }}</span></template
+        >
+        <template #cell-requestedAt="{ item }">{{ dateTime(item.requestedAt) }}</template>
+        <template #cell-status="{ item }"><StatusBadge :status="item.status" /></template>
+        <template #cell-actions="{ item }">
+          <RowActions
+            v-if="item.status === EMAIL_CHANGE_STATUSES.AWAITING_APPROVAL"
+            :actions="decisionActions"
+            :name="entityName(item)"
+            :inline-keys="DECISION_KEYS"
+            @select="decide($event, item)"
+          />
+          <span v-else-if="item.decisionReason" class="entities-admin__muted">{{
+            item.decisionReason
+          }}</span>
+        </template>
+      </DataTable>
 
-    <Pagination
-      v-if="status === 'success' && paginator.pagination.lastPage > 1"
-      :page="paginator.pagination.page"
-      :last-page="paginator.pagination.lastPage"
-      @update:page="paginator.setPage($event)"
-    />
+      <template #footer>
+        <Pagination
+          v-if="status === 'success' && paginator.pagination.lastPage > 1"
+          :page="paginator.pagination.page"
+          :last-page="paginator.pagination.lastPage"
+          @update:page="paginator.setPage($event)"
+        />
+      </template>
+    </DataListCard>
 
     <ReasonDialog
       v-model="rejection.open"

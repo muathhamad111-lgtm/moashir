@@ -3,10 +3,10 @@ import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useRoute } from 'vue-router'
 import { useHead } from '@unhead/vue'
-import Card from '@/components/ui/Card.vue'
 import AppSelect from '@/components/form/AppSelect.vue'
 import StatsCards from '@/components/data-list/StatsCards.vue'
 import ListToolbar from '@/components/data-list/ListToolbar.vue'
+import DataListCard from '@/components/data-list/DataListCard.vue'
 import Pagination from '@/components/data-list/Pagination.vue'
 import AwardPageHeader from '@/components/committee/AwardPageHeader.vue'
 import SecretaryRequestTable from '@/components/committee/SecretaryRequestTable.vue'
@@ -101,33 +101,35 @@ const filterState = { filters: filters.filters, setFilter, sort: filters.sort, s
       :back-label="t('award.common.backToCycles')"
     />
     <StatsCards :stats="statCards" :loading="!counts && status === 'loading'" />
-    <Card>
-      <ListToolbar
-        v-model:search="searchInput"
-        :search-placeholder="t('award.secretary.searchPlaceholder')"
-        :filter-state="filterState"
-      >
-        <template #filters="{ draft }">
-          <AppSelect
-            :model-value="draft.filters.status"
-            :options="statusOptions"
-            :label="t('award.secretary.filters.status')"
-            @update:model-value="draft.setFilter('status', $event)"
-          />
-          <AppSelect
-            :model-value="draft.filters.regionId"
-            :options="regionOptions"
-            :label="t('award.secretary.filters.region')"
-            @update:model-value="draft.setFilter('regionId', $event)"
-          />
-          <AppSelect
-            :model-value="draft.sort.value"
-            :options="sortOptions"
-            :label="t('award.secretary.filters.sort')"
-            @update:model-value="draft.setSort($event)"
-          />
-        </template>
-      </ListToolbar>
+    <DataListCard>
+      <template #toolbar>
+        <ListToolbar
+          v-model:search="searchInput"
+          :search-placeholder="t('award.secretary.searchPlaceholder')"
+          :filter-state="filterState"
+        >
+          <template #filters="{ draft }">
+            <AppSelect
+              :model-value="draft.filters.status"
+              :options="statusOptions"
+              :label="t('award.secretary.filters.status')"
+              @update:model-value="draft.setFilter('status', $event)"
+            />
+            <AppSelect
+              :model-value="draft.filters.regionId"
+              :options="regionOptions"
+              :label="t('award.secretary.filters.region')"
+              @update:model-value="draft.setFilter('regionId', $event)"
+            />
+            <AppSelect
+              :model-value="draft.sort.value"
+              :options="sortOptions"
+              :label="t('award.secretary.filters.sort')"
+              @update:model-value="draft.setSort($event)"
+            />
+          </template>
+        </ListToolbar>
+      </template>
       <SecretaryRequestTable
         :cycle-id="cycleId"
         :items="items"
@@ -135,12 +137,14 @@ const filterState = { filters: filters.filters, setFilter, sort: filters.sort, s
         :error-message="errorMessage"
         @retry="load"
       />
-      <Pagination
-        v-if="status === 'success' && pagination.lastPage > 1"
-        :page="pagination.page"
-        :last-page="pagination.lastPage"
-        @update:page="setPage($event)"
-      />
-    </Card>
+      <template #footer>
+        <Pagination
+          v-if="status === 'success' && pagination.lastPage > 1"
+          :page="pagination.page"
+          :last-page="pagination.lastPage"
+          @update:page="setPage($event)"
+        />
+      </template>
+    </DataListCard>
   </section>
 </template>

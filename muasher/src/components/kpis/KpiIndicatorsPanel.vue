@@ -4,6 +4,7 @@ import { useI18n } from 'vue-i18n'
 import StatsCards from '@/components/data-list/StatsCards.vue'
 import Pagination from '@/components/data-list/Pagination.vue'
 import KpiAdminToolbar from './KpiAdminToolbar.vue'
+import DataListCard from '@/components/data-list/DataListCard.vue'
 import KpiAdminTable from './KpiAdminTable.vue'
 import KpiFormDialog from './KpiFormDialog.vue'
 import KpiValuesDialog from './KpiValuesDialog.vue'
@@ -85,39 +86,45 @@ const HANDLERS = {
       }}</BaseButton>
     </Teleport>
     <StatsCards :stats="statCards" :loading="status === 'loading' && !stats" />
-    <KpiAdminToolbar
-      v-model:search="filters.search.value"
-      :values="filters.filters"
-      :sort="filters.sort.value"
-      :categories="categories"
-      :localized="localized"
-      @filter="filters.setFilter"
-      @sort="filters.setSort"
-    />
-    <p v-if="isFiltered && status === 'success'" class="kpis-admin__reorder-note" role="note">
-      <AppIcon name="info-circle" />
-      {{ t('kpis.admin.index.reorderNote') }}
-    </p>
-    <KpiAdminTable
-      :items="items"
-      :status="status"
-      :error-message="errorMessage"
-      :categories="categories"
-      :localized="localized"
-      :can-reorder="!isFiltered"
-      :total="stats?.total ?? 0"
-      :pending-id="actions.pendingId.value"
-      @retry="load"
-      @create="open('form')"
-      @move="actions.move"
-      @action="(key, kpi) => HANDLERS[key](kpi)"
-    />
-    <Pagination
-      v-if="status === 'success' && paginator.pagination.lastPage > 1"
-      :page="paginator.pagination.page"
-      :last-page="paginator.pagination.lastPage"
-      @update:page="paginator.setPage($event)"
-    />
+    <DataListCard>
+      <template #toolbar>
+        <KpiAdminToolbar
+          v-model:search="filters.search.value"
+          :values="filters.filters"
+          :sort="filters.sort.value"
+          :categories="categories"
+          :localized="localized"
+          @filter="filters.setFilter"
+          @sort="filters.setSort"
+        />
+      </template>
+      <p v-if="isFiltered && status === 'success'" class="kpis-admin__reorder-note" role="note">
+        <AppIcon name="info-circle" />
+        {{ t('kpis.admin.index.reorderNote') }}
+      </p>
+      <KpiAdminTable
+        :items="items"
+        :status="status"
+        :error-message="errorMessage"
+        :categories="categories"
+        :localized="localized"
+        :can-reorder="!isFiltered"
+        :total="stats?.total ?? 0"
+        :pending-id="actions.pendingId.value"
+        @retry="load"
+        @create="open('form')"
+        @move="actions.move"
+        @action="(key, kpi) => HANDLERS[key](kpi)"
+      />
+      <template #footer>
+        <Pagination
+          v-if="status === 'success' && paginator.pagination.lastPage > 1"
+          :page="paginator.pagination.page"
+          :last-page="paginator.pagination.lastPage"
+          @update:page="paginator.setPage($event)"
+        />
+      </template>
+    </DataListCard>
     <KpiFormDialog
       v-model="formOpen"
       :kpi="selected"

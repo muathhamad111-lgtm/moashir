@@ -1,6 +1,14 @@
 @use '../mixins' as *;
 
-$table-fit-below: 60rem;
+$table-min: 48rem;
+$table-optional-below: 60rem;
+$table-primary-share: 24%;
+$table-status-width: 11rem;
+$table-date-width: 8rem;
+$table-number-width: 8rem;
+$table-code-width: 9rem;
+$table-actions-width: 9.5rem;
+$table-actions-labelled-width: 13rem;
 
 .table-wrap {
   position: relative;
@@ -11,8 +19,12 @@ $table-fit-below: 60rem;
   border-radius: var(--radius-lg);
 }
 
+// The columns share the list's width by kind (see below), so a table fits its card at laptop
+// widths; under its minimum it scrolls inside the card instead of squeezing its columns.
 .table {
   inline-size: 100%;
+  min-inline-size: $table-min;
+  table-layout: fixed;
   border-collapse: collapse;
   background-color: var(--theme-surface);
 }
@@ -20,7 +32,7 @@ $table-fit-below: 60rem;
 .table__head {
   background-color: var(--theme-surface-raised);
   font-size: var(--fs-sm);
-  font-weight: var(--fw-semibold);
+  font-weight: var(--fw-medium);
   text-align: start;
 }
 
@@ -35,8 +47,90 @@ $table-fit-below: 60rem;
 
 .table__cell {
   padding-block: var(--space-3);
-  padding-inline: var(--space-4);
+  padding-inline: var(--space-3);
   text-align: start;
+}
+
+// A row reads on one line (two where a cell adds a muted detail): text keeps to its line and ends
+// with an ellipsis at its column's width; DataTable shows the full text on hover or focus. Status
+// and actions cells never clip, so their tooltips and menus stay whole.
+.table .table__cell {
+  white-space: nowrap;
+}
+
+.table__head .table__cell {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.table tbody .table__cell:not(.table__cell--status, .table__cell--actions) > .table__value {
+  overflow: clip;
+  overflow-clip-margin: var(--space-1);
+  text-overflow: ellipsis;
+}
+
+:where(.table tbody .table__value)
+  :where(span, a, bdi, time, strong, p, small):where(:not(:has(*), .badge, .badge *, .btn *)) {
+  overflow: hidden;
+  max-inline-size: 100%;
+  text-overflow: ellipsis;
+}
+
+:where(.table tbody .table__value)
+  :where(span, a, bdi, time, strong, small):where(:not(:has(*), .badge, .badge *, .btn *)) {
+  display: inline-block;
+  vertical-align: bottom;
+}
+
+:where(.table tbody .table__value) :where(*) {
+  min-inline-size: 0;
+}
+
+// A plain status badge longer than its column («Qualified for national») ends in an ellipsis; the
+// full text shows on hover (see DataTable's revealFullText).
+.table tbody .table__cell--status .badge:not(:has(*)) {
+  overflow: hidden;
+  max-inline-size: 100%;
+  text-overflow: ellipsis;
+  vertical-align: middle;
+}
+
+// Secondary detail in a cell (a last sign-in, a time): small, regular, muted, on one line.
+.table__meta {
+  color: var(--theme-text-muted);
+  font-size: var(--fs-xs);
+  font-weight: var(--fw-regular);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+// Column widths by kind (utils/tableColumns.js); text columns share what is left. A column
+// definition may set its own `width` instead.
+.table__cell--primary {
+  inline-size: $table-primary-share;
+}
+
+.table__cell--status {
+  inline-size: $table-status-width;
+}
+
+.table__cell--date {
+  inline-size: $table-date-width;
+}
+
+.table__cell--number {
+  inline-size: $table-number-width;
+  text-align: end;
+}
+
+.table__cell--code {
+  inline-size: $table-code-width;
+}
+
+.table__cell--date,
+.table__cell--number,
+.table__cell--code {
+  font-variant-numeric: tabular-nums;
 }
 
 .table--loading {
@@ -82,25 +176,34 @@ $table-fit-below: 60rem;
   }
 }
 
-.table__cell--date {
-  white-space: nowrap;
-}
-
 .table__cell--actions {
-  inline-size: 1%;
-  white-space: nowrap;
+  inline-size: $table-actions-width;
 }
 
-// A list narrower than a laptop column (the sidebar open at 1280 px) lets its row actions wrap
-// instead of scrolling the whole table sideways; with room to spare they stay on one line.
-@container data-table (max-width: #{$table-fit-below}) {
-  .table__cell--actions {
-    inline-size: auto;
-    white-space: normal;
-  }
+// An actions column with a labelled button (open, assign, continue) is wider than icons need.
+.table:has(tbody .table__cell--actions .btn:not(.btn--icon)) .table__head .table__cell--actions {
+  inline-size: $table-actions-labelled-width;
+}
 
-  .row-actions {
-    flex-wrap: wrap;
+// A column marked `optional` gives way when its list is narrower than a laptop column (the
+// sidebar open at 1280 px); the viewer can still choose it where the list offers column choice.
+@container data-table (max-width: #{$table-optional-below}) {
+  .table .table__cell--optional {
+    display: none;
+  }
+}
+
+// A column that needs another width names a size (`width: 'sm' | 'md' | 'lg' | 'xl'`).
+$table-column-widths: (
+  'sm': 6.5rem,
+  'md': 10rem,
+  'lg': 13rem,
+  'xl': 17rem,
+);
+
+@each $name, $width in $table-column-widths {
+  .table__head .table__cell--width-#{$name} {
+    inline-size: $width;
   }
 }
 
@@ -163,6 +266,16 @@ $table-stack-below: 40rem;
       display: block;
     }
 
+    // A stacked list is as wide as the phone; the laptop minimum does not apply.
+    .table {
+      min-inline-size: 0;
+    }
+
+    // A stacked row has the phone's width to itself: its values wrap again.
+    tbody .table__cell {
+      white-space: normal;
+    }
+
     // Column titles are read from each cell's label; only sortable headings stay, as a row of chips.
     // A block box, since overflow (and so the hiding) does not apply to a table-header-group.
     .table__head {
@@ -205,9 +318,11 @@ $table-stack-below: 40rem;
       padding: var(--space-4);
     }
 
+    // A stacked cell spans the block; the laptop column widths do not apply.
     .table tbody .table__cell {
       @include stacked-cell-spacing;
       display: grid;
+      inline-size: auto;
       grid-template-columns: minmax(5rem, 35%) minmax(0, 1fr);
       gap: var(--space-3);
       align-items: baseline;

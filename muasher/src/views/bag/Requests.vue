@@ -3,6 +3,7 @@ import { computed, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useHead } from '@unhead/vue'
 import ListToolbar from '@/components/data-list/ListToolbar.vue'
+import DataListCard from '@/components/data-list/DataListCard.vue'
 import DataTable from '@/components/data-list/DataTable.vue'
 import Pagination from '@/components/data-list/Pagination.vue'
 import StatsCards from '@/components/data-list/StatsCards.vue'
@@ -155,74 +156,80 @@ function onAction(key, row) {
 
     <StatsCards :stats="statCards" :loading="status === 'loading' && !stats" />
 
-    <ListToolbar
-      v-model:search="search"
-      :search-placeholder="t('bagRequests.index.searchPlaceholder')"
-      :filter-state="filters"
-    >
-      <template #filters="{ draft }">
-        <AppSelect
-          :model-value="draft.filters.status"
-          :options="statusFilterOptions"
-          :label="t('bagRequests.filters.status')"
-          @update:model-value="draft.setFilter('status', $event)"
+    <DataListCard>
+      <template #toolbar>
+        <ListToolbar
+          v-model:search="search"
+          :search-placeholder="t('bagRequests.index.searchPlaceholder')"
+          :filter-state="filters"
+        >
+          <template #filters="{ draft }">
+            <AppSelect
+              :model-value="draft.filters.status"
+              :options="statusFilterOptions"
+              :label="t('bagRequests.filters.status')"
+              @update:model-value="draft.setFilter('status', $event)"
+            />
+          </template>
+        </ListToolbar>
+      </template>
+
+      <DataTable
+        :columns="columns"
+        :items="items"
+        :status="status"
+        :error-message="errorMessage"
+        :empty-title="t('bagRequests.index.emptyTitle')"
+        :empty-message="t('bagRequests.index.emptyMessage')"
+        @retry="load"
+      >
+        <template #cell-entityName="{ item }">
+          <span class="bag-requests__entity">{{ localized(item.entityName) }}</span>
+          <Badge v-if="item.hasPreviousBag" variant="muted">{{ t('bagRequests.repeat') }}</Badge>
+        </template>
+        <template #cell-reference="{ item }">
+          <span class="bag-requests__reference">
+            {{
+              t('bagRequests.referenceValue', {
+                score: n(item.referenceSnapshot.scorePercent, 'default'),
+              })
+            }}
+          </span>
+        </template>
+        <template #cell-paidAt="{ item }">
+          <span class="bag-requests__date">{{ dateLabel(item.paidAt) }}</span>
+        </template>
+        <template #cell-status="{ item }">
+          <StatusBadge :status="item.status" />
+        </template>
+        <template #cell-evaluator="{ item }">
+          <span v-if="item.assignedEvaluatorName" class="bag-requests__evaluator">
+            <AppIcon name="user-check" class="bag-requests__evaluator-icon" />
+            {{ localized(item.assignedEvaluatorName) }}
+          </span>
+          <span v-else class="bag-requests__unassigned">{{ t('bagRequests.unassigned') }}</span>
+        </template>
+        <template #cell-actions="{ item }">
+          <AppMenu
+            v-if="rowActions(item).length"
+            :actions="rowActions(item)"
+            :label="t('components.actions.menuFor', { name: localized(item.entityName) })"
+            @select="onAction($event, item)"
+          />
+          <span v-else class="bag-requests__no-actions">—</span>
+        </template>
+      </DataTable>
+
+      <template #footer>
+        <Pagination
+          v-if="status === 'success' && pagination.lastPage > 1"
+          :page="pagination.page"
+          :last-page="pagination.lastPage"
+          :disabled="status === 'loading'"
+          @update:page="setPage($event)"
         />
       </template>
-    </ListToolbar>
-
-    <DataTable
-      :columns="columns"
-      :items="items"
-      :status="status"
-      :error-message="errorMessage"
-      :empty-title="t('bagRequests.index.emptyTitle')"
-      :empty-message="t('bagRequests.index.emptyMessage')"
-      @retry="load"
-    >
-      <template #cell-entityName="{ item }">
-        <span class="bag-requests__entity">{{ localized(item.entityName) }}</span>
-        <Badge v-if="item.hasPreviousBag" variant="muted">{{ t('bagRequests.repeat') }}</Badge>
-      </template>
-      <template #cell-reference="{ item }">
-        <span class="bag-requests__reference">
-          {{
-            t('bagRequests.referenceValue', {
-              score: n(item.referenceSnapshot.scorePercent, 'default'),
-            })
-          }}
-        </span>
-      </template>
-      <template #cell-paidAt="{ item }">
-        <span class="bag-requests__date">{{ dateLabel(item.paidAt) }}</span>
-      </template>
-      <template #cell-status="{ item }">
-        <StatusBadge :status="item.status" />
-      </template>
-      <template #cell-evaluator="{ item }">
-        <span v-if="item.assignedEvaluatorName" class="bag-requests__evaluator">
-          <AppIcon name="user-check" class="bag-requests__evaluator-icon" />
-          {{ localized(item.assignedEvaluatorName) }}
-        </span>
-        <span v-else class="bag-requests__unassigned">{{ t('bagRequests.unassigned') }}</span>
-      </template>
-      <template #cell-actions="{ item }">
-        <AppMenu
-          v-if="rowActions(item).length"
-          :actions="rowActions(item)"
-          :label="t('components.actions.menuFor', { name: localized(item.entityName) })"
-          @select="onAction($event, item)"
-        />
-        <span v-else class="bag-requests__no-actions">—</span>
-      </template>
-    </DataTable>
-
-    <Pagination
-      v-if="status === 'success' && pagination.lastPage > 1"
-      :page="pagination.page"
-      :last-page="pagination.lastPage"
-      :disabled="status === 'loading'"
-      @update:page="setPage($event)"
-    />
+    </DataListCard>
 
     <AssignEvaluatorModal
       v-model="modalOpen"

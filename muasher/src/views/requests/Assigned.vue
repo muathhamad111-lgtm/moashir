@@ -2,8 +2,8 @@
 import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useHead } from '@unhead/vue'
-import Card from '@/components/ui/Card.vue'
 import ListToolbar from '@/components/data-list/ListToolbar.vue'
+import DataListCard from '@/components/data-list/DataListCard.vue'
 import AppSelect from '@/components/form/AppSelect.vue'
 import StatusBadge from '@/components/ui/StatusBadge.vue'
 import DataTable from '@/components/data-list/DataTable.vue'
@@ -86,17 +86,19 @@ const columns = computed(() => [
       <h1 class="requests-page__title">{{ t('requests.assigned.title') }}</h1>
       <p class="requests-page__subtitle">{{ t('requests.assigned.subtitle') }}</p>
     </header>
-    <Card>
-      <ListToolbar :searchable="false" :filter-state="filterState">
-        <template #filters="{ draft }">
-          <AppSelect
-            :model-value="draft.filters.tab"
-            :options="statusOptions"
-            :label="t('requests.assigned.filters.status')"
-            @update:model-value="draft.setFilter('tab', $event)"
-          />
-        </template>
-      </ListToolbar>
+    <DataListCard>
+      <template #toolbar>
+        <ListToolbar :searchable="false" :filter-state="filterState">
+          <template #filters="{ draft }">
+            <AppSelect
+              :model-value="draft.filters.tab"
+              :options="statusOptions"
+              :label="t('requests.assigned.filters.status')"
+              @update:model-value="draft.setFilter('tab', $event)"
+            />
+          </template>
+        </ListToolbar>
+      </template>
       <DataTable
         :columns="columns"
         :sort="sort"
@@ -140,12 +142,14 @@ const columns = computed(() => [
           />
         </template>
       </DataTable>
-      <Pagination
-        v-if="status === 'success' && pagination.lastPage > 1"
-        :page="pagination.page"
-        :last-page="pagination.lastPage"
-        @update:page="setPage($event)"
-      />
-    </Card>
+      <template #footer>
+        <Pagination
+          v-if="status === 'success' && pagination.lastPage > 1"
+          :page="pagination.page"
+          :last-page="pagination.lastPage"
+          @update:page="setPage($event)"
+        />
+      </template>
+    </DataListCard>
   </section>
 </template>

@@ -155,14 +155,14 @@ describe('entity row buttons by status', () => {
   it('shows the buttons each status needs and keeps the rest in the menu', async () => {
     const { entityInlineActionsFor } = await import('@/composables/useEntityActions')
     expect(entityInlineActionsFor({ status: 'pending-review' })).toEqual([
-      'view',
       'approve',
       'reject',
+      'view',
     ])
     expect(entityInlineActionsFor({ status: 'pending-verification' })).toEqual([
-      'view',
       'resendVerification',
       'reject',
+      'view',
     ])
     expect(entityInlineActionsFor({ status: 'active' })).toEqual(['view', 'edit', 'deactivate'])
     expect(entityInlineActionsFor({ status: 'deactivated' })).toEqual(['view', 'reactivate'])

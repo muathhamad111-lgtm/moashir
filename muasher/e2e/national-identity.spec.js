@@ -133,9 +133,9 @@ test('the administrator invites a staff member with gender and national ID and s
   await searchList(page, 'noura.alanazi')
   const name = 'نورة بنت سالم العنزي'
   await page
-    .getByRole('button', { name: say(testInfo, `Actions: ${name}`, `إجراءات: ${name}`) })
+    .locator('.table tbody .table__row', { hasText: name })
+    .locator('[data-action="details"]')
     .click()
-  await page.getByRole('menuitem', { name: say(testInfo, 'Details', 'التفاصيل') }).click()
   const details = page.getByTestId('user-details')
   await expect(details.getByTestId('user-national-id')).toHaveText('••••••0505')
   await expect(details.getByTestId('user-gender')).toHaveText(say(testInfo, 'Female', 'أنثى'))

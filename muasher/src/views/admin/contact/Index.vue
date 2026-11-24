@@ -5,6 +5,7 @@ import { useHead } from '@unhead/vue'
 import StatsCards from '@/components/data-list/StatsCards.vue'
 import Pagination from '@/components/data-list/Pagination.vue'
 import ContactInboxFilters from '@/components/contact-inbox/ContactInboxFilters.vue'
+import DataListCard from '@/components/data-list/DataListCard.vue'
 import ContactInboxTable from '@/components/contact-inbox/ContactInboxTable.vue'
 import { useContactInbox } from '@/composables/useContactInbox'
 import { useContactAssignees } from '@/composables/useContactAssignees'
@@ -34,31 +35,36 @@ onMounted(loadAssignees)
   <section class="contact-inbox">
     <header class="contact-inbox__header">
       <h1 class="contact-inbox__title">{{ t('contactInbox.title') }}</h1>
-      <p class="contact-inbox__subtitle">{{ t('contactInbox.subtitle') }}</p>
     </header>
 
     <StatsCards :stats="statCards" :loading="!stats" />
 
-    <ContactInboxFilters
-      :filters="filters"
-      :search="searchInput"
-      :assignees="assignees"
-      @update:search="searchInput = $event"
-      @update:filter="inbox.setFilter($event.key, $event.value)"
-    />
+    <DataListCard>
+      <template #toolbar>
+        <ContactInboxFilters
+          :filters="filters"
+          :search="searchInput"
+          :assignees="assignees"
+          @update:search="searchInput = $event"
+          @update:filter="inbox.setFilter($event.key, $event.value)"
+        />
+      </template>
 
-    <ContactInboxTable
-      :items="items"
-      :status="status"
-      :error-message="errorMessage"
-      @retry="inbox.load"
-    />
+      <ContactInboxTable
+        :items="items"
+        :status="status"
+        :error-message="errorMessage"
+        @retry="inbox.load"
+      />
 
-    <Pagination
-      v-if="status === 'success' && paginator.pagination.lastPage > 1"
-      :page="paginator.pagination.page"
-      :last-page="paginator.pagination.lastPage"
-      @update:page="paginator.setPage($event)"
-    />
+      <template #footer>
+        <Pagination
+          v-if="status === 'success' && paginator.pagination.lastPage > 1"
+          :page="paginator.pagination.page"
+          :last-page="paginator.pagination.lastPage"
+          @update:page="paginator.setPage($event)"
+        />
+      </template>
+    </DataListCard>
   </section>
 </template>

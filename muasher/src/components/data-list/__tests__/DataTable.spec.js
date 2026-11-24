@@ -113,6 +113,46 @@ describe('DataTable', () => {
     expect(wrapper.findAll('th')[1].attributes('aria-sort')).toBe('descending')
   })
 
+  describe('one-line rows', () => {
+    it('gives every column a kind: the first as primary, dates, status and actions by key', () => {
+      const wrapper = factory({
+        columns: [
+          { key: 'name', label: 'Name' },
+          { key: 'email', label: 'Email' },
+          { key: 'status', label: 'Status' },
+          { key: 'createdAt', label: 'Created' },
+          { key: 'total', label: 'Total', kind: 'number' },
+          { key: 'actions', label: '' },
+        ],
+      })
+      const kinds = wrapper
+        .findAll('thead th')
+        .map((th) =>
+          th
+            .classes()
+            .find((name) => name.startsWith('table__cell--') && name !== 'table__cell--sortable'),
+        )
+      expect(kinds).toEqual([
+        'table__cell--primary',
+        'table__cell--text',
+        'table__cell--status',
+        'table__cell--date',
+        'table__cell--number',
+        'table__cell--actions',
+      ])
+      expect(wrapper.find('tbody td .table__value').exists()).toBe(true)
+    })
+
+    it('shows a cut-off value in full on hover', async () => {
+      const wrapper = factory()
+      const value = wrapper.find('tbody td .table__value')
+      Object.defineProperty(value.element, 'scrollWidth', { value: 300, configurable: true })
+      Object.defineProperty(value.element, 'clientWidth', { value: 120, configurable: true })
+      await value.trigger('mouseover')
+      expect(value.attributes('title')).toBe(value.text())
+    })
+  })
+
   describe('stacked mode', () => {
     const stackedColumns = [
       { key: 'entity', label: 'الجهة' },
@@ -120,11 +160,10 @@ describe('DataTable', () => {
       { key: 'open', label: 'فتح', action: true },
     ]
 
-    it('leaves a plain table untouched: no stacked class, labels or value wrappers', () => {
+    it('leaves a plain table unstacked: no stacked class or labels', () => {
       const wrapper = factory()
       expect(wrapper.find('.table-wrap').classes()).not.toContain('table-wrap--stacked')
       expect(wrapper.find('tbody td').attributes('data-label')).toBeUndefined()
-      expect(wrapper.find('.table__value').exists()).toBe(false)
     })
 
     it('labels every cell with its column and wraps the cell content', () => {

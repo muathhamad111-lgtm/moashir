@@ -3,7 +3,6 @@ import { computed, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useHead } from '@unhead/vue'
 import { useRouter } from 'vue-router'
-import Card from '@/components/ui/Card.vue'
 import AppIcon from '@/components/ui/AppIcon.vue'
 import FinancePageHeader from '@/components/finance/FinancePageHeader.vue'
 import FinanceOverviewCards from '@/components/finance/FinanceOverviewCards.vue'
@@ -140,15 +139,13 @@ function decideFromReview(kind, transfer) {
       {{ t(`finance.transfers.conflict.${decisions.conflict.value.replace('.', '_')}`) }}
     </p>
 
-    <Card class="finance-page__list">
-      <TransferQueuePanel v-if="showsQueue" @decided="refresh" />
-      <FinanceOperationsPanel
-        v-else
-        :operations="operations"
-        :actions-for="actionsFor"
-        @action="ROW_ACTIONS[$event.key]?.($event.item)"
-      />
-    </Card>
+    <TransferQueuePanel v-if="showsQueue" @decided="refresh" />
+    <FinanceOperationsPanel
+      v-else
+      :operations="operations"
+      :actions-for="actionsFor"
+      @action="ROW_ACTIONS[$event.key]?.($event.item)"
+    />
 
     <TransactionReceiptModal
       v-if="viewing"

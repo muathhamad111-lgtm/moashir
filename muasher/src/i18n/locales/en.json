@@ -112,7 +112,7 @@
     "branding": "Brand identity",
     "adminEntities": "Entities",
     "deletedEntities": "Deleted entities",
-    "entityEmailChanges": "E-mail change requests",
+    "entityEmailChanges": "Entity email change requests",
     "requestsAssigned": "My Assigned Requests",
     "awardCommitteeDiscussions": "Committee discussions",
     "tour": "Platform tour",
@@ -1261,7 +1261,7 @@
         "title": "Deleted entities"
       },
       "entityEmailChanges": {
-        "title": "E-mail change requests"
+        "title": "Entity email change requests"
       },
       "assessment": {
         "title": "Assessment request"
@@ -1276,7 +1276,7 @@
         "title": "Audit log"
       },
       "identityChanges": {
-        "title": "Identity change requests"
+        "title": "User data change requests"
       },
       "entityProfileChanges": {
         "title": "Entity profile change requests"
@@ -1955,10 +1955,6 @@
       }
     },
     "pathAccess": {
-      "qualifiedFor": "Qualified for",
-      "noQualification": "Not qualified for any path",
-      "follows": "Follows",
-      "allPaths": "All paths",
       "qualificationsTitle": "Assessor qualified paths",
       "qualificationsLabel": "Qualified paths",
       "qualificationsHint": "Removing a path keeps the open assignments; the assessor finishes them or they are reassigned.",
@@ -1977,6 +1973,13 @@
       "reasonRequiredHint": "Required from the Super Admin, at least 10 characters. It is recorded in the audit log.",
       "validation": {
         "pathRequired": "Choose at least one path."
+      },
+      "short": {
+        "all": "All",
+        "notSet": "Not set",
+        "self": "Self",
+        "accredited": "Accredited",
+        "advanced": "Advanced"
       }
     }
   },
@@ -2503,8 +2506,7 @@
       "emptyMessage": "Entities you delete appear here and can be restored."
     },
     "emailChanges": {
-      "title": "Official e-mail changes",
-      "subtitle": "Verified e-mail changes of entities awaiting your decision.",
+      "title": "Entity email change requests",
       "columns": {
         "entity": "Entity",
         "oldEmail": "Current e-mail",
@@ -6778,7 +6780,9 @@
           "under_review": "Awaiting approval",
           "awaiting_payment": "Awaiting payment",
           "rejected": "Rejected",
-          "failed": "Payment failed"
+          "failed": "Payment failed",
+          "cancelled": "Cancelled",
+          "refunded": "Refunded"
         }
       },
       "pending": {
@@ -9542,7 +9546,6 @@
   },
   "contactInbox": {
     "title": "Inbox",
-    "subtitle": "Messages from the \"Contact us\" form and the portal. Assign a message, add internal notes, reply to the sender, then close it.",
     "linked": "Registered sender",
     "guest": "Visitor",
     "unassigned": "Not assigned",
@@ -10563,9 +10566,8 @@
       }
     },
     "review": {
-      "title": "Identity change requests",
-      "subtitle": "Requests to change a user's name or national ID. Nobody decides their own request.",
-      "link": "Identity change requests",
+      "title": "User data change requests",
+      "link": "User data change requests",
       "firstEntry": "First national ID entry",
       "firstEntryReason": "First entry, no reason.",
       "statusFilter": "Status",
@@ -10586,7 +10588,7 @@
       "note": "Note",
       "approved": "The change was approved and applied.",
       "rejected": "The change was rejected.",
-      "detailTitle": "Identity change request",
+      "detailTitle": "User data change request",
       "submittedBy": "Submitted by",
       "currentName": "Current name",
       "requestedName": "Requested name",

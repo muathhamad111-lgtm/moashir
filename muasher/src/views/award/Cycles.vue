@@ -3,9 +3,9 @@ import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { RouterLink } from 'vue-router'
 import { useHead } from '@unhead/vue'
-import Card from '@/components/ui/Card.vue'
 import StatsCards from '@/components/data-list/StatsCards.vue'
 import ListToolbar from '@/components/data-list/ListToolbar.vue'
+import DataListCard from '@/components/data-list/DataListCard.vue'
 import Pagination from '@/components/data-list/Pagination.vue'
 import CycleFilters from '@/components/award/CycleFilters.vue'
 import CycleTable from '@/components/award/CycleTable.vue'
@@ -82,28 +82,32 @@ const filterState = { filters: filters.filters, setFilter, sort: filters.sort, s
       </RouterLink>
     </header>
     <StatsCards :stats="statCards" :loading="!stats && status === 'loading'" />
-    <Card>
-      <ListToolbar
-        v-model:search="searchInput"
-        :search-placeholder="t('cycles.list.searchPlaceholder')"
-        :filter-state="filterState"
-      >
-        <template #filters="{ draft }">
-          <CycleFilters
-            :filters="draft.filters"
-            :sort="draft.sort.value"
-            @filter="draft.setFilter"
-            @sort="draft.setSort"
-          />
-        </template>
-      </ListToolbar>
+    <DataListCard>
+      <template #toolbar>
+        <ListToolbar
+          v-model:search="searchInput"
+          :search-placeholder="t('cycles.list.searchPlaceholder')"
+          :filter-state="filterState"
+        >
+          <template #filters="{ draft }">
+            <CycleFilters
+              :filters="draft.filters"
+              :sort="draft.sort.value"
+              @filter="draft.setFilter"
+              @sort="draft.setSort"
+            />
+          </template>
+        </ListToolbar>
+      </template>
       <CycleTable :items="items" :status="status" :error-message="errorMessage" @retry="load" />
-      <Pagination
-        v-if="status === 'success' && pagination.lastPage > 1"
-        :page="pagination.page"
-        :last-page="pagination.lastPage"
-        @update:page="setPage($event)"
-      />
-    </Card>
+      <template #footer>
+        <Pagination
+          v-if="status === 'success' && pagination.lastPage > 1"
+          :page="pagination.page"
+          :last-page="pagination.lastPage"
+          @update:page="setPage($event)"
+        />
+      </template>
+    </DataListCard>
   </section>
 </template>

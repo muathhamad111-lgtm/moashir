@@ -1,9 +1,9 @@
 <script setup>
 import ListToolbar from '@/components/data-list/ListToolbar.vue'
+import DataListCard from '@/components/data-list/DataListCard.vue'
 import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useHead } from '@unhead/vue'
-import Card from '@/components/ui/Card.vue'
 import Pagination from '@/components/data-list/Pagination.vue'
 import AppSelect from '@/components/form/AppSelect.vue'
 import AssessmentNotice from '@/components/assessment/AssessmentNotice.vue'
@@ -79,23 +79,25 @@ const filterState = { filters: filters.filters, setFilter, defaults: { cycleId: 
       :title="t('award.work.overdueTitle', { count: overdue }, overdue)"
       :message="t('award.work.overdueMessage')"
     />
-    <Card>
-      <ListToolbar :searchable="false" :filter-state="filterState">
-        <template #filters="{ draft }">
-          <AppSelect
-            :model-value="draft.filters.status"
-            :options="statusOptions"
-            :label="t('award.work.filters.status')"
-            @update:model-value="draft.setFilter('status', $event)"
-          />
-          <AppSelect
-            :model-value="draft.filters.cycleId"
-            :options="cycleOptions"
-            :label="t('award.work.filters.cycle')"
-            @update:model-value="draft.setFilter('cycleId', $event)"
-          />
-        </template>
-      </ListToolbar>
+    <DataListCard>
+      <template #toolbar>
+        <ListToolbar :searchable="false" :filter-state="filterState">
+          <template #filters="{ draft }">
+            <AppSelect
+              :model-value="draft.filters.status"
+              :options="statusOptions"
+              :label="t('award.work.filters.status')"
+              @update:model-value="draft.setFilter('status', $event)"
+            />
+            <AppSelect
+              :model-value="draft.filters.cycleId"
+              :options="cycleOptions"
+              :label="t('award.work.filters.cycle')"
+              @update:model-value="draft.setFilter('cycleId', $event)"
+            />
+          </template>
+        </ListToolbar>
+      </template>
       <CommitteeAssignmentTable
         :items="items"
         :status="status"
@@ -104,12 +106,14 @@ const filterState = { filters: filters.filters, setFilter, defaults: { cycleId: 
         @sort="setSort"
         @retry="load"
       />
-      <Pagination
-        v-if="status === 'success' && pagination.lastPage > 1"
-        :page="pagination.page"
-        :last-page="pagination.lastPage"
-        @update:page="setPage($event)"
-      />
-    </Card>
+      <template #footer>
+        <Pagination
+          v-if="status === 'success' && pagination.lastPage > 1"
+          :page="pagination.page"
+          :last-page="pagination.lastPage"
+          @update:page="setPage($event)"
+        />
+      </template>
+    </DataListCard>
   </section>
 </template>

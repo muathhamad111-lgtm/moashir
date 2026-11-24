@@ -11,6 +11,7 @@ import PendingOrderCard from '@/components/payments/portal/PendingOrderCard.vue'
 import MyPaymentsList from '@/components/payments/portal/MyPaymentsList.vue'
 import MyPaymentFilters from '@/components/payments/portal/MyPaymentFilters.vue'
 import ListToolbar from '@/components/data-list/ListToolbar.vue'
+import DataListCard from '@/components/data-list/DataListCard.vue'
 import { usePaymentsHub } from '@/composables/usePaymentsHub'
 import { useSignedDownload } from '@/composables/useSignedDownload'
 import { paymentsService } from '@/services/paymentsService'
@@ -53,45 +54,51 @@ function downloadReceipt(payment) {
             {{ t('portal.payments.recordsTitle') }}
           </h2>
         </header>
-        <ListToolbar
-          v-model:search="hub.searchInput.value"
-          :search-placeholder="t('portal.payments.search')"
-          :filter-state="filterState"
-        >
-          <template #filters="{ draft }">
-            <MyPaymentFilters :filters="draft.filters" @filter="draft.setFilter" />
+        <DataListCard>
+          <template #toolbar>
+            <ListToolbar
+              v-model:search="hub.searchInput.value"
+              :search-placeholder="t('portal.payments.search')"
+              :filter-state="filterState"
+            >
+              <template #filters="{ draft }">
+                <MyPaymentFilters :filters="draft.filters" @filter="draft.setFilter" />
+              </template>
+            </ListToolbar>
           </template>
-        </ListToolbar>
-        <Skeleton v-if="hub.status.value === 'loading'" variant="text" :count="4" />
-        <ErrorState
-          v-else-if="hub.status.value === 'error'"
-          :message="hub.errorMessage.value"
-          @retry="hub.refresh"
-        />
-        <EmptyState
-          v-else-if="!hub.tableRows.value.length && hub.isFiltered.value"
-          icon="search"
-          :title="t('portal.payments.emptyFiltered.title')"
-          :message="t('portal.payments.emptyFiltered.message')"
-        />
-        <EmptyState
-          v-else-if="!hub.tableRows.value.length"
-          icon="receipt"
-          :title="t('portal.payments.empty.all.title')"
-          :message="t('portal.payments.empty.all.message')"
-        />
-        <MyPaymentsList
-          v-else
-          :rows="hub.tableRows.value"
-          :busy="receipts.busy"
-          @download="downloadReceipt"
-        />
-        <Pagination
-          v-if="pagination.lastPage > 1"
-          :page="pagination.page"
-          :last-page="pagination.lastPage"
-          @update:page="setPage"
-        />
+          <Skeleton v-if="hub.status.value === 'loading'" variant="text" :count="4" />
+          <ErrorState
+            v-else-if="hub.status.value === 'error'"
+            :message="hub.errorMessage.value"
+            @retry="hub.refresh"
+          />
+          <EmptyState
+            v-else-if="!hub.tableRows.value.length && hub.isFiltered.value"
+            icon="search"
+            :title="t('portal.payments.emptyFiltered.title')"
+            :message="t('portal.payments.emptyFiltered.message')"
+          />
+          <EmptyState
+            v-else-if="!hub.tableRows.value.length"
+            icon="receipt"
+            :title="t('portal.payments.empty.all.title')"
+            :message="t('portal.payments.empty.all.message')"
+          />
+          <MyPaymentsList
+            v-else
+            :rows="hub.tableRows.value"
+            :busy="receipts.busy"
+            @download="downloadReceipt"
+          />
+          <template #footer>
+            <Pagination
+              v-if="pagination.lastPage > 1"
+              :page="pagination.page"
+              :last-page="pagination.lastPage"
+              @update:page="setPage"
+            />
+          </template>
+        </DataListCard>
       </section>
     </div>
   </section>

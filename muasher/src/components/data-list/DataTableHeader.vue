@@ -31,7 +31,10 @@ function choose() {
 <template>
   <th
     class="table__cell"
-    :class="{ 'table__cell--sortable': Boolean(column.sortKey) }"
+    :class="{
+      'table__cell--sortable': Boolean(column.sortKey),
+      [`table__cell--width-${column.width}`]: Boolean(column.width),
+    }"
     scope="col"
     :aria-sort="ariaSort"
   >

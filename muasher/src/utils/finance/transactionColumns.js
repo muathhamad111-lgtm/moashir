@@ -3,7 +3,7 @@ import { SORT_DIRECTIONS } from '@/utils/listSort'
 // The operations table's columns, in order. The table and the column chooser both read them.
 export function transactionColumns(t) {
   return [
-    { key: 'operation', label: t('finance.transactions.columns.operation') },
+    { key: 'operation', label: t('finance.transactions.columns.operation'), width: 'md' },
     { key: 'entity', label: t('finance.fields.entity') },
     {
       key: 'total',
@@ -11,7 +11,12 @@ export function transactionColumns(t) {
       sortKey: 'total',
       sortFirst: SORT_DIRECTIONS.DESC,
     },
-    { key: 'payment', label: t('finance.transactions.columns.payment') },
+    {
+      key: 'payment',
+      label: t('finance.transactions.columns.payment'),
+      width: 'sm',
+      optional: true,
+    },
     { key: 'status', label: t('finance.fields.status') },
     {
       key: 'createdAt',

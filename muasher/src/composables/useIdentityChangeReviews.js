@@ -21,7 +21,7 @@ const DECISION_TOASTS = Object.freeze({
 export function useIdentityChangeReviews() {
   const { t } = useI18n()
   const toast = useToast()
-  const filters = useFilters({ status: S.PENDING })
+  const filters = useFilters({ status: S.PENDING }, { defaults: { status: S.PENDING } })
   const paginator = usePagination({ perPage: 10 })
   const table = useTable({
     fetcher: (params) => identityService.reviewQueue(params),

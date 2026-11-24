@@ -2,6 +2,7 @@
 import { computed, onMounted, reactive, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import ListToolbar from '@/components/data-list/ListToolbar.vue'
+import DataListCard from '@/components/data-list/DataListCard.vue'
 import DataTable from '@/components/data-list/DataTable.vue'
 import StatsCards from '@/components/data-list/StatsCards.vue'
 import RowActions from '@/components/data-list/RowActions.vue'
@@ -116,60 +117,68 @@ async function onSaved(changes) {
 
     <StatsCards :stats="statCards" :loading="tableStatus === 'loading' && !rows.length" />
 
-    <ListToolbar
-      v-model:search="search"
-      :search-placeholder="t('permissions.index.searchPlaceholder')"
-      :filter-state="filterState"
-    >
-      <template #filters="{ draft }">
-        <AppSelect
-          :model-value="draft.filters.group"
-          :options="groupFilterOptions"
-          :label="t('permissions.filters.group')"
-          @update:model-value="draft.setFilter('group', $event)"
-        />
+    <DataListCard>
+      <template #toolbar>
+        <ListToolbar
+          v-model:search="search"
+          :search-placeholder="t('permissions.index.searchPlaceholder')"
+          :filter-state="filterState"
+        >
+          <template #filters="{ draft }">
+            <AppSelect
+              :model-value="draft.filters.group"
+              :options="groupFilterOptions"
+              :label="t('permissions.filters.group')"
+              @update:model-value="draft.setFilter('group', $event)"
+            />
+          </template>
+        </ListToolbar>
       </template>
-    </ListToolbar>
 
-    <DataTable
-      :columns="columns"
-      :items="filteredRows"
-      :status="tableStatus"
-      :empty-title="t('permissions.index.emptyTitle')"
-      :empty-message="t('permissions.index.emptyMessage')"
-      :error-message="t('permissions.index.errorMessage')"
-      row-key="key"
-      @retry="load"
-    >
-      <template #cell-name="{ item }">
-        <div class="permissions-page__name">
-          <span class="permissions-page__name-label">{{ localized(item.label) }}</span>
-          <span class="permissions-page__name-desc">{{ localized(item.description) }}</span>
-        </div>
-      </template>
-      <template #cell-key="{ item }">
-        <code class="permissions-page__key">{{ item.key }}</code>
-      </template>
-      <template #cell-group="{ item }">
-        <Badge variant="info">{{ groupLabel(item.module) }}</Badge>
-      </template>
-      <template #cell-roles="{ item }">
-        <div class="permissions-page__roles">
-          <Badge v-if="item.lockedToRoles?.length" variant="warning">{{
-            t('permissions.lockedBadge')
-          }}</Badge>
-          <Badge v-for="role in item.roles" :key="role" variant="muted">{{
-            roleLabel(role)
-          }}</Badge>
-          <span v-if="!item.roles.length" class="permissions-page__roles-empty">{{
-            t('permissions.rolesNone')
-          }}</span>
-        </div>
-      </template>
-      <template #cell-actions="{ item }">
-        <RowActions :actions="rowActions" :name="localized(item.label)" @select="openEdit(item)" />
-      </template>
-    </DataTable>
+      <DataTable
+        :columns="columns"
+        :items="filteredRows"
+        :status="tableStatus"
+        :empty-title="t('permissions.index.emptyTitle')"
+        :empty-message="t('permissions.index.emptyMessage')"
+        :error-message="t('permissions.index.errorMessage')"
+        row-key="key"
+        @retry="load"
+      >
+        <template #cell-name="{ item }">
+          <div class="permissions-page__name">
+            <span class="permissions-page__name-label">{{ localized(item.label) }}</span>
+            <span class="permissions-page__name-desc">{{ localized(item.description) }}</span>
+          </div>
+        </template>
+        <template #cell-key="{ item }">
+          <code class="permissions-page__key">{{ item.key }}</code>
+        </template>
+        <template #cell-group="{ item }">
+          <Badge variant="info">{{ groupLabel(item.module) }}</Badge>
+        </template>
+        <template #cell-roles="{ item }">
+          <div class="permissions-page__roles">
+            <Badge v-if="item.lockedToRoles?.length" variant="warning">{{
+              t('permissions.lockedBadge')
+            }}</Badge>
+            <Badge v-for="role in item.roles" :key="role" variant="muted">{{
+              roleLabel(role)
+            }}</Badge>
+            <span v-if="!item.roles.length" class="permissions-page__roles-empty">{{
+              t('permissions.rolesNone')
+            }}</span>
+          </div>
+        </template>
+        <template #cell-actions="{ item }">
+          <RowActions
+            :actions="rowActions"
+            :name="localized(item.label)"
+            @select="openEdit(item)"
+          />
+        </template>
+      </DataTable>
+    </DataListCard>
 
     <PermissionForm
       v-model="formOpen"

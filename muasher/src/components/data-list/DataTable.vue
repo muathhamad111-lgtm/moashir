@@ -1,9 +1,11 @@
 <script setup>
+import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 import Skeleton from '@/components/feedback/Skeleton.vue'
 import EmptyState from '@/components/feedback/EmptyState.vue'
 import ErrorState from '@/components/feedback/ErrorState.vue'
 import DataTableHeader from './DataTableHeader.vue'
+import { columnKindOf } from '@/utils/tableColumns'
 
 const props = defineProps({
   columns: { type: Array, required: true },
@@ -28,14 +30,22 @@ const props = defineProps({
 const emit = defineEmits(['retry', 'sort'])
 const { t } = useI18n()
 
-// The actions column takes only the width of its buttons; the other columns share the rest.
-const ACTIONS_COLUMN = 'actions'
+// Each cell reads on one line (two for a primary cell with its muted detail); text longer than its
+// column's width ends with an ellipsis and shows in full on hover or focus.
+const kinds = computed(() => props.columns.map((column, index) => columnKindOf(column, index)))
 
-const DATE_COLUMN_SUFFIX = 'At'
+function cellClass(index) {
+  const kind = `table__cell--${kinds.value[index]}`
+  return props.columns[index].optional ? [kind, 'table__cell--optional'] : kind
+}
 
-function cellClass(column) {
-  if (column.key === ACTIONS_COLUMN || column.action) return 'table__cell--actions'
-  return column.date || column.key.endsWith(DATE_COLUMN_SUFFIX) ? 'table__cell--date' : null
+// The full text of a cut-off value, as its tooltip, when the pointer or the keyboard reaches it.
+function revealFullText(event) {
+  const target =
+    event.target instanceof Element ? event.target.closest('.table__value *, .table__value') : null
+  if (!target || target.hasAttribute('title')) return
+  if (target.scrollWidth > target.clientWidth)
+    target.setAttribute('title', target.textContent.trim())
 }
 
 function keyOf(item, index) {
@@ -54,23 +64,23 @@ function keyOf(item, index) {
       <thead class="table__head">
         <tr>
           <DataTableHeader
-            v-for="column in columns"
+            v-for="(column, index) in columns"
             :key="column.key"
-            :class="cellClass(column)"
+            :class="cellClass(index)"
             :column="column"
             :sort="sort"
             @sort="emit('sort', $event)"
           />
         </tr>
       </thead>
-      <tbody>
+      <tbody @mouseover="revealFullText" @focusin="revealFullText">
         <template v-if="status === 'loading'">
           <tr v-for="row in skeletonRows" :key="`skeleton-${row}`" class="table__row">
             <td
-              v-for="column in columns"
+              v-for="(column, index) in columns"
               :key="column.key"
               class="table__cell"
-              :class="cellClass(column)"
+              :class="cellClass(index)"
               :data-label="stacked ? column.label : undefined"
             >
               <Skeleton variant="text" />
@@ -80,20 +90,17 @@ function keyOf(item, index) {
         <template v-else>
           <tr v-for="(item, index) in items" :key="keyOf(item, index)" class="table__row">
             <td
-              v-for="column in columns"
+              v-for="(column, index) in columns"
               :key="column.key"
               class="table__cell"
-              :class="cellClass(column)"
+              :class="cellClass(index)"
               :data-label="stacked ? column.label : undefined"
             >
-              <div v-if="stacked" class="table__value">
+              <div class="table__value">
                 <slot :name="`cell-${column.key}`" :item="item">
                   {{ item[column.key] }}
                 </slot>
               </div>
-              <slot v-else :name="`cell-${column.key}`" :item="item">
-                {{ item[column.key] }}
-              </slot>
             </td>
           </tr>
         </template>

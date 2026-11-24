@@ -16,7 +16,10 @@ export function useEmailChangeApprovals() {
   const { t, locale } = useI18n()
   const toast = useToast()
   const { confirm } = useConfirm()
-  const filters = useFilters({ status: S.AWAITING_APPROVAL })
+  const filters = useFilters(
+    { status: S.AWAITING_APPROVAL },
+    { defaults: { status: S.AWAITING_APPROVAL } },
+  )
   const paginator = usePagination({ perPage: 10 })
   const table = useTable({
     fetcher: (params) => entityEmailChangesService.list(params),

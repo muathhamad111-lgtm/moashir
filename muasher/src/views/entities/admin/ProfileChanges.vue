@@ -3,6 +3,7 @@ import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 import BaseButton from '@/components/ui/BaseButton.vue'
 import ListToolbar from '@/components/data-list/ListToolbar.vue'
+import DataListCard from '@/components/data-list/DataListCard.vue'
 import DataTable from '@/components/data-list/DataTable.vue'
 import Pagination from '@/components/data-list/Pagination.vue'
 import AppSelect from '@/components/form/AppSelect.vue'
@@ -53,62 +54,68 @@ const columns = computed(() =>
         {{ t('entities.admin.backToEntities') }}
       </BaseButton>
     </header>
-    <ListToolbar
-      v-model:search="search"
-      :search-placeholder="t('entities.profileChanges.searchLabel')"
-      :filter-state="filters"
-    >
-      <template #filters="{ draft }">
-        <AppSelect
-          :model-value="draft.filters.status"
-          :options="statusOptions"
-          :label="t('entities.filters.status')"
-          @update:model-value="draft.setFilter('status', $event)"
+    <DataListCard>
+      <template #toolbar>
+        <ListToolbar
+          v-model:search="search"
+          :search-placeholder="t('entities.profileChanges.searchLabel')"
+          :filter-state="filters"
+        >
+          <template #filters="{ draft }">
+            <AppSelect
+              :model-value="draft.filters.status"
+              :options="statusOptions"
+              :label="t('entities.filters.status')"
+              @update:model-value="draft.setFilter('status', $event)"
+            />
+          </template>
+        </ListToolbar>
+      </template>
+
+      <DataTable
+        :columns="columns"
+        :items="items"
+        :status="status"
+        :error-message="errorMessage"
+        :empty-title="t('entities.profileChanges.emptyTitle')"
+        :empty-message="t('entities.profileChanges.emptyMessage')"
+        @retry="load"
+      >
+        <template #cell-entity="{ item }">
+          <router-link
+            class="entity-table__name"
+            :to="{ name: ROUTE_NAMES.ADMIN_ENTITY, params: { id: item.entity.id } }"
+          >
+            {{ entityName(item) }}
+          </router-link>
+        </template>
+        <template #cell-items="{ item }">{{ itemLabels(item) }}</template>
+        <template #cell-submittedAt="{ item }">{{ dateTime(item.submittedAt) }}</template>
+        <template #cell-status="{ item }"><StatusBadge :status="item.status" /></template>
+        <template #cell-actions="{ item }">
+          <BaseButton
+            :variant="item.status === PROFILE_CHANGE_STATUSES.PENDING ? 'primary' : 'secondary'"
+            size="sm"
+            @click="openReview(item)"
+          >
+            {{
+              item.status === PROFILE_CHANGE_STATUSES.PENDING
+                ? t('entities.profileChanges.reviewAction')
+                : t('entities.profileChanges.view')
+            }}
+          </BaseButton>
+        </template>
+      </DataTable>
+
+      <template #footer>
+        <Pagination
+          v-if="status === 'success' && paginator.pagination.lastPage > 1"
+          :page="paginator.pagination.page"
+          :last-page="paginator.pagination.lastPage"
+          @update:page="paginator.setPage($event)"
         />
       </template>
-    </ListToolbar>
-
-    <DataTable
-      :columns="columns"
-      :items="items"
-      :status="status"
-      :error-message="errorMessage"
-      :empty-title="t('entities.profileChanges.emptyTitle')"
-      :empty-message="t('entities.profileChanges.emptyMessage')"
-      @retry="load"
-    >
-      <template #cell-entity="{ item }">
-        <router-link
-          class="entity-table__name"
-          :to="{ name: ROUTE_NAMES.ADMIN_ENTITY, params: { id: item.entity.id } }"
-        >
-          {{ entityName(item) }}
-        </router-link>
-      </template>
-      <template #cell-items="{ item }">{{ itemLabels(item) }}</template>
-      <template #cell-submittedAt="{ item }">{{ dateTime(item.submittedAt) }}</template>
-      <template #cell-status="{ item }"><StatusBadge :status="item.status" /></template>
-      <template #cell-actions="{ item }">
-        <BaseButton
-          :variant="item.status === PROFILE_CHANGE_STATUSES.PENDING ? 'primary' : 'secondary'"
-          size="sm"
-          @click="openReview(item)"
-        >
-          {{
-            item.status === PROFILE_CHANGE_STATUSES.PENDING
-              ? t('entities.profileChanges.reviewAction')
-              : t('entities.profileChanges.view')
-          }}
-        </BaseButton>
-      </template>
-    </DataTable>
-
-    <Pagination
-      v-if="status === 'success' && paginator.pagination.lastPage > 1"
-      :page="paginator.pagination.page"
-      :last-page="paginator.pagination.lastPage"
-      @update:page="paginator.setPage($event)"
-    />
+    </DataListCard>
 
     <ProfileChangeReviewDrawer v-model="review.open" :request-id="review.id" @decided="load" />
   </section>

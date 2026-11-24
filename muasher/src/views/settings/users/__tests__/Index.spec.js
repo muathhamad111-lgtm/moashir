@@ -39,8 +39,8 @@ beforeEach(() => {
 
 describe('users page actions', () => {
   it.each([
-    ['en', ['Roles & permissions', 'Identity change requests', 'Invite user']],
-    ['ar', ['الأدوار والصلاحيات', 'طلبات تعديل الهوية', 'دعوة مستخدم']],
+    ['en', ['Roles & permissions', 'User data change requests', 'Invite user']],
+    ['ar', ['الأدوار والصلاحيات', 'طلبات تعديل بيانات المستخدمين', 'دعوة مستخدم']],
   ])(
     'groups every page action in the header, invite last as the primary (%s)',
     async (locale, labels) => {

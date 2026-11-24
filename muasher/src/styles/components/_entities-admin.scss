@@ -102,7 +102,9 @@
 }
 
 .entity-table__level .level-badge__chip {
-  white-space: normal;
+  max-inline-size: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .entity-last-assessment {

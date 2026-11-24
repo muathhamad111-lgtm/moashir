@@ -3,6 +3,7 @@ import { computed, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import AppIcon from '@/components/ui/AppIcon.vue'
 import ListToolbar from '@/components/data-list/ListToolbar.vue'
+import DataListCard from '@/components/data-list/DataListCard.vue'
 import Pagination from '@/components/data-list/Pagination.vue'
 import TransferQueueFilters from './TransferQueueFilters.vue'
 import TransferQueueTable from './TransferQueueTable.vue'
@@ -57,63 +58,69 @@ function decideFromReview(kind, transfer) {
       <AppIcon name="lock" />
       {{ t('finance.transfers.readOnly') }}
     </p>
-    <ListToolbar
-      v-model:search="searchInput"
-      :search-placeholder="t('finance.transfers.searchPlaceholder')"
-      :filter-state="filterState"
-    >
-      <template #filters="{ draft }">
-        <TransferQueueFilters
-          :filters="draft.filters"
-          :sort="draft.sort.value"
-          :accounts="queue.accounts.value"
-          @filter="draft.setFilter"
-          @sort="draft.setSort"
+    <DataListCard>
+      <template #toolbar>
+        <ListToolbar
+          v-model:search="searchInput"
+          :search-placeholder="t('finance.transfers.searchPlaceholder')"
+          :filter-state="filterState"
+        >
+          <template #filters="{ draft }">
+            <TransferQueueFilters
+              :filters="draft.filters"
+              :sort="draft.sort.value"
+              :accounts="queue.accounts.value"
+              @filter="draft.setFilter"
+              @sort="draft.setSort"
+            />
+          </template>
+        </ListToolbar>
+      </template>
+
+      <BulkOutcomeNotice
+        v-if="decisions.outcome.value"
+        :outcome="decisions.outcome.value"
+        :references="references"
+        @dismiss="decisions.clearOutcome"
+      />
+      <p v-if="decisions.conflict.value" class="transfers-page__conflict" role="alert">
+        <AppIcon name="warning-triangle" />
+        {{ t(`finance.transfers.conflict.${decisions.conflict.value.replace('.', '_')}`) }}
+      </p>
+
+      <TransferBulkBar
+        v-if="selectable && selection.count.value > 0"
+        :count="selection.count.value"
+        :over-limit="selection.overLimit.value"
+        @clear="selection.clear"
+        @approve="decisions.openApprove(selection.selected.value)"
+        @reject="decisions.openReject(selection.selected.value)"
+      />
+
+      <TransferQueueTable
+        :items="items"
+        :status="status"
+        :error-message="errorMessage"
+        :selectable="selectable"
+        :selection="selection"
+        :is-decidable="queue.isDecidable"
+        :can-decide="isReviewer"
+        :empty-title="t('finance.transfers.empty.underReview.title')"
+        :empty-message="t('finance.transfers.empty.underReview.message')"
+        @retry="queue.load"
+        @view="reviewing = $event.id"
+        @approve="decisions.openApprove([$event])"
+        @reject="decisions.openReject([$event])"
+      />
+      <template #footer>
+        <Pagination
+          v-if="status === 'success' && pagination.lastPage > 1"
+          :page="pagination.page"
+          :last-page="pagination.lastPage"
+          @update:page="setPage($event)"
         />
       </template>
-    </ListToolbar>
-
-    <BulkOutcomeNotice
-      v-if="decisions.outcome.value"
-      :outcome="decisions.outcome.value"
-      :references="references"
-      @dismiss="decisions.clearOutcome"
-    />
-    <p v-if="decisions.conflict.value" class="transfers-page__conflict" role="alert">
-      <AppIcon name="warning-triangle" />
-      {{ t(`finance.transfers.conflict.${decisions.conflict.value.replace('.', '_')}`) }}
-    </p>
-
-    <TransferBulkBar
-      v-if="selectable && selection.count.value > 0"
-      :count="selection.count.value"
-      :over-limit="selection.overLimit.value"
-      @clear="selection.clear"
-      @approve="decisions.openApprove(selection.selected.value)"
-      @reject="decisions.openReject(selection.selected.value)"
-    />
-
-    <TransferQueueTable
-      :items="items"
-      :status="status"
-      :error-message="errorMessage"
-      :selectable="selectable"
-      :selection="selection"
-      :is-decidable="queue.isDecidable"
-      :can-decide="isReviewer"
-      :empty-title="t('finance.transfers.empty.underReview.title')"
-      :empty-message="t('finance.transfers.empty.underReview.message')"
-      @retry="queue.load"
-      @view="reviewing = $event.id"
-      @approve="decisions.openApprove([$event])"
-      @reject="decisions.openReject([$event])"
-    />
-    <Pagination
-      v-if="status === 'success' && pagination.lastPage > 1"
-      :page="pagination.page"
-      :last-page="pagination.lastPage"
-      @update:page="setPage($event)"
-    />
+    </DataListCard>
 
     <TransferReviewModal
       v-if="reviewing"

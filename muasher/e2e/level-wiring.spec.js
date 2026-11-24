@@ -70,7 +70,7 @@ test.describe('Task-68 — staff', () => {
     await expect(rows(page)).toHaveCount(1)
     await expect(rows(page).first().locator('.level-badge')).toHaveAttribute('data-tier', 'gold')
 
-    await page.getByRole('button', { name: /^(Clear filters|مسح التصفية)$/ }).click()
+    await page.getByRole('button', { name: /^(Clear filters|مسح الفلترة)$/ }).click()
     await expect(page).not.toHaveURL(/level=/)
     await applyListFilters(page, { 'entity-sort': '-level' })
     await expect

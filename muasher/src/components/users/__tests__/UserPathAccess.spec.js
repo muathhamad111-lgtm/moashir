@@ -145,25 +145,21 @@ describe('request scope dialog', () => {
 })
 
 describe('user path access cell', () => {
-  it('shows the qualified paths of an assessor and the scope of a follower', () => {
-    const globals = createTestGlobals({ locale: 'en' })
-    const assessor = mount(UserPathAccessCell, {
-      props: { user: ASSESSOR },
-      global: { plugins: globals.plugins },
-    })
-    expect(assessor.findAll('.path-badge').map((badge) => badge.text())).toEqual([
-      'Accredited assessment',
-    ])
-    const follower = mount(UserPathAccessCell, {
-      props: { user: FOLLOWER },
-      global: { plugins: globals.plugins },
-    })
-    expect(follower.text()).toContain('Follows')
-    expect(follower.find('.path-badge--accredited').exists()).toBe(true)
-    const unqualified = mount(UserPathAccessCell, {
-      props: { user: { ...ASSESSOR, assessorQualifications: [] } },
-      global: { plugins: globals.plugins },
-    })
-    expect(unqualified.text()).toContain('Not qualified for any path')
+  it('reads the paths a user works on as one short line', () => {
+    const textOf = (user, locale = 'en') =>
+      mount(UserPathAccessCell, {
+        props: { user },
+        global: { plugins: createTestGlobals({ locale }).plugins },
+      }).text()
+    expect(textOf(ASSESSOR)).toBe('Accredited')
+    expect(textOf(FOLLOWER)).toBe('Accredited')
+    expect(textOf({ ...FOLLOWER, requestScope: { allPaths: true, paths: [] } })).toBe('All')
+    expect(
+      textOf({ ...FOLLOWER, requestScope: { allPaths: false, paths: ['advanced', 'accredited'] } }),
+    ).toBe('Accredited, Advanced')
+    expect(textOf({ ...ASSESSOR, assessorQualifications: [] })).toBe('Not set')
+    expect(textOf({ ...FOLLOWER, requestScope: { allPaths: true, paths: [] } }, 'ar')).toBe('الكل')
+    expect(textOf({ ...FOLLOWER, roles: ['system_admin'] })).toBe('Accredited')
+    expect(textOf({ ...ASSESSOR, roles: ['finance_officer'] })).toBe('')
   })
 })

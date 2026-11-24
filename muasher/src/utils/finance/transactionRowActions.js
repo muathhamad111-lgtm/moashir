@@ -11,9 +11,10 @@ export const TRANSACTION_ROW_ACTIONS = Object.freeze({
 
 const A = TRANSACTION_ROW_ACTIONS
 
-// The decisions sit in the row; recording a refund or settling opens the transaction's own page,
+// The decisions sit in the row (a pending transfer shows approve and reject, its details in the menu);
+// recording a refund or settling opens the transaction's own page,
 // which checks the same rules again before it opens the dialog.
-export const TRANSACTION_INLINE_ACTIONS = Object.freeze([A.VIEW, A.APPROVE, A.REJECT])
+export const TRANSACTION_INLINE_ACTIONS = Object.freeze([A.APPROVE, A.REJECT, A.VIEW])
 
 export function isPendingTransfer(item) {
   return (

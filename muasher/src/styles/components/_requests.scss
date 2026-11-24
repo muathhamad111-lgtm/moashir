@@ -82,13 +82,33 @@
   white-space: nowrap;
 }
 
-// Request list (admin review 2026-11-20): the merged request column.
+// Request list (admin review 2026-11-20): the merged request column. Two lines: the number with
+// the entity's level, then the entity's name.
 .request-queue__request {
-  @include flex(column, flex-start, flex-start, var(--space-1));
+  display: grid;
+  grid-template-areas:
+    'number level'
+    'name name';
+  grid-template-columns: minmax(0, max-content) auto;
+  align-items: center;
+  justify-content: start;
+  gap: var(--space-1) var(--space-2);
+
+  > .request-queue__link {
+    grid-area: number;
+  }
+
+  > .request-queue__entity-name {
+    grid-area: name;
+  }
+
+  > :not(.request-queue__link, .request-queue__entity-name) {
+    grid-area: level;
+  }
 }
 
 .request-queue__entity-name {
-  color: var(--theme-heading);
+  color: var(--theme-text-muted);
 }
 
 .request-queue__preparing {

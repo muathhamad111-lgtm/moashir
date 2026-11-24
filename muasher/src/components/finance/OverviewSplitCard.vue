@@ -37,6 +37,7 @@ const { t } = useI18n()
           type="button"
           class="finance-overview__cell"
           :aria-pressed="cell.status === active"
+          :title="t(`finance.operations.statuses.${cell.status}.label`)"
           :aria-label="
             t('finance.page.cards.filterBy', {
               status: t(`finance.operations.statuses.${cell.status}.label`),

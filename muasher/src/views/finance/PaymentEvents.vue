@@ -1,7 +1,6 @@
 <script setup>
 import { useI18n } from 'vue-i18n'
 import { useHead } from '@unhead/vue'
-import Card from '@/components/ui/Card.vue'
 import FinancePageHeader from '@/components/finance/FinancePageHeader.vue'
 import PaymentEventsPanel from '@/components/finance/PaymentEventsPanel.vue'
 
@@ -19,8 +18,6 @@ useHead({ title: () => t('routes.finance.paymentEvents.title') })
       :title="t('routes.finance.paymentEvents.title')"
       :subtitle="t('finance.events.pageSubtitle')"
     />
-    <Card>
-      <PaymentEventsPanel />
-    </Card>
+    <PaymentEventsPanel />
   </section>
 </template>

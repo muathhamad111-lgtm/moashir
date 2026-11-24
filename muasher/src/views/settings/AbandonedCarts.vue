@@ -3,6 +3,7 @@ import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 import SettingsSection from '@/components/settings/SettingsSection.vue'
 import ListToolbar from '@/components/data-list/ListToolbar.vue'
+import DataListCard from '@/components/data-list/DataListCard.vue'
 import DataTable from '@/components/data-list/DataTable.vue'
 import Pagination from '@/components/data-list/Pagination.vue'
 import AppMenu from '@/components/ui/AppMenu.vue'
@@ -101,82 +102,92 @@ const filterState = { filters: filters.filters, setFilter }
     :description="t('settings.carts.description')"
     status="success"
   >
-    <ListToolbar
-      v-model:search="searchInput"
-      :search-placeholder="t('settings.carts.searchPlaceholder')"
-      :filter-state="filterState"
-    >
-      <template #filters="{ draft }">
-        <AppSelect
-          :model-value="draft.filters.purpose"
-          :options="purposeOptions"
-          :label="t('settings.carts.filterPurpose')"
-          @update:model-value="draft.setFilter('purpose', $event)"
-        />
-        <AppSelect
-          :model-value="draft.filters.contacted"
-          :options="contactedOptions"
-          :label="t('settings.carts.filterContacted')"
-          @update:model-value="draft.setFilter('contacted', $event)"
-        />
+    <DataListCard>
+      <template #toolbar>
+        <ListToolbar
+          v-model:search="searchInput"
+          :search-placeholder="t('settings.carts.searchPlaceholder')"
+          :filter-state="filterState"
+        >
+          <template #filters="{ draft }">
+            <AppSelect
+              :model-value="draft.filters.purpose"
+              :options="purposeOptions"
+              :label="t('settings.carts.filterPurpose')"
+              @update:model-value="draft.setFilter('purpose', $event)"
+            />
+            <AppSelect
+              :model-value="draft.filters.contacted"
+              :options="contactedOptions"
+              :label="t('settings.carts.filterContacted')"
+              @update:model-value="draft.setFilter('contacted', $event)"
+            />
+          </template>
+        </ListToolbar>
       </template>
-    </ListToolbar>
 
-    <DataTable
-      :columns="columns"
-      :items="items"
-      :status="status"
-      :error-message="errorMessage"
-      :empty-title="t('settings.carts.emptyTitle')"
-      :empty-message="t('settings.carts.emptyMessage')"
-      :skeleton-rows="6"
-      @retry="load"
-    >
-      <template #cell-entity="{ item }">
-        <span class="settings-form__entity">{{ nameOf(item.entity) }}</span>
-        <bdi class="settings-form__muted" dir="ltr">{{ item.entity.reference }}</bdi>
-      </template>
-      <template #cell-contact="{ item }">
-        <div class="settings-form__contact">
-          <bdi dir="ltr">{{ item.email ?? t('finance.common.none') }}</bdi>
-          <Badge :variant="item.marketingConsent ? 'success' : 'muted'">
-            {{
-              t(item.marketingConsent ? 'settings.carts.consent.yes' : 'settings.carts.consent.no')
-            }}
-          </Badge>
-        </div>
-      </template>
-      <template #cell-purpose="{ item }"
-        ><Badge variant="info">{{ t(`finance.purposes.${item.purpose}`) }}</Badge></template
+      <DataTable
+        :columns="columns"
+        :items="items"
+        :status="status"
+        :error-message="errorMessage"
+        :empty-title="t('settings.carts.emptyTitle')"
+        :empty-message="t('settings.carts.emptyMessage')"
+        :skeleton-rows="6"
+        @retry="load"
       >
-      <template #cell-startedAt="{ item }"
-        ><span class="settings-form__nowrap">{{ dateOf(item.startedAt) }}</span></template
-      >
-      <template #cell-lastSeenAt="{ item }"
-        ><span class="settings-form__nowrap">{{ dateOf(item.lastSeenAt) }}</span></template
-      >
-      <template #cell-contactedAt="{ item }"
-        ><span class="settings-form__nowrap">{{ dateOf(item.contactedAt) }}</span></template
-      >
-      <template #cell-actions="{ item }">
-        <span v-if="!item.marketingConsent" class="settings-form__muted">{{
-          t('settings.carts.noConsent')
-        }}</span>
-        <AppMenu
-          v-else-if="SHOWS_MODULES_AWAITING_BACKEND"
-          :actions="campaignActions"
-          :label="t('components.actions.menuFor', { name: nameOf(item.entity) })"
-          @select="runCampaign($event, item)"
-        />
-        <ComingSoonChip v-else compact />
-      </template>
-    </DataTable>
+        <template #cell-entity="{ item }">
+          <span class="settings-form__entity">{{ nameOf(item.entity) }}</span>
+          <bdi class="settings-form__muted" dir="ltr">{{ item.entity.reference }}</bdi>
+        </template>
+        <template #cell-contact="{ item }">
+          <div class="settings-form__contact">
+            <bdi dir="ltr">{{ item.email ?? t('finance.common.none') }}</bdi>
+            <Badge :variant="item.marketingConsent ? 'success' : 'muted'">
+              {{
+                t(
+                  item.marketingConsent
+                    ? 'settings.carts.consent.yes'
+                    : 'settings.carts.consent.no',
+                )
+              }}
+            </Badge>
+          </div>
+        </template>
+        <template #cell-purpose="{ item }"
+          ><Badge variant="info">{{ t(`finance.purposes.${item.purpose}`) }}</Badge></template
+        >
+        <template #cell-startedAt="{ item }"
+          ><span class="settings-form__nowrap">{{ dateOf(item.startedAt) }}</span></template
+        >
+        <template #cell-lastSeenAt="{ item }"
+          ><span class="settings-form__nowrap">{{ dateOf(item.lastSeenAt) }}</span></template
+        >
+        <template #cell-contactedAt="{ item }"
+          ><span class="settings-form__nowrap">{{ dateOf(item.contactedAt) }}</span></template
+        >
+        <template #cell-actions="{ item }">
+          <span v-if="!item.marketingConsent" class="settings-form__muted">{{
+            t('settings.carts.noConsent')
+          }}</span>
+          <AppMenu
+            v-else-if="SHOWS_MODULES_AWAITING_BACKEND"
+            :actions="campaignActions"
+            :label="t('components.actions.menuFor', { name: nameOf(item.entity) })"
+            @select="runCampaign($event, item)"
+          />
+          <ComingSoonChip v-else compact />
+        </template>
+      </DataTable>
 
-    <Pagination
-      v-if="status === 'success' && pagination.lastPage > 1"
-      :page="pagination.page"
-      :last-page="pagination.lastPage"
-      @update:page="setPage($event)"
-    />
+      <template #footer>
+        <Pagination
+          v-if="status === 'success' && pagination.lastPage > 1"
+          :page="pagination.page"
+          :last-page="pagination.lastPage"
+          @update:page="setPage($event)"
+        />
+      </template>
+    </DataListCard>
   </SettingsSection>
 </template>

@@ -3,6 +3,7 @@ import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 import AppSelect from '@/components/form/AppSelect.vue'
 import ListToolbar from '@/components/data-list/ListToolbar.vue'
+import DataListCard from '@/components/data-list/DataListCard.vue'
 import Pagination from '@/components/data-list/Pagination.vue'
 import PaymentEventsTable from './PaymentEventsTable.vue'
 import { useFinanceList } from '@/composables/useFinanceList'
@@ -34,44 +35,50 @@ const filterState = { filters: filters.filters, setFilter }
 
 <template>
   <div class="finance-tab">
-    <ListToolbar
-      v-model:search="searchInput"
-      :search-placeholder="t('finance.events.searchPlaceholder')"
-      :filter-state="filterState"
-    >
-      <template #filters="{ draft }">
-        <AppSelect
-          :model-value="draft.filters.source"
-          :options="sourceOptions"
-          :label="t('finance.events.source')"
-          @update:model-value="draft.setFilter('source', $event)"
-        />
-        <AppSelect
-          :model-value="draft.filters.result"
-          :options="resultOptions"
-          :label="t('finance.events.result')"
-          @update:model-value="draft.setFilter('result', $event)"
-        />
-        <AppSelect
-          :model-value="draft.filters.mode"
-          :options="modeOptions"
-          :label="t('finance.events.mode')"
-          @update:model-value="draft.setFilter('mode', $event)"
+    <DataListCard>
+      <template #toolbar>
+        <ListToolbar
+          v-model:search="searchInput"
+          :search-placeholder="t('finance.events.searchPlaceholder')"
+          :filter-state="filterState"
+        >
+          <template #filters="{ draft }">
+            <AppSelect
+              :model-value="draft.filters.source"
+              :options="sourceOptions"
+              :label="t('finance.events.source')"
+              @update:model-value="draft.setFilter('source', $event)"
+            />
+            <AppSelect
+              :model-value="draft.filters.result"
+              :options="resultOptions"
+              :label="t('finance.events.result')"
+              @update:model-value="draft.setFilter('result', $event)"
+            />
+            <AppSelect
+              :model-value="draft.filters.mode"
+              :options="modeOptions"
+              :label="t('finance.events.mode')"
+              @update:model-value="draft.setFilter('mode', $event)"
+            />
+          </template>
+        </ListToolbar>
+      </template>
+      <p class="finance-page__note" role="note">{{ t('finance.events.noPayload') }}</p>
+      <PaymentEventsTable
+        :items="items"
+        :status="status"
+        :error-message="errorMessage"
+        @retry="load"
+      />
+      <template #footer>
+        <Pagination
+          v-if="status === 'success' && pagination.lastPage > 1"
+          :page="pagination.page"
+          :last-page="pagination.lastPage"
+          @update:page="setPage($event)"
         />
       </template>
-    </ListToolbar>
-    <p class="finance-page__note" role="note">{{ t('finance.events.noPayload') }}</p>
-    <PaymentEventsTable
-      :items="items"
-      :status="status"
-      :error-message="errorMessage"
-      @retry="load"
-    />
-    <Pagination
-      v-if="status === 'success' && pagination.lastPage > 1"
-      :page="pagination.page"
-      :last-page="pagination.lastPage"
-      @update:page="setPage($event)"
-    />
+    </DataListCard>
   </div>
 </template>

@@ -4,6 +4,7 @@ import { useI18n } from 'vue-i18n'
 import { useRouter } from 'vue-router'
 import { useHead } from '@unhead/vue'
 import ListToolbar from '@/components/data-list/ListToolbar.vue'
+import DataListCard from '@/components/data-list/DataListCard.vue'
 import DataTable from '@/components/data-list/DataTable.vue'
 import Pagination from '@/components/data-list/Pagination.vue'
 import AppMenu from '@/components/ui/AppMenu.vue'
@@ -78,77 +79,83 @@ function openManage(row) {
       </div>
     </header>
 
-    <ListToolbar
-      v-model:search="search"
-      :search-placeholder="t('bagRequests.evaluator.searchPlaceholder')"
-      :filter-state="filters"
-    >
-      <template #filters="{ draft }">
-        <AppSelect
-          :model-value="draft.filters.status"
-          :options="statusFilterOptions"
-          :label="t('bagRequests.filters.status')"
-          @update:model-value="draft.setFilter('status', $event)"
-        />
+    <DataListCard>
+      <template #toolbar>
+        <ListToolbar
+          v-model:search="search"
+          :search-placeholder="t('bagRequests.evaluator.searchPlaceholder')"
+          :filter-state="filters"
+        >
+          <template #filters="{ draft }">
+            <AppSelect
+              :model-value="draft.filters.status"
+              :options="statusFilterOptions"
+              :label="t('bagRequests.filters.status')"
+              @update:model-value="draft.setFilter('status', $event)"
+            />
+          </template>
+        </ListToolbar>
       </template>
-    </ListToolbar>
 
-    <DataTable
-      :columns="columns"
-      :items="items"
-      :status="status"
-      :error-message="errorMessage"
-      :empty-title="t('bagRequests.evaluator.emptyTitle')"
-      :empty-message="t('bagRequests.evaluator.emptyMessage')"
-      @retry="load"
-    >
-      <template #cell-entityName="{ item }">
-        <span class="bag-requests__entity">{{ localized(item.entityName) }}</span>
-        <Badge v-if="item.hasPreviousBag" variant="muted">{{ t('bagRequests.repeat') }}</Badge>
-      </template>
-      <template #cell-reference="{ item }">
-        <span class="bag-requests__reference">
-          {{
-            t('bagRequests.referenceValue', {
-              score: n(item.referenceSnapshot.scorePercent, 'default'),
-            })
-          }}
-        </span>
-      </template>
-      <template #cell-context="{ item }">
-        <span class="bag-requests__context">
-          <span v-if="item.selfScorePercent != null" class="bag-requests__context-chip">
-            {{ t('bagRequests.contextSelf', { score: n(item.selfScorePercent, 'default') }) }}
-          </span>
-          <span v-if="item.advancedScorePercent != null" class="bag-requests__context-chip">
+      <DataTable
+        :columns="columns"
+        :items="items"
+        :status="status"
+        :error-message="errorMessage"
+        :empty-title="t('bagRequests.evaluator.emptyTitle')"
+        :empty-message="t('bagRequests.evaluator.emptyMessage')"
+        @retry="load"
+      >
+        <template #cell-entityName="{ item }">
+          <span class="bag-requests__entity">{{ localized(item.entityName) }}</span>
+          <Badge v-if="item.hasPreviousBag" variant="muted">{{ t('bagRequests.repeat') }}</Badge>
+        </template>
+        <template #cell-reference="{ item }">
+          <span class="bag-requests__reference">
             {{
-              t('bagRequests.contextAdvanced', { score: n(item.advancedScorePercent, 'default') })
+              t('bagRequests.referenceValue', {
+                score: n(item.referenceSnapshot.scorePercent, 'default'),
+              })
             }}
           </span>
-          <span v-if="item.selfScorePercent == null && item.advancedScorePercent == null">—</span>
-        </span>
-      </template>
-      <template #cell-status="{ item }">
-        <StatusBadge :status="item.status" />
-      </template>
-      <template #cell-assignedAt="{ item }">
-        <span class="bag-requests__date">{{ dateLabel(item.assignedAt) }}</span>
-      </template>
-      <template #cell-actions="{ item }">
-        <AppMenu
-          :actions="rowActions(item)"
-          :label="t('components.actions.menuFor', { name: localized(item.entityName) })"
-          @select="openManage(item)"
+        </template>
+        <template #cell-context="{ item }">
+          <span class="bag-requests__context">
+            <span v-if="item.selfScorePercent != null" class="bag-requests__context-chip">
+              {{ t('bagRequests.contextSelf', { score: n(item.selfScorePercent, 'default') }) }}
+            </span>
+            <span v-if="item.advancedScorePercent != null" class="bag-requests__context-chip">
+              {{
+                t('bagRequests.contextAdvanced', { score: n(item.advancedScorePercent, 'default') })
+              }}
+            </span>
+            <span v-if="item.selfScorePercent == null && item.advancedScorePercent == null">—</span>
+          </span>
+        </template>
+        <template #cell-status="{ item }">
+          <StatusBadge :status="item.status" />
+        </template>
+        <template #cell-assignedAt="{ item }">
+          <span class="bag-requests__date">{{ dateLabel(item.assignedAt) }}</span>
+        </template>
+        <template #cell-actions="{ item }">
+          <AppMenu
+            :actions="rowActions(item)"
+            :label="t('components.actions.menuFor', { name: localized(item.entityName) })"
+            @select="openManage(item)"
+          />
+        </template>
+      </DataTable>
+
+      <template #footer>
+        <Pagination
+          v-if="status === 'success' && pagination.lastPage > 1"
+          :page="pagination.page"
+          :last-page="pagination.lastPage"
+          :disabled="status === 'loading'"
+          @update:page="setPage($event)"
         />
       </template>
-    </DataTable>
-
-    <Pagination
-      v-if="status === 'success' && pagination.lastPage > 1"
-      :page="pagination.page"
-      :last-page="pagination.lastPage"
-      :disabled="status === 'loading'"
-      @update:page="setPage($event)"
-    />
+    </DataListCard>
   </section>
 </template>

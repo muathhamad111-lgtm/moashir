@@ -3,6 +3,7 @@ import { computed, onMounted, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useRouter } from 'vue-router'
 import ListToolbar from '@/components/data-list/ListToolbar.vue'
+import DataListCard from '@/components/data-list/DataListCard.vue'
 import StatsCards from '@/components/data-list/StatsCards.vue'
 import Pagination from '@/components/data-list/Pagination.vue'
 import BaseButton from '@/components/ui/BaseButton.vue'
@@ -107,48 +108,54 @@ onMounted(regions.load)
 
     <StatsCards :stats="statCards" :loading="status === 'loading' && !stats" />
 
-    <ListToolbar
-      v-model:search="search"
-      :search-placeholder="t('entities.admin.searchPlaceholder')"
-      :filter-state="filters"
-    >
-      <template #filters="{ draft }">
-        <EntityListFilters
-          :filters="draft"
-          :region-options="regions.regionOptions.value"
-          :full="fullRecords || status !== 'success'"
+    <DataListCard>
+      <template #toolbar>
+        <ListToolbar
+          v-model:search="search"
+          :search-placeholder="t('entities.admin.searchPlaceholder')"
+          :filter-state="filters"
+        >
+          <template #filters="{ draft }">
+            <EntityListFilters
+              :filters="draft"
+              :region-options="regions.regionOptions.value"
+              :full="fullRecords || status !== 'success'"
+            />
+          </template>
+          <template v-if="can(PERMISSIONS.ENTITIES_EXPORT)" #export>
+            <BaseButton
+              variant="secondary"
+              size="sm"
+              icon="download"
+              :loading="exporting"
+              @click="exportCsv(exportParams)"
+            >
+              {{ t('entities.admin.export') }}
+            </BaseButton>
+          </template>
+        </ListToolbar>
+      </template>
+
+      <EntityTable
+        :items="items"
+        :status="status"
+        :error-message="errorMessage"
+        :full="fullRecords"
+        :empty-title="t('entities.admin.emptyTitle')"
+        :empty-message="t('entities.admin.emptyMessage')"
+        @retry="load"
+        @action="onAction"
+      />
+
+      <template #footer>
+        <Pagination
+          v-if="status === 'success' && paginator.pagination.lastPage > 1"
+          :page="paginator.pagination.page"
+          :last-page="paginator.pagination.lastPage"
+          @update:page="paginator.setPage($event)"
         />
       </template>
-      <template v-if="can(PERMISSIONS.ENTITIES_EXPORT)" #export>
-        <BaseButton
-          variant="secondary"
-          size="sm"
-          icon="download"
-          :loading="exporting"
-          @click="exportCsv(exportParams)"
-        >
-          {{ t('entities.admin.export') }}
-        </BaseButton>
-      </template>
-    </ListToolbar>
-
-    <EntityTable
-      :items="items"
-      :status="status"
-      :error-message="errorMessage"
-      :full="fullRecords"
-      :empty-title="t('entities.admin.emptyTitle')"
-      :empty-message="t('entities.admin.emptyMessage')"
-      @retry="load"
-      @action="onAction"
-    />
-
-    <Pagination
-      v-if="status === 'success' && paginator.pagination.lastPage > 1"
-      :page="paginator.pagination.page"
-      :last-page="paginator.pagination.lastPage"
-      @update:page="paginator.setPage($event)"
-    />
+    </DataListCard>
 
     <EntityActionsHost ref="actionsHost" @done="load" />
   </section>

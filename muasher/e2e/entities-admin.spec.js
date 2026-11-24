@@ -37,6 +37,14 @@ function seed(page, testInfo, user = SYSTEM_ADMIN) {
 }
 
 const rows = (page) => page.locator('.table:not(.table--loading) tbody .table__row')
+
+// Picks a row action whether it sits in the row or in the row's «⋮» menu.
+async function rowAction(row, key) {
+  const inline = row.locator(`.row-actions > * [data-action="${key}"]`)
+  if (await inline.count()) return inline.click()
+  await row.locator('.row-actions__more > button').click()
+  await row.page().locator(`[role="menuitem"][data-action="${key}"]`).click()
+}
 const dialog = (page) => page.locator('.modal__panel')
 
 function useTallViewport(page) {
@@ -90,11 +98,12 @@ test('deactivation needs a reason and reactivation follows the separate permissi
 }, testInfo) => {
   await seed(page, testInfo)
   await page.goto('/admin/entities')
-  await rows(page)
-    .filter({ hasText: isEn(testInfo) ? 'Athar' : 'أثر' })
-    .first()
-    .locator('.row-actions [data-action="deactivate"]')
-    .click()
+  await rowAction(
+    rows(page)
+      .filter({ hasText: isEn(testInfo) ? 'Athar' : 'أثر' })
+      .first(),
+    'deactivate',
+  )
   await dialog(page).locator('[name="reason"]').fill('short')
   await dialog(page).locator('button[type="submit"]').click()
   await expect(dialog(page).locator('.field__error')).toBeVisible()
@@ -256,7 +265,7 @@ test('staff approve a registration under review and reject a pending one, with �
   await review.locator('.row-actions [data-action="approve"]').click()
   await dialog(page).locator('button[type="submit"]').click()
   await expect(page.locator('.toast--success')).toBeVisible()
-  await expect(review.locator('.row-actions [data-action="deactivate"]')).toBeVisible()
+  await expect(review.locator('.row-actions [data-action="edit"]')).toBeVisible()
 
   const pending = rows(page).filter({ hasText: isEn(testInfo) ? 'Suqya' : 'سقيا' })
   await pending.locator('.row-actions [data-action="reject"]').click()

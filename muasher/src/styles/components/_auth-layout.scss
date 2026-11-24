@@ -255,6 +255,11 @@ $auth-two-columns: 28rem;
   }
 }
 
+.lp-auth .field__label {
+  // The resting hint fits the card on one line (sign-in, OTP, register, forgot password).
+  font-size: var(--fs-sm);
+}
+
 .lp-auth .auth-form__title {
   font-size: clamp(1.5rem, 2.4vw, 1.9rem);
   color: var(--lp-ink);

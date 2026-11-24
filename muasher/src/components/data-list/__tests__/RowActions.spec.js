@@ -1,8 +1,11 @@
 import { describe, expect, it } from 'vitest'
 import { flushPromises, mount } from '@vue/test-utils'
 import RowActions from '@/components/data-list/RowActions.vue'
-import { USER_ACTIONS, USER_INLINE_ACTIONS } from '@/constants/users'
+import { USER_ACTIONS } from '@/constants/users'
 import { createTestGlobals } from '@/test-utils'
+
+// The row buttons a list names first; RowActions keeps at most two of them.
+const INLINE_KEYS = [USER_ACTIONS.EDIT, USER_ACTIONS.SUSPEND, USER_ACTIONS.ACTIVATE]
 
 const ACTIONS = [
   { key: USER_ACTIONS.EDIT, label: 'تعديل المستخدم', icon: 'pen' },
@@ -18,7 +21,7 @@ const ACTIONS = [
 
 function mountActions(actions = ACTIONS) {
   return mount(RowActions, {
-    props: { actions, name: 'Sara', inlineKeys: USER_INLINE_ACTIONS },
+    props: { actions, name: 'Sara', inlineKeys: INLINE_KEYS },
     global: createTestGlobals(),
     attachTo: document.body,
   })
@@ -32,6 +35,22 @@ describe('RowActions', () => {
     expect(inline[0].attributes('aria-label')).toBe('تعديل المستخدم — Sara')
     expect(inline[1].classes()).toContain('row-actions__button--danger')
     expect(inline[0].classes()).not.toContain('row-actions__button--danger')
+    wrapper.unmount()
+  })
+
+  it('keeps at most two icon buttons in the row, the rest in the menu', () => {
+    const wrapper = mount(RowActions, {
+      props: {
+        actions: ACTIONS,
+        name: 'Sara',
+        inlineKeys: ACTIONS.map((action) => action.key),
+      },
+      global: createTestGlobals(),
+      attachTo: document.body,
+    })
+    const inline = wrapper.findAll('.row-actions > .tooltip button')
+    expect(inline.map((button) => button.attributes('data-action'))).toEqual(['edit', 'suspend'])
+    expect(wrapper.find('.row-actions__more').exists()).toBe(true)
     wrapper.unmount()
   })
 

@@ -225,9 +225,7 @@ test.describe('admin lists at 1440px', () => {
     await expect(
       page.locator(`${ROWS} .users-page__identity .users-page__email`).first(),
     ).toBeVisible()
-    await expect(
-      page.locator(`${ROWS} .users-page__state .users-page__last-login`).first(),
-    ).toBeVisible()
+    await expect(page.locator(`${ROWS} .users-page__state .table__meta`).first()).toBeVisible()
   })
 })
 

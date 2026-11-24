@@ -5,7 +5,10 @@ import AppMenu from '@/components/ui/AppMenu.vue'
 import BaseButton from '@/components/ui/BaseButton.vue'
 import Tooltip from '@/components/ui/Tooltip.vue'
 
-// The listed actions sit in the row as icon buttons; every other action stays in the "more" menu.
+// At most two of the listed actions sit in the row as icon buttons; every other action stays in the
+// "more" menu, so a row never grows a strip of icons.
+const MAX_INLINE = 2
+
 const props = defineProps({
   actions: { type: Array, required: true },
   name: { type: String, required: true },
@@ -16,11 +19,15 @@ const emit = defineEmits(['select'])
 
 const { t } = useI18n()
 
+// In the order of `inlineKeys`, so the list decides which two come first.
 const inlineActions = computed(() =>
-  props.actions.filter((action) => props.inlineKeys.includes(action.key)),
+  props.inlineKeys
+    .map((key) => props.actions.find((action) => action.key === key))
+    .filter(Boolean)
+    .slice(0, MAX_INLINE),
 )
 const menuActions = computed(() =>
-  props.actions.filter((action) => !props.inlineKeys.includes(action.key)),
+  props.actions.filter((action) => !inlineActions.value.includes(action)),
 )
 </script>
 

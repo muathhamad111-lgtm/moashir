@@ -3,17 +3,16 @@ import { computed, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useRouter } from 'vue-router'
 import ListToolbar from '@/components/data-list/ListToolbar.vue'
+import DataListCard from '@/components/data-list/DataListCard.vue'
 import DataTable from '@/components/data-list/DataTable.vue'
 import Pagination from '@/components/data-list/Pagination.vue'
 import StatsCards from '@/components/data-list/StatsCards.vue'
 import BaseButton from '@/components/ui/BaseButton.vue'
-import Badge from '@/components/ui/Badge.vue'
 import AppSelect from '@/components/form/AppSelect.vue'
 import ReasonDialog from '@/components/modal/ReasonDialog.vue'
 import UserForm from '@/components/users/UserForm.vue'
 import UserDetailsDialog from '@/components/users/UserDetailsDialog.vue'
 import UserStatusBadge from '@/components/users/UserStatusBadge.vue'
-import NdaStatusCell from '@/components/nda/NdaStatusCell.vue'
 import RowActions from '@/components/data-list/RowActions.vue'
 import UserPathAccessCell from '@/components/users/UserPathAccessCell.vue'
 import AssessorQualificationsDialog from '@/components/users/AssessorQualificationsDialog.vue'
@@ -33,7 +32,7 @@ import { useUserStatCards } from '@/composables/useUserStatCards'
 import { useUsersExport } from '@/composables/useUsersExport'
 import { usePermissions } from '@/composables/usePermissions'
 import { usersService } from '@/services/usersService'
-import { formatDate } from '@/utils/datetime'
+import { formatRiyadhDate, formatRiyadhTime } from '@/utils/datetime'
 import { ROUTE_NAMES } from '@/constants/routeNames'
 import { accessFor } from '@/constants/routeAccess'
 import { PERMISSIONS } from '@/constants/permissionKeys'
@@ -83,17 +82,26 @@ const router = useRouter()
 
 const columns = computed(() => [
   { key: 'name', label: t('users.columns.user') },
-  { key: 'role', label: t('users.columns.role') },
-  { key: 'paths', label: t('users.columns.paths') },
-  { key: 'status', label: t('users.columns.status') },
-  ...(canManage.value ? [{ key: 'actions', label: t('components.actions.label') }] : []),
+  { key: 'role', label: t('users.columns.role'), width: 'lg' },
+  { key: 'paths', label: t('users.columns.paths'), width: 'md' },
+  { key: 'status', label: t('users.columns.status'), width: 'lg' },
+  ...(canManage.value
+    ? [{ key: 'actions', label: t('components.actions.label'), width: 'sm' }]
+    : []),
 ])
 
+// The last sign-in as a date and a time; the column's tooltip names it.
 function lastLoginLabel(value) {
   if (!value) return t('users.lastLogin.never')
-  return t('users.lastLogin.at', {
-    when: formatDate(value, locale.value, { dateStyle: 'medium', timeStyle: 'short' }),
-  })
+  return `${formatRiyadhDate(value, locale.value)} ${formatRiyadhTime(value, locale.value)}`
+}
+
+function lastLoginTitle(value) {
+  return value ? t('users.lastLogin.at', { when: lastLoginLabel(value) }) : undefined
+}
+
+function rolesText(roles) {
+  return roles.map((roleCode) => roleLabel(roleCode)).join(t('common.listSeparator'))
 }
 
 const formOpen = ref(false)
@@ -163,97 +171,102 @@ function onAction(key, row) {
 
     <StatsCards :stats="statCards" :loading="status === 'loading' && !stats" />
 
-    <ListToolbar
-      v-model:search="search"
-      :search-placeholder="t('users.index.searchPlaceholder')"
-      :filter-state="filters"
-    >
-      <template #filters="{ draft }">
-        <AppSelect
-          :model-value="draft.filters.role"
-          :options="roleFilterOptions"
-          :label="t('users.filters.role')"
-          @update:model-value="draft.setFilter('role', $event)"
-        />
-        <AppSelect
-          :model-value="draft.filters.status"
-          :options="statusFilterOptions"
-          :label="t('users.filters.status')"
-          @update:model-value="draft.setFilter('status', $event)"
-        />
-        <AppSelect
-          :model-value="draft.filters.nda"
-          :options="ndaFilterOptions"
-          :label="t('nda.users.filter')"
-          @update:model-value="draft.setFilter('nda', $event)"
-        />
-      </template>
-      <template v-if="can(PERMISSIONS.USERS_EXPORT)" #export>
-        <BaseButton
-          variant="secondary"
-          size="sm"
-          icon="download"
-          :loading="exporter.exporting.value"
-          :disabled="status !== 'success'"
-          @click="exporter.exportCsv(filters.toParams())"
+    <DataListCard>
+      <template #toolbar>
+        <ListToolbar
+          v-model:search="search"
+          :search-placeholder="t('users.index.searchPlaceholder')"
+          :filter-state="filters"
         >
-          {{ t('users.index.export') }}
-        </BaseButton>
+          <template #filters="{ draft }">
+            <AppSelect
+              :model-value="draft.filters.role"
+              :options="roleFilterOptions"
+              :label="t('users.filters.role')"
+              @update:model-value="draft.setFilter('role', $event)"
+            />
+            <AppSelect
+              :model-value="draft.filters.status"
+              :options="statusFilterOptions"
+              :label="t('users.filters.status')"
+              @update:model-value="draft.setFilter('status', $event)"
+            />
+            <AppSelect
+              :model-value="draft.filters.nda"
+              :options="ndaFilterOptions"
+              :label="t('nda.users.filter')"
+              @update:model-value="draft.setFilter('nda', $event)"
+            />
+          </template>
+          <template v-if="can(PERMISSIONS.USERS_EXPORT)" #export>
+            <BaseButton
+              variant="secondary"
+              size="sm"
+              icon="download"
+              :loading="exporter.exporting.value"
+              :disabled="status !== 'success'"
+              @click="exporter.exportCsv(filters.toParams())"
+            >
+              {{ t('users.index.export') }}
+            </BaseButton>
+          </template>
+        </ListToolbar>
       </template>
-    </ListToolbar>
 
-    <DataTable
-      :columns="columns"
-      :items="items"
-      :status="status"
-      :error-message="errorMessage"
-      :empty-title="t('users.index.emptyTitle')"
-      :empty-message="t('users.index.emptyMessage')"
-      @retry="load"
-    >
-      <template v-if="canManage" #empty-action>
-        <BaseButton variant="primary" icon="user" @click="openCreate">{{
-          t('users.index.add')
-        }}</BaseButton>
-      </template>
-      <template #cell-name="{ item }">
-        <span class="users-page__identity">
-          <span class="users-page__name">{{ item.name }}</span>
-          <a class="users-page__email" :href="`mailto:${item.email}`" dir="ltr">{{ item.email }}</a>
-        </span>
-      </template>
-      <template #cell-role="{ item }">
-        <span class="users-page__roles">
-          <Badge v-for="roleCode in item.roles" :key="roleCode" variant="info">{{
-            roleLabel(roleCode)
-          }}</Badge>
-        </span>
-      </template>
-      <template #cell-paths="{ item }"><UserPathAccessCell :user="item" /></template>
-      <template #cell-status="{ item }">
-        <span class="users-page__state">
-          <UserStatusBadge :status="item.status" />
-          <NdaStatusCell :status="item.ndaStatus" :version="ndaMeta.currentVersion" labelled />
-          <span class="users-page__last-login">{{ lastLoginLabel(item.lastLoginAt) }}</span>
-        </span>
-      </template>
-      <template #cell-actions="{ item }">
-        <RowActions
-          :actions="actions.actionsFor(item)"
-          :name="item.name"
-          :inline-keys="USER_INLINE_ACTIONS"
-          @select="onAction($event, item)"
+      <DataTable
+        :columns="columns"
+        :items="items"
+        :status="status"
+        :error-message="errorMessage"
+        :empty-title="t('users.index.emptyTitle')"
+        :empty-message="t('users.index.emptyMessage')"
+        @retry="load"
+      >
+        <template v-if="canManage" #empty-action>
+          <BaseButton variant="primary" icon="user" @click="openCreate">{{
+            t('users.index.add')
+          }}</BaseButton>
+        </template>
+        <template #cell-name="{ item }">
+          <span class="users-page__identity">
+            <span class="users-page__name">{{ item.name }}</span>
+            <a class="users-page__email" :href="`mailto:${item.email}`" dir="ltr">{{
+              item.email
+            }}</a>
+          </span>
+        </template>
+        <template #cell-role="{ item }">
+          <span class="users-page__roles">{{ rolesText(item.roles) }}</span>
+        </template>
+        <template #cell-paths="{ item }"><UserPathAccessCell :user="item" /></template>
+        <template #cell-status="{ item }">
+          <span class="users-page__state">
+            <UserStatusBadge :status="item.status" />
+            <span class="table__meta" :title="lastLoginTitle(item.lastLoginAt)">{{
+              lastLoginLabel(item.lastLoginAt)
+            }}</span>
+          </span>
+        </template>
+        <template #cell-actions="{ item }">
+          <RowActions
+            :actions="actions.actionsFor(item)"
+            :name="item.name"
+            :inline-keys="USER_INLINE_ACTIONS"
+            @select="onAction($event, item)"
+          />
+        </template>
+      </DataTable>
+
+      <template #footer>
+        <Pagination
+          v-if="status === 'success' && pagination.lastPage > 1"
+          :page="pagination.page"
+          :last-page="pagination.lastPage"
+          :disabled="status === 'loading'"
+          @update:page="setPage($event)"
         />
       </template>
-    </DataTable>
-
-    <Pagination
-      v-if="status === 'success' && pagination.lastPage > 1"
-      :page="pagination.page"
-      :last-page="pagination.lastPage"
-      :disabled="status === 'loading'"
-      @update:page="setPage($event)"
-    />
+    </DataListCard>
 
     <UserForm
       v-if="canManage"

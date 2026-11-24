@@ -14,7 +14,7 @@ const FILTER_STATUSES = [S.PENDING, S.APPROVED, S.PARTIALLY_APPROVED, S.REJECTED
 /** The staff queue of entity profile change requests and the request open for review. */
 export function useProfileChangeReviews() {
   const { t, locale } = useI18n()
-  const filters = useFilters({ status: S.PENDING })
+  const filters = useFilters({ status: S.PENDING }, { defaults: { status: S.PENDING } })
   const paginator = usePagination({ perPage: 10 })
   const table = useTable({
     fetcher: (params) => profileChangeRequestsService.list(params),

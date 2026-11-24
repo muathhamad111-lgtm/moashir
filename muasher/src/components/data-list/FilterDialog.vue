@@ -3,6 +3,7 @@ import { computed, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import BaseModal from '@/components/modal/BaseModal.vue'
 import BaseButton from '@/components/ui/BaseButton.vue'
+import AppIcon from '@/components/ui/AppIcon.vue'
 
 const props = defineProps({
   activeCount: { type: Number, default: 0 },
@@ -39,6 +40,7 @@ function apply() {
       aria-haspopup="dialog"
       @click="open"
     >
+      <AppIcon name="sliders" />
       <span>{{ t('dataList.filter.button') }}</span>
       <span v-if="activeCount" class="filter-dialog__count" aria-hidden="true">{{
         activeCount

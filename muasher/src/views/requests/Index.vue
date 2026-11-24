@@ -2,9 +2,9 @@
 import { computed, onMounted, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useHead } from '@unhead/vue'
-import Card from '@/components/ui/Card.vue'
 import StatsCards from '@/components/data-list/StatsCards.vue'
 import ListToolbar from '@/components/data-list/ListToolbar.vue'
+import DataListCard from '@/components/data-list/DataListCard.vue'
 import Pagination from '@/components/data-list/Pagination.vue'
 import RequestQueueFilters from '@/components/requests/RequestQueueFilters.vue'
 import RequestQueueTable from '@/components/requests/RequestQueueTable.vue'
@@ -85,25 +85,27 @@ const filterState = {
       :active="stage"
       @select="stage = $event"
     />
-    <Card>
-      <ListToolbar
-        v-model:search="searchInput"
-        :search-placeholder="t('requests.index.searchPlaceholder')"
-        :filter-state="filterState"
-      >
-        <template #filters="{ draft }">
-          <RequestQueueFilters
-            :path="path"
-            :filters="draft.filters"
-            :sort="draft.sort.value"
-            :assessors="assessors"
-            :cycles="cycles"
-            :stage-counts="stageCounts"
-            @filter="draft.setFilter"
-            @sort="draft.setSort"
-          />
-        </template>
-      </ListToolbar>
+    <DataListCard>
+      <template #toolbar>
+        <ListToolbar
+          v-model:search="searchInput"
+          :search-placeholder="t('requests.index.searchPlaceholder')"
+          :filter-state="filterState"
+        >
+          <template #filters="{ draft }">
+            <RequestQueueFilters
+              :path="path"
+              :filters="draft.filters"
+              :sort="draft.sort.value"
+              :assessors="assessors"
+              :cycles="cycles"
+              :stage-counts="stageCounts"
+              @filter="draft.setFilter"
+              @sort="draft.setSort"
+            />
+          </template>
+        </ListToolbar>
+      </template>
       <RequestQueueTable
         :items="items"
         :status="status"
@@ -114,13 +116,15 @@ const filterState = {
         @retry="load"
         @assign="openAssign"
       />
-      <Pagination
-        v-if="status === 'success' && pagination.lastPage > 1"
-        :page="pagination.page"
-        :last-page="pagination.lastPage"
-        @update:page="setPage($event)"
-      />
-    </Card>
+      <template #footer>
+        <Pagination
+          v-if="status === 'success' && pagination.lastPage > 1"
+          :page="pagination.page"
+          :last-page="pagination.lastPage"
+          @update:page="setPage($event)"
+        />
+      </template>
+    </DataListCard>
     <AssignAssessorDialog
       v-if="assignment"
       v-model="assignOpen"

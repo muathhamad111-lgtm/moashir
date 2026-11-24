@@ -3,9 +3,9 @@ import { computed, inject } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useRoute, RouterLink } from 'vue-router'
 import { useHead } from '@unhead/vue'
-import Card from '@/components/ui/Card.vue'
 import StatsCards from '@/components/data-list/StatsCards.vue'
 import ListToolbar from '@/components/data-list/ListToolbar.vue'
+import DataListCard from '@/components/data-list/DataListCard.vue'
 import Pagination from '@/components/data-list/Pagination.vue'
 import AssessmentNotice from '@/components/assessment/AssessmentNotice.vue'
 import CycleStatusBadge from '@/components/award/CycleStatusBadge.vue'
@@ -116,22 +116,24 @@ const filterState = { filters: filters.filters, setFilter, sort: filters.sort, s
       :message="t(`filtering.window.${windowState}.message`)"
     />
     <StatsCards :stats="statCards" :loading="!summary && status === 'loading'" />
-    <Card>
-      <ListToolbar
-        v-model:search="searchInput"
-        :search-placeholder="t('filtering.queue.searchPlaceholder')"
-        :filter-state="filterState"
-      >
-        <template #filters="{ draft }">
-          <FilteringFilters
-            :filters="draft.filters"
-            :sort="draft.sort.value"
-            :regions="cycle?.regions ?? []"
-            @filter="draft.setFilter"
-            @sort="draft.setSort"
-          />
-        </template>
-      </ListToolbar>
+    <DataListCard>
+      <template #toolbar>
+        <ListToolbar
+          v-model:search="searchInput"
+          :search-placeholder="t('filtering.queue.searchPlaceholder')"
+          :filter-state="filterState"
+        >
+          <template #filters="{ draft }">
+            <FilteringFilters
+              :filters="draft.filters"
+              :sort="draft.sort.value"
+              :regions="cycle?.regions ?? []"
+              @filter="draft.setFilter"
+              @sort="draft.setSort"
+            />
+          </template>
+        </ListToolbar>
+      </template>
       <FilteringTable
         :cycle-id="cycleId"
         :items="items"
@@ -139,12 +141,14 @@ const filterState = { filters: filters.filters, setFilter, sort: filters.sort, s
         :error-message="errorMessage"
         @retry="load"
       />
-      <Pagination
-        v-if="status === 'success' && pagination.lastPage > 1"
-        :page="pagination.page"
-        :last-page="pagination.lastPage"
-        @update:page="setPage($event)"
-      />
-    </Card>
+      <template #footer>
+        <Pagination
+          v-if="status === 'success' && pagination.lastPage > 1"
+          :page="pagination.page"
+          :last-page="pagination.lastPage"
+          @update:page="setPage($event)"
+        />
+      </template>
+    </DataListCard>
   </section>
 </template>

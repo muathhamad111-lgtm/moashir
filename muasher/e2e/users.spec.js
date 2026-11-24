@@ -68,7 +68,7 @@ test('keeps every page action together in the header, with the invite as the pri
   await expect(
     actions.getByRole('link', { name: /roles & permissions|الأدوار والصلاحيات/i }),
   ).toBeVisible()
-  await expect(actions.getByRole('link', { name: /identity|الهوية/i })).toBeVisible()
+  await expect(actions.getByRole('link', { name: /data change|تعديل بيانات/i })).toBeVisible()
   const invite = actions.getByRole('button', { name: /invite user|دعوة مستخدم/i })
   await expect(invite).toHaveClass(/btn--primary/)
   await expect(actions.locator('> *').last()).toHaveClass(/btn--primary/)
