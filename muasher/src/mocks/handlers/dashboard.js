@@ -51,6 +51,12 @@ function actionItemsOf(user) {
   ]
 }
 
+// The overview period fields the API reads.
+function overviewQueryOf(params) {
+  const fields = ['period', 'year', 'month', 'quarter', 'from', 'to']
+  return Object.fromEntries(fields.map((field) => [field, params.get(field)]))
+}
+
 export const dashboardHandlers = [
   http.get('/api/v1/dashboard/action-center', async () => {
     await delay(LATENCY_MS)
@@ -93,7 +99,7 @@ export const dashboardHandlers = [
     if (!user.superAdmin && !sessionCan(EXECUTIVE_PERMISSION))
       return errorResponse(403, 'forbidden', 'This action is unauthorized.')
     const params = new URL(request.url).searchParams
-    const query = { period: params.get('period'), from: params.get('from'), to: params.get('to') }
+    const query = overviewQueryOf(params)
     const errors = overviewErrors(query)
     if (Object.keys(errors).length)
       return errorResponse(422, 'validation_failed', Object.values(errors)[0][0], errors)
@@ -106,7 +112,7 @@ export const dashboardHandlers = [
     if (!user.roles.includes(ASSESSOR_ROLE))
       return errorResponse(403, 'forbidden', 'This action is unauthorized.')
     const params = new URL(request.url).searchParams
-    const query = { period: params.get('period'), from: params.get('from'), to: params.get('to') }
+    const query = overviewQueryOf(params)
     const errors = overviewErrors(query)
     if (Object.keys(errors).length)
       return errorResponse(422, 'validation_failed', Object.values(errors)[0][0], errors)

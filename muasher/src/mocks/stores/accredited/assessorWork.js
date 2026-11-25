@@ -14,7 +14,7 @@ import { assertBeforeCommittee } from '../award/completionWindow'
 import { recordSnapshot } from './resultSnapshots'
 import { writeSummary } from '../insights/assessorSummaries'
 import { issueOnCompletion } from '../requestCertificates'
-import { recordScoreVersions } from './scoreRounds'
+import { recordScoreVersions, unitsAwaitingRescore } from './scoreRounds'
 import {
   isPlainObject,
   isPositiveInteger,
@@ -333,6 +333,8 @@ export function completeReview(user, record, body) {
   if (record.criteriaUpdatePendingSince !== null) throw assessmentReject.criteriaUpdateInProgress()
   const missing = missingUnits(record)
   if (missing.length) throw assessmentReject.scoresIncomplete(missing)
+  const awaiting = unitsAwaitingRescore(record)
+  if (awaiting.length) throw assessmentReject.roundRescoreMissing(awaiting)
   const at = nowIso()
   recordSnapshot(record)
   Object.assign(activeAssignment(record), { status: 'completed', endedAt: at })

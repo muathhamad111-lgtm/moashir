@@ -300,6 +300,32 @@ describe('ReviewNotices', () => {
     )
   })
 
+  // Production report 2026-11-25: a completed request kept the open-request message.
+  it('tells a finished review apart from an open one', () => {
+    const finished = render(ReviewNotices, { review: review('completed', 'read_only') }).text()
+    expect(finished).toContain('Assessment complete')
+    expect(finished).not.toContain('while it is open')
+  })
+
+  it('lists the sub-criteria waiting for this round before the assessment can be completed', () => {
+    const wrapper = render(ReviewNotices, {
+      review: review('under-review'),
+      awaitingCodes: ['M1.1', 'M1.2'],
+    })
+    expect(wrapper.find('[data-testid="review-awaiting-rescore"]').text()).toContain(
+      '2 items wait for this round’s result',
+    )
+    expect(wrapper.text()).toContain('M1.1, M1.2')
+    expect(
+      render(ReviewNotices, {
+        review: review('under-review', 'read_only'),
+        awaitingCodes: ['M1.1'],
+      })
+        .find('[data-testid="review-awaiting-rescore"]')
+        .exists(),
+    ).toBe(false)
+  })
+
   it('offers the score override to the Super Admin on a published result only', () => {
     expect(
       render(

@@ -8,32 +8,19 @@ import AssessorOverviewCards from './AssessorOverviewCards.vue'
 import AssessorOverviewCharts from './AssessorOverviewCharts.vue'
 import { usePeriodOverview } from '@/composables/usePeriodOverview'
 import { dashboardService } from '@/services/dashboardService'
-import { longDayLabel } from '@/utils/charts/bucketLabels'
+import { useOverviewRangeText } from '@/composables/useOverviewRangeText'
 
 // The assessor's board: the live figures of the board summary, then the period figures and charts.
 defineProps({
   liveCards: { type: Array, required: true },
 })
 
-const { t, locale } = useI18n()
+const { t } = useI18n()
 const state = usePeriodOverview((query) => dashboardService.getAssessorOverview(query))
-const { overview, status, errorMessage, fieldErrors, period, customFrom, customTo } = state
+const { overview, status, errorMessage, fieldErrors, period, selection, customFrom, customTo } =
+  state
 
-function rangeText(window) {
-  return window?.from
-    ? t('dashboard.overview.range', {
-        from: longDayLabel(window.from, locale.value),
-        to: longDayLabel(window.to, locale.value),
-      })
-    : ''
-}
-
-const periodText = computed(() => rangeText(overview.value?.period))
-const previousText = computed(() =>
-  overview.value
-    ? t('dashboard.overview.comparedWith', { range: rangeText(overview.value.previousPeriod) })
-    : '',
-)
+const { periodText, previousText } = useOverviewRangeText(overview)
 const isInvalid = computed(() => Object.keys(fieldErrors.value).length > 0)
 
 onMounted(state.load)
@@ -49,10 +36,12 @@ onMounted(state.load)
       <div class="executive-overview__tools">
         <OverviewPeriodPicker
           :period="period"
+          :selection="selection"
           :from="customFrom"
           :to="customTo"
           :errors="fieldErrors"
           @preset="state.choosePreset"
+          @calendar="state.chooseCalendar"
           @custom="state.applyCustom"
         />
       </div>

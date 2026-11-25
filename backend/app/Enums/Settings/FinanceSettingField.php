@@ -25,11 +25,16 @@ enum FinanceSettingField: string
         };
     }
 
-    public function permission(): PermissionKey
+    /**
+     * The permission that lets a role edit the field. Null: no permission does; the statutory VAT rate is fixed and
+     * only the Super Admin (who passes every gate) may change it, with a reason (operator decision 2026-11-25).
+     */
+    public function permission(): ?PermissionKey
     {
         return match ($this) {
+            self::VatRate => null,
+            self::OrderValidityMinutes => PermissionKey::SettingsAssessmentManage,
             self::VatRegistrationNumber => PermissionKey::SettingsPaymentManage,
-            default => PermissionKey::SettingsAssessmentManage,
         };
     }
 

@@ -42,11 +42,13 @@ export function usePeriodOverview(fetchOverview) {
     errorMessage,
     fieldErrors,
     period: query.period,
+    selection: query.selection,
     customFrom: query.customFrom,
     customTo: query.customTo,
     isCustom: query.isCustom,
     load,
     choosePreset: query.choosePreset,
+    chooseCalendar: query.chooseCalendar,
     applyCustom: query.applyCustom,
   }
 }

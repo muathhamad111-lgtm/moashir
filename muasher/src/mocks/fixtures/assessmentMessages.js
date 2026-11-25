@@ -33,6 +33,14 @@ export const assessmentMessages = {
     ar: 'قيّم جميع البنود قبل إرسال التقييم الذاتي.',
     en: 'Score every item before submitting the self assessment.',
   },
+  'scores.round_incomplete': {
+    ar: 'قيّم من جديد كل بند استكملته الجهة في هذه الجولة أو أبقِ نتيجته نفسها قبل إكمال التقييم.',
+    en: 'Score again every item the entity completed in this round, or keep its same result, before completing the assessment.',
+  },
+  'scores.round_item_missing': {
+    ar: 'هذا البند ينتظر نتيجة هذه الجولة.',
+    en: 'This item waits for a result in this round.',
+  },
   'scores.item_missing': {
     ar: 'هذا البند لم يُقيَّم بعد.',
     en: 'This item has no score yet.',

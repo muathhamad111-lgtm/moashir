@@ -46,7 +46,7 @@ it('keeps the overview to holders of the executive dashboard permission', functi
     overviewOf(superAdmin())->assertJsonPath('data.period.preset', 'month');
 });
 
-it('runs a preset from its first day to today, compared with the same length just before', function (string $preset, string $from, array $previous, string $bucket, int $buckets): void {
+it('runs the current month, quarter or year to today, compared with the same span of the previous one', function (string $preset, string $from, array $previous, string $bucket, int $buckets): void {
     $response = overviewOf(systemAdmin(), 'period='.$preset);
 
     expect($response->json('data.period'))->toBe(['from' => $from, 'to' => '2026-11-17', 'preset' => $preset])
@@ -54,9 +54,9 @@ it('runs a preset from its first day to today, compared with the same length jus
         ->and($response->json('data.trends.bucket'))->toBe($bucket)
         ->and($response->json('data.trends.buckets'))->toHaveCount($buckets);
 })->with([
-    'month' => ['month', '2026-11-01', ['from' => '2026-10-15', 'to' => '2026-10-31'], 'day', 17],
-    'quarter' => ['quarter', '2026-10-01', ['from' => '2026-08-14', 'to' => '2026-09-30'], 'week', 8],
-    'year' => ['year', '2026-01-01', ['from' => '2025-02-14', 'to' => '2025-12-31'], 'month', 11],
+    'month' => ['month', '2026-11-01', ['from' => '2026-10-01', 'to' => '2026-10-17', 'basis' => 'elapsed_span'], 'day', 17],
+    'quarter' => ['quarter', '2026-10-01', ['from' => '2026-07-01', 'to' => '2026-08-17', 'basis' => 'elapsed_span'], 'week', 8],
+    'year' => ['year', '2026-01-01', ['from' => '2025-01-01', 'to' => '2025-11-17', 'basis' => 'elapsed_span'], 'month', 11],
 ]);
 
 it('counts registrations and collections inside the period and the previous one, on Riyadh days', function (): void {
@@ -142,15 +142,44 @@ it('accepts a custom period and refuses a malformed one', function (): void {
 
     $this->getJson(DASHBOARD_OVERVIEW.'?period=custom&from=2026-09-01&to=2026-09-30')->assertOk()
         ->assertJsonPath('data.period', ['from' => '2026-09-01', 'to' => '2026-09-30', 'preset' => 'custom'])
-        ->assertJsonPath('data.previous_period', ['from' => '2026-08-02', 'to' => '2026-08-31']);
+        ->assertJsonPath('data.previous_period', ['from' => '2026-08-02', 'to' => '2026-08-31', 'basis' => 'preceding_days']);
 
     $this->getJson(DASHBOARD_OVERVIEW.'?period=custom')->assertUnprocessable()->assertJsonValidationErrors(['from', 'to']);
     $this->getJson(DASHBOARD_OVERVIEW.'?period=custom&from=2026-09-30&to=2026-09-01')->assertUnprocessable()->assertJsonValidationErrors(['to']);
     $this->getJson(DASHBOARD_OVERVIEW.'?period=custom&from=2026-11-01&to=2026-11-18')->assertUnprocessable()->assertJsonValidationErrors(['to']);
-    $this->getJson(DASHBOARD_OVERVIEW.'?period=custom&from=2020-01-01&to=2026-11-17')->assertUnprocessable()->assertJsonValidationErrors(['to']);
+    $this->getJson(DASHBOARD_OVERVIEW.'?period=custom&from=2025-12-31&to=2026-01-05')->assertUnprocessable()->assertJsonValidationErrors(['from']);
     $this->getJson(DASHBOARD_OVERVIEW.'?period=custom&from=01-09-2026&to=2026-09-30')->assertUnprocessable()->assertJsonValidationErrors(['from']);
     $this->getJson(DASHBOARD_OVERVIEW.'?period=decade')->assertUnprocessable()->assertJsonValidationErrors(['period']);
 });
+
+it('refuses a custom period longer than the longest window', function (): void {
+    config(['moashir.dashboard.first_month' => '2020-01']);
+
+    signIn(systemAdmin())->getJson(DASHBOARD_OVERVIEW.'?period=custom&from=2020-01-01&to=2026-11-17')
+        ->assertUnprocessable()->assertJsonValidationErrors(['to']);
+});
+
+it('shows a chosen past month, quarter or year in full, compared with the previous one in full', function (string $query, array $period, array $previous): void {
+    $response = overviewOf(systemAdmin(), $query);
+
+    expect($response->json('data.period'))->toMatchArray($period)
+        ->and($response->json('data.previous_period'))->toBe([...$previous, 'basis' => 'previous_full']);
+})->with([
+    'month' => ['period=month&year=2026&month=9', ['from' => '2026-09-01', 'to' => '2026-09-30'], ['from' => '2026-08-01', 'to' => '2026-08-31']],
+    'quarter' => ['period=quarter&year=2026&quarter=1', ['from' => '2026-01-01', 'to' => '2026-03-31'], ['from' => '2025-10-01', 'to' => '2025-12-31']],
+]);
+
+it('refuses a future period, one before the first month, or a half-given choice', function (string $query, string $field): void {
+    signIn(systemAdmin())->getJson(DASHBOARD_OVERVIEW.'?'.$query)->assertUnprocessable()->assertJsonValidationErrors([$field]);
+})->with([
+    'a future month' => ['period=month&year=2026&month=12', 'year'],
+    'a future year' => ['period=year&year=2027', 'year'],
+    'before the first month' => ['period=year&year=2025', 'year'],
+    'a year without its month' => ['period=month&year=2026', 'month'],
+    'a quarter out of range' => ['period=quarter&year=2026&quarter=5', 'quarter'],
+    'a month on a quarter' => ['period=quarter&year=2026&quarter=2&month=4', 'month'],
+    'a year on a custom range' => ['period=custom&from=2026-09-01&to=2026-09-30&year=2026', 'year'],
+]);
 
 it('builds the overview with a constant number of queries', function (): void {
     $admin = systemAdmin();

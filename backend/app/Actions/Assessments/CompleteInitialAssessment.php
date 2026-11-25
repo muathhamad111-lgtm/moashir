@@ -10,6 +10,7 @@ use App\Events\Assessments\InitialAssessmentCompleted;
 use App\Models\Assessments\Assessment;
 use App\Models\Identity\User;
 use App\Services\Assessments\AssigneeGuard;
+use App\Services\Assessments\CurrentRoundRescoreCheck;
 use App\Services\Assessments\InitialAssessmentFinalizer;
 use App\Services\Assessments\ReviewCompletenessCheck;
 use App\Services\Assessments\ReviewWriteGate;
@@ -21,6 +22,7 @@ final readonly class CompleteInitialAssessment
         private ReviewWriteGate $gate,
         private AssigneeGuard $assignee,
         private ReviewCompletenessCheck $completeness,
+        private CurrentRoundRescoreCheck $rescore,
         private InitialAssessmentFinalizer $finalizer,
     ) {}
 
@@ -29,7 +31,9 @@ final readonly class CompleteInitialAssessment
         return DB::transaction(function () use ($actor, $assessment, $reason): Assessment {
             $locked = $this->gate->enter($actor, $assessment, AdvancedAssessmentStatus::AwaitingFiltering, AssessmentVerb::Complete, $reason);
             $assignment = $this->assignee->assertActsOn($actor, $locked);
-            $snapshot = $this->finalizer->finalize($actor, $locked, $assignment, $this->completeness->assertComplete($locked));
+            $scored = $this->completeness->assertComplete($locked);
+            $this->rescore->assertRescored($locked, $scored->tree);
+            $snapshot = $this->finalizer->finalize($actor, $locked, $assignment, $scored);
 
             InitialAssessmentCompleted::dispatch($locked, $snapshot, $actor->id);
 

@@ -1,43 +1,26 @@
 <script setup>
 import { computed, onMounted } from 'vue'
 import { useI18n } from 'vue-i18n'
-import BaseButton from '@/components/ui/BaseButton.vue'
 import PageLoading from '@/components/feedback/PageLoading.vue'
 import ErrorState from '@/components/feedback/ErrorState.vue'
 import OverviewPeriodPicker from './OverviewPeriodPicker.vue'
 import OverviewCards from './OverviewCards.vue'
 import OverviewCharts from './OverviewCharts.vue'
+import OverviewPrintButton from './OverviewPrintButton.vue'
 import { useExecutiveOverview } from '@/composables/useExecutiveOverview'
-import { longDayLabel } from '@/utils/charts/bucketLabels'
+import { useOverviewRangeText } from '@/composables/useOverviewRangeText'
 import { formatRiyadhDateTime } from '@/utils/datetime'
 
 const { t, locale } = useI18n()
 const state = useExecutiveOverview()
-const { overview, status, errorMessage, fieldErrors, period, customFrom, customTo } = state
+const { overview, status, errorMessage, fieldErrors, period, selection, customFrom, customTo } =
+  state
 
-function rangeText(window) {
-  return window?.from
-    ? t('dashboard.overview.range', {
-        from: longDayLabel(window.from, locale.value),
-        to: longDayLabel(window.to, locale.value),
-      })
-    : ''
-}
-
-const periodText = computed(() => rangeText(overview.value?.period))
-const previousText = computed(() =>
-  overview.value
-    ? t('dashboard.overview.comparedWith', { range: rangeText(overview.value.previousPeriod) })
-    : '',
-)
+const { periodText, previousText } = useOverviewRangeText(overview)
 const generatedAt = computed(() =>
   overview.value?.generatedAt ? formatRiyadhDateTime(overview.value.generatedAt, locale.value) : '',
 )
 const isInvalid = computed(() => Object.keys(fieldErrors.value).length > 0)
-
-function print() {
-  window.print()
-}
 
 onMounted(state.load)
 </script>
@@ -61,21 +44,15 @@ onMounted(state.load)
       <div class="executive-overview__tools">
         <OverviewPeriodPicker
           :period="period"
+          :selection="selection"
           :from="customFrom"
           :to="customTo"
           :errors="fieldErrors"
           @preset="state.choosePreset"
+          @calendar="state.chooseCalendar"
           @custom="state.applyCustom"
         />
-        <BaseButton
-          class="executive-overview__print"
-          variant="secondary"
-          icon="printer"
-          :disabled="status !== 'success'"
-          @click="print"
-        >
-          {{ t('dashboard.overview.print') }}
-        </BaseButton>
+        <OverviewPrintButton :disabled="status !== 'success'" />
       </div>
     </header>
 

@@ -32,13 +32,28 @@ export function useReviewProgress({ mains, units, scoreSheet, steps, rounds }) {
       return { ...station, awaiting, state }
     }),
   )
+  // The sub-criteria whose items still wait for this round's result: completing is refused until
+  // each is scored again or kept as it is (production report 2026-11-25).
+  const awaitingCodes = computed(() =>
+    mains.value.flatMap((main) =>
+      main.subs
+        .filter((sub) =>
+          subUnits(sub).some((unit) => isAwaitingRescore(rounds?.value, unit, sub.code)),
+        )
+        .map((sub) => sub.code),
+    ),
+  )
+  const awaitingTotal = computed(() =>
+    stations.value.reduce((total, station) => total + station.awaiting, 0),
+  )
   const missing = computed(
-    () => units.value.length - scoredCount(scoreSheet.sheet.values, units.value),
+    () =>
+      units.value.length - scoredCount(scoreSheet.sheet.values, units.value) + awaitingTotal.value,
   )
   const nextName = computed(() => {
     const next = mains.value[steps.position.value + 1]
     return next ? localizedText(next.name, locale.value) : ''
   })
 
-  return { stations, missing, nextName }
+  return { stations, missing, awaitingCodes, nextName }
 }

@@ -33,6 +33,20 @@ export function stagesFor(path) {
   return STAGES[path] ?? STAGES[ASSESSMENT_PATHS.ACCREDITED]
 }
 
+// The review is over once the request left the assessor's stages (completed, closed, or past the
+// initial assessment): the page then shows the final result, with nothing left to score.
+export function isReviewFinished(assessment) {
+  if (!assessment) return false
+  const stages = stagesFor(assessment.path)
+  const working = [
+    stages.awaiting,
+    stages.assigned,
+    stages.reviewing,
+    ACCREDITED_STATUSES.NEEDS_COMPLETION,
+  ]
+  return !working.includes(assessment.status)
+}
+
 export function isAdvancedPath(path) {
   return path === ASSESSMENT_PATHS.ADVANCED
 }

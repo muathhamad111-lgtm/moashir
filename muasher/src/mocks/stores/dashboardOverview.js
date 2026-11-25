@@ -1,10 +1,11 @@
 import {
-  DEFAULT_OVERVIEW_PERIOD,
   OVERVIEW_PERIODS,
+  OVERVIEW_FIRST_DAY,
   OVERVIEW_PRESETS,
 } from '@/constants/dashboardOverview'
 import { OVERVIEW_SNAPSHOT } from '../fixtures/overviewSnapshot'
 import { geographyFor } from './dashboardGeography'
+import { comparisonWindow, reportingWindow } from './reportingWindow'
 
 const DAY_MS = 86400000
 const MAX_DAYS = 1096
@@ -12,6 +13,7 @@ const DAILY_UP_TO = 31
 const WEEKLY_UP_TO = 92
 const PAYMENT_TOTAL = 1150
 const DAY_KEY = /^\d{4}-\d{2}-\d{2}$/
+const FIRST_DAY = new Date(`${OVERVIEW_FIRST_DAY}T00:00:00Z`)
 const DAILY_CEILING = Object.freeze({ entities: 4, requests: 3, completed: 2 })
 
 export function keyOf(date) {
@@ -46,22 +48,16 @@ function daily(key, series) {
   return Math.max(0, Math.round(ceiling * (0.25 + 0.6 * wave + noise)))
 }
 
-function presetStart(preset, today) {
-  const year = today.getUTCFullYear()
-  const month = today.getUTCMonth()
-  if (preset === OVERVIEW_PERIODS.QUARTER) return new Date(Date.UTC(year, month - (month % 3), 1))
-  if (preset === OVERVIEW_PERIODS.YEAR) return new Date(Date.UTC(year, 0, 1))
-  return new Date(Date.UTC(year, month, 1))
-}
-
-export function overviewErrors({ period, from, to }) {
+export function overviewErrors(query) {
+  const { period, from, to } = query
   const errors = {}
   const today = keyOf(riyadhToday())
   if (period && !OVERVIEW_PRESETS.includes(period))
     errors.period = ['The selected period is invalid.']
-  if (period !== OVERVIEW_PERIODS.CUSTOM) return errors
+  if (period !== OVERVIEW_PERIODS.CUSTOM) return { ...errors, ...calendarErrors(period, query) }
   if (!DAY_KEY.test(from ?? '')) errors.from = ['The start date is required.']
   else if (from > today) errors.from = ['The start date must be today or earlier.']
+  else if (from < OVERVIEW_FIRST_DAY) errors.from = ['The boards have no data before this day.']
   if (!DAY_KEY.test(to ?? '')) errors.to = ['The end date is required.']
   else if (to > today) errors.to = ['The end date must be today or earlier.']
   else if (DAY_KEY.test(from ?? '') && to < from)
@@ -71,12 +67,18 @@ export function overviewErrors({ period, from, to }) {
   return errors
 }
 
-export function windowOf({ period, from, to }) {
-  const preset = OVERVIEW_PRESETS.includes(period) ? period : DEFAULT_OVERVIEW_PERIOD
-  if (preset === OVERVIEW_PERIODS.CUSTOM)
-    return { preset, start: dayOf(from), end: addDays(dayOf(to), 1) }
+function calendarErrors(period, query) {
   const today = riyadhToday()
-  return { preset, start: presetStart(preset, today), end: addDays(today, 1) }
+  const window = reportingWindow({ ...query, period }, today)
+  const fields = ['year', 'month', 'quarter'].filter((field) => query[field])
+  if (fields.some((field) => !/^\d+$/.test(query[field])))
+    return { [fields[0]]: ['The selected period is invalid.'] }
+  if (window.start > today) return { year: ['The period must not be in the future.'] }
+  return window.start < FIRST_DAY ? { year: ['The boards have no data before this period.'] } : {}
+}
+
+export function windowOf(query) {
+  return reportingWindow(query, riyadhToday())
 }
 
 export function bucketOf(days) {
@@ -151,14 +153,19 @@ function card(key, value, previous, format = 'count') {
 }
 
 export function overviewFor(query, levels) {
-  const { preset, start, end } = windowOf(query)
+  const window = windowOf(query)
+  const { preset, start, end } = window
   const days = daysBetween(start, end)
-  const previousStart = addDays(start, -days)
+  const previous = comparisonWindow(window)
   const now = figures(start, end)
-  const before = figures(previousStart, start)
+  const before = figures(previous.start, previous.end)
   return {
     period: { from: keyOf(start), to: keyOf(addDays(end, -1)), preset },
-    previousPeriod: { from: keyOf(previousStart), to: keyOf(addDays(start, -1)) },
+    previousPeriod: {
+      from: keyOf(previous.start),
+      to: keyOf(addDays(previous.end, -1)),
+      basis: previous.basis,
+    },
     cards: [
       card('new_entities', now.newEntities, before.newEntities),
       card('requests_submitted', now.requests, before.requests),

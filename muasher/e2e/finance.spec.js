@@ -388,20 +388,27 @@ test('refunds open from the operations, and abandoned carts are listed for their
   await expect(page.locator('.settings-form__contact').first()).toContainText('***@')
 })
 
-test('the general settings edit the VAT rate from the tax card', async ({ page }, testInfo) => {
+test('the tax card states the statutory VAT rate to the System Administrator in a note', async ({
+  page,
+}, testInfo) => {
   const errors = trackConsole(page)
   await seedStaff(page, testInfo, STAFF.systemAdmin)
   await page.goto('/admin/settings/finance')
   await expect(page).toHaveURL(/\/admin\/settings\/general$/)
-  await expect(page.locator('input[name="vatRate"]')).toHaveValue('15.00')
+  const statement = page.getByTestId('vat-rate-statement')
+  await expect(statement).toContainText(
+    isEn(testInfo) ? 'VAT rate: 15%, as set by' : 'نسبة ضريبة القيمة المضافة 15%، وفق نظام',
+  )
+  await expect(page.locator('input[name="vatRate"]')).toHaveCount(0)
   await page.screenshot({
     path: `test-results/finance-settings-${suffixOf(testInfo)}.png`,
     fullPage: true,
   })
-  await page.locator('input[name="vatRate"]').fill('5')
+  await page.locator('input[name="orderValidityMinutes"]').fill('45')
   await page.locator('[data-testid="tax-settings"] .btn--primary').click()
   await expect(page.locator('.toast--success').last()).toBeVisible()
-  await expect(page.locator('input[name="vatRate"]')).toHaveValue('5.00')
+  await expect(page.locator('input[name="orderValidityMinutes"]')).toHaveValue('45')
+  await expect(statement).toContainText('15%')
   await expect(page.locator('.finance-preview__card')).toHaveCount(0)
   expect(errors).toEqual([])
 })
@@ -412,6 +419,7 @@ test('the Super Admin gives a reason before a finance setting changes', async ({
   await seedStaff(page, testInfo, STAFF.superAdmin)
   await page.goto('/admin/settings/general')
   await expect(page.locator('input[name="bagPrice"]')).toHaveCount(0)
+  await expect(page.getByTestId('vat-rate-statement')).toHaveCount(0)
   await page.locator('input[name="vatRate"]').fill('5')
   await page.locator('[data-testid="tax-settings"] .btn--primary').click()
   const dialog = page.getByRole('dialog')

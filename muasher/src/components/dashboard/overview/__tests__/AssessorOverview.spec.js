@@ -19,7 +19,7 @@ const LIVE = [
 
 const OVERVIEW = toAssessorOverview({
   period: { from: '2026-11-01', to: '2026-11-18', preset: 'month' },
-  previousPeriod: { from: '2026-10-14', to: '2026-10-31' },
+  previousPeriod: { from: '2026-10-01', to: '2026-10-18', basis: 'elapsed_span' },
   cards: [
     { key: 'completed', value: 20, previous: 29, format: 'count' },
     { key: 'average_duration_days', value: '12.6', previous: '13.5', format: 'days' },

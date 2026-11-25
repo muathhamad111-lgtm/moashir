@@ -10,6 +10,9 @@ const props = defineProps({
   today: { type: String, required: true },
   range: { type: Object, required: true },
   labelledBy: { type: String, required: true },
+  // A chosen span of days to highlight (a range picker); empty for a single-date picker.
+  spanFrom: { type: String, default: '' },
+  spanTo: { type: String, default: '' },
 })
 
 const emit = defineEmits(['choose'])
@@ -23,9 +26,18 @@ function isDisabled(iso) {
   return isOutsideRange(iso, props.range)
 }
 
+function isInSpan(iso) {
+  return Boolean(props.spanFrom && props.spanTo) && iso >= props.spanFrom && iso <= props.spanTo
+}
+
+function isChosen(iso) {
+  return iso === props.selected || iso === props.spanFrom || iso === props.spanTo
+}
+
 function dayClasses(iso) {
   return {
-    'is-selected': iso === props.selected,
+    'is-selected': isChosen(iso),
+    'is-in-span': isInSpan(iso) && !isChosen(iso),
     'is-today': iso === props.today,
     'is-outside-month': !isSameMonth(iso, props.activeDate),
   }
@@ -62,7 +74,7 @@ defineExpose({ focusActive })
           :key="iso"
           class="date-calendar__cell"
           role="gridcell"
-          :aria-selected="iso === selected ? 'true' : 'false'"
+          :aria-selected="isChosen(iso) || isInSpan(iso) ? 'true' : 'false'"
           :aria-disabled="isDisabled(iso) ? 'true' : undefined"
         >
           <button

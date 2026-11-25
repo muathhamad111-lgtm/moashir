@@ -10,6 +10,7 @@ import {
   totals,
   windowOf,
 } from './dashboardOverview'
+import { comparisonWindow } from './reportingWindow'
 
 const REVIEWS = 'completed'
 const ADVANCED_EVERY = 4
@@ -47,16 +48,21 @@ function card(key, value, previous, format = 'count') {
 }
 
 export function assessorOverviewFor(user, query) {
-  const { preset, start, end } = windowOf(query)
+  const window = windowOf(query)
+  const { preset, start, end } = window
   const days = daysBetween(start, end)
-  const previousStart = addDays(start, -days)
+  const previous = comparisonWindow(window)
   const now = figures(user, start, end)
-  const before = figures(user, previousStart, start)
+  const before = figures(user, previous.start, previous.end)
   const bucket = bucketOf(days)
   const trend = bucketValues(start, end, bucket, (from, until) => reviewsBetween(user, from, until))
   return {
     period: { from: keyOf(start), to: keyOf(addDays(end, -1)), preset },
-    previousPeriod: { from: keyOf(previousStart), to: keyOf(addDays(start, -1)) },
+    previousPeriod: {
+      from: keyOf(previous.start),
+      to: keyOf(addDays(previous.end, -1)),
+      basis: previous.basis,
+    },
     cards: [
       card('completed', now.completed, before.completed),
       card('average_duration_days', now.averageDays, before.averageDays, 'days'),

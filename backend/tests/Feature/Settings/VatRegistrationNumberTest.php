@@ -52,11 +52,11 @@ it('lets the System Administrator set, change and clear the platform VAT registr
 });
 
 it('hides the reminder when the VAT rate is zero and saves other finance fields with an empty number', function (): void {
-    signIn(systemAdmin());
+    signIn(superAdmin());
 
-    $this->putJson('/api/v1/settings/finance', ['vat_rate' => '0.00'])->assertOk()
+    $this->putJson('/api/v1/settings/finance', ['vat_rate' => '0.00', 'reason' => 'إعفاء مؤقت من الضريبة وفق قرار الإدارة المالية.'])->assertOk()
         ->assertJsonPath('data.vat_registration_reminder', false);
-    $this->putJson('/api/v1/settings/finance', ['order_validity_minutes' => 20])->assertOk();
+    switchTo(systemAdmin())->putJson('/api/v1/settings/finance', ['order_validity_minutes' => 20])->assertOk();
 });
 
 it('rejects a malformed VAT registration number', function (string $value): void {
@@ -82,7 +82,7 @@ it('keeps the field to the holders of the payment settings permission', function
     signIn(financeOfficer());
 
     $this->putJson('/api/v1/settings/finance', ['vat_registration_number' => VAT_NUMBER])->assertForbidden();
-    $this->putJson('/api/v1/settings/finance', ['vat_rate' => '15.00'])->assertOk();
+    $this->putJson('/api/v1/settings/finance', ['order_validity_minutes' => 20])->assertOk();
 });
 
 it('requires a reason from the Super Admin', function (): void {

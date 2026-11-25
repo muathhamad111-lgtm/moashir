@@ -83,6 +83,20 @@ test('the dashboard opens with the platform overview for the System Administrato
   await expect(overview.locator('.executive-overview__period')).toContainText(
     locale(testInfo) === 'en' ? 'January 1' : '1 يناير',
   )
+  await expect(overview.locator('.executive-overview__compare')).toContainText(
+    locale(testInfo) === 'en' ? 'the same span of the previous period' : 'بالمدة نفسها',
+  )
+  await expect(overview.locator('.executive-overview__print')).toHaveAccessibleName(
+    locale(testInfo) === 'en' ? 'Print dashboard' : 'طباعة اللوحة',
+  )
+
+  await overview.locator('[data-period="custom"]').click()
+  await expect(overview.locator('.date-calendar')).toBeVisible()
+  await page.keyboard.press('Enter')
+  await page.keyboard.press('Enter')
+  await expect(page).toHaveURL(/from=([\d-]+)&to=\1/)
+  await expect(overview.locator('.date-calendar')).toHaveCount(0)
+  await expect(overview.locator('.overview-period__trigger')).toBeFocused()
 
   await page.emulateMedia({ media: 'print' })
   await expect(page.locator('.sidebar')).toBeHidden()

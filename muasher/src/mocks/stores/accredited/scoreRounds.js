@@ -25,6 +25,22 @@ export function currentRoundId(record) {
   return resolved.at(-1)?.id ?? null
 }
 
+// The units the entity was asked to complete in the round now under review, still without a
+// result from that round (the API's CurrentRoundRescoreCheck). Only a resubmission asks for one.
+export function unitsAwaitingRescore(record) {
+  const opener = requestsOf(record)
+    .filter((request) => request.resolvedAt && RESOLVED_ROUND_STATUSES.includes(request.status))
+    .at(-1)
+  if (opener?.status !== 'resubmitted') return []
+  const codes = new Set(opener.items.map((item) => item.subCode).filter(Boolean))
+  return boundTree(record)
+    .mains.flatMap((main) => main.subs.filter((sub) => codes.has(sub.code)))
+    .flatMap((sub) => scorableUnits({ mains: [{ subs: [sub] }] }))
+    .filter(
+      (unit) => lastEntry(record, unitKey(unit.level, unit.id))?.completionRequestId !== opener.id,
+    )
+}
+
 function historyOf(record) {
   record.scoreHistory ??= []
   return record.scoreHistory

@@ -60,7 +60,7 @@ it('shows the defaults to the System Administrator: no prices yet, VAT 15.00 and
             'vat_registration_number' => null,
             'vat_registration_reminder' => true,
             'pricing' => ['accredited' => null, 'bag' => null],
-            'editable_fields' => ['vat_rate', 'order_validity_minutes', 'vat_registration_number'],
+            'editable_fields' => ['order_validity_minutes', 'vat_registration_number'],
         ], 'meta' => [], 'errors' => null]);
 });
 
@@ -77,35 +77,44 @@ it('shows the configured prices before VAT with the server-computed VAT and tota
         ->assertJsonPath('data.pricing.bag', ['price_before_vat' => '2499.99', 'vat_rate' => '15.00', 'vat_amount' => '375.00', 'total' => '2874.99', 'currency' => 'SAR']);
 });
 
-it('updates every finance setting, audits each change from the old to the new value and answers with the full shape', function (): void {
+it('lets the System Administrator change the order validity, audits it from the old to the new value and answers with the full shape', function (): void {
     setServicePrices('1200.00', '2500.00');
     $admin = systemAdmin();
     signIn($admin);
 
-    $this->putJson(FINANCE_SETTINGS, [
-        'vat_rate' => '5',
-        'order_validity_minutes' => 45,
-    ])
+    $this->putJson(FINANCE_SETTINGS, ['order_validity_minutes' => 45])
         ->assertOk()
         ->assertJsonPath('data.accredited_price', '1200.00')
         ->assertJsonPath('data.bag_price', '2500.00')
-        ->assertJsonPath('data.vat_rate', '5.00')
+        ->assertJsonPath('data.vat_rate', '15.00')
         ->assertJsonPath('data.order_validity_minutes', 45)
-        ->assertJsonPath('data.pricing.accredited.vat_amount', '60.00')
-        ->assertJsonPath('data.pricing.accredited.total', '1260.00')
-        ->assertJsonPath('data.pricing.bag.total', '2625.00');
+        ->assertJsonPath('data.pricing.accredited.total', '1380.00');
 
-    expect(auditedSettingChange(SettingKey::VatRate))->toBe(['old' => ['assessment.vat_rate' => '15.00'], 'new' => ['assessment.vat_rate' => '5.00'], 'reason' => null, 'user_id' => $admin->id])
-        ->and(auditedSettingChange(SettingKey::PaymentOrderValidityMinutes))->toMatchArray(['old' => ['payment.order_validity_minutes' => 30], 'new' => ['payment.order_validity_minutes' => 45]]);
+    expect(auditedSettingChange(SettingKey::PaymentOrderValidityMinutes))->toBe(['old' => ['payment.order_validity_minutes' => 30], 'new' => ['payment.order_validity_minutes' => 45], 'reason' => null, 'user_id' => $admin->id]);
 
     Notification::assertNothingSent();
+});
+
+it('keeps the statutory VAT rate from the System Administrator and every permission holder', function (): void {
+    grantRole(RoleKey::FinanceOfficer, PermissionKey::SettingsAssessmentManage);
+
+    foreach ([systemAdmin(), financeOfficer()] as $user) {
+        switchTo($user);
+
+        $this->putJson(FINANCE_SETTINGS, ['vat_rate' => '5.00'])->assertForbidden()->assertJsonPath('code', 'forbidden');
+        $this->putJson(FINANCE_SETTINGS, ['vat_rate' => '5.00', 'order_validity_minutes' => 45, 'reason' => FINANCE_SETTINGS_REASON])->assertForbidden();
+        $this->getJson(FINANCE_SETTINGS)->assertOk()->assertJsonPath('data.vat_rate', '15.00');
+    }
+
+    expect(Setting::query()->whereIn('key', [SettingKey::VatRate->value, SettingKey::PaymentOrderValidityMinutes->value])->exists())->toBeFalse()
+        ->and(Audit::query()->where('event', AuditEvent::FinanceSettingsUpdated->value)->exists())->toBeFalse();
 });
 
 it('keeps omitted settings, writes no audit for an unchanged value and records an optional System Administrator reason', function (): void {
     setServicePrices('1000.00', '2500.00');
     signIn(systemAdmin());
 
-    $this->putJson(FINANCE_SETTINGS, ['vat_rate' => '15.00', 'reason' => FINANCE_SETTINGS_REASON])->assertOk();
+    $this->putJson(FINANCE_SETTINGS, ['order_validity_minutes' => 30, 'reason' => FINANCE_SETTINGS_REASON])->assertOk();
     expect(Audit::query()->where('event', AuditEvent::FinanceSettingsUpdated->value)->count())->toBe(0);
 
     $this->putJson(FINANCE_SETTINGS, ['order_validity_minutes' => 40, 'reason' => FINANCE_SETTINGS_REASON])
@@ -128,7 +137,8 @@ it('treats an empty update as a no-op', function (): void {
         ->and(Audit::query()->where('event', AuditEvent::FinanceSettingsUpdated->value)->exists())->toBeFalse();
 });
 
-it('requires a reason from the Super Admin, changes nothing without it and alerts on the reasoned change', function (): void {
+it('lets only the Super Admin change the VAT rate, with a reason, audited from the old to the new value and alerted', function (): void {
+    setServicePrices('1200.00', '2500.00');
     $superAdmin = superAdmin();
     signIn($superAdmin);
 
@@ -142,10 +152,21 @@ it('requires a reason from the Super Admin, changes nothing without it and alert
     $this->putJson(FINANCE_SETTINGS, ['vat_rate' => '10.00', 'reason' => FINANCE_SETTINGS_REASON])
         ->assertOk()
         ->assertJsonPath('data.vat_rate', '10.00')
+        ->assertJsonPath('data.pricing.accredited.vat_amount', '120.00')
+        ->assertJsonPath('data.pricing.accredited.total', '1320.00')
         ->assertJsonPath('data.editable_fields', ['vat_rate', 'order_validity_minutes', 'vat_registration_number']);
 
-    expect(auditedSettingChange(SettingKey::VatRate))->toMatchArray(['reason' => FINANCE_SETTINGS_REASON, 'user_id' => $superAdmin->id]);
+    expect(auditedSettingChange(SettingKey::VatRate))->toBe(['old' => ['assessment.vat_rate' => '15.00'], 'new' => ['assessment.vat_rate' => '10.00'], 'reason' => FINANCE_SETTINGS_REASON, 'user_id' => $superAdmin->id]);
     Notification::assertSentTo($superAdmin, SecurityAlertNotification::class);
+});
+
+it('shows the System Administrator the VAT rate the Super Admin set, read-only', function (): void {
+    switchTo(superAdmin())->putJson(FINANCE_SETTINGS, ['vat_rate' => '16.00', 'reason' => FINANCE_SETTINGS_REASON])->assertOk();
+
+    switchTo(systemAdmin())->getJson(FINANCE_SETTINGS)
+        ->assertOk()
+        ->assertJsonPath('data.vat_rate', '16.00')
+        ->assertJsonPath('data.editable_fields', ['order_validity_minutes', 'vat_registration_number']);
 });
 
 it('lets the Super Admin read the finance settings', function (): void {
@@ -180,7 +201,7 @@ it('shows the prices read-only to a holder of the assessment settings and refuse
     $this->getJson(FINANCE_SETTINGS)
         ->assertOk()
         ->assertJsonPath('data.accredited_price', '1000.00')
-        ->assertJsonPath('data.editable_fields', ['vat_rate', 'order_validity_minutes']);
+        ->assertJsonPath('data.editable_fields', ['order_validity_minutes']);
     $this->putJson(FINANCE_SETTINGS, ['accredited_price' => '900.00', 'bag_price' => '100.00'])->assertUnprocessable()
         ->assertJsonValidationErrors(['accredited_price', 'bag_price']);
 
@@ -196,7 +217,7 @@ it('no longer opens the finance settings to a holder of the Kit permission alone
 });
 
 it('rejects invalid finance settings without changing anything', function (array $payload, string $field): void {
-    signIn(systemAdmin());
+    signIn(superAdmin());
 
     $this->putJson(FINANCE_SETTINGS, $payload)
         ->assertUnprocessable()
@@ -219,7 +240,7 @@ it('rejects invalid finance settings without changing anything', function (array
 ]);
 
 it('returns translated field messages for an invalid price', function (): void {
-    signIn(systemAdmin());
+    signIn(superAdmin());
 
     $this->putJson(FINANCE_SETTINGS, ['accredited_price' => '1000.00'], ['Accept-Language' => 'en'])
         ->assertUnprocessable()
@@ -232,13 +253,13 @@ it('returns translated field messages for an invalid price', function (): void {
 
 it('accepts a zero VAT rate and the order validity bounds', function (): void {
     setServicePrices('1000.00', '2500.00');
-    signIn(systemAdmin());
+    signIn(superAdmin());
 
-    $this->putJson(FINANCE_SETTINGS, ['vat_rate' => '0.00', 'order_validity_minutes' => 5])
+    $this->putJson(FINANCE_SETTINGS, ['vat_rate' => '0.00', 'order_validity_minutes' => 5, 'reason' => FINANCE_SETTINGS_REASON])
         ->assertOk()
         ->assertJsonPath('data.pricing.accredited.total', '1000.00')
         ->assertJsonPath('data.order_validity_minutes', 5);
-    $this->putJson(FINANCE_SETTINGS, ['vat_rate' => '100', 'order_validity_minutes' => '60'])
+    $this->putJson(FINANCE_SETTINGS, ['vat_rate' => '100', 'order_validity_minutes' => '60', 'reason' => FINANCE_SETTINGS_REASON])
         ->assertOk()
         ->assertJsonPath('data.vat_rate', '100.00')
         ->assertJsonPath('data.order_validity_minutes', 60);
@@ -253,7 +274,7 @@ it('never changes existing payments and prices new orders with the new settings'
 
     Date::setTestNow(Date::now()->addMinute()->startOfSecond());
     $admin = systemAdmin();
-    switchTo($admin)->putJson(FINANCE_SETTINGS, ['vat_rate' => '5.00', 'order_validity_minutes' => 10])->assertOk();
+    switchTo(superAdmin())->putJson(FINANCE_SETTINGS, ['vat_rate' => '5.00', 'order_validity_minutes' => 10, 'reason' => FINANCE_SETTINGS_REASON])->assertOk();
     switchTo($admin)->putJson('/api/v1/settings/prices/accredited', [
         'price_before_vat' => '2000.00',
         'availability' => 'available',

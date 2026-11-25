@@ -7,6 +7,7 @@ import CompletionRequestCard from '@/components/accredited/CompletionRequestCard
 import CriteriaRebindSummary from '@/components/assessment/self/CriteriaRebindSummary.vue'
 import { useAuthStore } from '@/stores/auth'
 import { ACCREDITED_STATUSES, REVIEW_MODES } from '@/constants/accredited'
+import { isReviewFinished } from '@/utils/assessments/reviewStages'
 
 const props = defineProps({
   review: { type: Object, required: true },
@@ -15,14 +16,23 @@ const props = defineProps({
   starting: { type: Boolean, default: false },
   // The override mode has its own band, so the notice that opens it steps aside.
   overriding: { type: Boolean, default: false },
+  // Sub-criteria waiting for this round's result after a completion (design §B.3.3).
+  awaitingCodes: { type: Array, default: () => [] },
 })
 
 const emit = defineEmits(['refresh', 'override', 'start'])
-const { t } = useI18n()
+const { t, locale } = useI18n()
 const auth = useAuthStore()
 
 const status = computed(() => props.review.assessment.status)
+const awaitingList = computed(() =>
+  new Intl.ListFormat(locale.value, { type: 'unit' }).format(props.awaitingCodes),
+)
 const isReadOnly = computed(() => props.review.mode === REVIEW_MODES.READ_ONLY)
+// A finished review is read-only for everyone; the open-request message would mislead.
+const readOnlyKey = computed(() =>
+  isReviewFinished(props.review.assessment) ? 'review.finishedReadOnly' : 'review.readOnly',
+)
 const waitsForEntity = computed(() => status.value === ACCREDITED_STATUSES.NEEDS_COMPLETION)
 const CLOSED_STATUSES = [
   ACCREDITED_STATUSES.COMPLETED,
@@ -59,10 +69,19 @@ const mayOverride = computed(
       </template>
     </AssessmentNotice>
     <AssessmentNotice
+      v-if="awaitingCodes.length && !isReadOnly"
+      variant="warning"
+      data-testid="review-awaiting-rescore"
+      :title="
+        t('review.rounds.awaitingTitle', { count: awaitingCodes.length }, awaitingCodes.length)
+      "
+      :message="t('review.rounds.awaitingMessage', { codes: awaitingList })"
+    />
+    <AssessmentNotice
       v-if="isReadOnly"
       variant="info"
-      :title="t('review.readOnlyTitle')"
-      :message="t('review.readOnlyMessage')"
+      :title="t(`${readOnlyKey}Title`)"
+      :message="t(`${readOnlyKey}Message`)"
     />
     <AssessmentNotice
       v-if="status === ACCREDITED_STATUSES.ASSIGNED && !isReadOnly"

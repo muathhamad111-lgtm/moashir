@@ -136,6 +136,7 @@ export const ACCREDITED_CODES = {
   CONTENT_MISMATCH: 'file.content_mismatch',
   NOT_CLEAN: 'file.not_clean',
   SCORES_INCOMPLETE: 'scores.incomplete',
+  SCORES_ROUND_INCOMPLETE: 'scores.round_incomplete',
   BUNDLE_EMPTY: 'evidence.bundle_empty',
   BUNDLE_NOT_READY: 'evidence.bundle_not_ready',
   ENTITY_DELETED: 'entity.deleted',

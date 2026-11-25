@@ -2,6 +2,10 @@ function toWindow(raw) {
   return { from: raw?.from ?? '', to: raw?.to ?? '' }
 }
 
+function toComparison(raw) {
+  return { ...toWindow(raw), basis: raw?.basis ?? '' }
+}
+
 function toCard(raw = {}) {
   return {
     key: raw.key ?? '',
@@ -57,7 +61,7 @@ function toGeography(raw = {}) {
 export function toExecutiveOverview(raw = {}) {
   return {
     period: { ...toWindow(raw.period), preset: raw.period?.preset ?? 'month' },
-    previousPeriod: toWindow(raw.previousPeriod),
+    previousPeriod: toComparison(raw.previousPeriod),
     cards: (raw.cards ?? []).map(toCard).filter((card) => card.key),
     trends: toTrends(raw.trends),
     paths: (raw.paths ?? []).map(toPath),
@@ -74,7 +78,7 @@ function toCount(value) {
 export function toAssessorOverview(raw = {}) {
   return {
     period: { ...toWindow(raw.period), preset: raw.period?.preset ?? 'month' },
-    previousPeriod: toWindow(raw.previousPeriod),
+    previousPeriod: toComparison(raw.previousPeriod),
     cards: (raw.cards ?? []).map(toCard).filter((card) => card.key),
     trends: toTrends(raw.trends),
     paths: (raw.paths ?? []).map((row) => ({

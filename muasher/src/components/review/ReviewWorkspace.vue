@@ -69,6 +69,7 @@ onMounted(reviewState.load)
         :conflict-code="actions.conflictCode.value"
         :can-start="canStart"
         :overriding="override.active.value"
+        :awaiting-codes="progress.awaitingCodes.value"
         :starting="actions.busy.value === 'start'"
         @start="actions.startReview"
         @refresh="page.refresh"

@@ -1,47 +1,33 @@
 <script setup>
-import { ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
-import BaseButton from '@/components/ui/BaseButton.vue'
-import BaseDatePicker from '@/components/form/BaseDatePicker.vue'
+import OverviewPeriodChooser from './OverviewPeriodChooser.vue'
+import OverviewRangeChooser from './OverviewRangeChooser.vue'
 import { OVERVIEW_PERIODS, OVERVIEW_PRESETS } from '@/constants/dashboardOverview'
 import { riyadhDateKey } from '@/utils/datetime'
 
 const props = defineProps({
   period: { type: String, required: true },
+  selection: { type: Object, required: true },
   from: { type: String, default: '' },
   to: { type: String, default: '' },
   errors: { type: Object, default: () => ({}) },
 })
 
-const emit = defineEmits(['preset', 'custom'])
+const emit = defineEmits(['preset', 'calendar', 'custom'])
 const { t } = useI18n()
 const today = riyadhDateKey(new Date())
-const draftFrom = ref(props.from)
-const draftTo = ref(props.to)
 
-watch(
-  () => [props.from, props.to],
-  ([from, to]) => {
-    draftFrom.value = from
-    draftTo.value = to
-  },
-)
-
-function errorOf(key) {
-  return props.errors?.[key]?.[0] ?? ''
-}
-
-function apply() {
-  if (draftFrom.value && draftTo.value) emit('custom', draftFrom.value, draftTo.value)
+function firstError() {
+  return Object.values(props.errors ?? {})[0]?.[0] ?? ''
 }
 </script>
 
 <template>
   <div class="overview-period">
     <div
-      class="overview-period__presets"
+      class="overview-period__presets overview-period__presets--types"
       role="group"
-      :aria-label="t('dashboard.overview.period.label')"
+      :aria-label="t('dashboard.overview.period.type')"
     >
       <button
         v-for="preset in OVERVIEW_PRESETS"
@@ -56,32 +42,20 @@ function apply() {
         {{ t(`dashboard.overview.period.presets.${preset}`) }}
       </button>
     </div>
-    <form
+    <OverviewRangeChooser
       v-if="period === OVERVIEW_PERIODS.CUSTOM"
-      class="overview-period__custom"
-      novalidate
-      @submit.prevent="apply"
-    >
-      <BaseDatePicker
-        v-model="draftFrom"
-        name="overview-from"
-        :label="t('dashboard.overview.period.from')"
-        :max="draftTo || today"
-        :error="errorOf('from')"
-        required
-      />
-      <BaseDatePicker
-        v-model="draftTo"
-        name="overview-to"
-        :label="t('dashboard.overview.period.to')"
-        :min="draftFrom"
-        :max="today"
-        :error="errorOf('to')"
-        required
-      />
-      <BaseButton type="submit" variant="primary" :disabled="!draftFrom || !draftTo">
-        {{ t('dashboard.overview.period.apply') }}
-      </BaseButton>
-    </form>
+      :from="from"
+      :to="to"
+      :today="today"
+      @choose="(first, last) => emit('custom', first, last)"
+    />
+    <OverviewPeriodChooser
+      v-else
+      :period="period"
+      :selection="selection"
+      :today="today"
+      @choose="emit('calendar', $event)"
+    />
+    <p v-if="firstError()" class="overview-period__error" role="alert">{{ firstError() }}</p>
   </div>
 </template>

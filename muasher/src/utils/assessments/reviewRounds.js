@@ -12,9 +12,22 @@ function resubmitted(rounds) {
   )
 }
 
-// The request whose resubmission opened the round the assessor is scoring now.
+// Every outcome that opens a new round, as on the server (CompletionRequestStatus::roundOpeners).
+const ROUND_OPENERS = [
+  COMPLETION_STATUSES.RESUBMITTED,
+  COMPLETION_STATUSES.EXPIRED_CONTINUED,
+  COMPLETION_STATUSES.EXPIRED_DECLINED,
+]
+
+// The request whose resubmission opened the round the assessor is scoring now. A round opened by
+// an expired request asks for nothing new, and a finished review has no current round: its rows
+// show the results it ended with. The server applies the same rule before completing.
 export function currentRoundRequest(rounds) {
-  return resubmitted(rounds).at(-1) ?? null
+  if (rounds?.finished) return null
+  const opener = (rounds?.requests ?? [])
+    .filter((request) => ROUND_OPENERS.includes(request.status) && request.resolvedAt)
+    .at(-1)
+  return opener?.status === COMPLETION_STATUSES.RESUBMITTED ? opener : null
 }
 
 function itemOf(request, subCode) {

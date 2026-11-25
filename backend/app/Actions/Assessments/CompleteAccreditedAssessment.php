@@ -13,6 +13,7 @@ use App\Models\Assessments\Assessment;
 use App\Models\Identity\User;
 use App\Services\Assessments\AccreditedResultFinalizer;
 use App\Services\Assessments\AssigneeGuard;
+use App\Services\Assessments\CurrentRoundRescoreCheck;
 use App\Services\Assessments\ReviewCompletenessCheck;
 use App\Services\Assessments\ReviewWriteGate;
 use Illuminate\Support\Facades\DB;
@@ -23,6 +24,7 @@ final readonly class CompleteAccreditedAssessment
         private ReviewWriteGate $gate,
         private AssigneeGuard $assignee,
         private ReviewCompletenessCheck $completeness,
+        private CurrentRoundRescoreCheck $rescore,
         private AccreditedResultFinalizer $finalizer,
     ) {}
 
@@ -36,7 +38,9 @@ final readonly class CompleteAccreditedAssessment
                 throw AssessmentRejected::criteriaUpdateInProgress();
             }
 
-            $snapshot = $this->finalizer->finalize($actor, $locked, $assignment, $this->completeness->assertComplete($locked));
+            $scored = $this->completeness->assertComplete($locked);
+            $this->rescore->assertRescored($locked, $scored->tree);
+            $snapshot = $this->finalizer->finalize($actor, $locked, $assignment, $scored);
 
             AssessmentCompleted::dispatch($locked, $snapshot, $actor->id);
 

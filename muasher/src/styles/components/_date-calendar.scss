@@ -162,6 +162,11 @@ $days-per-week: 7;
     font-weight: var(--fw-body);
   }
 
+  &.is-in-span {
+    border-radius: 0;
+    background-color: var(--brand-glass-on-dark);
+  }
+
   &.is-selected {
     border-color: var(--theme-accent);
     background-color: var(--theme-accent);

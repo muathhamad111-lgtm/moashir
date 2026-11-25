@@ -174,6 +174,8 @@ return [
     'scores' => [
         'incomplete' => 'Score every item before submitting the assessment.',
         'item_missing' => 'This item has no score yet.',
+        'round_incomplete' => 'Score again every item the entity completed in this round, or keep its same result, before completing the assessment.',
+        'round_item_missing' => 'This item waits for a result in this round.',
     ],
     'score' => [
         'use_points' => 'This sub-criterion is scored through its indicators.',

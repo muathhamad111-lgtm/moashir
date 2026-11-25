@@ -31,6 +31,8 @@ return [
     'dashboard' => [
         // The longest custom window the overview accepts, in days (three years).
         'overview_max_days' => 1096,
+        // The first month the overview boards cover (YYYY-MM); no earlier period can be chosen.
+        'first_month' => '2026-01',
     ],
 
     'health' => [

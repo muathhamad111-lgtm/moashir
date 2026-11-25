@@ -190,4 +190,22 @@ describe('DateCalendar', () => {
     expect(wrapper.find('[role="dialog"]').exists()).toBe(false)
     wrapper.unmount()
   })
+
+  it('highlights a chosen span of days for a range picker, and shows extra actions inside it', async () => {
+    const wrapper = mount(DateCalendar, {
+      props: { label: 'الفترة', spanFrom: '2026-11-03', spanTo: '2026-11-06' },
+      slots: { default: '<button type="button" class="extra">يوم واحد</button>' },
+      attachTo: document.body,
+      global: createTestGlobals({ locale: 'ar' }),
+    })
+    await flushPromises()
+    expect(day(wrapper, '2026-11-03').classes()).toContain('is-selected')
+    expect(day(wrapper, '2026-11-04').classes()).toContain('is-in-span')
+    expect(day(wrapper, '2026-11-06').classes()).toContain('is-selected')
+    expect(day(wrapper, '2026-11-07').classes()).not.toContain('is-in-span')
+    expect(day(wrapper, '2026-11-05').element.parentElement.getAttribute('aria-selected')).toBe(
+      'true',
+    )
+    expect(wrapper.find('.date-calendar .extra').exists()).toBe(true)
+  })
 })

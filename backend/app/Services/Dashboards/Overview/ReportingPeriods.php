@@ -11,23 +11,25 @@ use Illuminate\Support\Facades\Date;
 use InvalidArgumentException;
 
 /**
- * Turns a preset (or a custom pair of days) into a window in the display time zone.
- * Presets run from the start of the current month, quarter or year to the end of today.
+ * Turns a period type and the day it covers (or a custom pair of days) into a window in the
+ * display time zone. A month, quarter or year runs to its end, or to the end of today while it runs.
  */
 final class ReportingPeriods
 {
-    public function preset(OverviewPeriod $preset): ReportingPeriod
+    private const string MONTH_FORMAT = '!Y-m';
+
+    public function preset(OverviewPeriod $preset, ?CarbonImmutable $within = null): ReportingPeriod
     {
-        $today = $this->today();
+        $months = $preset->months() ?? throw new InvalidArgumentException('A custom period needs its own days.');
+        $day = $within ?? $this->today();
 
         $start = match ($preset) {
-            OverviewPeriod::Month => $today->startOfMonth(),
-            OverviewPeriod::Quarter => $today->startOfQuarter(),
-            OverviewPeriod::Year => $today->startOfYear(),
-            OverviewPeriod::Custom => throw new InvalidArgumentException('A custom period needs its own days.'),
+            OverviewPeriod::Quarter => $day->startOfQuarter(),
+            OverviewPeriod::Year => $day->startOfYear(),
+            default => $day->startOfMonth(),
         };
 
-        return new ReportingPeriod($preset, $start, $today->addDay());
+        return new ReportingPeriod($preset, $start, $start->addMonthsNoOverflow($months)->min($this->today()->addDay()));
     }
 
     public function custom(string $fromDay, string $toDay): ReportingPeriod
@@ -36,6 +38,28 @@ final class ReportingPeriods
         $lastDay = CarbonImmutable::createFromFormat('Y-m-d', $toDay, $this->zone())?->startOfDay();
 
         return new ReportingPeriod(OverviewPeriod::Custom, $start ?? $this->today(), ($lastDay ?? $this->today())->addDay());
+    }
+
+    /**
+     * The first day of the given calendar month, or null when the year and month do not form one.
+     */
+    public function monthStart(int $year, int $month): ?CarbonImmutable
+    {
+        if ($month < 1 || $month > 12) {
+            return null;
+        }
+
+        return CarbonImmutable::create($year, $month, 1, 0, 0, 0, $this->zone());
+    }
+
+    /**
+     * The first day the boards cover (config moashir.dashboard.first_month).
+     */
+    public function firstDay(): CarbonImmutable
+    {
+        $first = CarbonImmutable::createFromFormat(self::MONTH_FORMAT, config()->string('moashir.dashboard.first_month'), $this->zone());
+
+        return ($first ?? $this->today())->startOfMonth();
     }
 
     public function today(): CarbonImmutable

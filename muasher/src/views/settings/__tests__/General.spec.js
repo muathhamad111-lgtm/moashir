@@ -29,6 +29,11 @@ const FINANCE = {
   vatRegistrationNumber: null,
   orderValidityMinutes: 30,
   orderValidityLimits: { min: 5, max: 60 },
+  editableFields: ['order_validity_minutes', 'vat_registration_number'],
+}
+
+const SUPER_ADMIN_FINANCE = {
+  ...FINANCE,
   editableFields: ['vat_rate', 'order_validity_minutes', 'vat_registration_number'],
 }
 
@@ -40,6 +45,7 @@ async function mountScreen({ superAdmin = false, locale = 'en', settings = {}, p
   setActivePinia(globals.pinia)
   const user = sessionUserFor(['system_admin'], { id: 1, isSuperAdmin: superAdmin })
   useAuthStore(globals.pinia).setUser(permissions ? { ...user, permissions } : user)
+  if (superAdmin) financeSettingsService.get.mockResolvedValue({ data: SUPER_ADMIN_FINANCE })
   wrapper = mount(General, { global: globals, attachTo: document.body })
   await flushPromises()
   return wrapper
@@ -100,7 +106,10 @@ describe('General settings', () => {
       wrapper
         .findAll('[data-testid="tax-settings"] input')
         .map((input) => input.attributes('name')),
-    ).toEqual(['vatRegistrationNumber', 'vatRate', 'orderValidityMinutes'])
+    ).toEqual(['vatRegistrationNumber', 'orderValidityMinutes'])
+    expect(wrapper.find('[data-testid="vat-rate-statement"]').text()).toBe(
+      'نسبة ضريبة القيمة المضافة 15%، وفق نظام ضريبة القيمة المضافة ولائحته التنفيذية في المملكة العربية السعودية.',
+    )
   })
 
   it('turns the e-mail of general notifications off and sends only that change', async () => {
@@ -180,6 +189,49 @@ describe('General settings', () => {
     expect(financeSettingsService.update).toHaveBeenCalledWith(
       expect.objectContaining({ vatRegistrationNumber: '300000000000003' }),
     )
+  })
+
+  it('states the live VAT rate and its legal basis in a note to the System Administrator', async () => {
+    await mountScreen()
+    const statement = wrapper.find('[data-testid="vat-rate-statement"]')
+    expect(box('vatRate').exists()).toBe(false)
+    expect(statement.attributes('role')).toBe('note')
+    expect(statement.find('.app-icon').exists()).toBe(true)
+    expect(statement.text()).toBe(
+      "VAT rate: 15%, as set by the Kingdom of Saudi Arabia's VAT Law and its Implementing Regulations.",
+    )
+  })
+
+  it('fills the VAT statement from the setting value, so a changed rate shows at once', async () => {
+    financeSettingsService.get.mockResolvedValue({ data: { ...FINANCE, vatRate: '16.00' } })
+    await mountScreen()
+    expect(wrapper.find('[data-testid="vat-rate-statement"]').text()).toContain('VAT rate: 16%,')
+    expect(wrapper.find('[data-testid="vat-rate-statement"]').text()).not.toContain('15%')
+  })
+
+  it('lets only the Super Admin edit the VAT rate, with the statutory hint and a reason', async () => {
+    await mountScreen({ superAdmin: true })
+    expect(wrapper.find('[data-testid="vat-rate-statement"]').exists()).toBe(false)
+    expect(wrapper.find(`#${box('vatRate').attributes('aria-describedby')}`).text()).toContain(
+      'Only the Super Admin can change it',
+    )
+    await box('vatRate').setValue('5')
+    await wrapper.find('[data-testid="tax-settings"]').trigger('submit')
+    await settle()
+    expect(financeSettingsService.update).not.toHaveBeenCalled()
+    const textarea = document.body.querySelector('textarea[name="reason"]')
+    textarea.value = 'The finance committee approved the new statutory rate.'
+    textarea.dispatchEvent(new Event('input'))
+    await flushPromises()
+    const submit = [...document.body.querySelectorAll('.modal button')].find(
+      (button) => button.textContent.trim() === 'Save',
+    )
+    submit.click()
+    await settle()
+    expect(financeSettingsService.update).toHaveBeenCalledWith({
+      vatRate: '5.00',
+      reason: 'The finance committee approved the new statutory rate.',
+    })
   })
 
   it('shows only the tax card to a payment settings manager', async () => {

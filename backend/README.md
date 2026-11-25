@@ -1163,7 +1163,11 @@ force_transition`; `expire_completion` has no actor, `actor = system` in the his
   needs_completion`, ACC-07 entity I+E, whose text states the outcome; every unit must be scored first — operator decision
   UX-1 — else 422 `scores.incomplete` with one `errors` entry per missing unit field and `meta.missing[]`) · `POST /assessments/{id}/complete { reason?,
   issue_certificate? (deprecated, accepted as a boolean and ignored — Task-79) }` (all items scored —
-  422 `scores.incomplete`; feedback items are optional, an assessor may complete with scores only; computes the
+  422 `scores.incomplete`; then, when the current round was opened by a `resubmitted` completion request, every unit under
+  a sub-criterion that request listed must have a current version tagged with that round, a new score or the same value
+  sent again explicitly — else 422 `scores.round_incomplete`, same shape as `scores.incomplete`; a round opened by an
+  expired request and a main criterion's own attachments need no new result; the same rule applies to the advanced
+  `complete`, not to `request-completion`; feedback items are optional, an assessor may complete with scores only; computes the
   `accredited_result` snapshot, closes the assignment, ACC-08 entity + followers and ACC-10 entity). Scoring needs `under_review`; only the active assignee
   passes (`can:score` + a re-check under the row lock, 403 `assessment.not_assignee`). Every write: frozen 409 `entity.deleted`,
   completion blocked while the restore hold is set.
@@ -1499,7 +1503,8 @@ announced`.
   `sod_self_assignment`; due date = assignment + the cycle SLA (`review_sla_days`); ADV-05 (I+E) to the assessor. Reassign keeps
   the status and the due date and tells the previous assessor in-app.
 - `start-review` → `under_initial_assessment`; scores and feedback as for the accredited path; the assessor's
-  `request-completion` is accredited only (409). `complete` → `awaiting_filtering` with the `initial_assessment` snapshot, the
+  `request-completion` works as on the accredited path once the assessment is finished (batch N3; 409 before `under_initial_assessment`). `complete` (422 `scores.incomplete`, then 422 `scores.round_incomplete` after a resubmitted completion, as for the
+  accredited path) → `awaiting_filtering` with the `initial_assessment` snapshot, the
   assignment completed and ADV-06 (I) to the filtering officers of the cycle and the Requests Followers. The overdue alert
   ACC-11 stays accredited only (no ADV code); `is_overdue` is shown for both paths.
 
@@ -1920,10 +1925,12 @@ finance settings below (no database edit is needed in staging).
   at most two decimals, normalized to `"15.00"`), `order_validity_minutes` (integer 5..60), `reason` (10..1000,
   optional for the System Administrator, REQUIRED for the Super Admin: 422 `reason_required`, and SEC-04 is raised
   after a reasoned change). Invalid input answers 422 `validation_failed` with translated field messages.
-- Permissions (analysis-permissions): the route needs any of the field permissions; `accredited_price`, `vat_rate` and
-  `order_validity_minutes` need `settings.assessment.manage`, `bag_price` needs `bag.admin.manage` (Kit product
-  section). Both are seeded to the System Administrator only; the Super Admin passes through `Gate::before`. A body
-  carrying a field the user may not change answers 403 `forbidden` and changes nothing.
+- Permissions (analysis-permissions): the route needs any of the field permissions; `order_validity_minutes` needs
+  `settings.assessment.manage` and `vat_registration_number` needs `settings.payment.manage`. `vat_rate` is the
+  statutory rate (15.00): no permission grants it, so only the Super Admin (through `Gate::before`, with the required
+  reason) can change it, and it is listed in `editable_fields` for the Super Admin only (operator decision 2026-11-25;
+  the SPA shows it read-only as «إلزامية» to everyone else). A body carrying a field the user may not change answers
+  403 `forbidden` and changes nothing.
 - Every changed key writes one `settings.finance_updated` audit with its old and new value (and the reason); an unchanged
   value writes nothing. Concurrent saves are serialized by a transaction-scoped advisory lock (`settings:finance`).
 - Snapshot rule: a payment copies its price, VAT rate, VAT, total and `expires_at` when the order is opened, so a change

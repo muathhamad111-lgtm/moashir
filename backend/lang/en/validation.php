@@ -179,6 +179,8 @@ return [
         ],
         'overview_period' => [
             'too_long' => 'A custom period cannot be longer than :days days.',
+            'future' => 'A period that has not started yet cannot be chosen.',
+            'before_first' => 'The boards have no data before their first month.',
         ],
         'vat_registration_number' => [
             'regex' => 'The VAT registration number has 15 Western digits (0-9) with no spaces, and starts and ends with 3.',
@@ -381,6 +383,8 @@ return [
         'level_thresholds.diamond' => 'diamond level minimum',
         'issue_certificate' => 'issue the certificate',
         'award_cycle_id' => 'award cycle',
+        'month' => 'month',
+        'quarter' => 'quarter',
         'year' => 'year',
         'submission_start' => 'submission start',
         'submission_end' => 'submission end',

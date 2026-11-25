@@ -36,6 +36,17 @@ export const assessmentReject = {
   criteriaUpdateInProgress: () => new MockRejection(409, 'assessment.criteria_update_in_progress'),
   reasonRequired: () =>
     new MockRejection(422, 'reason_required', { fields: { reason: single('reason_required') } }),
+  // Production report 2026-11-25: the items the entity completed need this round's result.
+  roundRescoreMissing: (missing) =>
+    new MockRejection(422, 'scores.round_incomplete', {
+      fields: Object.fromEntries(
+        missing.map((unit) => [
+          `scores.${unit.level}s.${unit.id}`,
+          single('scores.round_item_missing'),
+        ]),
+      ),
+      meta: { missing: missing.map(({ level, id, code }) => ({ level, id, code })) },
+    }),
   scoresIncomplete: (missing) =>
     new MockRejection(422, 'scores.incomplete', {
       fields: Object.fromEntries(

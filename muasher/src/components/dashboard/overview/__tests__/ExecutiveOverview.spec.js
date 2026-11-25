@@ -9,7 +9,7 @@ vi.mock('@/services/dashboardService', () => ({ dashboardService: { getOverview:
 
 const OVERVIEW = toExecutiveOverview({
   period: { from: '2026-11-01', to: '2026-11-17', preset: 'month' },
-  previousPeriod: { from: '2026-10-15', to: '2026-10-31' },
+  previousPeriod: { from: '2026-10-01', to: '2026-10-17', basis: 'elapsed_span' },
   cards: [
     { key: 'new_entities', value: 40, previous: 33, format: 'count' },
     { key: 'accredited_average_percent', value: '79.00', previous: '76.00', format: 'percent' },
@@ -64,10 +64,13 @@ async function mountAt(path = '/dashboard', locale = 'ar') {
 }
 
 beforeEach(() => {
+  vi.useFakeTimers({ toFake: ['Date'] })
+  vi.setSystemTime(new Date('2026-11-17T09:00:00Z'))
   dashboardService.getOverview.mockResolvedValue({ data: OVERVIEW })
 })
 
 afterEach(() => {
+  vi.useRealTimers()
   vi.clearAllMocks()
 })
 
@@ -77,7 +80,10 @@ describe('ExecutiveOverview', () => {
     expect(dashboardService.getOverview).toHaveBeenCalledWith({ period: 'month' })
     expect(wrapper.find('.executive-overview__title').text()).toBe('نظرة عامة على المنصة')
     expect(wrapper.find('.executive-overview__period').text()).toContain('1 نوفمبر 2026')
-    expect(wrapper.find('.executive-overview__compare').text()).toContain('مقارنةً بالفترة')
+    expect(wrapper.find('.executive-overview__compare').text()).toContain(
+      'مقارنةً بالمدة نفسها من الفترة السابقة',
+    )
+    expect(wrapper.find('.executive-overview__compare').text()).toContain('17 أكتوبر 2026')
     expect(wrapper.find('[data-period="month"]').attributes('aria-pressed')).toBe('true')
   })
 
@@ -144,28 +150,65 @@ describe('ExecutiveOverview', () => {
     expect(dashboardService.getOverview).toHaveBeenLastCalledWith({ period: 'quarter' })
   })
 
-  it('waits for both days of a custom period and shows the server refusal on its field', async () => {
+  it('chooses a month from the period popover and asks for it', async () => {
+    const { wrapper, globals } = await mountAt('/dashboard', 'en')
+    await wrapper.find('.overview-period__trigger').trigger('click')
+    const september = wrapper
+      .findAll('.period-grid__option')
+      .find((option) => option.text() === 'September')
+    await september.trigger('click')
+    await flushPromises()
+    expect(globals.router.currentRoute.value.query).toEqual({
+      period: 'month',
+      year: '2026',
+      month: '9',
+    })
+    expect(dashboardService.getOverview).toHaveBeenLastCalledWith({
+      period: 'month',
+      year: '2026',
+      month: '9',
+    })
+  })
+
+  it('picks a custom range on one calendar: the first day, then the last', async () => {
+    const { wrapper, globals } = await mountAt('/dashboard?period=custom')
+    expect(dashboardService.getOverview).not.toHaveBeenCalled()
+    await wrapper.find('[data-date="2026-11-10"]').trigger('click')
+    expect(wrapper.find('.range-chooser__one-day').exists()).toBe(true)
+    await wrapper.find('[data-date="2026-11-03"]').trigger('click')
+    await flushPromises()
+    expect(globals.router.currentRoute.value.query).toEqual({
+      period: 'custom',
+      from: '2026-11-03',
+      to: '2026-11-10',
+    })
+    // ICU versions differ in the spaces around the range dash, so whitespace is ignored.
+    expect(wrapper.find('.overview-period__current').text().replace(/\s/gu, '')).toBe(
+      '3–10نوفمبر2026',
+    )
+  })
+
+  it('shows the server refusal of a custom period without an error page', async () => {
     dashboardService.getOverview.mockRejectedValueOnce({
       normalized: { status: 422, message: 'Invalid', fieldErrors: { to: ['Too long.'] } },
     })
-    const { wrapper } = await mountAt('/dashboard?period=custom&from=2020-01-01&to=2026-11-17')
+    const { wrapper } = await mountAt('/dashboard?period=custom&from=2026-01-01&to=2026-11-17')
     expect(dashboardService.getOverview).toHaveBeenCalledWith({
       period: 'custom',
-      from: '2020-01-01',
+      from: '2026-01-01',
       to: '2026-11-17',
     })
-    expect(wrapper.find('.overview-period__custom').text()).toContain('Too long.')
+    expect(wrapper.find('.overview-period__error').text()).toBe('Too long.')
     expect(wrapper.find('.error-state').exists()).toBe(false)
-
-    vi.clearAllMocks()
-    await mountAt('/dashboard?period=custom')
-    expect(dashboardService.getOverview).not.toHaveBeenCalled()
   })
 
   it('prints the dashboard from the print button', async () => {
     const print = vi.spyOn(window, 'print').mockImplementation(() => {})
     const { wrapper } = await mountAt()
-    await wrapper.find('.executive-overview__print').trigger('click')
+    const button = wrapper.find('.executive-overview__print')
+    expect(button.attributes('aria-label')).toBe('طباعة اللوحة')
+    expect(button.text()).toBe('')
+    await button.trigger('click')
     expect(print).toHaveBeenCalledOnce()
     print.mockRestore()
   })

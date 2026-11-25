@@ -16,6 +16,8 @@ const props = defineProps({
   max: { type: String, default: '' },
   label: { type: String, required: true },
   isSheet: { type: Boolean, default: false },
+  spanFrom: { type: String, default: '' },
+  spanTo: { type: String, default: '' },
 })
 
 const emit = defineEmits(['select', 'close'])
@@ -100,8 +102,11 @@ onMounted(focusActive)
       :today="today"
       :range="range"
       :labelled-by="titleId"
+      :span-from="spanFrom"
+      :span-to="spanTo"
       @choose="choose"
       @keydown="onGridKeydown"
     />
+    <slot />
   </div>
 </template>

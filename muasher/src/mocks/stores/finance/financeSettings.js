@@ -17,7 +17,8 @@ const READ_PERMISSIONS = [
 const MOVED_PRICE_FIELDS = ['accreditedPrice', 'bagPrice']
 
 export const FINANCE_FIELDS = {
-  vatRate: { wire: 'vat_rate', permission: FINANCE_PERMISSIONS.ASSESSMENT_SETTINGS },
+  // The statutory VAT rate is fixed; only the Super Admin may change it (operator decision 2026-11-25).
+  vatRate: { wire: 'vat_rate', superAdminOnly: true },
   orderValidityMinutes: {
     wire: 'order_validity_minutes',
     permission: FINANCE_PERMISSIONS.ASSESSMENT_SETTINGS,
@@ -33,9 +34,13 @@ export function authorizeFinanceSettings(user) {
     throw financeReject.forbidden()
 }
 
+function canEditField(user, field) {
+  return field.superAdminOnly ? Boolean(user.superAdmin) : actorCan(user, field.permission)
+}
+
 function editableFields(user) {
   return Object.values(FINANCE_FIELDS)
-    .filter((field) => actorCan(user, field.permission))
+    .filter((field) => canEditField(user, field))
     .map((field) => field.wire)
 }
 
@@ -129,7 +134,7 @@ function storedValue(field, value) {
 
 export function updateFinanceSettings(user, body) {
   const fields = presentFields(body)
-  if (fields.some((field) => !actorCan(user, FINANCE_FIELDS[field].permission)))
+  if (fields.some((field) => !canEditField(user, FINANCE_FIELDS[field])))
     throw financeReject.forbidden()
   validated(body)
   if (!fields.length) return

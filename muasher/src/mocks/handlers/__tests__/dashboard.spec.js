@@ -1,4 +1,4 @@
-import { afterAll, afterEach, beforeAll, describe, expect, it } from 'vitest'
+import { afterAll, afterEach, beforeAll, describe, expect, it, vi } from 'vitest'
 import { setupServer } from 'msw/node'
 import { dashboardHandlers } from '@/mocks/handlers/dashboard'
 import { MOCK_API_BASE, clearMockSession, mockFetch, seedMockSession } from '@/test-utils/mockApi'
@@ -120,16 +120,61 @@ describe('executive overview mock', () => {
 
   it('buckets a long custom period by month and refuses a malformed one', async () => {
     seedMockSession({ id: 1, roles: ['system_admin'] })
-    const { body } = await overview('?period=custom&from=2025-01-01&to=2025-12-31')
+    const { body } = await overview('?period=custom&from=2026-01-01&to=2026-10-31')
     expect(body.data.trends.bucket).toBe('month')
-    expect(body.data.trends.buckets).toHaveLength(12)
-    expect(body.data.previousPeriod).toEqual({ from: '2024-01-02', to: '2024-12-31' })
+    expect(body.data.trends.buckets).toHaveLength(10)
+    expect(body.data.previousPeriod).toEqual({
+      from: '2025-03-03',
+      to: '2025-12-31',
+      basis: 'preceding_days',
+    })
 
-    const reversed = await overview('?period=custom&from=2025-12-31&to=2025-01-01')
+    const reversed = await overview('?period=custom&from=2026-10-31&to=2026-01-01')
     expect(reversed.status).toBe(422)
     expect(Object.keys(reversed.body.errors)).toEqual(['to'])
     expect((await overview('?period=custom')).body.errors).toHaveProperty('from')
     expect((await overview('?period=decade')).status).toBe(422)
+    expect(
+      (await overview('?period=custom&from=2025-12-01&to=2026-01-10')).body.errors,
+    ).toHaveProperty('from')
+  })
+
+  describe('on a calendar month, quarter or year (today 25 November 2026)', () => {
+    beforeAll(() => {
+      vi.useFakeTimers({ toFake: ['Date'] })
+      vi.setSystemTime(new Date('2026-11-25T09:00:00Z'))
+    })
+    afterAll(() => vi.useRealTimers())
+
+    it('compares a running period with the same span of the previous one', async () => {
+      seedMockSession({ id: 1, roles: ['system_admin'] })
+      const { body } = await overview('?period=year')
+      expect(body.data.period).toEqual({ from: '2026-01-01', to: '2026-11-25', preset: 'year' })
+      expect(body.data.previousPeriod).toEqual({
+        from: '2025-01-01',
+        to: '2025-11-25',
+        basis: 'elapsed_span',
+      })
+    })
+
+    it('shows a finished month in full, compared with the previous month in full', async () => {
+      seedMockSession({ id: 1, roles: ['system_admin'] })
+      const { body } = await overview('?period=month&year=2026&month=9')
+      expect(body.data.period).toEqual({ from: '2026-09-01', to: '2026-09-30', preset: 'month' })
+      expect(body.data.previousPeriod).toEqual({
+        from: '2026-08-01',
+        to: '2026-08-31',
+        basis: 'previous_full',
+      })
+    })
+
+    it('refuses a future period and one before the first month', async () => {
+      seedMockSession({ id: 1, roles: ['system_admin'] })
+      expect((await overview('?period=month&year=2026&month=12')).body.errors).toHaveProperty(
+        'year',
+      )
+      expect((await overview('?period=year&year=2025')).body.errors).toHaveProperty('year')
+    })
   })
 
   it('keeps the overview to holders of the executive permission', async () => {

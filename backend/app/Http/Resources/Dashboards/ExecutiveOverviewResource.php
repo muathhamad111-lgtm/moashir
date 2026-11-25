@@ -28,7 +28,7 @@ final class ExecutiveOverviewResource extends JsonResource
 
         return [
             'period' => [...$this->window($overview->period), 'preset' => $overview->period->preset->value],
-            'previous_period' => $this->window($overview->period->previous()),
+            'previous_period' => [...$this->window($overview->period->previous()), 'basis' => $overview->period->comparisonBasis()->value],
             'cards' => $this->cards($overview->current, $overview->previous, $overview->activeEntities),
             'trends' => [
                 'bucket' => $overview->trends->bucket->value,

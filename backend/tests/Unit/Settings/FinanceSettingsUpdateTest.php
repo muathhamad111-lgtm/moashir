@@ -19,11 +19,11 @@ it('is empty when no setting is given, even with a reason', function (): void {
     expect(new FinanceSettingsUpdate(null, null, 'سبب مكتوب للتغيير المطلوب.')->isEmpty())->toBeTrue();
 });
 
-it('maps every field to its setting key and permission', function (FinanceSettingField $field, SettingKey $key, PermissionKey $permission): void {
+it('maps every field to its setting key and permission, and no permission to the statutory VAT rate', function (FinanceSettingField $field, SettingKey $key, ?PermissionKey $permission): void {
     expect($field->settingKey())->toBe($key)
         ->and($field->permission())->toBe($permission);
 })->with([
-    [FinanceSettingField::VatRate, SettingKey::VatRate, PermissionKey::SettingsAssessmentManage],
+    [FinanceSettingField::VatRate, SettingKey::VatRate, null],
     [FinanceSettingField::OrderValidityMinutes, SettingKey::PaymentOrderValidityMinutes, PermissionKey::SettingsAssessmentManage],
     [FinanceSettingField::VatRegistrationNumber, SettingKey::VatRegistrationNumber, PermissionKey::SettingsPaymentManage],
 ]);

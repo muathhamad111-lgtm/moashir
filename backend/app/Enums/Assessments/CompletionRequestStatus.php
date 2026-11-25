@@ -21,4 +21,9 @@ enum CompletionRequestStatus: string
     {
         return [self::Resubmitted, self::ExpiredContinued, self::ExpiredDeclined];
     }
+
+    public function asksForRescore(): bool
+    {
+        return $this === self::Resubmitted;
+    }
 }

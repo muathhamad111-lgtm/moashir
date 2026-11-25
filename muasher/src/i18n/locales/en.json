@@ -2828,19 +2828,39 @@
     "overview": {
       "title": "Platform overview",
       "range": "{from} to {to}",
-      "comparedWith": "compared with {range}",
       "print": "Print dashboard",
       "period": {
         "label": "Period",
         "presets": {
-          "month": "This month",
-          "quarter": "This quarter",
-          "year": "This year",
-          "custom": "Custom period"
+          "month": "Monthly",
+          "quarter": "Quarterly",
+          "year": "Yearly",
+          "custom": "Custom"
         },
-        "from": "From",
-        "to": "To",
-        "apply": "Show period"
+        "type": "Period type",
+        "choose": "Choose the period: {current}",
+        "toDate": "to date",
+        "pick": {
+          "month": "Choose the month",
+          "quarter": "Choose the quarter",
+          "year": "Choose the year",
+          "custom": "Choose the custom period"
+        },
+        "previousYear": "Previous year",
+        "nextYear": "Next year",
+        "quarters": {
+          "1": "Q1",
+          "2": "Q2",
+          "3": "Q3",
+          "4": "Q4"
+        },
+        "quarterOf": "{quarter} {year}",
+        "range": {
+          "empty": "Choose the days",
+          "start": "Choose the first day",
+          "end": "Choose the last day, or the same day again for a single day",
+          "oneDay": "One day"
+        }
       },
       "cardsLabel": "Period indicators",
       "cards": {
@@ -2917,6 +2937,11 @@
         "results": "Based on {count} results",
         "resultsRange": "Based on {min} to {max} results",
         "caption": "Average result of each main criterion, in percent"
+      },
+      "compare": {
+        "previous_full": "Compared with the previous period, {range}",
+        "elapsed_span": "Compared with the same span of the previous period, {range}",
+        "preceding_days": "Compared with the same number of days before, {range}"
       }
     },
     "assessorOverview": {
@@ -3302,7 +3327,10 @@
         "title": "Financial management",
         "vatNumber": "VAT registration number (optional)",
         "vatRate": "VAT (%)",
-        "orderValidity": "Payment order validity (minutes)"
+        "orderValidity": "Payment order validity (minutes)",
+        "vatRateSuperAdminHint": "A mandatory statutory rate. Only the Super Admin can change it, and each change needs a reason that is recorded in the audit log.",
+        "vatRateStatement": "VAT rate: {rate}, as set by the Kingdom of Saudi Arabia's VAT Law and its Implementing Regulations.",
+        "vatRatePercent": "{rate}%"
       },
       "registrationReview": {
         "title": "New entity registrations",
@@ -6853,6 +6881,8 @@
     "waitingMessage": "The entity is completing the requested items. The assessment resumes after the resubmission or at the deadline.",
     "readOnlyTitle": "Read-only view",
     "readOnlyMessage": "Only the assigned assessor can score this request while it is open.",
+    "finishedReadOnlyTitle": "Assessment complete",
+    "finishedReadOnlyMessage": "The assessment of this request is complete. The page shows its final result, read-only.",
     "frozenMessage": "The entity account was deleted. The assessment is paused until the account is restored.",
     "conflict": {
       "title": "The request changed",
@@ -7012,7 +7042,9 @@
       "awaiting": "Waiting for a new result",
       "keep": "Keep the same result",
       "confirmed": "The result is kept for this round.",
-      "newFile": "New"
+      "newFile": "New",
+      "awaitingTitle": "One item waits for this round’s result | {count} items wait for this round’s result",
+      "awaitingMessage": "The entity completed {codes}. Score each item again or choose «Keep the same result» before completing the assessment."
     },
     "directIndicators": "Indicators and their evidence",
     "directIndicatorsHint": "The whole sub-criterion gets one judgment; the indicators and their evidence are there to verify it.",

@@ -32,9 +32,18 @@
   color: var(--theme-text-muted);
 }
 
+// Phones: the period types on one row, then the chosen period beside the print button.
+// Wide screens: all three on one row, with a custom range's fields below.
 .executive-overview__tools {
-  @include flex(row, flex-start, flex-start, var(--space-3));
-  flex-wrap: wrap;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: var(--space-3);
+  align-items: start;
+
+  @include respond-to('lg') {
+    flex: none;
+    grid-template-columns: repeat(3, auto);
+  }
 }
 
 .executive-overview__body {
@@ -56,7 +65,7 @@
 }
 
 .overview-period {
-  @include flex(column, flex-start, flex-start, var(--space-3));
+  display: contents;
 }
 
 .overview-period__presets {
@@ -66,6 +75,27 @@
   border: var(--border-width) solid var(--theme-border);
   border-radius: var(--btn-radius);
   background-color: var(--theme-surface-solid);
+}
+
+// The period types only: two by two on phones, one row from sm. The map's metric switch shares
+// the base look above and keeps wrapping on its own.
+.overview-period__presets--types {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-column: 1 / -1;
+
+  @include respond-to('sm') {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+
+  @include respond-to('lg') {
+    grid-column: auto;
+  }
+
+  .overview-period__preset {
+    min-inline-size: 0;
+    white-space: nowrap;
+  }
 }
 
 .overview-period__preset {
@@ -94,9 +124,11 @@
   }
 }
 
-.overview-period__custom {
-  @include flex(row, flex-end, flex-start, var(--space-3));
-  flex-wrap: wrap;
+.overview-period__error {
+  grid-column: 1 / -1;
+  margin: 0;
+  color: var(--theme-danger-text, var(--theme-danger));
+  font-size: var(--fs-sm);
 }
 
 .overview-cards {

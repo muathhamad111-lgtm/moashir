@@ -42,15 +42,15 @@ final class AssessmentRejected extends ApiException
      */
     public static function scoresIncomplete(array $missing): self
     {
-        $fields = [];
+        return self::unitsMissing('scores.incomplete', 'scores.item_missing', $missing);
+    }
 
-        foreach ($missing as $unit) {
-            $fields[$unit->fieldKey()] = [__('errors.scores.item_missing')];
-        }
-
-        return new self(new ApiError(Response::HTTP_UNPROCESSABLE_ENTITY, 'scores.incomplete', $fields, [], [
-            'missing' => array_map(static fn (ScorableUnit $unit): array => $unit->toArray(), $missing),
-        ]));
+    /**
+     * @param  list<ScorableUnit>  $missing
+     */
+    public static function roundRescoreMissing(array $missing): self
+    {
+        return self::unitsMissing('scores.round_incomplete', 'scores.round_item_missing', $missing);
     }
 
     /**
@@ -209,6 +209,22 @@ final class AssessmentRejected extends ApiException
     {
         return new self(new ApiError(Response::HTTP_UNPROCESSABLE_ENTITY, 'reason_required', [
             'reason' => [__('errors.reason_required')],
+        ]));
+    }
+
+    /**
+     * @param  list<ScorableUnit>  $missing
+     */
+    private static function unitsMissing(string $code, string $unitReason, array $missing): self
+    {
+        $fields = [];
+
+        foreach ($missing as $unit) {
+            $fields[$unit->fieldKey()] = [__('errors.'.$unitReason)];
+        }
+
+        return new self(new ApiError(Response::HTTP_UNPROCESSABLE_ENTITY, $code, $fields, [], [
+            'missing' => array_map(static fn (ScorableUnit $unit): array => $unit->toArray(), $missing),
         ]));
     }
 

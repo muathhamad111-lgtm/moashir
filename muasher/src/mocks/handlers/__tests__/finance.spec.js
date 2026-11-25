@@ -873,11 +873,7 @@ describe('finance settings mock contract', () => {
       'vat_registration_number',
       'vat_registration_reminder',
     ])
-    expect(body.data.editable_fields).toEqual([
-      'vat_rate',
-      'order_validity_minutes',
-      'vat_registration_number',
-    ])
+    expect(body.data.editable_fields).toEqual(['order_validity_minutes', 'vat_registration_number'])
     expect(body.data.pricing.accredited).toEqual({
       price_before_vat: '1000.00',
       vat_rate: '15.00',
@@ -885,9 +881,11 @@ describe('finance settings mock contract', () => {
       total: '1150.00',
       currency: 'SAR',
     })
-    const updated = await call('/settings/finance', { method: 'PUT', body: { vat_rate: '5' } })
-    expect(updated.body.data.vat_rate).toBe('5.00')
-    expect(updated.body.data.pricing.bag.total).toBe('2625.00')
+    const updated = await call('/settings/finance', {
+      method: 'PUT',
+      body: { order_validity_minutes: 45 },
+    })
+    expect(updated.body.data.order_validity_minutes).toBe(45)
     const invalid = await call('/settings/finance', {
       method: 'PUT',
       body: { accredited_price: '1500.00', order_validity_minutes: 90 },
@@ -907,8 +905,12 @@ describe('finance settings mock contract', () => {
     ])
   })
 
-  it('requires a reason from the Super Admin and denies roles without the field permissions', async () => {
+  it('keeps the statutory VAT rate to the Super Admin, with a reason, and denies roles without the field permissions', async () => {
+    as(SYSTEM_ADMIN)
+    const denied = await call('/settings/finance', { method: 'PUT', body: { vat_rate: '5.00' } })
+    expect([denied.status, denied.body.code]).toEqual([403, 'forbidden'])
     as(SUPER_ADMIN)
+    expect((await call('/settings/finance')).body.data.editable_fields).toContain('vat_rate')
     const missing = await call('/settings/finance', {
       method: 'PUT',
       body: { vat_rate: '5.00' },
@@ -919,6 +921,7 @@ describe('finance settings mock contract', () => {
       body: { vat_rate: '5.00', reason: 'Approved VAT change for 2027.' },
     })
     expect(reasoned.body.data.vat_rate).toBe('5.00')
+    expect(reasoned.body.data.pricing.bag.total).toBe('2625.00')
     as(FINANCE_OFFICER)
     expect((await call('/settings/finance')).status).toBe(403)
   })

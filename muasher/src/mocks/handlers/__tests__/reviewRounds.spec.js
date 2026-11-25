@@ -84,6 +84,38 @@ describe('review rounds mock', () => {
   })
 })
 
+// Production report 2026-11-25: completing before the completed items had this round's result.
+describe('completion after a round mock', () => {
+  it('refuses to complete until each completed item has this round’s result', async () => {
+    seedMockSession(SULTAN)
+    await call('POST', '/assessments/9107/start-review', {})
+    const criteria = (await call('GET', '/assessments/9107/review')).body.data.criteria
+    const sub = criteria.mains[0].subs[0]
+    await call('PUT', '/assessments/9107/review/scores', { scores: allUnits(criteria, '3') })
+    await call('POST', '/assessments/9107/request-completion', {
+      notes: 'Please attach the approved plan.',
+      items: [{ sub_criterion_id: sub.id, kind: 'evidence', note: 'Plan' }],
+      deadline_at: new Date(Date.now() + 7 * DAY_MS).toISOString(),
+      expiry_outcome: 'decline',
+    })
+    seedMockSession(TAMKEEN)
+    await call('POST', '/assessments/9107/submit', {})
+    seedMockSession(SULTAN)
+
+    const refused = await call('POST', '/assessments/9107/complete', {})
+    expect(refused.status).toBe(422)
+    expect(refused.body.code).toBe('scores.round_incomplete')
+    const byPoints = sub.points.length > 0
+    const ids = byPoints ? sub.points.map((point) => point.id) : [sub.id]
+    expect(refused.body.meta.missing.map((unit) => unit.id)).toEqual(ids)
+
+    const again = Object.fromEntries(ids.map((id) => [id, '3']))
+    const scores = byPoints ? { subs: {}, points: again } : { subs: again, points: {} }
+    await call('PUT', '/assessments/9107/review/scores', { scores })
+    expect((await call('POST', '/assessments/9107/complete', {})).status).toBe(200)
+  })
+})
+
 describe('override preview mock', () => {
   it('computes the total and level of the edited scores without saving them', async () => {
     seedMockSession(SUPER_ADMIN)

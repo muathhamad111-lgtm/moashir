@@ -37,6 +37,24 @@ describe('review completion rounds', () => {
     expect(roundRowsOf(rounds, OTHER, 'M1.2')).toEqual([])
   })
 
+  // Production report 2026-11-25: a completed request showed «ناقص» and items waiting after completion.
+  it('shows a finished review with its results only, nothing waiting and no pending round', () => {
+    const rounds = { requests: [request()], units: { 'point-31': [BEFORE] }, finished: true }
+    expect(currentRoundRequest(rounds)).toBeNull()
+    expect(isAwaitingRescore(rounds, POINT, 'M1.1')).toBe(false)
+    expect(roundRowsOf(rounds, POINT, 'M1.1')).toEqual([
+      { round: 1, entry: BEFORE, note: 'Attach the approved plan.', pending: false },
+    ])
+  })
+
+  // The server asks for no rescore when the latest round was opened by an expired request (PM 2026-11-25).
+  it('asks for nothing new once a later request expired and opened the round', () => {
+    const expired = request({ id: 8, round: 3, status: 'expired-continued', items: [] })
+    const rounds = { requests: [request(), expired], units: { 'point-31': [BEFORE] } }
+    expect(currentRoundRequest(rounds)).toBeNull()
+    expect(isAwaitingRescore(rounds, POINT, 'M1.1')).toBe(false)
+  })
+
   it('stops waiting once the item is scored in the current round', () => {
     const rounds = { requests: [request()], units: { 'point-31': [BEFORE, AFTER] } }
     expect(isAwaitingRescore(rounds, POINT, 'M1.1')).toBe(false)

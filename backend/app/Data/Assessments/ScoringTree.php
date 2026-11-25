@@ -54,6 +54,25 @@ final readonly class ScoringTree
         return $units;
     }
 
+    /**
+     * @param  list<string>  $subCodes
+     * @return list<ScorableUnit>
+     */
+    public function scorableUnitsUnder(array $subCodes): array
+    {
+        $units = [];
+
+        foreach ($this->mains as $main) {
+            foreach ($main->subs as $sub) {
+                if (in_array($sub->code, $subCodes, true)) {
+                    array_push($units, ...$sub->scorableUnits());
+                }
+            }
+        }
+
+        return $units;
+    }
+
     public function main(int $id): ?ScoringMain
     {
         return array_find($this->mains, static fn (ScoringMain $main): bool => $main->id === $id);

@@ -14,7 +14,28 @@ export const OVERVIEW_PRESETS = Object.freeze([
 
 export const DEFAULT_OVERVIEW_PERIOD = OVERVIEW_PERIODS.MONTH
 
-export const OVERVIEW_QUERY = Object.freeze({ PERIOD: 'period', FROM: 'from', TO: 'to' })
+export const OVERVIEW_QUERY = Object.freeze({
+  PERIOD: 'period',
+  YEAR: 'year',
+  MONTH: 'month',
+  QUARTER: 'quarter',
+  FROM: 'from',
+  TO: 'to',
+})
+
+export const OVERVIEW_QUARTERS = Object.freeze([1, 2, 3, 4])
+
+// The first month the boards can show (YYYY-MM); mirrors config('moashir.dashboard.first_month').
+export const OVERVIEW_FIRST_MONTH = '2026-01'
+export const OVERVIEW_FIRST_DAY = `${OVERVIEW_FIRST_MONTH}-01`
+
+// How the API chose the comparison window: the previous full period, the same span of the
+// previous period while the chosen one is still running, or the same number of days before.
+export const COMPARISON_BASES = Object.freeze({
+  FULL: 'previous_full',
+  ELAPSED: 'elapsed_span',
+  PRECEDING: 'preceding_days',
+})
 
 export const TREND_BUCKETS = Object.freeze({ DAY: 'day', WEEK: 'week', MONTH: 'month' })
 
