@@ -9,5 +9,12 @@ use App\Enums\Identity\ThemePreference;
 
 final readonly class PreferenceChanges
 {
-    public function __construct(public ?Locale $locale = null, public ?ThemePreference $theme = null) {}
+    /**
+     * @param  array<string, list<string>|null>  $tableColumns  the visible columns per table; null restores a table's defaults
+     */
+    public function __construct(
+        public ?Locale $locale = null,
+        public ?ThemePreference $theme = null,
+        public array $tableColumns = [],
+    ) {}
 }

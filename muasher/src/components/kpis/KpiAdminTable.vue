@@ -62,6 +62,7 @@ function moveDisabled(kpi, direction) {
 
 <template>
   <DataTable
+    table-key="kpis-admin"
     :columns="columns"
     :items="items"
     :status="status"

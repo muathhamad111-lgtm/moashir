@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { entityInitials } from '@/utils/finance/entityInitials'
-import { channelSummary, overallSplit } from '@/utils/finance/overviewStats'
+import { channelFigures, statusCountsIn, statusDistribution } from '@/utils/finance/overviewStats'
 
 const STATS = {
   transactionsCount: 9,
@@ -67,29 +67,50 @@ function sumOf(cells) {
 }
 
 describe('finance overview figures', () => {
-  it('splits all operations by the ledger statuses, in the cards order', () => {
-    expect(overallSplit(STATS)).toEqual([
-      { status: 'paid', count: 4 },
-      { status: 'under_review', count: 2 },
+  it('counts every operation, or one channel, with its paid amount', () => {
+    expect(channelFigures(STATS, '').count).toBe(9)
+    expect(channelFigures(STATS, 'bank_transfer')).toEqual({
+      count: 4,
+      paidTotal: '1150.00',
+      statusCounts: { paid: 1, underReview: 2, rejected: 1 },
+    })
+    expect(channelFigures(null, 'electronic')).toEqual({
+      count: 0,
+      paidTotal: '0.00',
+      statusCounts: {},
+    })
+  })
+
+  it('gives the status chips in order, with the counts of the chosen channel', () => {
+    expect(statusCountsIn(STATS, 'electronic')).toEqual([
+      { status: 'paid', count: 3 },
+      { status: 'under_review', count: 0 },
       { status: 'awaiting_payment', count: 1 },
-      { status: 'rejected', count: 1 },
+      { status: 'rejected', count: 0 },
+      { status: 'cancelled', count: 0 },
       { status: 'failed', count: 1 },
     ])
   })
 
-  it('gives each channel its own total, paid amount and statuses', () => {
-    expect(channelSummary(STATS, 'bank_transfer')).toEqual({
-      channel: 'bank_transfer',
-      count: 4,
-      paidTotal: '1150.00',
-      cells: [
-        { status: 'paid', count: 1 },
-        { status: 'under_review', count: 2 },
-        { status: 'awaiting_payment', count: 0 },
-        { status: 'rejected', count: 1 },
-      ],
+  it('adds the refunded chip only where refunded operations exist', () => {
+    expect(statusCountsIn(API_STATS, 'bank_transfer').at(-1)).toEqual({
+      status: 'refunded',
+      count: 2,
     })
-    expect(channelSummary(null, 'electronic').cells.every((cell) => cell.count === 0)).toBe(true)
+    expect(statusCountsIn(API_STATS, 'electronic').map((chip) => chip.status)).not.toContain(
+      'refunded',
+    )
+  })
+
+  it('splits each channel bar by the statuses it has, adding up to its total', () => {
+    const electronic = statusDistribution(API_STATS, 'electronic')
+    const bank = statusDistribution(API_STATS, 'bank_transfer')
+    expect(electronic).toEqual([
+      { status: 'paid', count: 5 },
+      { status: 'cancelled', count: 1 },
+    ])
+    expect(sumOf(bank)).toBe(API_STATS.channels.bankTransfer.count)
+    expect(sumOf(statusDistribution(API_STATS, ''))).toBe(API_STATS.transactionsCount)
   })
 })
 
@@ -100,20 +121,5 @@ describe('entityInitials', () => {
     expect(entityInitials('Ruwad Al-Ataa Foundation')).toBe('RA')
     expect(entityInitials('Namaa Charity')).toBe('NC')
     expect(entityInitials('')).toBe('')
-  })
-
-  it('adds every status that occurs to the cards, so each card adds up to its total', () => {
-    const electronic = channelSummary(API_STATS, 'electronic')
-    const bank = channelSummary(API_STATS, 'bank_transfer')
-    expect(sumOf(electronic.cells)).toBe(electronic.count)
-    expect(sumOf(bank.cells)).toBe(bank.count)
-    expect(sumOf(overallSplit(API_STATS))).toBe(API_STATS.transactionsCount)
-    expect(electronic.cells.map((cell) => cell.status)).toEqual([
-      'paid',
-      'awaiting_payment',
-      'failed',
-      'cancelled',
-    ])
-    expect(bank.cells.at(-1)).toEqual({ status: 'refunded', count: 2 })
   })
 })

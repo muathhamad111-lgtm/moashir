@@ -127,6 +127,7 @@ const filterState = { filters: filters.filters, setFilter }
       </template>
 
       <DataTable
+        table-key="settings-abandoned-carts"
         :columns="columns"
         :items="items"
         :status="status"

@@ -49,13 +49,14 @@ test('the System Administrator finds a paid draft in the request list and follow
   await page.setViewportSize(DESKTOP)
   await signIn(page, testInfo, USERS.systemAdmin)
   await page.goto('/admin/requests?path=accredited')
-  // Admin review 2026-11-20: one list; a draft shows «قيد الإعداد» with the entity's progress.
+  // Admin review 2026-11-20: one list; a draft shows «قيد الإعداد». DEPLOY #59 table rule: the
+  // status column holds the badge only, the entity's progress is on the request page.
   await expect(page.locator('.tabs__tab')).toHaveCount(0)
   const row = page.locator('tbody tr', { hasText: DRAFT_NUMBER })
-  await expect(row.locator('.request-queue__preparing')).toContainText(
-    isEn(testInfo) ? 'Being prepared' : 'قيد الإعداد',
-  )
-  await expect(row.locator('[role="progressbar"]')).toBeVisible()
+  await expect(
+    row.locator('.badge', { hasText: isEn(testInfo) ? 'Being prepared' : 'قيد الإعداد' }),
+  ).toHaveCount(1)
+  await expect(row.locator('[role="progressbar"]')).toHaveCount(0)
 
   // Operator note 2026-11-22: the stage is chosen in the filter panel, not in chips above the table.
   await expect(page.locator('.queue-stages')).toHaveCount(0)

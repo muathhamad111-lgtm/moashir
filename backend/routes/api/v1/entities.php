@@ -12,6 +12,7 @@ use App\Http\Controllers\Api\V1\Entities\EntityDeletionImpactController;
 use App\Http\Controllers\Api\V1\Entities\EntityEmailChangeController;
 use App\Http\Controllers\Api\V1\Entities\EntityProfileChangeController;
 use App\Http\Controllers\Api\V1\Entities\EntityProfileChangeRequestController;
+use App\Http\Controllers\Api\V1\Entities\EntityTimelineController;
 use App\Http\Controllers\Api\V1\Entities\ExportEntitiesController;
 use App\Http\Controllers\Api\V1\Entities\MyEmailChangeController;
 use App\Http\Controllers\Api\V1\Entities\MyEntityController;
@@ -81,6 +82,7 @@ Route::middleware(['auth:sanctum', 'session.timeouts', 'mfa', 'password.current'
             Route::get('{entity}', [EntityController::class, 'show'])->middleware('can:view,entity')->name('show');
             Route::put('{entity}', [EntityController::class, 'update'])->middleware(['can:update,entity', 'throttle:sensitive'])->name('update');
             Route::get('{entity}/profile-changes', EntityProfileChangeController::class)->middleware('can:viewProfileChanges,entity')->name('profile-changes');
+            Route::get('{entity}/timeline', EntityTimelineController::class)->middleware('can:view,entity')->name('timeline');
             Route::post('{entity}/deactivate', DeactivateEntityController::class)->middleware(['can:deactivate,entity', 'throttle:sensitive'])->name('deactivate');
             Route::post('{entity}/reactivate', ReactivateEntityController::class)->middleware(['can:reactivate,entity', 'throttle:sensitive'])->name('reactivate');
             Route::post('{entity}/approve', ApproveEntityController::class)->middleware(['can:review,entity', 'throttle:sensitive'])->name('approve');

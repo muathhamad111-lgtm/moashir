@@ -175,6 +175,7 @@ function onAction(key, row) {
       </template>
 
       <DataTable
+        table-key="bag-requests"
         :columns="columns"
         :items="items"
         :status="status"

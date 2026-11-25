@@ -36,7 +36,7 @@ describe('BillingDetailsNotice', () => {
     await flushPromises()
     const notice = wrapper.get('[data-testid="billing-details-notice"]')
     expect(notice.attributes('role')).toBe('note')
-    expect(notice.text()).toContain('بيانات الفوترة في ملف جهتك غير مكتملة')
+    expect(notice.text()).toContain('العنوان الوطني والتسجيل الضريبي في ملف جهتك غير مكتملَين')
     expect(notice.get('a').attributes('href')).toContain('#profile-section-billing')
   })
 

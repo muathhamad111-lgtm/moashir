@@ -30,8 +30,21 @@
   }
 }
 
+// The lead: a notice strip across the card's top, then quick filters, above the toolbar.
+.data-card__lead {
+  @include flex(column, stretch, flex-start);
+  min-inline-size: 0;
+  border-block-end: var(--border-width) solid var(--theme-border);
+  border-start-start-radius: inherit;
+  border-start-end-radius: inherit;
+
+  &:empty {
+    display: none;
+  }
+}
+
 // Notices that belong to the list (an outcome, a conflict, a bulk bar) sit inside the card's gutter.
-.data-card > :not(.data-card__toolbar, .data-card__footer, .table-wrap) {
+.data-card > :not(.data-card__lead, .data-card__toolbar, .data-card__footer, .table-wrap) {
   margin-block: var(--space-4) 0;
   margin-inline: var(--space-5);
 }
@@ -49,4 +62,15 @@
   > .pagination {
     margin: 0;
   }
+}
+
+// A table without a list toolbar keeps its «الأعمدة» menu on a bar of its own above it.
+.table-columns-bar {
+  @include flex(row, center, flex-end, var(--space-2));
+  margin-block-end: var(--space-3);
+}
+
+.data-card > .table-columns-bar {
+  margin-block: var(--space-3) 0;
+  margin-inline: var(--space-5);
 }

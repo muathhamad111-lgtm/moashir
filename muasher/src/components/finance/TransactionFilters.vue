@@ -10,30 +10,55 @@ import { PERMISSIONS } from '@/constants/permissionKeys'
 import { PAYMENT_PURPOSE_VALUES } from '@/constants/payments'
 import { TRANSACTION_SORTS } from '@/constants/finance'
 import { INTEGRATION_MODES } from '@/constants/integrations'
+import { channelFigures, statusCountOf } from '@/utils/finance/overviewStats'
+import { withLatinNumerals } from '@/utils/numerals'
 import {
   LIST_FILTERS,
   joinFilterValues,
   splitFilterValue,
 } from '@/utils/finance/transactionFilterValues'
 
-defineProps({
+const props = defineProps({
   filters: { type: Object, required: true },
   sort: { type: String, required: true },
+  // The figures behind each type and status count (none while they load).
+  stats: { type: Object, default: null },
 })
 
 const emit = defineEmits(['filter', 'sort'])
-const { t } = useI18n()
+const { t, locale } = useI18n()
 const { can } = usePermissions()
 const canPickEntity = computed(() => can(PERMISSIONS.ENTITIES_VIEW))
 
-// Labels only: a status explains itself on hover in the table, not inside the filter.
-function labelledOptions(group, values) {
-  return values.map((value) => ({ value, label: t(`finance.operations.${group}.${value}.label`) }))
+const COUNTS = {
+  types: (stats, value) => channelFigures(stats, value).count,
+  statuses: (stats, value) => statusCountOf(stats, value),
+}
+
+// Each type and status with how many operations it has; a status explains itself on hover in the
+// table, not inside the filter.
+function labelledOptions(group, values, stats) {
+  return values.map((value) => {
+    const label = t(`finance.operations.${group}.${value}.label`)
+    if (!stats) return { value, label }
+    const count = new Intl.NumberFormat(withLatinNumerals(locale.value)).format(
+      COUNTS[group](stats, value),
+    )
+    return { value, label: t('finance.filters.optionCount', { label, count }) }
+  })
 }
 
 const listFilters = computed(() => [
-  { key: 'type', group: 'types', options: labelledOptions('types', LIST_FILTERS.type) },
-  { key: 'status', group: 'statuses', options: labelledOptions('statuses', LIST_FILTERS.status) },
+  {
+    key: 'type',
+    group: 'types',
+    options: labelledOptions('types', LIST_FILTERS.type, props.stats),
+  },
+  {
+    key: 'status',
+    group: 'statuses',
+    options: labelledOptions('statuses', LIST_FILTERS.status, props.stats),
+  },
 ])
 
 function emitList(key, values) {

@@ -59,6 +59,7 @@ function decideFromReview(kind, transfer) {
       {{ t('finance.transfers.readOnly') }}
     </p>
     <DataListCard>
+      <template v-if="$slots.lead" #lead><slot name="lead" /></template>
       <template #toolbar>
         <ListToolbar
           v-model:search="searchInput"

@@ -1,7 +1,9 @@
 <script setup>
 import ExpandableSearch from './ExpandableSearch.vue'
 import FilterDialog from './FilterDialog.vue'
+import ColumnChooser from './ColumnChooser.vue'
 import { useFilterDraft } from '@/composables/useFilterDraft'
+import { useListCard } from '@/composables/useListCard'
 
 const props = defineProps({
   search: { type: String, default: '' },
@@ -12,6 +14,9 @@ const props = defineProps({
 
 const emit = defineEmits(['update:search'])
 const filterDraft = props.filterState ? useFilterDraft(props.filterState) : null
+// The list's «الأعمدة» menu sits here, between the filter and the export.
+const card = useListCard()
+if (card) card.hasToolbar = true
 </script>
 
 <template>
@@ -36,6 +41,14 @@ const filterDraft = props.filterState ? useFilterDraft(props.filterState) : null
       >
         <slot name="filters" :draft="filterDraft.draft" />
       </FilterDialog>
+      <ColumnChooser
+        v-if="card?.columnChoice?.optional.length"
+        :columns="card.columnChoice.optional"
+        :locked="card.columnChoice.locked"
+        :visible="card.columnChoice.visible"
+        @toggle="card.columnChoice.toggle"
+        @reset="card.columnChoice.reset"
+      />
       <slot name="export" />
     </div>
   </div>

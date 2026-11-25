@@ -1,31 +1,45 @@
 @use '../mixins' as *;
 
-$table-min: 48rem;
-$table-optional-below: 60rem;
-$table-primary-share: 24%;
-$table-status-width: 11rem;
-$table-date-width: 8rem;
-$table-number-width: 8rem;
-$table-code-width: 9rem;
-$table-actions-width: 9.5rem;
-$table-actions-labelled-width: 13rem;
+// Every list shows its data in full: identifiers, names, statuses, dates and amounts never end in an
+// ellipsis. Each column takes its content's width; when the shown columns are wider than the card,
+// the table scrolls sideways inside it, with the first column (what the row is) and the actions
+// held in place and a soft shadow on the side that has more. Only free text (a message, a note) is
+// clamped to two lines, with the full text on hover. The viewer picks the columns (ColumnChooser).
+$table-note-max: 24rem;
+$table-sticky-below: 30rem;
+$table-edge-shadow-offset: 0.5rem;
 
 .table-wrap {
   position: relative;
   container: data-table / inline-size;
   inline-size: 100%;
   overflow-x: auto;
+  overscroll-behavior-inline: contain;
   border: var(--border-width) solid var(--theme-border);
   border-radius: var(--radius-lg);
+  --table-edge-shade: color-mix(in srgb, var(--theme-heading) 16%, transparent);
+  --table-edge-shadow-start: #{$table-edge-shadow-offset} 0 #{$table-edge-shadow-offset}
+    calc(#{$table-edge-shadow-offset} * -1) var(--table-edge-shade);
+  --table-edge-shadow-end: calc(#{$table-edge-shadow-offset} * -1) 0 #{$table-edge-shadow-offset}
+    calc(#{$table-edge-shadow-offset} * -1) var(--table-edge-shade);
+
+  &:focus-visible {
+    @include focus-ring;
+  }
 }
 
-// The columns share the list's width by kind (see below), so a table fits its card at laptop
-// widths; under its minimum it scrolls inside the card instead of squeezing its columns.
+// The shadows fall toward the scrolled content: rightwards from the start in English, leftwards in Arabic.
+.table-wrap:dir(rtl) {
+  --table-edge-shadow-start: calc(#{$table-edge-shadow-offset} * -1) 0 #{$table-edge-shadow-offset}
+    calc(#{$table-edge-shadow-offset} * -1) var(--table-edge-shade);
+  --table-edge-shadow-end: #{$table-edge-shadow-offset} 0 #{$table-edge-shadow-offset}
+    calc(#{$table-edge-shadow-offset} * -1) var(--table-edge-shade);
+}
+
 .table {
   inline-size: 100%;
-  min-inline-size: $table-min;
-  table-layout: fixed;
-  border-collapse: collapse;
+  border-collapse: separate;
+  border-spacing: 0;
   background-color: var(--theme-surface);
 }
 
@@ -37,7 +51,6 @@ $table-actions-labelled-width: 13rem;
 }
 
 .table__row {
-  border-block-end: var(--border-width) solid var(--theme-border);
   transition: background-color var(--t-fast) var(--ease);
 
   &:hover {
@@ -48,51 +61,43 @@ $table-actions-labelled-width: 13rem;
 .table__cell {
   padding-block: var(--space-3);
   padding-inline: var(--space-3);
+  border-block-end: var(--border-width) solid var(--theme-border);
   text-align: start;
-}
-
-// A row reads on one line (two where a cell adds a muted detail): text keeps to its line and ends
-// with an ellipsis at its column's width; DataTable shows the full text on hover or focus. Status
-// and actions cells never clip, so their tooltips and menus stay whole.
-.table .table__cell {
   white-space: nowrap;
 }
 
-.table__head .table__cell {
-  overflow: hidden;
-  text-overflow: ellipsis;
+// Short columns (status, dates, amounts, codes, actions) keep to their content; the first column
+// and the text columns share the rest of the card.
+.table__cell--status,
+.table__cell--date,
+.table__cell--number,
+.table__cell--code,
+.table__cell--actions {
+  inline-size: 1%;
 }
 
-.table tbody .table__cell:not(.table__cell--status, .table__cell--actions) > .table__value {
-  overflow: clip;
-  overflow-clip-margin: var(--space-1);
-  text-overflow: ellipsis;
+.table__cell--number {
+  text-align: end;
 }
 
-:where(.table tbody .table__value)
-  :where(span, a, bdi, time, strong, p, small):where(:not(:has(*), .badge, .badge *, .btn *)) {
-  overflow: hidden;
-  max-inline-size: 100%;
-  text-overflow: ellipsis;
+.table__cell--date,
+.table__cell--number,
+.table__cell--code {
+  font-variant-numeric: tabular-nums;
 }
 
-:where(.table tbody .table__value)
-  :where(span, a, bdi, time, strong, small):where(:not(:has(*), .badge, .badge *, .btn *)) {
-  display: inline-block;
-  vertical-align: bottom;
-}
+// Free text reads on up to two lines; DataTable shows the full text on hover or focus.
+.table tbody .table__cell--note {
+  min-inline-size: calc($table-note-max / 2);
+  max-inline-size: $table-note-max;
+  white-space: normal;
 
-:where(.table tbody .table__value) :where(*) {
-  min-inline-size: 0;
-}
-
-// A plain status badge longer than its column («Qualified for national») ends in an ellipsis; the
-// full text shows on hover (see DataTable's revealFullText).
-.table tbody .table__cell--status .badge:not(:has(*)) {
-  overflow: hidden;
-  max-inline-size: 100%;
-  text-overflow: ellipsis;
-  vertical-align: middle;
+  > .table__value {
+    display: -webkit-box;
+    overflow: hidden;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+  }
 }
 
 // Secondary detail in a cell (a last sign-in, a time): small, regular, muted, on one line.
@@ -104,33 +109,47 @@ $table-actions-labelled-width: 13rem;
   white-space: nowrap;
 }
 
-// Column widths by kind (utils/tableColumns.js); text columns share what is left. A column
-// definition may set its own `width` instead.
-.table__cell--primary {
-  inline-size: $table-primary-share;
+// The first column and the actions stay in view while the rest scrolls; each carries the row's
+// background so the scrolled cells pass under it.
+.table {
+  .table__cell:first-child,
+  .table__cell--actions {
+    position: sticky;
+    z-index: 1;
+    background-color: var(--theme-surface);
+    transition: box-shadow var(--t-fast) var(--ease);
+  }
+
+  .table__cell:first-child {
+    inset-inline-start: 0;
+  }
+
+  .table__cell--actions {
+    inset-inline-end: 0;
+  }
+
+  .table__head .table__cell:first-child,
+  .table__head .table__cell--actions,
+  .table__row:hover .table__cell:first-child,
+  .table__row:hover .table__cell--actions {
+    background-color: var(--theme-surface-raised);
+  }
 }
 
-.table__cell--status {
-  inline-size: $table-status-width;
+.table-wrap.has-more-start .table__cell:first-child {
+  box-shadow: var(--table-edge-shadow-start);
 }
 
-.table__cell--date {
-  inline-size: $table-date-width;
+.table-wrap.has-more-end .table__cell--actions {
+  box-shadow: var(--table-edge-shadow-end);
 }
 
-.table__cell--number {
-  inline-size: $table-number-width;
-  text-align: end;
-}
-
-.table__cell--code {
-  inline-size: $table-code-width;
-}
-
-.table__cell--date,
-.table__cell--number,
-.table__cell--code {
-  font-variant-numeric: tabular-nums;
+// A list narrower than a phone column keeps only the actions in place.
+@container data-table (max-width: #{$table-sticky-below}) {
+  .table .table__cell:first-child {
+    position: static;
+    box-shadow: none;
+  }
 }
 
 .table--loading {
@@ -176,24 +195,7 @@ $table-actions-labelled-width: 13rem;
   }
 }
 
-.table__cell--actions {
-  inline-size: $table-actions-width;
-}
-
-// An actions column with a labelled button (open, assign, continue) is wider than icons need.
-.table:has(tbody .table__cell--actions .btn:not(.btn--icon)) .table__head .table__cell--actions {
-  inline-size: $table-actions-labelled-width;
-}
-
-// A column marked `optional` gives way when its list is narrower than a laptop column (the
-// sidebar open at 1280 px); the viewer can still choose it where the list offers column choice.
-@container data-table (max-width: #{$table-optional-below}) {
-  .table .table__cell--optional {
-    display: none;
-  }
-}
-
-// A column that needs another width names a size (`width: 'sm' | 'md' | 'lg' | 'xl'`).
+// A column may ask for a floor under its content width (`width: 'sm' | 'md' | 'lg' | 'xl'`).
 $table-column-widths: (
   'sm': 6.5rem,
   'md': 10rem,
@@ -203,7 +205,7 @@ $table-column-widths: (
 
 @each $name, $width in $table-column-widths {
   .table__head .table__cell--width-#{$name} {
-    inline-size: $width;
+    min-inline-size: $width;
   }
 }
 
@@ -261,6 +263,19 @@ $table-stack-below: 40rem;
 
 @container data-table (max-width: #{$table-stack-below}) {
   .table-wrap--stacked {
+    // A block holds every cell, so nothing needs holding in place; the line closes the block, not
+    // each of its cells.
+    .table .table__cell {
+      position: static;
+      inset-inline: auto;
+      border-block-end: 0;
+      box-shadow: none;
+    }
+
+    .table .table__row {
+      border-block-end: var(--border-width) solid var(--theme-border);
+    }
+
     .table,
     tbody {
       display: block;

@@ -29,7 +29,7 @@ async function render(props = {}) {
 beforeEach(() => vi.clearAllMocks())
 
 describe('EntityLevelCard (staff)', () => {
-  it('reads the certificates of the entity and shows the ribbon and the level history', async () => {
+  it('reads the certificates of the entity and shows the latest level as the ribbon', async () => {
     certificatesService.listCards.mockResolvedValue({
       data: [
         ISSUED,
@@ -43,8 +43,6 @@ describe('EntityLevelCard (staff)', () => {
       perPage: 20,
     })
     expect(wrapper.find('[data-testid="level-ribbon"]').attributes('data-tier')).toBe('gold')
-    expect(wrapper.findAll('.level-history__item')).toHaveLength(3)
-    expect(wrapper.find('.level-history__chip--current').text()).toBe('الحالية')
   })
 
   it('shows no level when the only certificate is revoked', async () => {
@@ -77,19 +75,19 @@ describe('EntityLevelCard (staff)', () => {
     expect(wrapper.find('[data-testid="level-reassessment"]').exists()).toBe(false)
   })
 
-  it('shows a retry on failure and then the empty history', async () => {
+  it('shows a retry on failure and then the ribbon', async () => {
     certificatesService.listCards.mockRejectedValueOnce(new Error('offline'))
     const wrapper = await render()
     expect(wrapper.find('.error-state').exists()).toBe(true)
     certificatesService.listCards.mockResolvedValueOnce({ data: [] })
     await wrapper.find('.error-state__retry button').trigger('click')
     await flushPromises()
-    expect(wrapper.find('.entity-level__empty').text()).toBe('لا توجد شهادات صادرة لهذه الجهة بعد.')
+    expect(wrapper.find('[data-testid="level-ribbon"]').attributes('data-tier')).toBe('none')
   })
 })
 
 describe('EntityLevelCard with an expired or expiring level (LC-5)', () => {
-  it('mutes the ribbon of an expired current level, keeps «الحالية» on its history row', async () => {
+  it('mutes the ribbon of an expired current level', async () => {
     certificatesService.listCards.mockResolvedValue({
       data: [{ ...ISSUED, validUntil: '2026-11-01', validity: 'expired', daysUntilExpiry: null }],
     })
@@ -98,7 +96,6 @@ describe('EntityLevelCard with an expired or expiring level (LC-5)', () => {
     expect(ribbon.attributes('data-tier')).toBe('gold')
     expect(ribbon.classes()).toContain('level-ribbon--expired')
     expect(ribbon.find('[data-testid="level-validity"]').text()).toContain('منتهية')
-    expect(wrapper.find('.level-history__chip--current').text()).toBe('الحالية')
     expect(wrapper.findAll('[data-testid="level-validity"]')).toHaveLength(1)
   })
 

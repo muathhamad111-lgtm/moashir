@@ -140,9 +140,9 @@ test.describe('Task-68 — staff', () => {
     page,
   }, testInfo) => {
     await seedSignedIn(page, FOLLOWER, { locale: localeOf(testInfo), theme: 'light' })
-    await open(page, '/admin/requests', '.request-queue__request .level-badge')
+    await open(page, '/admin/requests', '.table__row .level-badge')
     const tiers = await page
-      .locator('.request-queue__request .level-badge')
+      .locator('.table__row .level-badge')
       .evaluateAll((items) => items.map((item) => item.getAttribute('data-tier')))
     expect(tiers).toContain('gold')
     expect(tiers).toContain('none')

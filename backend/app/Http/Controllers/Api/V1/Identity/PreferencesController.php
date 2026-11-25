@@ -16,7 +16,7 @@ final class PreferencesController
 {
     public function show(#[CurrentUser] User $user): JsonResponse
     {
-        return ApiResponse::resource(new PreferencesResource($user));
+        return ApiResponse::resource(new PreferencesResource($user->load('tableColumns')));
     }
 
     public function update(UpdatePreferencesRequest $request, #[CurrentUser] User $user, UpdateOwnPreferences $updatePreferences): JsonResponse

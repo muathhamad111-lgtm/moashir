@@ -151,7 +151,9 @@ test('deleting an entity lists its open requests, re-shows a stale list and free
 
   await expect(page.locator('.toast--success')).toBeVisible()
   await expect(page.locator('.entity-record__notice')).toBeVisible()
-  await expect(page.locator('.entity-record__heading .frozen-badge')).toBeVisible()
+  await expect(page.locator('.entity-head__main .frozen-badge')).toBeVisible()
+  // The frozen requests open the «التقييمات» tab of the record.
+  await page.getByRole('tab', { name: isEn(testInfo) ? 'Assessments' : 'التقييمات' }).click()
   await expect(page.locator('.open-requests__row .frozen-badge')).toHaveCount(3)
   await page.screenshot({
     path: `test-results/entities-frozen-record-${suffix(testInfo)}.png`,

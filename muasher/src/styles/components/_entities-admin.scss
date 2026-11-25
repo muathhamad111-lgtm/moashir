@@ -8,8 +8,7 @@
   padding-block: var(--space-4);
 }
 
-.entities-admin__header,
-.entity-record__header {
+.entities-admin__header {
   @include flex(row, flex-start, space-between, var(--space-4));
   flex-wrap: wrap;
 }
@@ -101,12 +100,6 @@
   font-size: var(--fs-xs);
 }
 
-.entity-table__level .level-badge__chip {
-  max-inline-size: 100%;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
 .entity-last-assessment {
   @include flex(column, flex-start, flex-start, var(--space-1));
 }
@@ -170,7 +163,6 @@
   }
 }
 
-.entity-record__heading,
 .entity-record__actions {
   @include flex(row, center, flex-start, var(--space-3));
   flex-wrap: wrap;
@@ -179,14 +171,4 @@
 .entity-record__reference {
   font-size: var(--fs-sm);
   color: var(--theme-text-muted);
-}
-
-.entity-record__grid {
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: var(--space-5);
-
-  @include respond-to('lg') {
-    grid-template-columns: 1fr 1fr;
-  }
 }

@@ -85,6 +85,10 @@ export const entitiesService = {
   get(id) {
     return read('get', () => apiClient.get(`/entities/${id}`))
   },
+  // The staff record's «سجل الحساب»: the account events, profile changes and e-mail changes, newest first.
+  timeline(id, params = {}) {
+    return read('timeline', () => apiClient.get(`/entities/${id}/timeline`, { params }), params)
+  },
   updateOnBehalf(id, payload) {
     return write('updateOnBehalf', () => apiClient.put(`/entities/${id}`, payload), payload)
   },

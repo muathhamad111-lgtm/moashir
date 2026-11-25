@@ -37,6 +37,7 @@ function statusLabel(row) {
 
 <template>
   <DataTable
+    table-key="nda-register"
     :columns="columns"
     :items="items"
     :status="status"

@@ -17,7 +17,8 @@ function seed(page, testInfo, user) {
   return seedSignedIn(page, user, { locale: isEn(testInfo) ? 'en' : 'ar' })
 }
 
-const historyRows = (page) => page.locator('.profile-history tbody tr')
+// The staff record's «سجل الحساب» tab: account events and profile changes, newest first.
+const historyRows = (page) => page.locator('.entity-timeline__item--profile_field_changed')
 
 test('the entity sees its own change history without staff names', async ({ page }, testInfo) => {
   await seed(page, testInfo, ENTITY)
@@ -39,14 +40,14 @@ test('staff readers see the staff name with the first role, or the staff label w
   page,
 }, testInfo) => {
   await seed(page, testInfo, SYSTEM_ADMIN)
-  await page.goto('/admin/entities/5001')
+  await page.goto('/admin/entities/5001?tab=history')
   await expect(historyRows(page)).toHaveCount(4)
   await expect(historyRows(page).nth(2)).toContainText(
     /منيرة بنت خالد العتيبي — (System Administrator|مدير النظام)/,
   )
   await expect(historyRows(page).nth(1)).toContainText(/Staff member|موظف/)
   await expect(historyRows(page).nth(0)).toContainText(/System|النظام/)
-  await page.locator('.profile-history').scrollIntoViewIfNeeded()
+  await page.locator('.entity-timeline').scrollIntoViewIfNeeded()
   await page.screenshot({
     path: `test-results/entity-history-staff-${isEn(testInfo) ? 'en-ltr' : 'ar-rtl'}.png`,
     fullPage: true,
@@ -55,7 +56,7 @@ test('staff readers see the staff name with the first role, or the staff label w
 
 test('the contact-only finance view has no change history', async ({ page }, testInfo) => {
   await seed(page, testInfo, FINANCE)
-  await page.goto('/admin/entities/5001')
+  await page.goto('/admin/entities/5001?tab=history')
   await expect(page.locator('.entity-record__title')).toBeVisible()
-  await expect(page.locator('.profile-history')).toHaveCount(0)
+  await expect(page.locator('.entity-timeline')).toHaveCount(0)
 })

@@ -17,7 +17,7 @@ const ROW = {
 }
 
 describe('RequestQueueTable entity level', () => {
-  it('puts a compact level badge under the entity name in the request column, «بلا مستوى» without a level', () => {
+  it('shows a compact level badge in its own «المستوى» column, «بلا مستوى» without a level', () => {
     const wrapper = mount(RequestQueueTable, {
       props: {
         items: [ROW, { ...ROW, id: 9102, entity: { ...ROW.entity, id: 6003, level: null } }],
@@ -25,7 +25,9 @@ describe('RequestQueueTable entity level', () => {
       },
       global: createTestGlobals(),
     })
-    const badges = wrapper.findAll('.request-queue__request .level-badge--s')
+    expect(wrapper.findAll('th').map((cell) => cell.text())).toContain('المستوى')
+    expect(wrapper.find('.request-queue__request .level-badge').exists()).toBe(false)
+    const badges = wrapper.findAll('tbody .level-badge--s')
     expect(badges.map((badge) => badge.attributes('data-tier'))).toEqual(['gold', 'none'])
     expect(badges[1].text()).toContain('بلا مستوى')
   })
@@ -54,7 +56,7 @@ describe('RequestQueueTable last level (LC-5)', () => {
       },
       global: createTestGlobals({ locale: 'en' }),
     })
-    const badge = wrapper.find('.request-queue__request .level-badge')
+    const badge = wrapper.find('tbody .level-badge')
     expect(badge.attributes('data-tier')).toBe('silver')
     expect(badge.classes()).toContain('level-badge--expired')
     expect(wrapper.find('[data-testid="level-validity"]').text()).toContain('Expired')
@@ -111,21 +113,29 @@ describe('RequestQueueTable merged request column, draft progress and assessor',
     })
   }
 
-  it('shows the number, the entity name and its level in one request column', () => {
+  it('shows the number and the entity name in one request column', () => {
     const wrapper = mountTable([ROW])
     const headers = wrapper.findAll('th').map((cell) => cell.text())
     expect(headers).not.toContain('الجهة')
     const cell = wrapper.find('.request-queue__request')
     expect(cell.find('a[href="/admin/requests/9101"]').text()).toBe('ACC-2026-000058')
     expect(cell.find('.request-queue__entity-name').text()).toBe('جمعية إحسان')
-    expect(cell.find('.level-badge').exists()).toBe(true)
+    expect(cell.find('.level-badge').exists()).toBe(false)
   })
 
-  it('shows a draft as being prepared with the entity progress and no assessor yet', () => {
+  it('starts with the submission date hidden and the level shown', () => {
+    const wrapper = mountTable([ROW], 'en')
+    const headers = wrapper.findAll('th').map((cell) => cell.text())
+    expect(headers).not.toContain('Submitted')
+    expect(headers).toContain('Level')
+    expect(headers).toContain('Request')
+  })
+
+  it('shows a draft as being prepared, badge only, and no assessor yet', () => {
     const draft = { ...ROW, status: 'draft', progress: { complete: 3, total: 19 } }
     const wrapper = mountTable([draft], 'en')
-    expect(wrapper.find('.request-queue__preparing').text()).toContain('Being prepared')
-    expect(wrapper.find('[role="progressbar"]').attributes('aria-valuenow')).toBe('3')
+    expect(wrapper.find('tbody .badge').text()).toContain('Being prepared')
+    expect(wrapper.find('[role="progressbar"]').exists()).toBe(false)
     expect(wrapper.text()).not.toContain('Unassigned')
   })
 

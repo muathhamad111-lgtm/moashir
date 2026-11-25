@@ -11,6 +11,7 @@ import {
 } from '../stores/entityAccess'
 import { sessionCan } from '../stores/sessionPermissions'
 import { changesOf, ownChangeResource, staffChangeResource } from '../stores/profileChangesStore'
+import { timelineOf } from '../stores/entityTimeline'
 
 function sectionFilter(request) {
   const section = new URL(request.url).searchParams.get('section')
@@ -46,6 +47,15 @@ export const entityProfileChangesHandlers = [
       const entity = viewableEntity(user, params.id)
       if (!hasFullAccess(user)) throw entityReject.forbidden()
       return page(request, changesOf(entity.id, sectionFilter(request)), staffChangeResource)
+    }),
+  ),
+
+  http.get(
+    '/api/v1/entities/:id/timeline',
+    entityRoute(({ params, request }) => {
+      const user = signedInUser()
+      const entity = viewableEntity(user, params.id)
+      return page(request, timelineOf(entity, { full: hasFullAccess(user) }), (item) => item)
     }),
   ),
 ]

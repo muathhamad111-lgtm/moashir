@@ -253,14 +253,13 @@ test.describe('Task-84 — S2 record level card and record header', () => {
         await open(page, `/admin/entities/${ALBIRR.id}`, '[data-testid="level-ribbon"]')
         const ribbon = page.locator('[data-testid="level-ribbon"]')
         await expect(ribbon).toHaveAttribute('data-tier', ALBIRR.tier)
-        await expect(page.locator('.entity-record__heading .level-badge')).toHaveCount(0)
+        await expect(page.locator('.entity-head__main .level-badge')).toHaveCount(0)
         await expectChip(ribbon, state.chip, testInfo)
         expect(
           await ribbon.evaluate((item) => item.classList.contains('level-ribbon--expired')),
         ).toBe(state.chip === 'expired')
-        await expect(page.locator('.level-history__chip--current')).toBeVisible()
         await capture(
-          page.locator('.entity-record__level'),
+          page.locator('.entity-level'),
           page,
           `s2-record-ribbon-${state.key}-${theme}`,
           testInfo,
@@ -271,15 +270,15 @@ test.describe('Task-84 — S2 record level card and record header', () => {
         page,
       }, testInfo) => {
         await signIn(page, FOLLOWER, testInfo, { scenario: state.scenario, theme })
-        await open(page, `/admin/entities/${ALBIRR.id}`, '.entity-record__heading .level-badge')
+        await open(page, `/admin/entities/${ALBIRR.id}`, '.entity-head__main .level-badge')
         await expect(page.locator('[data-testid="level-ribbon"]')).toHaveCount(0)
         await expectLevel(
-          page.locator('.entity-record__heading'),
+          page.locator('.entity-head__main'),
           { tier: ALBIRR.tier, chip: state.chip },
           testInfo,
         )
         await capture(
-          page.locator('.entity-record__header'),
+          page.locator('.entity-head'),
           page,
           `s2-record-header-${state.key}-${theme}`,
           testInfo,
@@ -296,9 +295,9 @@ test.describe('Task-84 — S3 request queue and S4 request detail', () => {
         page,
       }, testInfo) => {
         await signIn(page, FOLLOWER, testInfo, { scenario: state.scenario, theme })
-        await open(page, '/admin/requests', '.request-queue__request .level-badge')
+        await open(page, '/admin/requests', '.table__row .level-badge')
         const cell = page
-          .locator('.request-queue__request')
+          .locator('.table__row')
           .filter({ has: page.locator(`.level-badge[data-tier="${EHSAN.tier}"]`) })
           .first()
         await expect(cell).toBeVisible()
@@ -361,14 +360,10 @@ test.describe('Task-84 — readable muted level names (WCAG 2.1 AA)', () => {
       page,
     }, testInfo) => {
       await signIn(page, FOLLOWER, testInfo, { scenario: 'certificate-expired', theme })
-      await open(
-        page,
-        `/admin/entities/${ALBIRR.id}`,
-        '.entity-record__heading .level-badge--expired',
-      )
+      await open(page, `/admin/entities/${ALBIRR.id}`, '.entity-head__main .level-badge--expired')
       const headerName = await measure(
         page,
-        '.entity-record__heading .level-badge__label',
+        '.entity-head__main .level-badge__label',
         'S2 header badge name',
         testInfo,
         theme,

@@ -10,6 +10,7 @@ import TransactionParties from '@/components/finance/TransactionParties.vue'
 import TransactionFacts from '@/components/finance/TransactionFacts.vue'
 import { financeService } from '@/services/financeService'
 import { useAuthStore } from '@/stores/auth'
+import { useTableColumnsStore } from '@/stores/tableColumns'
 import { sessionUserFor } from '@/test-utils/session'
 import { createTestGlobals } from '@/test-utils'
 
@@ -177,34 +178,37 @@ describe('TransactionsTable', () => {
     createdAt: '2026-11-10T09:00:00Z',
   }
 
-  it('shows the operation, the entity, the amount with its VAT, the payment, the status and the date', () => {
+  it('shows the operation, the entity, the amount with its VAT, the status and the date by default', () => {
     const wrapper = mountWith(TransactionsTable, {
       actionsFor: viewOnly,
       items: [ROW],
       status: 'success',
     })
     const headers = wrapper.findAll('th').map((header) => header.text())
-    expect(headers).toEqual([
-      'Operation',
-      'Entity',
-      'Amount',
-      'Payment',
-      'Status',
-      'Date',
-      'Receipt no.',
-      'Before VAT',
-      expect.any(String),
-    ])
+    expect(headers).toEqual(['Operation', 'Entity', 'Amount', 'Status', 'Date', expect.any(String)])
     const cells = wrapper.findAll('tbody td')
     expect(cells[0].text()).toContain('PAY-2026-000009')
     expect(cells[0].text()).toContain('Accredited')
     expect(cells[2].text()).toContain('1,150.00')
     expect(cells[2].text()).toContain('150.00')
-    const payment = cells[3].findAll('.transactions-table__stack > *')
-    expect(payment).toHaveLength(2)
-    expect(payment[1].text()).toBe('mada')
     const created = wrapper.find('time.transactions-table__date').findAll('span')
     expect(created.map((line) => line.text())).toEqual(['2026-11-10', '12:00 PM'])
+  })
+
+  it('shows the payment channel and method once the viewer turns that column on', async () => {
+    const wrapper = mountWith(TransactionsTable, {
+      actionsFor: viewOnly,
+      items: [ROW],
+      status: 'success',
+    })
+    await flushPromises()
+    useTableColumnsStore().choices = {
+      'finance-transactions': ['entity', 'total', 'payment', 'status', 'createdAt'],
+    }
+    await flushPromises()
+    const payment = wrapper.findAll('tbody td')[3].findAll('.transactions-table__stack > *')
+    expect(payment).toHaveLength(2)
+    expect(payment[1].text()).toBe('mada')
   })
 
   it('identifies the entity by its initials and number, never by an e-mail', () => {
@@ -219,13 +223,12 @@ describe('TransactionsTable', () => {
     expect(wrapper.text()).not.toContain('owner@namaa.sa')
   })
 
-  it('hides the columns the viewer turned off and sorts by amount and date', async () => {
+  it('starts with the optional columns hidden and sorts by amount and date', async () => {
     const wrapper = mountWith(TransactionsTable, {
       actionsFor: viewOnly,
       items: [ROW],
       status: 'success',
       sort: '-created_at',
-      isVisible: (key) => !['receipt', 'beforeVat', 'payment'].includes(key),
     })
     const headers = wrapper.findAll('th').map((header) => header.text())
     expect(headers).not.toContain('Receipt no.')

@@ -7,6 +7,7 @@ import { smsIntegrationService } from '@/services/smsIntegrationService'
 import { emailIntegrationService } from '@/services/emailIntegrationService'
 import { aiIntegrationService } from '@/services/aiIntegrationService'
 import { profileChangesService } from '@/services/profileChangesService'
+import { entitiesService } from '@/services/entitiesService'
 
 vi.mock('@/api/client', () => ({
   apiClient: { get: vi.fn(), post: vi.fn(), put: vi.fn(), delete: vi.fn() },
@@ -124,14 +125,14 @@ describe('integration services', () => {
 })
 
 describe('entity follow-up services', () => {
-  it('reads both profile change histories', async () => {
+  it('reads the own profile history and the staff account timeline', async () => {
     await profileChangesService.listMine({ page: 2, perPage: 10 })
-    await profileChangesService.listForEntity(5001, { page: 1, perPage: 10 })
+    await entitiesService.timeline(5001, { page: 1, perPage: 15 })
     expect(apiClient.get).toHaveBeenCalledWith('/entities/me/profile-changes', {
       params: { page: 2, perPage: 10 },
     })
-    expect(apiClient.get).toHaveBeenCalledWith('/entities/5001/profile-changes', {
-      params: { page: 1, perPage: 10 },
+    expect(apiClient.get).toHaveBeenCalledWith('/entities/5001/timeline', {
+      params: { page: 1, perPage: 15 },
     })
   })
 })

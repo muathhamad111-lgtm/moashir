@@ -9,8 +9,10 @@ import OverdueBadge from '@/components/accredited/OverdueBadge.vue'
 import RequestQueueRequestCell from './RequestQueueRequestCell.vue'
 import RequestQueueStatusCell from './RequestQueueStatusCell.vue'
 import RequestQueueAssessorCell from './RequestQueueAssessorCell.vue'
+import LevelBadge from '@/components/level/LevelBadge.vue'
 import { ROUTE_NAMES } from '@/constants/routeNames'
 import { localizedText } from '@/utils/localizedText'
+import { displayTierOf } from '@/utils/levelTier'
 import { assignmentModeOf } from '@/utils/assessments/reviewStages'
 import { ASSIGNMENT_MODES } from '@/constants/accredited'
 
@@ -26,8 +28,10 @@ const props = defineProps({
 const emit = defineEmits(['retry', 'assign'])
 const { t, locale } = useI18n()
 
+// The viewer picks the optional columns («الأعمدة»); the request and actions always show.
 const columns = computed(() => [
   { key: 'number', label: t('requests.columns.number') },
+  { key: 'level', label: t('requests.columns.level') },
   ...(props.showsCycle ? [{ key: 'cycle', label: t('requests.columns.cycle') }] : []),
   ...(props.showsRegion ? [{ key: 'region', label: t('requests.columns.region') }] : []),
   { key: 'status', label: t('requests.columns.status') },
@@ -48,6 +52,7 @@ function detailRouteOf(item) {
 
 <template>
   <DataTable
+    table-key="requests-queue"
     :columns="columns"
     :items="items"
     :status="status"
@@ -58,6 +63,14 @@ function detailRouteOf(item) {
   >
     <template #cell-number="{ item }">
       <RequestQueueRequestCell :item="item" :to="detailRouteOf(item)" />
+    </template>
+    <template #cell-level="{ item }">
+      <LevelBadge
+        v-if="item.entity"
+        :tier="displayTierOf(item.entity)"
+        size="s"
+        :certificate="item.entity.lastLevel"
+      />
     </template>
     <template #cell-cycle="{ item }"
       >{{ item.awardCycle ? localizedText(item.awardCycle.name, locale) : '' }}

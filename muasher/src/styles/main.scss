@@ -115,7 +115,6 @@
 @use 'components/self-actions';
 @use 'components/rebind-summary';
 @use 'components/result-pending';
-@use 'components/entity-assessments';
 @use 'components/settings-hub';
 @use 'components/settings-section';
 @use 'components/settings-form';
@@ -259,11 +258,11 @@
 @use 'components/publication-control';
 @use 'components/entity-form';
 @use 'components/entity-details';
-@use 'components/entity-logo-preview';
 @use 'components/email-change';
 @use 'components/entity-deletion';
 @use 'components/open-requests';
 @use 'components/entities-admin';
+@use 'components/entity-record-layout';
 @use 'components/checkbox-group';
 @use 'components/integration-card';
 @use 'components/connection-test';
@@ -280,7 +279,6 @@
 @use 'components/sms-counter';
 @use 'components/email-integration';
 @use 'components/ai-integration';
-@use 'components/profile-change-history';
 @use 'components/cycle-bindings';
 @use 'components/committee';
 @use 'components/committee-discussion';
@@ -304,7 +302,6 @@
 @use 'components/level-hero-motion';
 @use 'components/level-track';
 @use 'components/level-ribbon';
-@use 'components/level-history';
 @use 'components/level-achieved';
 @use 'components/entity-level';
 @use 'components/coming-soon-chip';

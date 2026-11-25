@@ -1,28 +1,23 @@
 <script setup>
 import { computed, onMounted, ref, toRef } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { useRouter } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import Card from '@/components/ui/Card.vue'
-import StatusBadge from '@/components/ui/StatusBadge.vue'
+import Tabs from '@/components/ui/Tabs.vue'
+import AppIcon from '@/components/ui/AppIcon.vue'
 import Skeleton from '@/components/feedback/Skeleton.vue'
 import ErrorState from '@/components/feedback/ErrorState.vue'
 import EmptyState from '@/components/feedback/EmptyState.vue'
-import FrozenBadge from '@/components/entities/FrozenBadge.vue'
 import EntityDetailsList from '@/components/entities/EntityDetailsList.vue'
-import EntityRecordActions from '@/components/entities/admin/EntityRecordActions.vue'
+import EntityRecordHeader from '@/components/entities/admin/EntityRecordHeader.vue'
 import FrozenRequestsCard from '@/components/entities/admin/FrozenRequestsCard.vue'
 import EntityActionsHost from '@/components/entities/admin/EntityActionsHost.vue'
-import ProfileChangeHistory from '@/components/entities/ProfileChangeHistory.vue'
-import EntityAssessmentsCard from '@/components/entities/admin/EntityAssessmentsCard.vue'
-import EntityLogoPreview from '@/components/entities/admin/EntityLogoPreview.vue'
+import EntityAssessmentsTable from '@/components/entities/admin/EntityAssessmentsTable.vue'
+import EntityAccountTimeline from '@/components/entities/admin/EntityAccountTimeline.vue'
 import EntityLevelCard from '@/components/entities/admin/EntityLevelCard.vue'
 import EntityPendingChangeCard from '@/components/entities/admin/EntityPendingChangeCard.vue'
-import LevelBadge from '@/components/level/LevelBadge.vue'
-import { displayTierOf, reassessmentOf } from '@/utils/levelTier'
-import EntityInsightsPanel from '@/components/insights/EntityInsightsPanel.vue'
 import { usePermissions } from '@/composables/usePermissions'
 import { PERMISSIONS } from '@/constants/permissionKeys'
-import { profileChangesService } from '@/services/profileChangesService'
 import { useEntityRecord } from '@/composables/useEntityRecord'
 import { useEntityDisplay } from '@/composables/useEntityDisplay'
 import { useBillingRows } from '@/composables/useBillingRows'
@@ -33,22 +28,20 @@ import {
   CONTACT_ROWS,
   DELETION_ROWS,
   DETAIL_ROWS,
-  LIFECYCLE_ROWS,
 } from '@/constants/entityRecordRows'
-import AppIcon from '@/components/ui/AppIcon.vue'
+
+const TAB_QUERY = 'tab'
 
 const props = defineProps({
   id: { type: String, required: true },
 })
 
 const { t } = useI18n()
+const route = useRoute()
 const router = useRouter()
-const { rowsOf, localized } = useEntityDisplay()
-const billingRows = useBillingRows()
+const { rowsOf } = useEntityDisplay()
+const addressRows = useBillingRows()
 const { can } = usePermissions()
-const showsLevelCard = computed(() => can(PERMISSIONS.CERTIFICATES_MANAGE))
-const hasOpenRequest = computed(() => entity.value?.hasOpenAccreditedRequest === true)
-const headerTier = computed(() => displayTierOf(entity.value ?? {}, hasOpenRequest.value))
 const {
   entity,
   status,
@@ -61,33 +54,24 @@ const {
   refreshLogo,
 } = useEntityRecord(toRef(props, 'id'))
 const actionsHost = ref(null)
+const showsLevelRibbon = computed(() => can(PERMISSIONS.CERTIFICATES_MANAGE))
 const historyVersion = ref(0)
-const loadHistory = (params) => profileChangesService.listForEntity(props.id, params)
 
-const sections = computed(() => {
-  if (!entity.value) return []
-  if (!isFullRecord.value)
-    return [{ key: 'contact', rows: rowsOf(entity.value, CONTACT_ONLY_ROWS) }]
-  const contact = { key: 'contact', rows: rowsOf(entity.value, CONTACT_ROWS) }
-  const deletion = entity.value.isDeleted
-    ? [{ key: 'deletion', rows: rowsOf(entity.value, DELETION_ROWS) }]
-    : []
-  const lifecycle = {
-    key: 'lifecycle',
-    rows: rowsOf(entity.value, LIFECYCLE_ROWS, { skipEmpty: true }),
-  }
+const tabs = computed(() => {
+  if (!isFullRecord.value) return [{ value: 'contact', label: t('entities.record.tabs.contact') }]
   return [
-    ...deletion,
-    { key: 'details', rows: rowsOf(entity.value, DETAIL_ROWS) },
-    contact,
-    { key: 'billing', rows: billingRows.rowsOf(entity.value) },
-    lifecycle,
-  ]
+    'general',
+    'contact',
+    'address',
+    ...(can(PERMISSIONS.ASSESSMENT_HISTORY_VIEW) ? ['assessments'] : []),
+    'history',
+  ].map((value) => ({ value, label: t(`entities.record.tabs.${value}`) }))
 })
-
-const backRoute = computed(() =>
-  entity.value?.isDeleted ? ROUTE_NAMES.ADMIN_ENTITIES_DELETED : ROUTE_NAMES.ADMIN_ENTITIES,
-)
+const activeTab = computed({
+  get: () =>
+    tabs.value.find((tab) => tab.value === route.query[TAB_QUERY])?.value ?? tabs.value[0].value,
+  set: (value) => router.replace({ query: { ...route.query, [TAB_QUERY]: value } }),
+})
 
 function onDone({ key }) {
   if (key === ENTITY_ACTIONS.PERMANENT_DELETE)
@@ -113,84 +97,68 @@ onMounted(load)
     />
 
     <template v-else-if="entity">
-      <router-link class="entity-record__back" :to="{ name: backRoute }">
-        <AppIcon name="arrow-left" />
-        {{ t(entity.isDeleted ? 'entities.record.backToDeleted' : 'entities.record.backToList') }}
-      </router-link>
-      <header class="entity-record__header">
-        <div class="entity-record__heading">
-          <h1 class="entity-record__title">{{ localized(entity.name) }}</h1>
-          <span class="entity-record__reference u-ltr">{{ entity.reference }}</span>
-          <StatusBadge :status="entity.status" />
-          <FrozenBadge v-if="entity.isFrozen" />
-          <LevelBadge
-            v-if="!showsLevelCard"
-            :tier="headerTier"
-            size="s"
-            :reassessment="reassessmentOf(headerTier, hasOpenRequest)"
-            :certificate="entity.lastLevel"
-          />
-        </div>
-        <EntityRecordActions :entity="entity" @action="actionsHost.run($event, entity)" />
-      </header>
+      <EntityRecordHeader
+        :entity="entity"
+        :refresh-logo="refreshLogo"
+        :shows-level-badge="!showsLevelRibbon"
+        @action="actionsHost.run($event, entity)"
+      />
 
       <EntityLevelCard
-        v-if="showsLevelCard"
-        class="entity-record__level"
+        v-if="showsLevelRibbon"
         :entity-id="entity.id"
-        :open-accredited="hasOpenRequest"
+        :open-accredited="entity.hasOpenAccreditedRequest === true"
       />
 
       <aside v-if="entity.isDeleted" class="entity-record__notice" role="note">
         <AppIcon name="snowflake" />
-        <p>{{ t('entities.record.deletedNotice') }}</p>
+        <div>
+          <p>{{ t('entities.record.deletedNotice') }}</p>
+          <EntityDetailsList :rows="rowsOf(entity, DELETION_ROWS)" />
+        </div>
       </aside>
-
-      <div class="entity-record__grid">
-        <Card
-          v-for="section in sections"
-          :key="section.key"
-          :title="t(`entities.record.sections.${section.key}`)"
-        >
-          <EntityDetailsList :rows="section.rows" />
-        </Card>
-        <EntityPendingChangeCard
-          v-if="can(PERMISSIONS.ENTITIES_PROFILE_CHANGE_APPROVE)"
-          :key="`pending-${historyVersion}`"
-          :entity-id="entity.id"
-          @decided="onDone({ key: 'profile_change' })"
-        />
-        <EntityLogoPreview
-          v-if="isFullRecord"
-          :logo="entity.logo ?? null"
-          :entity-name="localized(entity.name)"
-          :refresh="refreshLogo"
-        />
-        <FrozenRequestsCard
-          v-if="entity.isDeleted"
-          :requests="frozenRequests"
-          :status="frozenStatus"
-          @retry="loadFrozenRequests"
-        />
-        <EntityAssessmentsCard
-          v-if="can(PERMISSIONS.ASSESSMENT_HISTORY_VIEW)"
-          :key="`assessments-${historyVersion}`"
-          :entity-id="entity.id"
-        />
-      </div>
-
-      <EntityInsightsPanel
-        v-if="can(PERMISSIONS.REPORTS_INSIGHTS_VIEW)"
-        class="entity-record__insights"
+      <EntityPendingChangeCard
+        v-if="can(PERMISSIONS.ENTITIES_PROFILE_CHANGE_APPROVE)"
+        :key="`pending-${historyVersion}`"
         :entity-id="entity.id"
+        @decided="onDone({ key: 'profile_change' })"
       />
 
-      <ProfileChangeHistory
-        v-if="isFullRecord"
-        :key="historyVersion"
-        :loader="loadHistory"
-        show-staff-identity
-      />
+      <Tabs v-model="activeTab" class="entity-record__tabs" :tabs="tabs">
+        <div v-if="activeTab === 'general'" class="entity-record__panel">
+          <Card :title="t('entities.record.sections.details')">
+            <EntityDetailsList :rows="rowsOf(entity, DETAIL_ROWS)" />
+          </Card>
+          <Card :title="t('entities.record.sections.tax')">
+            <EntityDetailsList :rows="addressRows.taxRowsOf(entity)" />
+          </Card>
+        </div>
+        <Card v-else-if="activeTab === 'contact'" :title="t('entities.record.sections.contact')">
+          <EntityDetailsList
+            :rows="rowsOf(entity, isFullRecord ? CONTACT_ROWS : CONTACT_ONLY_ROWS)"
+          />
+        </Card>
+        <Card
+          v-else-if="activeTab === 'address'"
+          :title="t('entities.record.sections.nationalAddress')"
+        >
+          <EntityDetailsList :rows="addressRows.addressRowsOf(entity)" />
+        </Card>
+        <div v-else-if="activeTab === 'assessments'" class="entity-record__panel">
+          <FrozenRequestsCard
+            v-if="entity.isDeleted"
+            :requests="frozenRequests"
+            :status="frozenStatus"
+            @retry="loadFrozenRequests"
+          />
+          <EntityAssessmentsTable :key="`assessments-${historyVersion}`" :entity-id="entity.id" />
+        </div>
+        <EntityAccountTimeline
+          v-else-if="activeTab === 'history'"
+          :key="`history-${historyVersion}`"
+          :entity-id="entity.id"
+        />
+      </Tabs>
 
       <EntityActionsHost ref="actionsHost" @done="onDone" />
     </template>

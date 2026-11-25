@@ -238,7 +238,8 @@
       "title": "Completed successfully"
     },
     "table": {
-      "sortBy": "Sort by {column}"
+      "sortBy": "Sort by {column}",
+      "scrollRegion": "Scrollable table"
     },
     "passwordReveal": {
       "password": {
@@ -261,7 +262,8 @@
     "columns": {
       "title": "Visible columns",
       "open": "Columns",
-      "reset": "Restore the default columns"
+      "reset": "Restore the default columns",
+      "locked": "Always shown: {columns}"
     }
   },
   "status": {
@@ -2485,17 +2487,62 @@
       "sections": {
         "details": "Entity details",
         "contact": "Contact",
-        "lifecycle": "Account history",
         "deletion": "Deletion",
-        "billing": "Billing details"
+        "nationalAddress": "National address",
+        "tax": "Tax registration"
       },
       "logo": {
-        "title": "Entity logo",
         "alt": "Logo of {name}",
         "none": "The entity has not uploaded a logo yet.",
-        "unavailable": "The logo cannot be shown right now. Reload the page later.",
-        "uploadedOn": "Uploaded on",
-        "note": "The logo appears on accredited certificates issued after the upload, and every certificate keeps the logo it had when it was issued."
+        "unavailable": "The logo cannot be shown right now. Reload the page later."
+      },
+      "tabs": {
+        "general": "General",
+        "contact": "Contact",
+        "address": "National address",
+        "assessments": "Assessments",
+        "history": "Account history"
+      },
+      "timeline": {
+        "title": "Account history",
+        "changed": "“{field}” changed",
+        "events": {
+          "created": "Entity registered",
+          "verificationReminded": "Verification reminder sent",
+          "verified": "Entity verified",
+          "approved": "Entity approved",
+          "rejected": "Entity rejected",
+          "profileCompleted": "Profile completed",
+          "marketingConsented": "Marketing messages accepted",
+          "marketingUnsubscribed": "Marketing messages unsubscribed",
+          "deactivated": "Account deactivated",
+          "restored": "Entity restored",
+          "deleted": "Entity deleted",
+          "profileChangeRequested": "Data change requested",
+          "profileChangeDecided": "Data change request decided",
+          "emailChangeRequested": "E-mail change requested",
+          "emailChangeDecided": "E-mail change decided"
+        },
+        "statuses": {
+          "approved": "Approved",
+          "partially_approved": "Partially approved",
+          "rejected": "Rejected",
+          "applied": "Applied"
+        },
+        "fields": "Fields: {count}",
+        "reason": "Reason: {reason}",
+        "loadFailed": "The account history could not be loaded.",
+        "empty": "This account has no events yet."
+      },
+      "assessments": {
+        "columns": {
+          "number": "Request number",
+          "path": "Path",
+          "createdAt": "Requested on",
+          "status": "Status",
+          "result": "Result"
+        },
+        "noResult": "No result yet"
       }
     },
     "deleted": {
@@ -2527,17 +2574,6 @@
       "emptyMessage": "Verified requests that need approval appear here."
     },
     "history": {
-      "title": "Profile change history",
-      "caption": "Changes to the entity profile, newest first",
-      "empty": "No profile changes have been recorded yet.",
-      "forbidden": "The change history is not available for your access level.",
-      "columns": {
-        "field": "Field",
-        "before": "Before",
-        "after": "After",
-        "changedBy": "Changed by",
-        "changedAt": "Date"
-      },
       "actors": {
         "entity": "The entity",
         "staff": "Staff member",
@@ -3167,7 +3203,6 @@
       "entityCardTitle": "Assessments",
       "loadFailed": "The assessments could not be loaded.",
       "noAssessments": "This entity has no assessments yet.",
-      "moreAssessments": "Showing the latest {shown} of {total} assessments.",
       "backToEntity": "Back to the entity record",
       "recordTitle": "Assessment request",
       "frozenTitle": "This request is frozen",
@@ -4623,7 +4658,8 @@
       "dueAt": "Due",
       "cycle": "Award cycle",
       "region": "Region",
-      "path": "Path"
+      "path": "Path",
+      "level": "Level"
     },
     "filters": {
       "status": "Status",
@@ -4864,7 +4900,6 @@
       "withCount": "{label} ({count})"
     },
     "reassigned": "Reassigned",
-    "progressLabel": "Sub-criteria completed",
     "noAssessorYet": "—"
   },
   "bag": {
@@ -6129,7 +6164,8 @@
         "live": "Live payments",
         "test": "Preview payments"
       },
-      "channel": "Payment channel"
+      "channel": "Payment channel",
+      "optionCount": "{label} ({count})"
     },
     "sorts": {
       "desc_created_at": "Newest first",
@@ -6177,9 +6213,9 @@
       "referenceOnSubmit": "Order number: created when you send",
       "backToPath": "Back to the path page",
       "billingNotice": {
-        "title": "The billing details in your entity profile are incomplete",
+        "title": "The national address and VAT registration in your entity profile are incomplete",
         "body": "You can pay now, but Finance needs the national address and the VAT details for its tax records.",
-        "link": "Complete the billing details"
+        "link": "Complete the national address and VAT registration"
       }
     },
     "return": {
@@ -6797,8 +6833,6 @@
       "cards": {
         "revenue": "Total revenue",
         "revenueDetail": "Including VAT {vat} · Refunded {refunded}",
-        "operations": "Total operations",
-        "filterBy": "Show operations with status \"{status}\" ({count})",
         "channels": {
           "electronic": "Electronic payment",
           "bank_transfer": "Bank transfer"
@@ -6811,7 +6845,10 @@
           "failed": "Payment failed",
           "cancelled": "Cancelled",
           "refunded": "Refunded"
-        }
+        },
+        "statusCount": "{status}: {count}",
+        "paidOf": "Paid, out of {count} operations | Paid, out of 1 operation | Paid, out of {count} operations",
+        "distribution": "{channel} operations by status"
       },
       "pending": {
         "message": "No transfers awaiting approval | {count} transfer awaiting approval | {count} transfers awaiting approval",
@@ -8667,7 +8704,7 @@
         "classification": "Classification & location",
         "governance": "Governance & figures",
         "contact": "Contact & account owner",
-        "billing": "Billing details"
+        "billing": "National address and VAT registration"
       },
       "state": {
         "complete": "Complete",
@@ -8828,7 +8865,7 @@
           "download": "Download certificate",
           "uploaded": "The VAT registration certificate was uploaded and sent for the administration’s approval.",
           "removeTitle": "Delete the VAT registration certificate?",
-          "removeMessage": "The uploaded certificate will be deleted, and the billing details stay incomplete until you upload a new one.",
+          "removeMessage": "The uploaded certificate will be deleted, and the VAT registration stays incomplete until you upload a new one.",
           "errors": {
             "required": "Choose the certificate file.",
             "type": "Upload the certificate as a PDF.",
@@ -10056,18 +10093,6 @@
     "staff": {
       "entityLevel": "Entity level",
       "loadError": "The entity level could not be loaded."
-    },
-    "history": {
-      "title": "Level history",
-      "note": "From issued certificates; a revoked certificate grants no level.",
-      "empty": "No certificates have been issued to this entity yet.",
-      "current": "Current",
-      "status": {
-        "issued": "Issued",
-        "suspended": "Suspended",
-        "revoked": "Revoked",
-        "superseded": "Previous"
-      }
     }
   },
   "charts": {

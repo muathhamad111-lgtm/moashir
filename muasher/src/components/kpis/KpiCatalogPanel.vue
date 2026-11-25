@@ -71,6 +71,7 @@ async function remove(entry) {
     </Teleport>
     <p class="kpi-catalog__hint">{{ t(`kpis.admin.catalog.${kind}.hint`) }}</p>
     <DataTable
+      table-key="kpis-catalog"
       :columns="columns"
       :items="catalog.entries.value"
       :status="catalog.status.value"

@@ -3,21 +3,24 @@
 .finance-page {
   @include flex(column, stretch, flex-start, var(--space-5));
   inline-size: 100%;
+  container: finance-page / inline-size;
 }
 
 .finance-tab {
   @include flex(column, stretch, flex-start, var(--space-4));
 }
 
-// Bank transfers waiting for a decision, above the list.
+// Bank transfers waiting for a decision: a thin warning strip across the top of the list's card.
 .finance-pending {
   @include flex(row, center, flex-start, var(--space-3));
   flex-wrap: wrap;
-  padding-block: var(--space-3);
-  padding-inline: var(--space-4);
-  border: var(--border-width) solid var(--color-warning);
-  border-radius: var(--radius-lg);
+  padding-block: var(--space-2);
+  padding-inline: var(--space-5);
+  border-block-end: var(--border-width) solid var(--color-warning);
+  border-start-start-radius: inherit;
+  border-start-end-radius: inherit;
   background-color: var(--color-warning-soft);
+  font-size: var(--fs-sm);
 }
 
 .finance-pending__icon {

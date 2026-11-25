@@ -590,6 +590,18 @@ staff view), the Finance Officer sees name and contact only, the Super Admin see
 `entities.view` (assessor, filtering officer, award secretary, custom grants) sees no entity here until the
 Assessments and Award domains add their assignment and cycle scopes; their `GET /entities/{id}` answers 404.
 
+### Entity account timeline
+`GET /entities/{entity}/timeline` is the staff record's «سجل الحساب»: one newest-first feed (`occurred_at` desc; events
+with the same time in lifecycle order, the later step first), paginated (`page`, `per_page` 1..100, default 15, `meta.pagination`). It unions the entity's own
+lifecycle dates (`created`, `verification_reminded`, `verified`, `approved`, `rejected`, `profile_completed`,
+`marketing_consented`, `marketing_unsubscribed`, `deactivated`, `restored`, `deleted`) with, for viewers who also pass
+`EntityPolicy::viewProfileChanges`, `profile_field_changed`, `profile_change_requested`, `profile_change_decided`,
+`email_change_requested` (not while awaiting the OTP or expired) and `email_change_decided`. Other viewers of the
+entity (the Finance Officer's contact view) get the lifecycle events only. Item: `id` (`kind:source_id`), `kind`,
+`occurred_at` (ISO 8601), `actor` (the staff who decided, `{name, roles}` or null), `status`, `reason` (the staff
+reason or review note), `fields` (a request's changed fields), `change` (a field change, as in the staff history) and
+`email` (`{old, new}`).
+
 ### Profile change history
 `GET /entities/me/profile-changes` (the entity's own history, `entity.profile.view`) and
 `GET /entities/{entity}/profile-changes` (staff) list `entity_profile_changes` newest first (`created_at`, then `id`),
@@ -828,6 +840,7 @@ no notification. A staff decision after the cancellation answers 409 `state.tran
 | POST | `/entities/export` (same filters incl. `filter[level]`, CSV stream, audited with the filters, max 10,000 rows) | `entities.export` + full scope, `throttle:exports` (5/min) |
 | GET / PUT | `/entities/{entity}` (PUT = core data on behalf, `reason` required; the three registry keys are "absent = unchanged"; the full staff view adds `license_number`, `founded_on`, `website_url`, `logo`) | `entities.view` / `entities.manage` |
 | GET | `/entities/{entity}/profile-changes` (`page`, `per_page`) | `entities.view` + full record scope (`EntityPolicy::viewProfileChanges`) |
+| GET | `/entities/{entity}/timeline` (`page`, `per_page`; see "Entity account timeline") | `entities.view` (`EntityPolicy::view`); profile and e-mail changes only with the full record scope |
 | POST | `/entities/{entity}/deactivate`, `/reactivate` (`reason`) | `entities.deactivate` / `entities.reactivate` |
 | POST | `/entities/{entity}/verification/resend` | `entities.verification.resend` |
 | GET | `/entities/{entity}/deletion-impact` | `entities.delete` |

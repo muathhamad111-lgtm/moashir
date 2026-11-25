@@ -28,6 +28,7 @@ function roleLabel(role) {
 
 <template>
   <DataTable
+    table-key="nda-history"
     :columns="columns"
     :items="acceptances"
     :status="status === 'success' && !acceptances.length ? 'empty' : status"

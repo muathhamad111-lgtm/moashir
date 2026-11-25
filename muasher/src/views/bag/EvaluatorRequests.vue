@@ -98,6 +98,7 @@ function openManage(row) {
       </template>
 
       <DataTable
+        table-key="bag-evaluator-requests"
         :columns="columns"
         :items="items"
         :status="status"

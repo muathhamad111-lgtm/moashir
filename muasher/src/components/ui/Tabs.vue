@@ -1,5 +1,5 @@
 <script setup>
-import { computed, ref, useId } from 'vue'
+import { computed, nextTick, onMounted, ref, useId, watch } from 'vue'
 
 const props = defineProps({
   modelValue: { type: [String, Number], required: true },
@@ -12,6 +12,22 @@ const baseId = useId()
 const tabRefs = ref([])
 
 const activeIndex = computed(() => props.tabs.findIndex((tab) => tab.value === props.modelValue))
+
+// On a narrow screen the tab list scrolls sideways: keep the active tab in view, on load and on
+// change. Only the list scrolls (by a physical offset, so it holds in RTL); the page never moves.
+function revealActiveTab() {
+  const tab = tabRefs.value[activeIndex.value]
+  const list = tab?.parentElement
+  if (!list || list.scrollWidth <= list.clientWidth) return
+  const listBox = list.getBoundingClientRect()
+  const tabBox = tab.getBoundingClientRect()
+  const overflow =
+    Math.min(tabBox.left - listBox.left, 0) || Math.max(tabBox.right - listBox.right, 0)
+  if (overflow) list.scrollBy({ left: overflow })
+}
+
+watch(activeIndex, () => nextTick(revealActiveTab))
+onMounted(revealActiveTab)
 
 function tabId(tab) {
   return `${baseId}-tab-${tab.value}`

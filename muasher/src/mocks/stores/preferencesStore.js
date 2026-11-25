@@ -18,3 +18,46 @@ export function profileLocaleOf(accountId) {
 export function forgetLocales() {
   localesByAccount.clear()
 }
+
+// The columns each account keeps visible per list table (PATCH /me/preferences `table_columns`).
+// Kept across reloads in the browser, as the server keeps them; unit tests start empty every time.
+export const TABLE_COLUMNS_STORAGE_KEY = 'moashir_mock_table_columns'
+const PERSISTED = import.meta.env.MODE !== 'test'
+
+function storage() {
+  return PERSISTED && typeof sessionStorage !== 'undefined' ? sessionStorage : null
+}
+
+function restoredTableColumns() {
+  try {
+    return new Map(
+      Object.entries(JSON.parse(storage()?.getItem(TABLE_COLUMNS_STORAGE_KEY) ?? '{}')),
+    )
+  } catch {
+    return new Map()
+  }
+}
+
+const tableColumnsByAccount = restoredTableColumns()
+
+export function tableColumnsOf(accountId) {
+  return { ...tableColumnsByAccount.get(String(accountId)) }
+}
+
+export function rememberTableColumns(accountId, choices) {
+  const next = tableColumnsOf(accountId)
+  for (const [table, columns] of Object.entries(choices)) {
+    if (columns === null) delete next[table]
+    else next[table] = [...columns]
+  }
+  tableColumnsByAccount.set(String(accountId), next)
+  storage()?.setItem(
+    TABLE_COLUMNS_STORAGE_KEY,
+    JSON.stringify(Object.fromEntries(tableColumnsByAccount)),
+  )
+}
+
+export function forgetTableColumns() {
+  tableColumnsByAccount.clear()
+  storage()?.removeItem(TABLE_COLUMNS_STORAGE_KEY)
+}

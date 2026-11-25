@@ -26,6 +26,11 @@ export const profileService = {
       },
     }
   },
+  getPreferences() {
+    return serviceRequest('profile.getPreferences', () => apiClient.get('/me/preferences'), {
+      entity: 'preferences',
+    })
+  },
   updatePreferences(preferences) {
     return serviceRequest(
       'profile.updatePreferences',

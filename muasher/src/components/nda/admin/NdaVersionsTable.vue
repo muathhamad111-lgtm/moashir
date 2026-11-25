@@ -35,6 +35,7 @@ function acceptancesOf(item) {
 
 <template>
   <DataTable
+    table-key="nda-versions"
     :columns="columns"
     :items="versions"
     :status="status === 'success' && !versions.length ? 'empty' : status"

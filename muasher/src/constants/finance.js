@@ -121,7 +121,7 @@ export const EVENT_RESULT_VARIANTS = Object.freeze({
 })
 
 // The finance page's tabs: operations, the bank-transfer approval queue and the gateway events log.
-// Badge colour of a ledger status (the statuses the operations filter and the overview cards use).
+// Colour of a ledger status (the summary cards' status bars).
 export const LEDGER_STATUS_VARIANTS = Object.freeze({
   paid: 'success',
   under_review: 'info',
@@ -132,20 +132,14 @@ export const LEDGER_STATUS_VARIANTS = Object.freeze({
   refunded: 'warning',
 })
 
-// The statuses each overview card splits its operations into.
-// Each card always shows its main statuses; any other status that occurs is added after them,
-// so a card's cells always add up to its total. `awaiting_payment` is the API's own grouping of
-// the created and pending orders (both read «بانتظار الدفع»).
-export const OVERVIEW_STATUSES = Object.freeze({
-  all: ['paid', 'under_review', 'awaiting_payment', 'rejected', 'failed'],
-  electronic: ['paid', 'awaiting_payment', 'failed'],
-  bank_transfer: ['paid', 'under_review', 'awaiting_payment', 'rejected'],
-})
-
-// The operations table's columns; the optional ones are off until a viewer turns them on.
-export const TRANSACTION_COLUMNS = Object.freeze({
-  FIXED: ['operation', 'actions'],
-  TOGGLEABLE: ['entity', 'total', 'payment', 'status', 'createdAt', 'receipt', 'beforeVat'],
-  HIDDEN_BY_DEFAULT: ['receipt', 'beforeVat'],
-  STORAGE_KEY: 'muasher.finance.columns',
-})
+// The order of the statuses in the summary cards' bars. `refunded` joins only when the channel has
+// refunded operations (it is reached from a paid operation, rarely).
+export const FINANCE_STATUS_ORDER = Object.freeze([
+  'paid',
+  'under_review',
+  'awaiting_payment',
+  'rejected',
+  'cancelled',
+  'failed',
+])
+export const FINANCE_OCCASIONAL_STATUSES = Object.freeze(['refunded'])

@@ -31,6 +31,7 @@ function groupOf(event) {
 
 <template>
   <DataTable
+    table-key="audit-log"
     :columns="columns"
     :items="items"
     :status="status"

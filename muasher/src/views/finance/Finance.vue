@@ -5,7 +5,7 @@ import { useHead } from '@unhead/vue'
 import { useRouter } from 'vue-router'
 import AppIcon from '@/components/ui/AppIcon.vue'
 import FinancePageHeader from '@/components/finance/FinancePageHeader.vue'
-import FinanceOverviewCards from '@/components/finance/FinanceOverviewCards.vue'
+import FinanceSummaryCards from '@/components/finance/FinanceSummaryCards.vue'
 import FinanceOperationsPanel from '@/components/finance/FinanceOperationsPanel.vue'
 import PendingTransfersBanner from '@/components/finance/PendingTransfersBanner.vue'
 import TransferQueuePanel from '@/components/finance/TransferQueuePanel.vue'
@@ -27,10 +27,10 @@ import {
   isPendingTransfer,
 } from '@/utils/finance/transactionRowActions'
 
-// «المالية»: one list of every operation, newest first. The status cards filter it; each row offers
-// the actions its status allows. Filtered to the transfers waiting for approval, the list is the
-// review queue (with its bulk decisions and proof checks), which is also all a reviewer without the
-// operations permission sees.
+// «المالية»: the summary cards, then one list of every operation, newest first, filtered from its
+// «فلترة» panel (with each type and status count); each row offers the actions its status allows.
+// Filtered to the transfers waiting for approval, the list is the review queue (with its bulk
+// decisions and proof checks), which is also all a reviewer without the operations permission sees.
 const props = defineProps({
   // Opened from the old «بانتظار الاعتماد» address: the list starts on the pending transfers.
   pending: { type: Boolean, default: false },
@@ -40,7 +40,6 @@ const PENDING_FILTER = Object.freeze({
   status: 'under_review',
   type: PAYMENT_CHANNELS.BANK_TRANSFER,
 })
-const NO_FILTER = Object.freeze({ status: '', type: '' })
 
 const { t } = useI18n()
 const router = useRouter()
@@ -74,12 +73,6 @@ const showsQueue = computed(() => showingPending.value && seesTransfers)
 function applyFilter({ status, type }) {
   operations.setFilter('type', type)
   operations.setFilter('status', status)
-}
-
-// A card toggles its filter: a second click on the same status shows every operation again.
-function toggleFilter(next) {
-  const same = activeFilter.value.status === next.status && activeFilter.value.type === next.type
-  applyFilter(same ? NO_FILTER : next)
 }
 
 if (props.pending && operations) applyFilter(PENDING_FILTER)
@@ -119,19 +112,10 @@ function decideFromReview(kind, transfer) {
       :subtitle="t('finance.page.subtitle')"
     />
 
-    <PendingTransfersBanner
-      v-if="pendingCount.count.value"
-      :count="pendingCount.count.value"
-      :showing="showingPending"
-      @show="applyFilter(PENDING_FILTER)"
-    />
-
-    <FinanceOverviewCards
+    <FinanceSummaryCards
       v-if="operations"
       :stats="cards.stats.value"
       :loading="operations.status.value === 'loading' && !cards.stats.value"
-      :active="activeFilter"
-      @select="toggleFilter"
     />
 
     <p v-if="decisions.conflict.value" class="transfers-page__conflict" role="alert">
@@ -139,13 +123,21 @@ function decideFromReview(kind, transfer) {
       {{ t(`finance.transfers.conflict.${decisions.conflict.value.replace('.', '_')}`) }}
     </p>
 
-    <TransferQueuePanel v-if="showsQueue" @decided="refresh" />
-    <FinanceOperationsPanel
-      v-else
-      :operations="operations"
-      :actions-for="actionsFor"
+    <component
+      :is="showsQueue ? TransferQueuePanel : FinanceOperationsPanel"
+      v-bind="showsQueue ? {} : { operations, actionsFor, stats: cards?.stats.value }"
+      @decided="refresh"
       @action="ROW_ACTIONS[$event.key]?.($event.item)"
-    />
+    >
+      <template #lead>
+        <PendingTransfersBanner
+          v-if="pendingCount.count.value"
+          :count="pendingCount.count.value"
+          :showing="showingPending"
+          @show="applyFilter(PENDING_FILTER)"
+        />
+      </template>
+    </component>
 
     <TransactionReceiptModal
       v-if="viewing"

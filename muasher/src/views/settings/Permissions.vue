@@ -136,6 +136,7 @@ async function onSaved(changes) {
       </template>
 
       <DataTable
+        table-key="settings-permissions"
         :columns="columns"
         :items="filteredRows"
         :status="tableStatus"

@@ -195,24 +195,10 @@ test.describe('excellence tools — staff and settings', () => {
     await page.setViewportSize(DESKTOP)
   })
 
-  test('shows the entity tools read only on the staff entity record', async ({
-    page,
-  }, testInfo) => {
+  test('keeps the entity tools off the staff entity record', async ({ page }, testInfo) => {
     await seedSignedIn(page, ADMIN, { locale: localeOf(testInfo), theme: 'light' })
-    await open(page, '/admin/entities/5001', '[data-testid="entity-insights"]')
-    const panel = page.locator('[data-testid="entity-insights"]')
-    await expect(panel.locator('[data-testid="insights-read-only"]')).toBeVisible()
-    await expect(panel.locator('[data-testid="gap-column"]').first()).toBeVisible()
-    await expect(panel.locator('textarea, input[type="text"], .insights-empty .btn')).toHaveCount(0)
-    await panel.getByRole('tab').nth(1).click()
-    await expect(panel.locator('[data-testid="maturity-card"]').first()).toBeVisible()
-    await panel.getByRole('tab').nth(2).click()
-    await expect(panel.locator('[data-testid="executive-summary"]')).toBeVisible()
-    await panel.getByRole('tab').first().click()
-    await expect(panel.locator('[data-testid="gap-item"]').first()).toBeVisible()
-    await page.addStyleTag({ content: '.navbar--app { position: static !important; }' })
-    await settleFonts(page)
-    await panel.screenshot({ path: `${SHOTS}/staff-entity-tools-${suffixOf(testInfo)}.png` })
+    await open(page, '/admin/entities/5001', '.entity-record__title')
+    await expect(page.locator('[data-testid="entity-insights"]')).toHaveCount(0)
   })
 
   test('a System Administrator threshold change reaches the entity as a new rules version', async ({

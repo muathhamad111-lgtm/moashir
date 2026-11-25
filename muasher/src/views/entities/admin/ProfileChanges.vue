@@ -73,6 +73,7 @@ const columns = computed(() =>
       </template>
 
       <DataTable
+        table-key="entities-profile-changes"
         :columns="columns"
         :items="items"
         :status="status"

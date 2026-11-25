@@ -4,7 +4,16 @@ const CAMEL_IDENTIFIER = /^[a-z][a-zA-Z0-9]*$/
 const SNAKE_IDENTIFIER = /^[a-z][a-z0-9]*(?:_[a-z0-9]+)+$/
 const BRACKETED_KEY = /^[A-Za-z0-9_]+(?:\[[A-Za-z0-9_]+\])+$/
 
-const OPAQUE_KEY_CONTAINERS = new Set(['matrix', 'metadata', 'old_values', 'new_values'])
+// Containers whose own keys are data, not field names: kept as they are both ways (the table
+// columns are keyed by table ids such as "finance.paymentEvents").
+const OPAQUE_KEY_CONTAINERS = new Set([
+  'matrix',
+  'metadata',
+  'old_values',
+  'new_values',
+  'table_columns',
+  'tableColumns',
+])
 const BRIDGED_ENUM_KEYS = new Set(['evaluationType', 'scaleKind'])
 const FIELD_PATH_CONTAINERS = new Set(['errors'])
 

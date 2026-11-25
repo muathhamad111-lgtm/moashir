@@ -105,6 +105,7 @@ const decisionTitle = computed(() =>
       </template>
 
       <DataTable
+        table-key="users-identity-changes"
         :columns="columns"
         :items="items"
         :status="status"

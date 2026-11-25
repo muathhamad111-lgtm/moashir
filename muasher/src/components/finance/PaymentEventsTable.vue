@@ -41,6 +41,7 @@ function typeOf(value) {
 
 <template>
   <DataTable
+    table-key="finance-payment-events"
     :columns="columns"
     :items="items"
     :status="status"

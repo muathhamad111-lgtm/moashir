@@ -27,6 +27,7 @@ const columns = computed(() =>
 
 <template>
   <DataTable
+    table-key="legal-versions"
     :columns="columns"
     :items="versions"
     :status="status === 'success' && !versions.length ? 'empty' : status"

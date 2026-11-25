@@ -38,14 +38,15 @@ function tierOf(item) {
   return displayTierOf(item, item.hasOpenAccreditedRequest === true)
 }
 
-const columns = computed(() => {
-  const set = props.deleted ? 'deleted' : props.full ? 'full' : 'contact'
-  return COLUMN_SETS[set].map((key) => ({ key, label: t(`entities.columns.${key}`) }))
-})
+const columnSet = computed(() => (props.deleted ? 'deleted' : props.full ? 'full' : 'contact'))
+const columns = computed(() =>
+  COLUMN_SETS[columnSet.value].map((key) => ({ key, label: t(`entities.columns.${key}`) })),
+)
 </script>
 
 <template>
   <DataTable
+    :table-key="`entities-${columnSet}`"
     :columns="columns"
     :items="items"
     :status="status"

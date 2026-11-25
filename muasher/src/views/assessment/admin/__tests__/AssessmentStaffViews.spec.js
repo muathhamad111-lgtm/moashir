@@ -2,7 +2,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { flushPromises, mount } from '@vue/test-utils'
 import { setActivePinia } from 'pinia'
 import StaffRecord from '@/views/assessment/admin/Record.vue'
-import EntityAssessmentsCard from '@/components/entities/admin/EntityAssessmentsCard.vue'
+import EntityAssessmentsTable from '@/components/entities/admin/EntityAssessmentsTable.vue'
 import { assessmentsService } from '@/services/assessmentsService'
 import { useAuthStore } from '@/stores/auth'
 import { createTestGlobals } from '@/test-utils'
@@ -96,17 +96,18 @@ describe('staff assessment record', () => {
   })
 })
 
-describe('entity assessments card', () => {
+describe('entity assessments table', () => {
   it('lists the entity assessments, frozen ones included, with links to the staff record', async () => {
     assessmentsService.list.mockResolvedValue({
       data: [FROZEN],
       meta: { pagination: { total: 1 } },
     })
-    const wrapper = await mountAs(EntityAssessmentsCard, ['system_admin'], { entityId: 7002 })
+    const wrapper = await mountAs(EntityAssessmentsTable, ['system_admin'], { entityId: 7002 })
     expect(assessmentsService.list).toHaveBeenCalledWith({
       'filter[entityId]': 7002,
       sort: '-created_at',
-      perPage: 10,
+      page: 1,
+      perPage: 15,
     })
     expect(wrapper.find('a[href="/admin/assessments/9004"]').text()).toBe('SLF-2026-000004')
     expect(wrapper.find('.frozen-badge').exists()).toBe(true)
@@ -114,10 +115,10 @@ describe('entity assessments card', () => {
 
   it('shows the empty and error states', async () => {
     assessmentsService.list.mockResolvedValueOnce({ data: [], meta: {} })
-    const empty = await mountAs(EntityAssessmentsCard, ['system_admin'], { entityId: 7002 })
-    expect(empty.find('.entity-assessments__empty').exists()).toBe(true)
+    const empty = await mountAs(EntityAssessmentsTable, ['system_admin'], { entityId: 7002 })
+    expect(empty.find('.empty-state').exists()).toBe(true)
     assessmentsService.list.mockRejectedValueOnce(new Error('down'))
-    const failed = await mountAs(EntityAssessmentsCard, ['system_admin'], { entityId: 7002 })
+    const failed = await mountAs(EntityAssessmentsTable, ['system_admin'], { entityId: 7002 })
     expect(failed.find('.error-state').exists()).toBe(true)
   })
 })

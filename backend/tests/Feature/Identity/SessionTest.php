@@ -135,7 +135,7 @@ it('reads and updates the personal preferences', function (): void {
     $user = entityUser();
     signIn($user);
 
-    $this->getJson('/api/v1/me/preferences')->assertOk()->assertExactJson(['data' => ['locale' => 'ar', 'theme' => 'system'], 'meta' => [], 'errors' => null]);
+    $this->getJson('/api/v1/me/preferences')->assertOk()->assertExactJson(['data' => ['locale' => 'ar', 'theme' => 'system', 'table_columns' => []], 'meta' => [], 'errors' => null]);
     $this->patchJson('/api/v1/me/preferences', ['locale' => 'en', 'theme' => 'dark'])->assertOk()->assertJsonPath('data.locale', 'en');
 
     expect($user->refresh()->locale->value)->toBe('en');

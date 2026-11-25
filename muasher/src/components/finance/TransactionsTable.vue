@@ -14,12 +14,11 @@ import { entityInitials } from '@/utils/finance/entityInitials'
 import { transactionColumns } from '@/utils/finance/transactionColumns'
 import { TRANSACTION_INLINE_ACTIONS } from '@/utils/finance/transactionRowActions'
 
-const props = defineProps({
+defineProps({
   items: { type: Array, required: true },
   status: { type: String, required: true },
   errorMessage: { type: String, default: '' },
   sort: { type: String, default: '' },
-  isVisible: { type: Function, default: () => true },
   emptyMessage: { type: String, default: '' },
   // The row's actions by its status and the viewer's permissions (useTransactionRowActions).
   actionsFor: { type: Function, required: true },
@@ -28,10 +27,8 @@ const props = defineProps({
 const emit = defineEmits(['retry', 'sort', 'action'])
 const { t, locale } = useI18n()
 
-// The labels the column chooser lists too; the operation and actions columns are always shown.
-const columns = computed(() =>
-  transactionColumns(t).filter((column) => props.isVisible(column.key)),
-)
+// The viewer picks the optional columns («الأعمدة»); the operation and actions always show.
+const columns = computed(() => transactionColumns(t))
 
 function statusDefinition(status) {
   const key = STATUS_DEFINITION_KEY[status] ?? status
@@ -45,6 +42,9 @@ function nameOf(entity) {
 
 <template>
   <DataTable
+    class="transactions-table"
+    stacked
+    table-key="finance-transactions"
     :columns="columns"
     :items="items"
     :status="status"
@@ -60,18 +60,6 @@ function nameOf(entity) {
       <span class="transactions-table__stack">
         <bdi class="transactions-table__reference" dir="ltr">{{ item.reference }}</bdi>
         <span class="transactions-table__muted">{{ t(`finance.purposes.${item.purpose}`) }}</span>
-        <span
-          v-if="item.isTest || item.latePaid || item.manuallySettled"
-          class="transactions-table__badges"
-        >
-          <Badge v-if="item.isTest" variant="warning">{{ t('finance.testMode.badge') }}</Badge>
-          <Badge v-if="item.latePaid" variant="danger">{{
-            t('finance.transactions.latePaid')
-          }}</Badge>
-          <Badge v-if="item.manuallySettled" variant="info">{{
-            t('finance.transactions.manuallySettled')
-          }}</Badge>
-        </span>
       </span>
     </template>
     <template #cell-entity="{ item }">
@@ -103,13 +91,27 @@ function nameOf(entity) {
       </span>
     </template>
     <template #cell-status="{ item }">
-      <Tooltip :text="statusDefinition(item.status)">
-        <template #default="{ describedBy }">
-          <span class="transactions-table__status" tabindex="0" :aria-describedby="describedBy">
-            <PaymentStatusBadge :status="item.status" />
-          </span>
-        </template>
-      </Tooltip>
+      <span class="transactions-table__stack">
+        <Tooltip :text="statusDefinition(item.status)">
+          <template #default="{ describedBy }">
+            <span class="transactions-table__status" tabindex="0" :aria-describedby="describedBy">
+              <PaymentStatusBadge :status="item.status" />
+            </span>
+          </template>
+        </Tooltip>
+        <span
+          v-if="item.isTest || item.latePaid || item.manuallySettled"
+          class="transactions-table__badges"
+        >
+          <Badge v-if="item.isTest" variant="warning">{{ t('finance.testMode.badge') }}</Badge>
+          <Badge v-if="item.latePaid" variant="danger">{{
+            t('finance.transactions.latePaid')
+          }}</Badge>
+          <Badge v-if="item.manuallySettled" variant="info">{{
+            t('finance.transactions.manuallySettled')
+          }}</Badge>
+        </span>
+      </span>
     </template>
     <template #cell-createdAt="{ item }">
       <time class="transactions-table__stack transactions-table__date" :datetime="item.createdAt">

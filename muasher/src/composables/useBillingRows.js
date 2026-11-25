@@ -39,14 +39,18 @@ export function useBillingRows() {
     ]
   }
 
-  function rowsOf(billing) {
-    if (!billing) return []
-    return [
-      ...ADDRESS_FIELDS.map((key) => row(key, billing[key])),
-      row('vatRegistered', vatAnswer(billing)),
-      ...vatRows(billing),
-    ]
+  // The Saudi national address (building number, street, district, city, postal code, extras).
+  function addressRowsOf(billing) {
+    return billing ? ADDRESS_FIELDS.map((key) => row(key, billing[key])) : []
   }
 
-  return { rowsOf }
+  function taxRowsOf(billing) {
+    return billing ? [row('vatRegistered', vatAnswer(billing)), ...vatRows(billing)] : []
+  }
+
+  function rowsOf(billing) {
+    return [...addressRowsOf(billing), ...taxRowsOf(billing)]
+  }
+
+  return { rowsOf, addressRowsOf, taxRowsOf }
 }

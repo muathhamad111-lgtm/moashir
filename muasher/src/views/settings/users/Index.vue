@@ -214,6 +214,7 @@ function onAction(key, row) {
       </template>
 
       <DataTable
+        table-key="users-list"
         :columns="columns"
         :items="items"
         :status="status"

@@ -117,3 +117,7 @@ export function rejectChange(change, reason) {
   change.decisionReason = reason
   return change
 }
+
+export function emailChangesOf(entityId) {
+  return changes.filter((change) => change.entityId === entityId)
+}

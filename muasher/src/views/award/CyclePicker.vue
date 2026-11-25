@@ -63,6 +63,7 @@ const columns = computed(() => [
     </header>
     <Card>
       <DataTable
+        table-key="award-cycle-picker"
         stacked
         :columns="columns"
         :items="cycles"

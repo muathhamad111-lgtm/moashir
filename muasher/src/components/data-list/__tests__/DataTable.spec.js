@@ -113,7 +113,7 @@ describe('DataTable', () => {
     expect(wrapper.findAll('th')[1].attributes('aria-sort')).toBe('descending')
   })
 
-  describe('one-line rows', () => {
+  describe('full-data rows', () => {
     it('gives every column a kind: the first as primary, dates, status and actions by key', () => {
       const wrapper = factory({
         columns: [
@@ -143,13 +143,24 @@ describe('DataTable', () => {
       expect(wrapper.find('tbody td .table__value').exists()).toBe(true)
     })
 
-    it('shows a cut-off value in full on hover', async () => {
+    it('shows a clamped note in full on hover', async () => {
       const wrapper = factory()
       const value = wrapper.find('tbody td .table__value')
-      Object.defineProperty(value.element, 'scrollWidth', { value: 300, configurable: true })
-      Object.defineProperty(value.element, 'clientWidth', { value: 120, configurable: true })
+      Object.defineProperty(value.element, 'scrollHeight', { value: 90, configurable: true })
+      Object.defineProperty(value.element, 'clientHeight', { value: 40, configurable: true })
       await value.trigger('mouseover')
       expect(value.attributes('title')).toBe(value.text())
+    })
+
+    it('reads free text columns as notes and takes no tab stop while nothing scrolls', () => {
+      const wrapper = factory({
+        columns: [
+          { key: 'name', label: 'Name' },
+          { key: 'message', label: 'Message' },
+        ],
+      })
+      expect(wrapper.findAll('thead th')[1].classes()).toContain('table__cell--note')
+      expect(wrapper.find('.table-wrap').attributes('tabindex')).toBeUndefined()
     })
   })
 

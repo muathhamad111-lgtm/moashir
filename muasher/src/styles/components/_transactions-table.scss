@@ -18,37 +18,11 @@
 
 .transactions-table__badges {
   @include flex(row, center, flex-start, var(--space-1));
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
 }
 
 .transactions-table__entity {
   @include flex(row, center, flex-start, var(--space-2));
-}
-
-// The operation reads on two lines: its reference, then its purpose with any badge (test, late,
-// settled by hand).
-.table__cell--primary .transactions-table__stack {
-  display: grid;
-  grid-template-areas:
-    'reference reference'
-    'purpose badges';
-  grid-template-columns: minmax(0, max-content) auto;
-  align-items: center;
-  justify-content: start;
-  gap: var(--space-1) var(--space-2);
-
-  > .transactions-table__reference {
-    grid-area: reference;
-  }
-
-  > .transactions-table__muted {
-    grid-area: purpose;
-  }
-
-  > .transactions-table__badges {
-    grid-area: badges;
-    flex-wrap: nowrap;
-  }
 }
 
 // Initials only: entities are organisations, and no personal photo is shown in finance lists.

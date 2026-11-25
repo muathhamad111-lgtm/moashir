@@ -1,8 +1,8 @@
-// A column's kind sets its width and alignment in every table: the identity column is wide, a
-// status medium, dates, numbers and codes narrow with tabular figures, the actions minimal. A
-// column definition may name its `kind`; otherwise it follows from its key and position. A column
-// that needs another width than its kind names a size: `width: 'sm' | 'md' | 'lg' | 'xl'`; an
-// `optional` column gives way when its list is narrow (DataTable).
+// A column's kind sets its width and alignment in every table: the identity column and text share
+// the free width, statuses, dates, numbers, codes and actions keep to their content (dates, numbers
+// and codes with tabular figures), and free text (a note) wraps to two lines. A column definition
+// may name its `kind`; otherwise it follows from its key and position. A column may also ask for a
+// floor under its content width: `width: 'sm' | 'md' | 'lg' | 'xl'`.
 export const COLUMN_KINDS = Object.freeze({
   PRIMARY: 'primary',
   TEXT: 'text',
@@ -10,6 +10,7 @@ export const COLUMN_KINDS = Object.freeze({
   DATE: 'date',
   NUMBER: 'number',
   CODE: 'code',
+  NOTE: 'note',
   ACTIONS: 'actions',
 })
 
@@ -36,6 +37,11 @@ const KEY_KINDS = Object.freeze({
   number: K.CODE,
   receipt: K.CODE,
   providerRef: K.CODE,
+  message: K.NOTE,
+  note: K.NOTE,
+  notes: K.NOTE,
+  description: K.NOTE,
+  reason: K.NOTE,
 })
 
 // The first column names the row (the request, the entity, the user), whatever its key.

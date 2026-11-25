@@ -27,6 +27,7 @@ const columns = computed(() =>
 
 <template>
   <DataTable
+    table-key="contact-inbox"
     :columns="columns"
     :items="items"
     :status="status"

@@ -100,6 +100,7 @@ const columns = computed(() => [
         </ListToolbar>
       </template>
       <DataTable
+        table-key="requests-assigned"
         :columns="columns"
         :sort="sort"
         @sort="setSort"

@@ -59,13 +59,13 @@ test('the finance section opens on the operations with their summary cards', asy
   await seedStaff(page, testInfo, STAFF.financeOfficer)
   await page.goto('/finance')
   await expect(page).toHaveURL(/\/finance\/transactions$/)
-  await expect(page.locator('.finance-overview__card')).toHaveCount(4)
+  await expect(page.locator('.finance-summary__card')).toHaveCount(3)
   await expect(page.locator('.finance-nav__link')).toHaveCount(0)
   await expect(page.locator('.tabs__tab')).toHaveCount(0)
   await expect(page.getByTestId('finance-pending')).toContainText(
     isEn(testInfo) ? '3 transfers awaiting approval' : '3 تحويلات بانتظار الاعتماد',
   )
-  await expect(page.locator('thead th')).toHaveCount(7)
+  await expect(page.locator('thead th')).toHaveCount(6)
   await expect(page.locator('.table__row').first()).toBeVisible()
   await expect(page.locator('tbody')).not.toContainText('@')
   await page.screenshot({
@@ -134,25 +134,38 @@ test('the default lists payments of both modes, and either mode is one filter aw
   await expect(testBadge).toHaveCount(0)
 })
 
-test('a status on the overview cards filters the operations, and the columns are the viewer’s choice', async ({
+// Picks «فشل الدفع» in the «فلترة» panel and returns the count its option shows.
+async function filterByFailed(page, testInfo) {
+  const filters = await openListFilters(page)
+  await filters.locator('.transaction-filters__status [role="combobox"]').click()
+  const option = page.getByRole('option', {
+    name: new RegExp(isEn(testInfo) ? '^Payment failed' : '^فشل الدفع'),
+  })
+  const count = Number((await option.textContent()).match(/\((\d+)\)/)[1])
+  await option.click()
+  await applyOpenListFilters(page)
+  return count
+}
+
+test('a status in the filter panel filters the operations, and the columns are the viewer’s choice', async ({
   page,
 }, testInfo) => {
   const errors = trackConsole(page)
   await seedStaff(page, testInfo, STAFF.financeOfficer)
   await page.goto('/finance/transactions')
   await expect(page.locator('.table__row')).toHaveCount(10)
-  const failed = page
-    .locator('.finance-overview__split-card')
-    .first()
-    .locator('.finance-overview__cell')
-    .nth(4)
-  const failedCount = await failed.locator('.finance-overview__count').textContent()
-  await failed.click()
-  await expect(page.locator('.table__row')).toHaveCount(Number(failedCount))
+  const failedCount = await filterByFailed(page, testInfo)
+  await expect(page.locator('.table__row')).toHaveCount(failedCount)
   await expect(page.locator('.filter-dialog__count')).toHaveText('1')
 
   await page.locator('.column-chooser > button').click()
+  // The account keeps the choice: wait for it to be saved before reloading.
+  const saved = page.waitForResponse(
+    (response) =>
+      response.url().includes('/me/preferences') && response.request().method() === 'PATCH',
+  )
   await page.getByRole('checkbox', { name: isEn(testInfo) ? 'Receipt no.' : 'رقم الإيصال' }).check()
+  await saved
   await page.getByRole('checkbox', { name: isEn(testInfo) ? 'Payment' : 'الدفع' }).uncheck()
   await page.keyboard.press('Escape')
   const headers = page.locator('thead th')
@@ -189,23 +202,19 @@ test('the eye opens the receipt over the list, with its PDF and the full page', 
   expect(errors).toEqual([])
 })
 
-test('a status card toggles the list filter, and the list offers each row its own actions', async ({
+test('a status filter clears from the panel, and the list offers each row its own actions', async ({
   page,
 }, testInfo) => {
   const errors = trackConsole(page)
   await seedStaff(page, testInfo, STAFF.financeOfficer)
   await page.goto('/finance/transactions')
   await expect(page.locator('.table__row')).toHaveCount(10)
-  const failed = page
-    .locator('.finance-overview__split-card')
-    .first()
-    .locator('.finance-overview__cell')
-    .last()
-  await failed.click()
-  await expect(failed).toHaveAttribute('aria-pressed', 'true')
+  await filterByFailed(page, testInfo)
+  await expect(page.locator('.filter-dialog__count')).toHaveText('1')
   await expect(page.locator('.table__row [data-action="approve"]')).toHaveCount(0)
-  await failed.press('Enter')
-  await expect(failed).toHaveAttribute('aria-pressed', 'false')
+  const filters = await openListFilters(page)
+  await filters.getByRole('button', { name: /^(Clear all|مسح الكل)$/ }).click()
+  await applyOpenListFilters(page)
   await expect(page.locator('.table__row')).toHaveCount(10)
 
   const pendingRow = page.locator('.table__row:has([data-action="approve"])').first()
@@ -262,7 +271,7 @@ test('the System Administrator sees the queue read-only and opens the events log
   await page.goto('/admin/settings/payment')
   await page.locator('.integration-form__events-link a').click()
   await expect(page).toHaveURL(/\/finance\/payment-events$/)
-  await expect(page.locator('.finance-overview')).toHaveCount(0)
+  await expect(page.locator('.finance-summary')).toHaveCount(0)
   await expect(page.locator('.payment-events__ref').first()).toBeVisible()
 })
 

@@ -63,6 +63,7 @@ onMounted(history.load)
     <CriteriaPageTabs />
 
     <DataTable
+      table-key="criteria-versions"
       :columns="columns"
       :items="rows"
       :status="history.status.value"

@@ -249,17 +249,19 @@ test.describe('staff entity detail', () => {
   }, testInfo) => {
     await signIn(page, testInfo, USERS.systemAdmin)
     await open(page, '/admin/entities/6003', '.entity-record__title')
-    const details = page.locator('.entity-record__grid')
+    const details = page.locator('.entity-record__panel')
     await expect(details).toContainText('8806003')
     await expect(details).toContainText('2018-03-01')
+    const logo = page.locator('.entity-head-logo__image')
+    await expect(logo).toBeVisible()
+    await expect.poll(() => logo.evaluate((image) => image.naturalWidth)).toBeGreaterThan(0)
+    await open(page, '/admin/entities/6003?tab=contact', '.entity-details__link')
     const website = page.locator('.entity-details__link')
     await expect(website).toHaveAttribute('href', 'https://www.alkhair-waqf.example.sa')
     await expect(website).toHaveAttribute('rel', 'noopener noreferrer')
-    const logo = page.locator('.entity-logo-preview__image')
-    await expect(logo).toBeVisible()
-    await expect.poll(() => logo.evaluate((image) => image.naturalWidth)).toBeGreaterThan(0)
-    await expect(page.locator('.profile-history tbody tr')).toHaveCount(2)
-    await expect(page.locator('.profile-history')).toContainText(
+    await open(page, '/admin/entities/6003?tab=history', '.entity-timeline__item')
+    await expect(page.locator('.entity-timeline__item--profile_field_changed')).toHaveCount(2)
+    await expect(page.locator('.entity-timeline')).toContainText(
       text(testInfo, 'Licence number', 'رقم الترخيص'),
     )
     await open(page, '/admin/entities', ROWS)
@@ -430,7 +432,7 @@ const CAPTURES = [
     name: 'entity-detail',
     user: USERS.systemAdmin,
     path: '/admin/entities/6003',
-    ready: '.entity-logo-preview__image',
+    ready: '.entity-head-logo__image',
   },
   { name: 'forgot-password', path: '/auth/forgot-password', ready: '[name="email"]' },
   {

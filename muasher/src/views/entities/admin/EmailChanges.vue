@@ -79,6 +79,7 @@ const columns = computed(() =>
       </template>
 
       <DataTable
+        table-key="entities-email-changes"
         :columns="columns"
         :items="items"
         :status="status"

@@ -4,7 +4,6 @@ import { createTestGlobals } from '@/test-utils'
 import LevelEmblem from '@/components/level/LevelEmblem.vue'
 import LevelBadge from '@/components/level/LevelBadge.vue'
 import LevelRibbon from '@/components/level/LevelRibbon.vue'
-import LevelHistoryList from '@/components/level/LevelHistoryList.vue'
 import LevelThresholdTrack from '@/components/level/LevelThresholdTrack.vue'
 import { CERTIFICATE_SEALS } from '@/constants/seals'
 
@@ -116,7 +115,7 @@ describe('LevelThresholdTrack', () => {
   })
 })
 
-describe('LevelRibbon and LevelHistoryList', () => {
+describe('LevelRibbon', () => {
   const current = {
     id: 'a',
     number: 'CRT-2026-000031',
@@ -132,32 +131,6 @@ describe('LevelRibbon and LevelHistoryList', () => {
     expect(wrapper.find('.level-ribbon__name').text()).toBe('المستوى الذهبي')
     expect(wrapper.find('.level-ribbon__meta bdi').text()).toBe('CRT-2026-000031')
     expect(wrapper.find('.level-ribbon__percent').text()).toBe('82.00%')
-  })
-
-  it('marks the current certificate and labels the others by status', () => {
-    const wrapper = render(LevelHistoryList, {
-      items: [
-        current,
-        {
-          ...current,
-          id: 'b',
-          number: 'CRT-2025-000009',
-          status: 'superseded',
-          tier: 'silver',
-          isCurrent: false,
-        },
-        {
-          ...current,
-          id: 'c',
-          number: 'CRT-2024-000017',
-          status: 'revoked',
-          tier: 'participation',
-          isCurrent: false,
-        },
-      ],
-    })
-    const chips = wrapper.findAll('.level-history__chip').map((chip) => chip.text())
-    expect(chips).toEqual(['الحالية', 'سابقة', 'ملغاة'])
   })
 })
 

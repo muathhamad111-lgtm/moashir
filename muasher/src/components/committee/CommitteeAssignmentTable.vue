@@ -50,6 +50,7 @@ function openLabel(row) {
 
 <template>
   <DataTable
+    table-key="committee-assignments"
     stacked
     :columns="columns"
     :items="items"

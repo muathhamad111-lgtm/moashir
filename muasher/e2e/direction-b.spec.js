@@ -202,7 +202,6 @@ test.describe('direction B — staff', () => {
       'data-tier',
       'silver',
     )
-    await expect(page.locator('[data-testid="level-history"] .level-history__item')).toHaveCount(2)
     await capture(page, 'staff-entity-record', testInfo)
     await open(page, '/dashboard', '.sidebar')
     await capture(page, 'staff-sidebar', testInfo, { fullPage: false })

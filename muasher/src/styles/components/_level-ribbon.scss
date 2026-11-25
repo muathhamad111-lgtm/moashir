@@ -1,8 +1,11 @@
 @use '../mixins' as *;
 
+// On a phone the percent takes its own line under the level, so the name, number and date keep
+// their width; from `sm` up the ribbon reads on one row.
 .level-ribbon {
   @include flex(row, center, flex-start, var(--space-4));
-  padding: var(--space-4) var(--space-6);
+  flex-wrap: wrap;
+  padding: var(--space-4);
   border: var(--border-width) solid var(--glass-stroke);
   border-radius: var(--radius-xl);
   background: var(--stage-gradient);
@@ -12,6 +15,11 @@
   .level-emblem {
     background-color: transparent;
     box-shadow: 0 0 var(--space-6) var(--level-glow);
+  }
+
+  @include respond-to(sm) {
+    flex-wrap: nowrap;
+    padding-inline: var(--space-6);
   }
 
   .level-emblem--placeholder {
@@ -49,15 +57,25 @@
 
 .level-ribbon__meta {
   @include flex(row, center, flex-start, var(--space-2));
+  flex-wrap: wrap;
   color: var(--band-ink-muted);
   font-size: var(--fs-xs);
+
+  bdi {
+    white-space: nowrap;
+  }
 }
 
 .level-ribbon__percent {
+  flex-basis: 100%;
   color: var(--band-ink);
   font-family: var(--font-latin);
   font-size: var(--fs-2xl);
   font-weight: var(--fw-figure);
+
+  @include respond-to(sm) {
+    flex-basis: auto;
+  }
 }
 
 .level-ribbon__chip {

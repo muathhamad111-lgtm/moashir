@@ -39,6 +39,7 @@ function detailRoute(item) {
 
 <template>
   <DataTable
+    table-key="award-filtering"
     stacked
     :columns="columns"
     :items="items"

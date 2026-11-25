@@ -168,6 +168,14 @@ final class User extends Authenticatable implements Auditable, HasLocalePreferen
     }
 
     /**
+     * @return HasMany<UserTableColumns, $this>
+     */
+    public function tableColumns(): HasMany
+    {
+        return $this->hasMany(UserTableColumns::class);
+    }
+
+    /**
      * @return HasMany<UserSession, $this>
      */
     public function sessions(): HasMany
