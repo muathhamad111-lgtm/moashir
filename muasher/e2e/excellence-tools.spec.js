@@ -3,6 +3,7 @@ import { test, expect } from '@playwright/test'
 import { seedMockSession, seedSignedIn } from './support/session'
 import { settleFonts } from './support/screenshots'
 import { scoreAndSaveEveryItem } from './support/reviewWork'
+import { EXCELLENCE_TOOLS_SETTINGS_ENABLED } from '../src/constants/insights.js'
 
 const SHOTS = '../agents/tasks/reports/Task-66B'
 const DESKTOP = { width: 1440, height: 900 }
@@ -217,6 +218,8 @@ test.describe('excellence tools — staff and settings', () => {
   test('a System Administrator threshold change reaches the entity as a new rules version', async ({
     page,
   }, testInfo) => {
+    // eslint-disable-next-line playwright/no-skipped-test -- hidden until the excellence-tools service is approved
+    test.skip(!EXCELLENCE_TOOLS_SETTINGS_ENABLED, 'excellence-tools settings are hidden')
     await seedSignedIn(page, ADMIN, { locale: localeOf(testInfo), theme: 'light' })
     await open(
       page,
@@ -274,11 +277,36 @@ test.describe('excellence tools — staff and settings', () => {
   })
 
   test('lets the Content Officer read the maturity texts', async ({ page }, testInfo) => {
+    // eslint-disable-next-line playwright/no-skipped-test -- hidden until the excellence-tools service is approved
+    test.skip(!EXCELLENCE_TOOLS_SETTINGS_ENABLED, 'excellence-tools settings are hidden')
     await seedSignedIn(page, CONTENT_OFFICER, { locale: localeOf(testInfo), theme: 'light' })
     await open(page, '/admin/settings/maturity-texts', '[data-testid="maturity-texts"]')
     await expect(page.locator('.maturity-texts__row[data-band]')).toHaveCount(4)
     await page.getByRole('button', { name: /نص خاص بمعيار|text for a criterion/i }).click()
     await expect(page.locator('[data-testid="maturity-editor"]')).toBeVisible()
     await capture(page, 'maturity-texts', testInfo)
+  })
+
+  test('sends the hidden maturity texts page to the settings hub, without its card', async ({
+    page,
+  }, testInfo) => {
+    // eslint-disable-next-line playwright/no-skipped-test -- only while the settings are hidden
+    test.skip(EXCELLENCE_TOOLS_SETTINGS_ENABLED, 'excellence-tools settings are shown')
+    await seedSignedIn(page, CONTENT_OFFICER, { locale: localeOf(testInfo), theme: 'light' })
+    await open(page, '/admin/settings/maturity-texts', '.settings-hub')
+    await expect(page).toHaveURL(/\/admin\/settings$/)
+    await expect(page.locator('a[href="/admin/settings/maturity-texts"]')).toHaveCount(0)
+  })
+
+  test('opens the first assessment settings tab from a link to the hidden excellence-tools tab', async ({
+    page,
+  }, testInfo) => {
+    // eslint-disable-next-line playwright/no-skipped-test -- only while the settings are hidden
+    test.skip(EXCELLENCE_TOOLS_SETTINGS_ENABLED, 'excellence-tools settings are shown')
+    await seedSignedIn(page, ADMIN, { locale: localeOf(testInfo), theme: 'light' })
+    await open(page, '/admin/settings/assessment?tab=insights', '[role="tab"]')
+    await expect(page.locator('[data-testid="insights-settings"]')).toHaveCount(0)
+    await expect(page.getByRole('tab', { name: /أدوات التميّز|Excellence tools/ })).toHaveCount(0)
+    await expect(page.getByRole('tab').first()).toHaveAttribute('aria-selected', 'true')
   })
 })

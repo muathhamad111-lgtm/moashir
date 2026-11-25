@@ -5,6 +5,7 @@ import { RouterLink } from 'vue-router'
 import { ROUTE_NAMES } from '@/constants/routeNames'
 import { usePermissions } from '@/composables/usePermissions'
 import { accessFor } from '@/constants/routeAccess'
+import { EXCELLENCE_TOOLS_SETTINGS_ENABLED } from '@/constants/insights'
 import AppIcon from '@/components/ui/AppIcon.vue'
 
 const { t } = useI18n()
@@ -106,6 +107,7 @@ const sections = computed(() => [
     to: ROUTE_NAMES.ADMIN_SETTINGS_MATURITY_TEXTS,
     icon: 'book-open',
     group: 'content',
+    excellenceTools: true,
   },
   {
     key: 'aiKnowledgeBase',
@@ -115,8 +117,12 @@ const sections = computed(() => [
   },
 ])
 
+function isShown(section) {
+  return EXCELLENCE_TOOLS_SETTINGS_ENABLED || !section.excellenceTools
+}
+
 const accessibleSections = computed(() =>
-  sections.value.filter((section) => canAccess(accessFor(section.to))),
+  sections.value.filter((section) => isShown(section) && canAccess(accessFor(section.to))),
 )
 
 const groups = computed(() =>

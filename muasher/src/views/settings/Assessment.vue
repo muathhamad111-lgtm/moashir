@@ -12,11 +12,17 @@ import { usePortalTab } from '@/composables/usePortalTab'
 import { usePathNames } from '@/composables/usePathNames'
 import { usePermissions } from '@/composables/usePermissions'
 import { KIT_PRICE_KEY, MANAGED_PATHS } from '@/constants/paths'
+import { EXCELLENCE_TOOLS_SETTINGS_ENABLED } from '@/constants/insights'
 import { PERMISSIONS } from '@/constants/permissionKeys'
 
 const GENERAL = 'general'
 const INSIGHTS = 'insights'
-const TAB_VALUES = [...MANAGED_PATHS, GENERAL, INSIGHTS]
+// The excellence-tools tab follows the settings switch; a link to it while hidden opens the first tab.
+const TAB_VALUES = [
+  ...MANAGED_PATHS,
+  GENERAL,
+  ...(EXCELLENCE_TOOLS_SETTINGS_ENABLED ? [INSIGHTS] : []),
+]
 const TAB_LABELS = { [GENERAL]: 'settings.paths.generalTab', [INSIGHTS]: 'settings.insights.tab' }
 
 const { t } = useI18n()

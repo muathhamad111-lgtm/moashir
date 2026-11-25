@@ -116,3 +116,8 @@ export const MATURITY_TEXT_MAX = 600
 export const RULE_DECIMAL_PATTERN = /^\d{1,3}(\.\d{1,2})?$/
 export const RULE_MAX = 100
 export const VAT_NUMBER_PATTERN = /^3\d{13}3$/
+
+// Operator decision (2026-11-25): the excellence-tools settings stay hidden until the service is
+// approved. Setting this to true brings back the maturity texts hub card and route, and the
+// «أدوات التميّز» tab of the assessment settings. Components, services and the API are untouched.
+export const EXCELLENCE_TOOLS_SETTINGS_ENABLED = false

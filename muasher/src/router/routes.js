@@ -3,6 +3,7 @@ import { PORTAL_TOOLS } from '@/constants/portal'
 import { accreditedEntryGuard } from './accreditedEntry'
 import { awardEntryGuard } from './awardEntry'
 import { accountProfileEntryGuard } from './accountProfileEntry'
+import { excellenceToolsSettingsGuard } from './excellenceToolsSettings'
 import { withComingSoonScreens } from './comingSoon'
 
 const AUTH_TOKEN_PARAM = '[A-Za-z0-9_-]{8,128}'
@@ -972,6 +973,7 @@ export const appRoutes = [
     path: '/admin/settings/maturity-texts',
     name: ROUTE_NAMES.ADMIN_SETTINGS_MATURITY_TEXTS,
     component: () => import('@/views/settings/MaturityTexts.vue'),
+    beforeEnter: excellenceToolsSettingsGuard(),
     meta: {
       layout: 'app',
       titleKey: 'routes.admin.settings.maturityTexts.title',
