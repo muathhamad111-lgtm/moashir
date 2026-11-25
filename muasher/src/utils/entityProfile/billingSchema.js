@@ -49,7 +49,3 @@ export function billingRules(t) {
     vatNumber: vatNumberField(t),
   }
 }
-
-export function isVatRegisteredAnswer(value) {
-  return value === YES
-}

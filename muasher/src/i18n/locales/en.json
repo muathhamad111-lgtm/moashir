@@ -298,6 +298,24 @@
       "noMatch": "No column matches this name.",
       "actions": "Actions",
       "saved": "Columns saved as your default for this table."
+    },
+    "documentViewer": {
+      "scan": {
+        "clean": "Scanned",
+        "pending": "Scanning",
+        "infected": "Unsafe",
+        "failed": "Scan failed"
+      },
+      "zoomIn": "Zoom in",
+      "zoomOut": "Zoom out",
+      "open": "Open / download",
+      "notScanned": "The file cannot be shown before its scan is complete.",
+      "pdfOnDesktop": "PDF files are shown inline on large screens. Open or download the file to view it.",
+      "failed": "The file could not be shown.",
+      "retry": "Try again",
+      "imageAlt": "{label} {name}",
+      "pdfTitle": "Preview of {label} {name}",
+      "logged": "Every view and download of this file is logged."
     }
   },
   "status": {
@@ -2299,6 +2317,7 @@
       "foundingYear": "Founding year",
       "region": "Region",
       "city": "City",
+      "hasGovernanceGrade": "Does the entity have a governance score?",
       "governanceGrade": "Governance grade (%)",
       "employeesCount": "Number of employees",
       "annualBeneficiariesCount": "Annual beneficiaries",
@@ -2345,7 +2364,9 @@
       "unifiedNumber": "The unified national number must contain exactly 10 digits (0-9)."
     },
     "display": {
-      "notProvided": "Not provided"
+      "notProvided": "Not provided",
+      "notSet": "Not set",
+      "noGovernanceGrade": "None"
     },
     "registration": {
       "title": "Register a new entity",
@@ -2737,7 +2758,7 @@
         "openFile": "Open the file",
         "scanPending": "The file is still being scanned.",
         "stale": "The approved value changed after the request; this change can only be rejected.",
-        "coupled": "Region and city, and VAT registration and VAT number, are decided together.",
+        "coupled": "Region and city, VAT registration and VAT number, and the authorized person and the authorization letter, are decided together.",
         "summary": "{approved} to approve · {rejected} to reject",
         "reason": "Reason for rejection",
         "reasonHint": "Required when you reject any change. The entity sees it.",
@@ -2755,6 +2776,35 @@
         "text": "{count} item submitted on {date}. | {count} items submitted on {date}.",
         "open": "Review the request"
       }
+    },
+    "documents": {
+      "title": "Entity documents",
+      "kinds": {
+        "licenseCertificate": "Licence certificate",
+        "authorizationLetter": "Authorization letter",
+        "vatCertificate": "VAT registration certificate"
+      },
+      "missing": "Not attached",
+      "preview": "Preview",
+      "download": "Download",
+      "upload": "Upload document",
+      "replace": "Replace",
+      "pending": "A new copy is waiting for the platform team to approve it.",
+      "submitted": "The document was sent to the platform team for approval.",
+      "hint": "PDF only, up to {max} MB.",
+      "errors": {
+        "required": "Upload the document as a PDF.",
+        "type": "Upload the document as a PDF only.",
+        "size": "The file is larger than {max} MB."
+      },
+      "notice": {
+        "title": "Missing documents",
+        "body": "Complete your entity documents: {documents}. Each document goes to the platform team for approval, and your account stays active.",
+        "action": "Upload the documents"
+      },
+      "letterNote": "A new authorized person needs a new authorization letter in their name (PDF, up to {max} MB). Upload it before saving; the name and the letter are approved together.",
+      "letterAttached": "The new authorization letter is attached to the change request.",
+      "letterRequired": "Upload the new authorization letter before saving the authorized person."
     }
   },
   "dashboard": {
@@ -6855,20 +6905,7 @@
       },
       "proof": {
         "title": "Bank transfer receipt",
-        "scan": {
-          "clean": "Scanned",
-          "pending": "Scanning",
-          "infected": "Unsafe",
-          "failed": "Scan failed"
-        },
-        "zoomIn": "Zoom in",
-        "zoomOut": "Zoom out",
         "open": "Open / download",
-        "notScanned": "The file cannot be shown before its scan is complete.",
-        "pdfOnDesktop": "PDF files are shown inline on large screens. Open or download the file to view it.",
-        "failed": "The file could not be shown.",
-        "imageAlt": "Bank transfer receipt {name}",
-        "pdfTitle": "Preview of bank transfer receipt {name}",
         "logged": "Every view and download of this file is logged."
       },
       "decision": {
@@ -8917,6 +8954,7 @@
         "orgSize": "Entity size",
         "regionId": "Region",
         "cityId": "City",
+        "hasGovernanceGrade": "Has a governance score?",
         "governanceGrade": "Governance score (%)",
         "employeesCount": "Employees",
         "annualBeneficiariesCount": "Annual beneficiaries",
@@ -9042,7 +9080,8 @@
         "submitted": "The logo was scanned and sent for the administration’s approval."
       },
       "questions": {
-        "vatRegistered": "Is your entity registered for VAT?"
+        "vatRegistered": "Is your entity registered for VAT?",
+        "hasGovernanceGrade": "Does the entity have a governance score?"
       },
       "billing": {
         "validation": {

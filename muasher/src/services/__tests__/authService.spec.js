@@ -21,14 +21,27 @@ beforeEach(() => {
 })
 
 describe('authService', () => {
-  it('registers via POST and breadcrumbs only the field SHAPE (never values)', async () => {
+  it('registers via a multipart POST and breadcrumbs only the field SHAPE (never values)', async () => {
     apiClient.post.mockResolvedValue(respond({ step: 'otp_required', otp: { challengeId: '1' } }))
-    const payload = { officialEmail: 'a@example.sa', password: 'Secret@123', entityType: 'waqf' }
+    const letter = new File(['%PDF-1.4'], 'letter.pdf', { type: 'application/pdf' })
+    const payload = {
+      officialEmail: 'a@example.sa',
+      password: 'Secret@123',
+      entityType: 'waqf',
+      termsAccepted: true,
+      authorizationLetter: letter,
+    }
     const result = await authService.register(payload)
-    expect(apiClient.post).toHaveBeenCalledWith('/auth/register', payload, AUTH_FLOW)
+    const [path, body, config] = apiClient.post.mock.calls[0]
+    expect([path, config]).toEqual(['/auth/register', AUTH_FLOW])
+    expect(body).toBeInstanceOf(FormData)
+    expect(body.get('officialEmail')).toBe('a@example.sa')
+    expect(body.get('termsAccepted')).toBe('1')
+    expect(body.get('authorizationLetter').name).toBe('letter.pdf')
     expect(result.data.otp.challengeId).toBe('1')
     const serialized = JSON.stringify(logger.breadcrumb.mock.calls[0][2])
     expect(serialized).toContain('password')
+    expect(serialized).toContain('authorizationLetter')
     expect(serialized).not.toContain('Secret@123')
   })
 

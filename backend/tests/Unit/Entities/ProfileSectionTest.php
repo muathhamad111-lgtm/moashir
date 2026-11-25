@@ -16,7 +16,7 @@ it('lists the five sections and their fields in display order', function (): voi
     expect($fields)->toBe([
         'identity' => ['name.ar', 'name.en', 'unified_number', 'license_number', 'founded_on'],
         'classification' => ['entity_type', 'development_sector', 'org_size', 'region_id', 'city_id'],
-        'governance' => ['governance_grade', 'employees_count', 'annual_beneficiaries_count', 'has_strategic_plan'],
+        'governance' => ['has_governance_grade', 'governance_grade', 'employees_count', 'annual_beneficiaries_count', 'has_strategic_plan'],
         'contact' => ['official_email', 'authorized_person_name', 'phone', 'website_url', 'marketing_consent'],
         'billing' => [
             'address_building_number', 'address_street', 'address_district', 'address_city', 'address_postal_code',
@@ -39,6 +39,7 @@ it('defines one requirement level per field', function (ProfileSectionField $fie
     [ProfileSectionField::OrgSize, ProfileFieldRequirement::Required],
     [ProfileSectionField::Region, ProfileFieldRequirement::Required],
     [ProfileSectionField::City, ProfileFieldRequirement::Required],
+    [ProfileSectionField::HasGovernanceGrade, ProfileFieldRequirement::Required],
     [ProfileSectionField::GovernanceGrade, ProfileFieldRequirement::Completion],
     [ProfileSectionField::EmployeesCount, ProfileFieldRequirement::Completion],
     [ProfileSectionField::AnnualBeneficiariesCount, ProfileFieldRequirement::Completion],
@@ -60,18 +61,25 @@ it('defines one requirement level per field', function (ProfileSectionField $fie
     [ProfileSectionField::VatCertificate, ProfileFieldRequirement::Required],
 ]);
 
-it('can count twenty-four fields and edits every field but the official e-mail and the VAT certificate in its section', function (): void {
-    expect(ProfileSectionField::counted())->toHaveCount(24)
+it('can count twenty-five fields and edits every field but the official e-mail and the VAT certificate in its section', function (): void {
+    expect(ProfileSectionField::counted())->toHaveCount(25)
         ->and(array_map(static fn (ProfileSectionField $field): string => $field->value, ProfileSection::Contact->editableFields()))
         ->toBe(['authorized_person_name', 'phone', 'website_url', 'marketing_consent'])
         ->and(array_map(static fn (ProfileSectionField $field): string => $field->value, ProfileSection::Billing->editableFields()))
         ->not->toContain('vat_certificate');
 });
 
-it('makes only the VAT number and certificate depend on the VAT registration answer', function (): void {
-    $dependent = array_values(array_filter(ProfileSectionField::cases(), static fn (ProfileSectionField $field): bool => $field->dependsOnVatRegistration()));
+it('makes the VAT number and certificate depend on the VAT answer and the governance grade on the governance answer', function (): void {
+    $gated = array_filter(array_map(static fn (ProfileSectionField $field): ?ProfileSectionField => $field->gate(), array_combine(
+        array_map(static fn (ProfileSectionField $field): string => $field->value, ProfileSectionField::cases()),
+        ProfileSectionField::cases(),
+    )));
 
-    expect($dependent)->toBe([ProfileSectionField::VatNumber, ProfileSectionField::VatCertificate]);
+    expect($gated)->toBe([
+        'governance_grade' => ProfileSectionField::HasGovernanceGrade,
+        'vat_number' => ProfileSectionField::VatRegistered,
+        'vat_certificate' => ProfileSectionField::VatRegistered,
+    ]);
 });
 
 it('maps every history field to one section', function (): void {
@@ -83,7 +91,7 @@ it('maps every history field to one section', function (): void {
     expect($history)->toBe([
         ['name', 'founding_year', 'license_number', 'unified_number', 'founded_on'],
         ['entity_type', 'development_sector', 'org_size', 'region_id', 'city_id'],
-        ['governance_grade', 'employees_count', 'annual_beneficiaries_count', 'has_strategic_plan'],
+        ['has_governance_grade', 'governance_grade', 'employees_count', 'annual_beneficiaries_count', 'has_strategic_plan'],
         ['website_url', 'authorized_person_name', 'phone', 'marketing_consent'],
         [
             'address_building_number', 'address_street', 'address_district', 'address_city', 'address_postal_code',

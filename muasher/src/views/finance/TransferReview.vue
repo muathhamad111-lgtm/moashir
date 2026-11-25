@@ -10,7 +10,7 @@ import ErrorState from '@/components/feedback/ErrorState.vue'
 import EmptyState from '@/components/feedback/EmptyState.vue'
 import MoneyAmount from '@/components/payments/MoneyAmount.vue'
 import PaymentStatusBadge from '@/components/payments/PaymentStatusBadge.vue'
-import ProofViewer from '@/components/finance/ProofViewer.vue'
+import DocumentViewer from '@/components/files/DocumentViewer.vue'
 import TransferRequestFacts from '@/components/finance/TransferRequestFacts.vue'
 import TransferDecisionLine from '@/components/finance/TransferDecisionLine.vue'
 import LinkedRequestCard from '@/components/finance/LinkedRequestCard.vue'
@@ -77,9 +77,10 @@ onMounted(review.load)
 
       <div class="transfer-review__layout">
         <Card class="transfer-review__proof">
-          <ProofViewer
+          <DocumentViewer
             v-if="transfer.proof"
-            :proof="transfer.proof"
+            :file="transfer.proof"
+            :label="t('finance.transfers.proof.title')"
             :request-link="review.requestProofLink"
           />
         </Card>

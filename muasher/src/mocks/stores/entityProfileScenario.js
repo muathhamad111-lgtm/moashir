@@ -10,6 +10,7 @@ const DETAIL_FIELDS = Object.freeze([
   'unifiedNumber',
   'licenseNumber',
   'foundedOn',
+  'hasGovernanceGrade',
   'governanceGrade',
   'employeesCount',
   'annualBeneficiariesCount',

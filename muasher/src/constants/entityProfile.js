@@ -31,7 +31,12 @@ export const PROFILE_READ_ONLY_FIELDS = Object.freeze(['officialEmail', 'vatCert
 
 export const PROFILE_FILE_FIELDS = Object.freeze(['vatCertificate'])
 
-export const VAT_DEPENDENT_FIELDS = Object.freeze(['vatNumber', 'vatCertificate'])
+/** The fields that only show and count after a «yes» to the answer they map to. */
+export const PROFILE_FIELD_GATES = Object.freeze({
+  governanceGrade: 'hasGovernanceGrade',
+  vatNumber: 'vatRegistered',
+  vatCertificate: 'vatRegistered',
+})
 
 export const PROFILE_LTR_FIELDS = Object.freeze([
   'name.en',
@@ -68,6 +73,7 @@ export const PROFILE_FIELD_INPUTS = Object.freeze({
   employeesCount: { kind: 'text', inputmode: 'numeric' },
   annualBeneficiariesCount: { kind: 'text', inputmode: 'numeric' },
   hasStrategicPlan: { kind: 'select', options: 'strategicPlan' },
+  hasGovernanceGrade: { kind: 'radio', options: 'yesNo' },
   authorizedPersonName: { kind: 'text', autocomplete: 'name' },
   phone: {
     kind: 'text',
@@ -122,13 +128,6 @@ export const BILLING_PATTERNS = Object.freeze({
 })
 
 export const BILLING_TEXT_LIMITS = Object.freeze({ STREET: 150, DISTRICT: 150, CITY: 100 })
-
-export const VAT_CERTIFICATE_RULES = Object.freeze({
-  types: ['application/pdf'],
-  accept: '.pdf,application/pdf',
-  maxBytes: 5 * 1024 * 1024,
-  maxMb: 5,
-})
 
 export const ENTITY_LOGO_RULES = Object.freeze({
   types: ['image/png', 'image/jpeg'],

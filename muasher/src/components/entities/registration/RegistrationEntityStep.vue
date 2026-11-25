@@ -2,12 +2,13 @@
 import { useI18n } from 'vue-i18n'
 import FieldInput from '@/components/form/FieldInput.vue'
 import FieldSelect from '@/components/form/FieldSelect.vue'
-import FieldPercent from '@/components/form/FieldPercent.vue'
 import FieldDate from '@/components/form/FieldDate.vue'
 import EntityUnifiedNumberField from '@/components/entities/form/EntityUnifiedNumberField.vue'
+import EntityGovernanceGradeFields from '@/components/entities/form/EntityGovernanceGradeFields.vue'
+import RegistrationDocumentField from './RegistrationDocumentField.vue'
 import { useEntityOptions } from '@/composables/useEntityOptions'
 import { useRegionCityFields } from '@/composables/useRegionCityFields'
-import { EARLIEST_FOUNDING_DATE, GOVERNANCE_GRADE } from '@/constants/entityEnums'
+import { EARLIEST_FOUNDING_DATE } from '@/constants/entityEnums'
 import { riyadhDateKey } from '@/utils/datetime'
 
 const props = defineProps({
@@ -35,6 +36,11 @@ const today = riyadhDateKey(new Date())
       inputmode="numeric"
       input-dir="ltr"
       :label="t('entities.fields.licenseNumber')"
+      required
+    />
+    <RegistrationDocumentField
+      name="licenseCertificate"
+      :label="t('entities.documents.kinds.licenseCertificate')"
     />
     <FieldInput name="name.ar" input-dir="rtl" :label="t('entities.fields.nameAr')" required />
     <FieldInput name="name.en" input-dir="ltr" :label="t('entities.fields.nameEn')" required />
@@ -75,16 +81,11 @@ const today = riyadhDateKey(new Date())
       inputmode="numeric"
       :label="t('entities.fields.employeesCount')"
     />
-    <FieldPercent
-      name="governanceGrade"
-      :label="t('entities.fields.governanceGrade')"
-      :integer-digits="GOVERNANCE_GRADE.INTEGER_DIGITS"
-      :decimals="GOVERNANCE_GRADE.DECIMALS"
-    />
     <FieldInput
       name="annualBeneficiariesCount"
       inputmode="numeric"
       :label="t('entities.fields.annualBeneficiariesCount')"
     />
+    <EntityGovernanceGradeFields />
   </div>
 </template>

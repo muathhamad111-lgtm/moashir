@@ -28,6 +28,14 @@ final readonly class EntityProfileData
     ) {}
 
     /**
+     * A validated profile always answers the governance question, and only a "yes" answer carries a grade.
+     */
+    public function hasGovernanceGrade(): bool
+    {
+        return $this->governanceGrade !== null;
+    }
+
+    /**
      * @return array<string, mixed>
      */
     public function toAttributes(): array
@@ -40,6 +48,7 @@ final readonly class EntityProfileData
             EntityProfileField::FoundingYear->value => $this->foundingYear,
             EntityProfileField::Region->value => $this->regionId,
             EntityProfileField::City->value => $this->cityId,
+            EntityProfileField::HasGovernanceGrade->value => $this->hasGovernanceGrade(),
             EntityProfileField::GovernanceGrade->value => $this->governanceGrade,
             EntityProfileField::EmployeesCount->value => $this->employeesCount,
             EntityProfileField::AnnualBeneficiariesCount->value => $this->annualBeneficiariesCount,

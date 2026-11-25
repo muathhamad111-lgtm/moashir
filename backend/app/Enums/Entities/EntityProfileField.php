@@ -13,6 +13,7 @@ enum EntityProfileField: string
     case FoundingYear = 'founding_year';
     case Region = 'region_id';
     case City = 'city_id';
+    case HasGovernanceGrade = 'has_governance_grade';
     case GovernanceGrade = 'governance_grade';
     case EmployeesCount = 'employees_count';
     case AnnualBeneficiariesCount = 'annual_beneficiaries_count';
@@ -39,7 +40,7 @@ enum EntityProfileField: string
         return match ($this) {
             self::Name, self::UnifiedNumber, self::LicenseNumber, self::FoundedOn, self::FoundingYear => ProfileSection::Identity,
             self::EntityType, self::DevelopmentSector, self::OrgSize, self::Region, self::City => ProfileSection::Classification,
-            self::GovernanceGrade, self::EmployeesCount, self::AnnualBeneficiariesCount, self::HasStrategicPlan => ProfileSection::Governance,
+            self::HasGovernanceGrade, self::GovernanceGrade, self::EmployeesCount, self::AnnualBeneficiariesCount, self::HasStrategicPlan => ProfileSection::Governance,
             self::AuthorizedPersonName, self::Phone, self::WebsiteUrl, self::MarketingConsent => ProfileSection::Contact,
             self::AddressBuildingNumber, self::AddressStreet, self::AddressDistrict, self::AddressCity, self::AddressPostalCode,
             self::AddressAdditionalNumber, self::AddressShortCode, self::VatRegistered, self::VatNumber => ProfileSection::Billing,

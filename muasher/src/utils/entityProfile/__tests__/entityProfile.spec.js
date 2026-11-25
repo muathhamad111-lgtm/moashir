@@ -189,12 +189,24 @@ describe('section schema', () => {
       foundedOn: '2026-12-01',
     }
     expect(await errorsOf(IDENTITY, [], identity)).toEqual(['licenseNumber', 'foundedOn'])
+    const governance = ['hasGovernanceGrade', 'governanceGrade', 'employeesCount']
     expect(
-      await errorsOf(['governanceGrade', 'employeesCount'], [], {
+      await errorsOf(governance, [], {
+        hasGovernanceGrade: 'yes',
         governanceGrade: '120',
         employeesCount: '-3',
       }),
     ).toEqual(['governanceGrade', 'employeesCount'])
+    expect(
+      await errorsOf(governance, [], {
+        hasGovernanceGrade: '',
+        governanceGrade: '120',
+        employeesCount: '3',
+      }),
+    ).toEqual(['hasGovernanceGrade'])
+    expect(
+      await errorsOf(governance, [], { hasGovernanceGrade: 'no', governanceGrade: '120' }),
+    ).toEqual([])
     expect(await errorsOf(['websiteUrl'], [], { websiteUrl: 'http://namaa.example.sa' })).toEqual([
       'websiteUrl',
     ])

@@ -2,7 +2,11 @@ import { test, expect } from '@playwright/test'
 import { seedLocale, seedSignedIn } from './support/session'
 import { clearMockFault, forceMockFault } from './support/mockFaults'
 import { namedSelect } from './support/dropdown'
-import { fillRegistrationEntityStep, goToRegistrationAccountStep } from './support/registration'
+import {
+  attachAuthorizationLetter,
+  fillRegistrationEntityStep,
+  goToRegistrationAccountStep,
+} from './support/registration'
 import { approvePendingProfileChange } from './support/profileChanges'
 
 const DEV_OTP_CODE = '482913'
@@ -36,10 +40,10 @@ async function typeCode(page, code) {
 
 async function fillRegistration(page) {
   await expect(page.locator('[name="cityId"]')).toBeDisabled()
-  await fillRegistrationEntityStep(page)
-  await page.locator('[name="governanceGrade"]').fill('84.5')
+  await fillRegistrationEntityStep(page, { governanceGrade: '84.5' })
   await goToRegistrationAccountStep(page)
   await page.locator('[name="authorizedPersonName"]').fill('سلمان بن فهد الحربي')
+  await attachAuthorizationLetter(page)
   await page.locator('[name="officialEmail"]').fill('info@alwafa-charity.example.sa')
   await page.locator('[name="password"]').fill('Wafa-Charity-Account-2026')
   await page.locator('[name="passwordConfirmation"]').fill('Wafa-Charity-Account-2026')

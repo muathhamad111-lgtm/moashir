@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use App\Enums\Entities\EntityDocument;
 use App\Enums\Entities\ProfileChangeStatus;
 use App\Enums\Entities\ProfileSection;
 use App\Models\Entities\Entity;
@@ -19,6 +20,11 @@ function vatCertificatePdf(string $name = 'شهادة-التسجيل-الضري�
 function uploadVatCertificate(User $owner, UploadedFile $file): TestResponse
 {
     return switchTo($owner)->post('/api/v1/entities/me/vat-certificate', ['file' => $file], ['Accept' => 'application/json']);
+}
+
+function uploadOwnDocument(User $owner, EntityDocument $document, ?UploadedFile $file = null): TestResponse
+{
+    return switchTo($owner)->post('/api/v1/entities/me/documents/'.$document->value, ['file' => $file ?? entityDocumentPdf($document->value.'.pdf')], ['Accept' => 'application/json']);
 }
 
 function vatRegisteredEntity(): Entity

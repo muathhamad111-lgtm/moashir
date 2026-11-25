@@ -33,6 +33,10 @@ export function useEntityDisplay() {
   const dateTime = (value) =>
     value ? formatDate(value, locale.value, { dateStyle: 'medium', timeStyle: 'short' }) : ''
   const enumLabel = (group, value) => (value ? t(`entities.enums.${group}.${value}`) : '')
+  const governanceGrade = (entity) => {
+    if (entity.hasGovernanceGrade === false) return t('entities.display.noGovernanceGrade')
+    return formatGovernanceGrade(entity.governanceGrade) || t('entities.display.notSet')
+  }
 
   const FORMATTERS = {
     reference: (entity) => entity.reference,
@@ -58,7 +62,7 @@ export function useEntityDisplay() {
     websiteUrl: (entity) => entity.websiteUrl,
     region: (entity) => localizedText(entity.region?.name, locale.value),
     city: (entity) => localizedText(entity.city?.name, locale.value),
-    governanceGrade: (entity) => formatGovernanceGrade(entity.governanceGrade),
+    governanceGrade,
     employeesCount: (entity) => count(entity.employeesCount),
     annualBeneficiariesCount: (entity) => count(entity.annualBeneficiariesCount),
     hasStrategicPlan: (entity) =>

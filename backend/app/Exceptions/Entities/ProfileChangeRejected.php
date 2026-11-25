@@ -38,6 +38,11 @@ final class ProfileChangeRejected extends ApiException
         return new self(new ApiError(Response::HTTP_UNPROCESSABLE_ENTITY, 'profile.change_coupled_items', ['approved_items' => [__('errors.profile.change_coupled_items')]]));
     }
 
+    public static function authorizationLetterRequired(): self
+    {
+        return new self(new ApiError(Response::HTTP_UNPROCESSABLE_ENTITY, 'profile.change_authorization_letter_required', ['authorization_letter' => [__('errors.profile.change_authorization_letter_required')]]));
+    }
+
     public static function reasonRequired(): self
     {
         return new self(new ApiError(Response::HTTP_UNPROCESSABLE_ENTITY, 'profile.change_reason_required', ['reason' => [__('errors.profile.change_reason_required')]]));

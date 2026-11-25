@@ -1,8 +1,10 @@
 import {
+  PROFILE_FIELD_GATES,
   PROFILE_REQUIREMENTS,
   PROFILE_SECTION_STATES,
-  VAT_DEPENDENT_FIELDS,
 } from '@/constants/entityProfile'
+
+const YES = 'yes'
 
 const EMPTY_STATE = Object.freeze({
   state: PROFILE_SECTION_STATES.COMPLETE,
@@ -52,12 +54,22 @@ export function sectionViewsOf(profile) {
   })
 }
 
-export function isFieldShown(name, vatRegistered) {
-  return vatRegistered === true || !VAT_DEPENDENT_FIELDS.includes(name)
+export function isGatedField(name) {
+  return Object.hasOwn(PROFILE_FIELD_GATES, name)
 }
 
-export function shownFieldsOf(fields, vatRegistered) {
-  return fields.filter((field) => isFieldShown(field.name, vatRegistered))
+export function isFieldShown(name, answers) {
+  return !isGatedField(name) || answers?.[PROFILE_FIELD_GATES[name]] === true
+}
+
+export function shownFieldsOf(fields, answers) {
+  return fields.filter((field) => isFieldShown(field.name, answers))
+}
+
+export function formAnswersOf(values) {
+  return Object.fromEntries(
+    Object.values(PROFILE_FIELD_GATES).map((gate) => [gate, values?.[gate] === YES]),
+  )
 }
 
 export function firstMissingOf(sections) {

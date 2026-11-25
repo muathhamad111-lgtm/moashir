@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use App\Enums\Entities\EntityDocument;
 use App\Http\Controllers\Api\V1\Entities\ApproveEntityController;
 use App\Http\Controllers\Api\V1\Entities\CancelMyEmailChangeController;
 use App\Http\Controllers\Api\V1\Entities\ConfirmMyEmailChangeController;
@@ -9,6 +10,7 @@ use App\Http\Controllers\Api\V1\Entities\CurrentTermsController;
 use App\Http\Controllers\Api\V1\Entities\DeactivateEntityController;
 use App\Http\Controllers\Api\V1\Entities\EntityController;
 use App\Http\Controllers\Api\V1\Entities\EntityDeletionImpactController;
+use App\Http\Controllers\Api\V1\Entities\EntityDocumentDownloadController;
 use App\Http\Controllers\Api\V1\Entities\EntityEmailChangeController;
 use App\Http\Controllers\Api\V1\Entities\EntityProfileChangeController;
 use App\Http\Controllers\Api\V1\Entities\EntityProfileChangeRequestController;
@@ -16,6 +18,7 @@ use App\Http\Controllers\Api\V1\Entities\EntityTimelineController;
 use App\Http\Controllers\Api\V1\Entities\ExportEntitiesController;
 use App\Http\Controllers\Api\V1\Entities\MyEmailChangeController;
 use App\Http\Controllers\Api\V1\Entities\MyEntityController;
+use App\Http\Controllers\Api\V1\Entities\MyEntityDocumentController;
 use App\Http\Controllers\Api\V1\Entities\MyEntityLogoController;
 use App\Http\Controllers\Api\V1\Entities\MyProfileChangeController;
 use App\Http\Controllers\Api\V1\Entities\MyProfileChangeRequestController;
@@ -65,6 +68,8 @@ Route::middleware(['auth:sanctum', 'session.timeouts', 'mfa', 'password.current'
         Route::post('vat-certificate', [MyVatCertificateController::class, 'store'])->middleware(["can:updateOwn,{$entities}", 'throttle:uploads'])->name('vat-certificate.store');
         Route::delete('vat-certificate', [MyVatCertificateController::class, 'destroy'])->middleware(["can:updateOwn,{$entities}", 'throttle:sensitive'])->name('vat-certificate.destroy');
         Route::post('vat-certificate/download', [MyVatCertificateController::class, 'download'])->middleware(["can:viewOwn,{$entities}", 'throttle:downloads'])->name('vat-certificate.download');
+        Route::post('documents/{document}', [MyEntityDocumentController::class, 'store'])->whereIn('document', EntityDocument::requiredValues())->middleware(["can:updateOwn,{$entities}", 'throttle:uploads'])->name('documents.store');
+        Route::post('documents/{document}/download', [MyEntityDocumentController::class, 'download'])->middleware(["can:viewOwn,{$entities}", 'throttle:downloads'])->name('documents.download');
         Route::get('profile-changes', MyProfileChangeController::class)->middleware("can:viewOwn,{$entities}")->name('profile-changes');
         Route::post('email/change', MyEmailChangeController::class)->middleware(["can:updateOwn,{$entities}", 'throttle:email-change'])->name('email.change');
         Route::post('email/confirm', ConfirmMyEmailChangeController::class)->middleware(["can:updateOwn,{$entities}", 'throttle:otp-verify'])->name('email.confirm');
@@ -83,6 +88,7 @@ Route::middleware(['auth:sanctum', 'session.timeouts', 'mfa', 'password.current'
             Route::put('{entity}', [EntityController::class, 'update'])->middleware(['can:update,entity', 'throttle:sensitive'])->name('update');
             Route::get('{entity}/profile-changes', EntityProfileChangeController::class)->middleware('can:viewProfileChanges,entity')->name('profile-changes');
             Route::get('{entity}/timeline', EntityTimelineController::class)->middleware('can:view,entity')->name('timeline');
+            Route::post('{entity}/documents/{document}/download', EntityDocumentDownloadController::class)->middleware(['can:viewDocuments,entity', 'throttle:downloads'])->name('documents.download');
             Route::post('{entity}/deactivate', DeactivateEntityController::class)->middleware(['can:deactivate,entity', 'throttle:sensitive'])->name('deactivate');
             Route::post('{entity}/reactivate', ReactivateEntityController::class)->middleware(['can:reactivate,entity', 'throttle:sensitive'])->name('reactivate');
             Route::post('{entity}/approve', ApproveEntityController::class)->middleware(['can:review,entity', 'throttle:sensitive'])->name('approve');

@@ -77,6 +77,8 @@ enum AuditEvent: string
     case EntityLogoRemoved = 'entity.logo_removed';
     case EntityVatCertificateUploaded = 'entity.vat_certificate_uploaded';
     case EntityVatCertificateRemoved = 'entity.vat_certificate_removed';
+    case EntityDocumentUploaded = 'entity.document_uploaded';
+    case EntityDocumentRemoved = 'entity.document_removed';
     case EntityDeactivated = 'entity.deactivated';
     case EntityReactivated = 'entity.reactivated';
     case EntityApproved = 'entity.approved';

@@ -34,6 +34,7 @@ const ENTITY = {
   foundingYear: 2009,
   region: { id: 1 },
   city: { id: 1 },
+  hasGovernanceGrade: true,
   governanceGrade: '86.50',
   employeesCount: 180,
   annualBeneficiariesCount: null,
@@ -78,6 +79,7 @@ describe('entity payload mapping', () => {
       foundingYear: 2009,
       regionId: 1,
       cityId: 1,
+      hasGovernanceGrade: true,
       governanceGrade: '86.50',
       employeesCount: 180,
       annualBeneficiariesCount: null,
@@ -94,10 +96,21 @@ describe('entity payload mapping', () => {
       passwordConfirmation: 'p',
       termsAccepted: true,
     }
+    const licenseCertificate = new File(['%PDF-1.4'], 'license.pdf', { type: 'application/pdf' })
+    const authorizationLetter = new File(['%PDF-1.4'], 'letter.pdf', { type: 'application/pdf' })
     const payload = registrationPayload(
-      { ...form, unifiedNumber: '7000000901', foundedOn: '2009-04-20', licenseNumber: ' ١٢٣٤ ' },
+      {
+        ...form,
+        unifiedNumber: '7000000901',
+        foundedOn: '2009-04-20',
+        licenseNumber: ' ١٢٣٤ ',
+        licenseCertificate,
+        authorizationLetter,
+      },
       { terms: { id: 3 }, privacy: { id: 4 } },
     )
+    expect(payload.licenseCertificate).toBe(licenseCertificate)
+    expect(payload.authorizationLetter).toBe(authorizationLetter)
     expect(payload).toMatchObject({
       officialEmail: 'info@alwafa.example.sa',
       unifiedNumber: '7000000901',
@@ -128,6 +141,21 @@ describe('entity payload mapping', () => {
     expect(profilePayload(values({ hasStrategicPlan: '' })).hasStrategicPlan).toBeNull()
     expect(profilePayload(values({ hasStrategicPlan: 'no' })).hasStrategicPlan).toBe(false)
   })
+
+  it('sends no governance grade after a «no» and keeps an unanswered question empty', () => {
+    expect(profilePayload(values({ hasGovernanceGrade: 'no' }))).toMatchObject({
+      hasGovernanceGrade: false,
+      governanceGrade: null,
+    })
+    expect(profileFormValues({ ...ENTITY, hasGovernanceGrade: null })).toMatchObject({
+      hasGovernanceGrade: '',
+    })
+    expect(profileFormValues({ ...ENTITY, hasGovernanceGrade: false })).toMatchObject({
+      hasGovernanceGrade: 'no',
+    })
+    expect(emptyProfileValues().hasGovernanceGrade).toBe('')
+    expect(profilePayload(values({ hasGovernanceGrade: '' })).hasGovernanceGrade).toBeNull()
+  })
 })
 
 describe('entity schemas', () => {
@@ -153,11 +181,34 @@ describe('entity schemas', () => {
         'name.ar',
         'unifiedNumber',
         'foundedOn',
+        'hasGovernanceGrade',
+        'licenseNumber',
+        'licenseCertificate',
+        'authorizationLetter',
       ]),
     )
-    expect(errors).not.toContain('licenseNumber')
     expect(errors).not.toContain('foundingYear')
     expect(errors).not.toContain('governanceGrade')
+  })
+
+  it('requires a valid governance grade only after a «yes»', async () => {
+    const schema = registrationSchema(t)
+    const gradeErrors = (form) =>
+      schema
+        .validateAt('governanceGrade', { ...emptyProfileValues(), ...form })
+        .then(() => null)
+        .catch((error) => error.message)
+    expect(await gradeErrors({ hasGovernanceGrade: 'yes', governanceGrade: '' })).toBe(
+      'This field is required',
+    )
+    expect(await gradeErrors({ hasGovernanceGrade: 'yes', governanceGrade: '100.5' })).toBe(
+      t('entities.validation.governanceGrade'),
+    )
+    expect(await gradeErrors({ hasGovernanceGrade: 'yes', governanceGrade: '87.45' })).toBeNull()
+    expect(await gradeErrors({ hasGovernanceGrade: 'no', governanceGrade: '120' })).toBeNull()
+    await expect(schema.validateAt('hasGovernanceGrade', emptyProfileValues())).rejects.toThrow(
+      'This field is required',
+    )
   })
 
   it('accepts the permanent deletion only with the disclaimer, the exact reference and a 20-character reason', async () => {

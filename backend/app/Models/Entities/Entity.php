@@ -17,6 +17,7 @@ use App\Enums\Entities\ProfileChangeStatus;
 use App\Enums\Entities\ProfileSection;
 use App\Models\Assessments\Assessment;
 use App\Models\Certificates\Certificate;
+use App\Models\Concerns\HasEntityFiles;
 use App\Models\Files\StoredFile;
 use App\Models\Identity\EmailChangeRequest;
 use App\Models\Identity\User;
@@ -52,6 +53,7 @@ use Illuminate\Support\Facades\Date;
  * @property int $region_id
  * @property int $city_id
  * @property string|null $governance_grade
+ * @property bool|null $has_governance_grade
  * @property int|null $employees_count
  * @property int|null $annual_beneficiaries_count
  * @property bool|null $has_strategic_plan
@@ -70,6 +72,8 @@ use Illuminate\Support\Facades\Date;
  * @property bool|null $vat_registered
  * @property string|null $vat_number
  * @property int|null $vat_certificate_file_id
+ * @property int|null $license_certificate_file_id
+ * @property int|null $authorization_letter_file_id
  * @property EntityStatus $status
  * @property Carbon|null $verified_at
  * @property Carbon|null $approved_at
@@ -93,12 +97,16 @@ use Illuminate\Support\Facades\Date;
  * @property-read User|null $owner
  * @property-read StoredFile|null $logo
  * @property-read StoredFile|null $vatCertificate
+ * @property-read StoredFile|null $licenseCertificate
+ * @property-read StoredFile|null $authorizationLetter
  * @property-read Certificate|null $levelCertificate
  * @property-read Certificate|null $lastLevelCertificate
  * @property-read Assessment|null $lastAccreditedAssessment
  */
 final class Entity extends Model
 {
+    use HasEntityFiles;
+
     /** @use HasFactory<EntityFactory> */
     use HasFactory;
 
@@ -118,7 +126,7 @@ final class Entity extends Model
      */
     protected $fillable = [
         'name', 'entity_type', 'development_sector', 'org_size', 'founding_year', 'region_id', 'city_id',
-        'governance_grade', 'employees_count', 'annual_beneficiaries_count', 'has_strategic_plan', 'license_number',
+        'governance_grade', 'has_governance_grade', 'employees_count', 'annual_beneficiaries_count', 'has_strategic_plan', 'license_number',
         'founded_on', 'website_url', 'unified_number', 'address_building_number', 'address_street', 'address_district',
         'address_city', 'address_postal_code', 'address_additional_number', 'address_short_code', 'vat_registered', 'vat_number',
     ];
@@ -137,6 +145,7 @@ final class Entity extends Model
             'region_id' => 'integer',
             'city_id' => 'integer',
             'governance_grade' => 'decimal:2',
+            'has_governance_grade' => 'boolean',
             'employees_count' => 'integer',
             'annual_beneficiaries_count' => 'integer',
             'has_strategic_plan' => 'boolean',
@@ -144,6 +153,8 @@ final class Entity extends Model
             'logo_file_id' => 'integer',
             'vat_registered' => 'boolean',
             'vat_certificate_file_id' => 'integer',
+            'license_certificate_file_id' => 'integer',
+            'authorization_letter_file_id' => 'integer',
             'status' => EntityStatus::class,
             'verified_at' => 'datetime',
             'approved_at' => 'datetime',
@@ -180,22 +191,6 @@ final class Entity extends Model
     public function owner(): HasOne
     {
         return $this->hasOne(User::class, 'entity_id');
-    }
-
-    /**
-     * @return BelongsTo<StoredFile, $this>
-     */
-    public function logo(): BelongsTo
-    {
-        return $this->belongsTo(StoredFile::class, 'logo_file_id');
-    }
-
-    /**
-     * @return BelongsTo<StoredFile, $this>
-     */
-    public function vatCertificate(): BelongsTo
-    {
-        return $this->belongsTo(StoredFile::class, 'vat_certificate_file_id');
     }
 
     /**

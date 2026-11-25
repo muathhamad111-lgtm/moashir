@@ -1,5 +1,6 @@
 import { FIXTURE_ENTITY_LOGO } from './entityLogos'
 import { billingOf } from './entityBilling'
+import { documentsOf } from './entityDocuments'
 
 export const ENTITY_REFERENCE_PREFIX = 'ENT-'
 
@@ -38,6 +39,10 @@ function registryOf(fields) {
     : {}
 }
 
+function governanceAnswerOf(grade) {
+  return grade === null || grade === undefined ? null : true
+}
+
 function record(fields) {
   return {
     unifiedNumber: null,
@@ -47,6 +52,7 @@ function record(fields) {
     logo: null,
     ...registryOf(fields),
     ...billingOf(fields.id),
+    ...documentsOf(fields.id),
     name: { ar: '', en: null },
     governanceGrade: null,
     employeesCount: null,
@@ -65,6 +71,7 @@ function record(fields) {
     openRequests: [],
     incomingOpenRequest: null,
     ...fields,
+    hasGovernanceGrade: fields.hasGovernanceGrade ?? governanceAnswerOf(fields.governanceGrade),
   }
 }
 

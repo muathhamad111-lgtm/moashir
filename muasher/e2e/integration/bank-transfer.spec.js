@@ -86,7 +86,7 @@ async function sendTransfer(page) {
 async function decide(page, paymentId, action) {
   await page.goto(`/finance/transfers/${paymentId}`)
   await expect(page.locator('.transfer-review__title')).toBeVisible()
-  await expect(page.locator('.proof-viewer__name')).toContainText('bank-transfer-receipt.pdf')
+  await expect(page.locator('.document-viewer__name')).toContainText('bank-transfer-receipt.pdf')
   await page
     .locator(`.transfer-review__decisions .btn--${action === 'approve' ? 'primary' : 'secondary'}`)
     .click()

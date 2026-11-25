@@ -1,6 +1,6 @@
 import { governanceGradePayload } from '@/utils/governanceGrade'
 import { toWesternDigits } from '@/utils/numerals'
-import { PROFILE_READ_ONLY_FIELDS } from '@/constants/entityProfile'
+import { PROFILE_FIELD_GATES, PROFILE_READ_ONLY_FIELDS } from '@/constants/entityProfile'
 import { readPath, writePath } from './paths'
 
 const YES = 'yes'
@@ -46,6 +46,7 @@ const READERS = Object.freeze({
   orgSize: (profile) => text(profile.orgSize),
   regionId: (profile) => text(profile.region?.id),
   cityId: (profile) => text(profile.city?.id),
+  hasGovernanceGrade: (profile) => planValue(profile.hasGovernanceGrade),
   governanceGrade: (profile) => text(profile.governanceGrade),
   employeesCount: (profile) => text(profile.employeesCount),
   annualBeneficiariesCount: (profile) => text(profile.annualBeneficiariesCount),
@@ -76,6 +77,7 @@ const WRITERS = Object.freeze({
   orgSize: (value) => value,
   regionId: (value) => Number(value),
   cityId: (value) => Number(value),
+  hasGovernanceGrade: planPayload,
   governanceGrade: governanceGradePayload,
   employeesCount: nullableNumber,
   annualBeneficiariesCount: nullableNumber,
@@ -95,9 +97,14 @@ const WRITERS = Object.freeze({
   vatNumber: nullableText,
 })
 
-function withoutUnregisteredVat(payload) {
-  if (!('vatRegistered' in payload) || payload.vatRegistered === true) return payload
-  return { ...payload, vatNumber: null }
+function withoutDeclinedFields(payload) {
+  return Object.entries(PROFILE_FIELD_GATES).reduce(
+    (cleared, [name, gate]) =>
+      name in cleared && gate in cleared && cleared[gate] !== true
+        ? { ...cleared, [name]: null }
+        : cleared,
+    payload,
+  )
 }
 
 export function editableFieldsOf(fields) {
@@ -112,7 +119,7 @@ export function sectionFormValues(profile, fields) {
 }
 
 export function sectionPayload(values, fields, baseRevision) {
-  return withoutUnregisteredVat(
+  return withoutDeclinedFields(
     editableFieldsOf(fields).reduce(
       (payload, name) => writePath(payload, name, WRITERS[name](readPath(values, name))),
       { baseRevision },

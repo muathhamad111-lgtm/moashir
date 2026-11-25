@@ -17,7 +17,7 @@ use Illuminate\Support\Carbon;
 
 /**
  * An entity's own profile edits waiting for staff approval: proposed values, the approved values they replace, and
- * the logo or VAT certificate the entity uploaded or removed.
+ * the logo, VAT certificate, license certificate or authorization letter the entity uploaded or removed.
  *
  * @property int $id
  * @property string $public_id
@@ -32,6 +32,10 @@ use Illuminate\Support\Carbon;
  * @property bool $removes_logo
  * @property int|null $pending_vat_certificate_file_id
  * @property bool $removes_vat_certificate
+ * @property int|null $pending_license_certificate_file_id
+ * @property bool $removes_license_certificate
+ * @property int|null $pending_authorization_letter_file_id
+ * @property bool $removes_authorization_letter
  * @property array<string, string>|null $decisions
  * @property int|null $reviewed_by_user_id
  * @property string|null $review_note
@@ -43,6 +47,8 @@ use Illuminate\Support\Carbon;
  * @property-read User|null $reviewer
  * @property-read StoredFile|null $pendingLogo
  * @property-read StoredFile|null $pendingVatCertificate
+ * @property-read StoredFile|null $pendingLicenseCertificate
+ * @property-read StoredFile|null $pendingAuthorizationLetter
  */
 final class EntityProfileChangeRequest extends Model
 {
@@ -65,6 +71,8 @@ final class EntityProfileChangeRequest extends Model
         'revision' => 1,
         'removes_logo' => false,
         'removes_vat_certificate' => false,
+        'removes_license_certificate' => false,
+        'removes_authorization_letter' => false,
     ];
 
     public function getRouteKeyName(): string
@@ -88,6 +96,10 @@ final class EntityProfileChangeRequest extends Model
             'removes_logo' => 'boolean',
             'pending_vat_certificate_file_id' => 'integer',
             'removes_vat_certificate' => 'boolean',
+            'pending_license_certificate_file_id' => 'integer',
+            'removes_license_certificate' => 'boolean',
+            'pending_authorization_letter_file_id' => 'integer',
+            'removes_authorization_letter' => 'boolean',
             'decisions' => 'array',
             'decided_at' => 'datetime',
         ];
@@ -131,6 +143,22 @@ final class EntityProfileChangeRequest extends Model
     public function pendingVatCertificate(): BelongsTo
     {
         return $this->belongsTo(StoredFile::class, 'pending_vat_certificate_file_id')->withTrashed();
+    }
+
+    /**
+     * @return BelongsTo<StoredFile, $this>
+     */
+    public function pendingLicenseCertificate(): BelongsTo
+    {
+        return $this->belongsTo(StoredFile::class, 'pending_license_certificate_file_id')->withTrashed();
+    }
+
+    /**
+     * @return BelongsTo<StoredFile, $this>
+     */
+    public function pendingAuthorizationLetter(): BelongsTo
+    {
+        return $this->belongsTo(StoredFile::class, 'pending_authorization_letter_file_id')->withTrashed();
     }
 
     public function isPending(): bool

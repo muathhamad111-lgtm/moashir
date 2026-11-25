@@ -7,7 +7,6 @@ namespace App\Http\Resources\Entities;
 use App\Data\Entities\ProfileChangeDetail;
 use App\Enums\Entities\EntityProfileField;
 use App\Enums\Entities\ProfileChangeFile;
-use App\Enums\Entities\ProfileSection;
 use App\Models\Files\StoredFile;
 use App\Support\ValueObjects\LocalizedText;
 use Illuminate\Http\Request;
@@ -68,10 +67,10 @@ final class ProfileChangeRequestDetailResource extends JsonResource
         return [
             'item' => $file->value,
             'kind' => 'file',
-            'section' => $file === ProfileChangeFile::VatCertificate ? ProfileSection::Billing->value : null,
+            'section' => $file->section()?->value,
             'label' => LocalizedText::fromTranslation($file->labelKey())->toArray(),
             'old_value' => $isPending ? $this->fileValue($this->approvedFile($file), $request) : null,
-            'new_value' => $isPending ? $this->fileValue($file === ProfileChangeFile::Logo ? $change->pendingLogo : $change->pendingVatCertificate, $request) : null,
+            'new_value' => $isPending ? $this->fileValue($change->getRelationValue($file->pendingRelation()), $request) : null,
             'removes' => $change->fileChanges()->removes($file),
             'is_stale' => false,
             'decision' => $change->decisions[$file->value] ?? null,
@@ -89,16 +88,21 @@ final class ProfileChangeRequestDetailResource extends JsonResource
 
     private function approvedFile(ProfileChangeFile $file): ?StoredFile
     {
-        $entity = $this->resource->request->entity;
+        $approved = $this->resource->request->entity->getRelationValue($file->approvedRelation());
 
-        return $file === ProfileChangeFile::Logo ? $entity->logo : $entity->vatCertificate;
+        return $approved instanceof StoredFile ? $approved : null;
     }
 
     /**
      * @return array<string, mixed>|null
      */
-    private function fileValue(?StoredFile $file, Request $request): ?array
+    private function fileValue(mixed $file, Request $request): ?array
     {
-        return $file instanceof StoredFile ? [...new EntityLogoResource($file)->toArray($request), 'name' => $file->original_name] : null;
+        return $file instanceof StoredFile ? [
+            ...new EntityLogoResource($file)->toArray($request),
+            'name' => $file->original_name,
+            'mime_type' => $file->mime_type,
+            'size_bytes' => $file->size_bytes,
+        ] : null;
     }
 }

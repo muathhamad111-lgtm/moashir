@@ -6,7 +6,6 @@ namespace App\Services\Entities\ProfileChanges;
 
 use App\Data\Entities\ProfileChangeDecision;
 use App\Enums\Entities\EntityProfileField;
-use App\Enums\Entities\ProfileChangeFile;
 use App\Exceptions\Entities\ProfileChangeRejected;
 use App\Exceptions\IllegalStateTransition;
 use App\Models\Entities\Entity;
@@ -20,14 +19,20 @@ use App\Services\Entities\EntityFreezeGuard;
 final readonly class ProfileChangeDecisionGuard
 {
     /**
-     * Fields that only make sense together: a city belongs to its region, a VAT number to a VAT registration.
+     * Fields that only make sense together: a city belongs to its region, a VAT number to a VAT registration, a
+     * governance grade to the answer that the entity has one.
      */
     private const array COUPLED = [
         [EntityProfileField::Region, EntityProfileField::City],
         [EntityProfileField::VatRegistered, EntityProfileField::VatNumber],
+        [EntityProfileField::HasGovernanceGrade, EntityProfileField::GovernanceGrade],
     ];
 
-    public function __construct(private ProfileChangeValues $values, private EntityFreezeGuard $freezeGuard) {}
+    public function __construct(
+        private ProfileChangeValues $values,
+        private EntityFreezeGuard $freezeGuard,
+        private AuthorizationLetterRequirement $letter,
+    ) {}
 
     public function assertDecidable(EntityProfileChangeRequest $request, ProfileChangeDecision $decision): void
     {
@@ -53,7 +58,7 @@ final readonly class ProfileChangeDecisionGuard
         }
 
         foreach ($request->fileChanges()->changed() as $file) {
-            $pending = $file === ProfileChangeFile::Logo ? $request->pendingLogo : $request->pendingVatCertificate;
+            $pending = $request->getRelationValue($file->pendingRelation());
 
             if ($decision->approves($file->value) && $pending instanceof StoredFile && ! $pending->isScannedClean()) {
                 throw ProfileChangeRejected::fileNotClean($file->value);
@@ -90,6 +95,8 @@ final readonly class ProfileChangeDecisionGuard
                 throw ProfileChangeRejected::coupledItems();
             }
         }
+
+        $this->letter->assertDecision($items, $decision);
 
         if ($decision->rejectsAnyOf($items) && $decision->reason === null) {
             throw ProfileChangeRejected::reasonRequired();

@@ -19,6 +19,7 @@ use App\Models\Identity\User;
 use App\Notifications\Entities\EntityNotification;
 use App\Notifications\Identity\OtpCodeNotification;
 use Illuminate\Support\Facades\Artisan;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Notification;
 use Illuminate\Testing\TestResponse;
 
@@ -59,9 +60,10 @@ it('registers an entity with the verified official e-mail, holds it for staff re
         ->and($entity->verified_at)->not->toBeNull()
         ->and($entity->approved_at)->toBeNull()
         ->and($entity->name->ar)->toBe('جمعية الأمل الخيرية')
+        ->and($entity->has_governance_grade)->toBeTrue()
         ->and($entity->governance_grade)->toBe('87.45')
         ->and($entity->hasCompleteProfile())->toBeFalse()
-        ->and($entity->profileCompletion()->percent())->toBe(59)
+        ->and($entity->profileCompletion()->percent())->toBe(65)
         ->and($entity->unified_number)->toBe('7001234567')
         ->and($owner->roleKeys())->toBe([RoleKey::Entity])
         ->and($owner->name)->toBe('سلمان بن فهد العتيبي')
@@ -100,10 +102,26 @@ it('records marketing consent only on an explicit opt-in', function (?bool $optI
 ]);
 
 it('accepts an incomplete profile and leaves governance and counts for later', function (): void {
-    register(registrationPayload(['governance_grade' => null, 'employees_count' => null, 'annual_beneficiaries_count' => null]))->assertCreated();
+    register(registrationPayload(['has_governance_grade' => false, 'governance_grade' => null, 'employees_count' => null, 'annual_beneficiaries_count' => null]))->assertCreated();
 
     expect(Entity::query()->firstOrFail()->profile_completed_at)->toBeNull();
 });
+
+it('stores no governance grade when the entity answers that it has none, even if one is sent', function (mixed $answer, mixed $grade): void {
+    register(registrationPayload(['has_governance_grade' => $answer, 'governance_grade' => $grade]))->assertCreated();
+
+    $entity = Entity::query()->firstOrFail();
+
+    expect($entity->has_governance_grade)->toBeFalse()
+        ->and($entity->governance_grade)->toBeNull()
+        ->and(DB::table('entities')->where('id', $entity->id)->value('governance_grade'))->toBeNull()
+        ->and($entity->profileCompletion()->toArray()['sections'][2]['missing_fields'])->toBe([]);
+})->with([
+    'no grade sent' => [false, null],
+    'a stale grade sent' => [false, '87.45'],
+    'an invalid grade sent' => [false, 'advanced'],
+    'a form-encoded no' => ['0', '64.10'],
+]);
 
 it('accepts an unanswered strategic plan and counts it as missing', function (): void {
     register(registrationPayload(['has_strategic_plan' => null]))->assertCreated();
@@ -138,7 +156,7 @@ it('consumes the e-mail token so it cannot register a second time', function ():
     $payload = registrationPayload();
 
     register($payload)->assertCreated();
-    register([...$payload, 'unified_number' => '7001234568'])
+    register([...$payload, 'unified_number' => '7001234568', 'license_number' => '447001234568'])
         ->assertUnprocessable()
         ->assertJsonPath('code', 'registration.email_unverified')
         ->assertJsonPath('errors.official_email.0', __('errors.registration.email_unverified'));
@@ -197,18 +215,18 @@ it('names only the profile fields still missing in the completion reminder', fun
         ->assertJsonPath('data.user.entity.profile_completed', false);
 
     Notification::assertSentTo(registeredOwner(), EntityNotification::class, static fn (EntityNotification $notification): bool => $notification->notice->code === NotificationCode::EntityProfileIncomplete
-        && $notification->notice->body->ar === 'تم التحقق من حسابك. لاستكمال الملف التعريفي لـ جمعية الأمل الخيرية أضف: رقم الترخيص، تاريخ التأسيس، '.REGISTRATION_BILLING_GAPS_AR.'.'
-        && $notification->notice->body->en === 'Your account is verified. To complete the profile of Al-Amal Charitable Association, add: Licence number, Founding date, '.REGISTRATION_BILLING_GAPS_EN.'.');
+        && $notification->notice->body->ar === 'تم التحقق من حسابك. لاستكمال الملف التعريفي لـ جمعية الأمل الخيرية أضف: تاريخ التأسيس، '.REGISTRATION_BILLING_GAPS_AR.'.'
+        && $notification->notice->body->en === 'Your account is verified. To complete the profile of Al-Amal Charitable Association, add: Founding date, '.REGISTRATION_BILLING_GAPS_EN.'.');
 });
 
 it('names the governance figures in the completion reminder when the registration leaves them empty', function (): void {
     requireEntityRegistrationReview(false);
 
-    register(registrationPayload(['license_number' => '1234', 'founded_on' => '2011-04-20', 'governance_grade' => null, 'employees_count' => null]))->assertCreated();
+    register(registrationPayload(['license_number' => '1234', 'founded_on' => '2011-04-20', 'has_governance_grade' => false, 'governance_grade' => null, 'employees_count' => null]))->assertCreated();
 
     Notification::assertSentTo(registeredOwner(), EntityNotification::class, static fn (EntityNotification $notification): bool => $notification->notice->code === NotificationCode::EntityProfileIncomplete
-        && str_ends_with($notification->notice->body->ar, 'أضف: درجة الحوكمة، عدد الموظفين، '.REGISTRATION_BILLING_GAPS_AR.'.')
-        && str_ends_with($notification->notice->body->en, 'add: Governance grade, Number of employees, '.REGISTRATION_BILLING_GAPS_EN.'.'));
+        && str_ends_with($notification->notice->body->ar, 'أضف: عدد الموظفين، '.REGISTRATION_BILLING_GAPS_AR.'.')
+        && str_ends_with($notification->notice->body->en, 'add: Number of employees, '.REGISTRATION_BILLING_GAPS_EN.'.'));
 });
 
 it('leaves only the billing details to complete when the registration carries the licence number and the founding date', function (): void {
@@ -380,6 +398,11 @@ it('rejects invalid registration data', function (Closure $mutate, string $field
     'governance below 0' => [static fn (array $payload): array => [...$payload, 'governance_grade' => '-1'], 'governance_grade'],
     'governance with three decimals' => [static fn (array $payload): array => [...$payload, 'governance_grade' => '87.455'], 'governance_grade'],
     'governance as a band label' => [static fn (array $payload): array => [...$payload, 'governance_grade' => 'advanced'], 'governance_grade'],
+    'governance answered yes without a grade' => [static fn (array $payload): array => [...$payload, 'governance_grade' => null], 'governance_grade'],
+    'governance answered yes and the grade left out' => [static fn (array $payload): array => array_diff_key($payload, ['governance_grade' => true]), 'governance_grade'],
+    'governance question missing' => [static fn (array $payload): array => array_diff_key($payload, ['has_governance_grade' => true]), 'has_governance_grade'],
+    'governance question unanswered' => [static fn (array $payload): array => [...$payload, 'has_governance_grade' => null], 'has_governance_grade'],
+    'governance answer not a yes or no' => [static fn (array $payload): array => [...$payload, 'has_governance_grade' => 'perhaps'], 'has_governance_grade'],
     'negative employees' => [static fn (array $payload): array => [...$payload, 'employees_count' => -3], 'employees_count'],
     'strategic plan missing' => [static fn (array $payload): array => array_diff_key($payload, ['has_strategic_plan' => true]), 'has_strategic_plan'],
     'invalid e-mail' => [static fn (array $payload): array => [...$payload, 'official_email' => 'info-at-alamal'], 'official_email'],

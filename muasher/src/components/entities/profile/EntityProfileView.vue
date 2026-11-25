@@ -9,9 +9,12 @@ import ProfileCompletenessCard from './ProfileCompletenessCard.vue'
 import ProfileHistoryDrawer from './ProfileHistoryDrawer.vue'
 import ProfileSectionCard from './ProfileSectionCard.vue'
 import PendingProfileChangeBanner from './PendingProfileChangeBanner.vue'
+import EntityDocumentsNotice from './EntityDocumentsNotice.vue'
+import OwnEntityDocumentsCard from './OwnEntityDocumentsCard.vue'
 import { usePendingProfileChange } from '@/composables/usePendingProfileChange'
 import { useProfileEditor } from '@/composables/useProfileEditor'
 import { useEntityLogo } from '@/composables/useEntityLogo'
+import { useOwnEntityDocuments } from '@/composables/useOwnEntityDocuments'
 import { firstMissingOf, sectionViewsOf } from '@/utils/entityProfile/sections'
 import { ACCOUNT_STATUS_KEYS } from '@/constants/entityProfile'
 
@@ -29,6 +32,7 @@ const { t } = useI18n()
 const editor = useProfileEditor()
 const logo = useEntityLogo()
 const pending = usePendingProfileChange()
+const documents = useOwnEntityDocuments()
 const logoOpen = ref(false)
 const historyOpen = ref(false)
 const historySection = ref('')
@@ -95,6 +99,10 @@ function fixSection(section) {
         :busy="pending.busy.value"
         @cancel="pending.cancel"
       />
+      <EntityDocumentsNotice
+        v-if="documents.missing.value.length"
+        :missing="documents.missing.value"
+      />
       <ProfileCompletionPrompt
         v-if="welcome && canEdit && !profile.profileCompleted"
         welcome
@@ -130,6 +138,7 @@ function fixSection(section) {
             @history="openHistory(section.key)"
             @refresh="emit('refresh')"
           />
+          <OwnEntityDocumentsCard :can-edit="canEdit" />
         </div>
       </div>
     </div>

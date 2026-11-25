@@ -12,7 +12,11 @@ import {
   typeCode,
 } from './support/signIn'
 import { AA_NON_TEXT, contrastOf } from './support/contrast'
-import { fillRegistrationEntityStep, goToRegistrationAccountStep } from './support/registration'
+import {
+  attachAuthorizationLetter,
+  fillRegistrationEntityStep,
+  goToRegistrationAccountStep,
+} from './support/registration'
 import { approvePendingProfileChange } from './support/profileChanges'
 
 const SHOTS = 'e2e/__screenshots__/signin'
@@ -280,6 +284,7 @@ test.describe('unified national number and mobile verification', () => {
     await expect(field).toHaveValue('7100005001')
     await goToRegistrationAccountStep(page)
     await page.locator('[name="authorizedPersonName"]').fill('سلمان بن فهد الحربي')
+    await attachAuthorizationLetter(page)
     await page.locator('[name="officialEmail"]').fill('info@alwafa-charity.example.sa')
     await page.getByTestId('email-check-send').click()
     await typeCode(page, DEV_OTP_CODE)

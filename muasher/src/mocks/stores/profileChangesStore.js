@@ -21,6 +21,7 @@ const TRACKED_FIELDS = Object.freeze({
   founding_year: (entity) => entity.foundingYear,
   region_id: (entity) => entity.regionId,
   city_id: (entity) => entity.cityId,
+  has_governance_grade: (entity) => entity.hasGovernanceGrade ?? null,
   governance_grade: (entity) => entity.governanceGrade,
   employees_count: (entity) => entity.employeesCount,
   annual_beneficiaries_count: (entity) => entity.annualBeneficiariesCount,

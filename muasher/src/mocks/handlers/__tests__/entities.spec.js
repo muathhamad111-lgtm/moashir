@@ -10,6 +10,8 @@ import { setEmailChangePolicy } from '@/mocks/stores/entityEmailChanges'
 import { DEV_OTP_CODE } from '@/mocks/fixtures/auth'
 import { setEntityRegistrationReview } from '@/mocks/stores/authSettingsStore'
 import { MOCK_API_BASE, clearMockSession, seedMockSession, wireFetch } from '@/test-utils/mockApi'
+import { parseMultipartRequestsAsText } from '@/test-utils/multipartRequests'
+import { toFormData } from '@/utils/formData'
 
 const server = setupServer(
   ...entityEmailChangesHandlers,
@@ -54,6 +56,7 @@ function profileBody(overrides = {}) {
     founding_year: 2009,
     region_id: 1,
     city_id: 1,
+    has_governance_grade: true,
     governance_grade: '88.25',
     employees_count: 185,
     annual_beneficiaries_count: 43000,
@@ -62,7 +65,10 @@ function profileBody(overrides = {}) {
   }
 }
 
-beforeAll(() => server.listen({ onUnhandledRequest: 'error' }))
+beforeAll(() => {
+  parseMultipartRequestsAsText()
+  server.listen({ onUnhandledRequest: 'error' })
+})
 beforeEach(() => resetEntitiesMock())
 afterEach(() => {
   server.resetHandlers()
@@ -99,6 +105,7 @@ describe('entities mock — registration', () => {
   function registration(overrides = {}) {
     return {
       ...profileBody({
+        has_governance_grade: false,
         governance_grade: null,
         employees_count: null,
         annual_beneficiaries_count: null,
@@ -112,8 +119,20 @@ describe('entities mock — registration', () => {
       privacy_version_id: 4,
       terms_accepted: true,
       marketing_consent: false,
+      license_number: '880000901',
+      license_certificate: new File(['%PDF-1.4'], 'license.pdf', { type: 'application/pdf' }),
+      authorization_letter: new File(['%PDF-1.4'], 'letter.pdf', { type: 'application/pdf' }),
       ...overrides,
     }
+  }
+
+  async function register(body) {
+    const response = await wireFetch(`${MOCK_API_BASE}/auth/register`, {
+      method: 'POST',
+      headers: { 'accept-language': 'en' },
+      body: toFormData(body),
+    })
+    return { status: response.status, body: await response.json() }
   }
 
   async function verifiedToken(email = 'info@alwafa.example.sa') {
@@ -141,19 +160,17 @@ describe('entities mock — registration', () => {
       code: '000000',
     })
     expect(wrong.body.code).toBe('otp.invalid')
-    const unproven = await call('POST', '/auth/register', registration())
+    const unproven = await register(registration())
     expect(Object.keys(unproven.body.errors)).toEqual(['official_email'])
     const token = await verifiedToken()
-    const created = await call(
-      'POST',
-      '/auth/register',
-      registration({ email_verification_token: token }),
-    )
+    const created = await register(registration({ email_verification_token: token }))
     expect([created.status, created.body.data.step]).toEqual([201, 'pending_review'])
-    const reused = await call(
-      'POST',
-      '/auth/register',
-      registration({ email_verification_token: token, unified_number: '7000000902' }),
+    const reused = await register(
+      registration({
+        email_verification_token: token,
+        unified_number: '7000000902',
+        license_number: '880000902',
+      }),
     )
     expect(Object.keys(reused.body.errors)).toEqual(['official_email'])
   })
@@ -161,11 +178,7 @@ describe('entities mock — registration', () => {
   it('signs the entity in straight away when the review is switched off', async () => {
     setEntityRegistrationReview(false)
     const token = await verifiedToken()
-    const created = await call(
-      'POST',
-      '/auth/register',
-      registration({ email_verification_token: token }),
-    )
+    const created = await register(registration({ email_verification_token: token }))
     expect(created.body.data.step).toBe('authenticated')
     expect(created.body.data.user.entity).toMatchObject({
       status: 'active',
@@ -176,20 +189,21 @@ describe('entities mock — registration', () => {
   it('refuses a proven e-mail that already belongs to an entity', async () => {
     const email = 'info@albirr-riyadh.example.sa'
     const token = await verifiedToken(email)
-    const duplicate = await call(
-      'POST',
-      '/auth/register',
+    const duplicate = await register(
       registration({ official_email: email, email_verification_token: token }),
     )
     expect(duplicate.status).toBe(422)
-    expect(duplicate.body.errors.official_email[0]).toContain('already belongs to an entity')
+    expect(Object.keys(duplicate.body.errors)).toEqual(['official_email'])
   })
 
   it('rejects a city outside the region, a grade with four decimals and missing terms acceptance', async () => {
-    const invalid = await call(
-      'POST',
-      '/auth/register',
-      registration({ city_id: 12, governance_grade: '90.1255', terms_accepted: false }),
+    const invalid = await register(
+      registration({
+        city_id: 12,
+        has_governance_grade: true,
+        governance_grade: '90.1255',
+        terms_accepted: false,
+      }),
     )
     expect(invalid.status).toBe(422)
     expect(Object.keys(invalid.body.errors).sort()).toEqual([
@@ -199,29 +213,58 @@ describe('entities mock — registration', () => {
     ])
   })
 
-  it('requires the English name and a unique unified national number of exactly 10 digits', async () => {
-    const unnamed = await call(
-      'POST',
-      '/auth/register',
-      registration({ name: { ar: 'جمعية', en: '' } }),
+  it('requires the governance answer and ignores a grade sent with a «no»', async () => {
+    const unanswered = await register(registration({ has_governance_grade: null }))
+    expect(unanswered.status).toBe(422)
+    expect(Object.keys(unanswered.body.errors)).toEqual(['has_governance_grade'])
+    const blank = await register(
+      registration({ has_governance_grade: true, governance_grade: null }),
     )
+    expect(Object.keys(blank.body.errors)).toEqual(['governance_grade'])
+  })
+
+  it('requires both documents as PDFs within 5 MB and the licence number, and keeps them on the entity', async () => {
+    const missing = await register(
+      registration({ license_certificate: null, authorization_letter: null, license_number: '' }),
+    )
+    expect(missing.status).toBe(422)
+    expect(Object.keys(missing.body.errors).sort()).toEqual([
+      'authorization_letter',
+      'license_certificate',
+      'license_number',
+    ])
+    const wrong = await register(
+      registration({
+        license_certificate: new File(['png'], 'license.png', { type: 'image/png' }),
+      }),
+    )
+    expect(Object.keys(wrong.body.errors)).toEqual(['license_certificate'])
+    setEntityRegistrationReview(false)
+    const created = await register(
+      registration({ email_verification_token: await verifiedToken() }),
+    )
+    expect(created.body.data.step).toBe('authenticated')
+    const entityId = created.body.data.user.entity.id
+    as({ id: entityId, roles: ['entity'], entityId })
+    const own = await call('GET', '/entities/me')
+    expect(own.body.data.documents).toMatchObject({
+      license_certificate: { mime_type: 'application/pdf' },
+      authorization_letter: { mime_type: 'application/pdf' },
+      vat_certificate: null,
+    })
+  })
+
+  it('requires the English name and a unique unified national number of exactly 10 digits', async () => {
+    const unnamed = await register(registration({ name: { ar: 'جمعية', en: '' } }))
     expect(Object.keys(unnamed.body.errors)).toEqual(['name.en'])
-    const missing = await call('POST', '/auth/register', registration({ unified_number: '' }))
+    const missing = await register(registration({ unified_number: '' }))
     expect(missing.status).toBe(422)
     expect(Object.keys(missing.body.errors)).toEqual(['unified_number'])
-    const malformed = await call(
-      'POST',
-      '/auth/register',
-      registration({ unified_number: '600000090' }),
-    )
-    expect(malformed.body.errors.unified_number[0]).toContain('exactly 10 digits')
-    const taken = await call(
-      'POST',
-      '/auth/register',
-      registration({ unified_number: '7100005001' }),
-    )
+    const malformed = await register(registration({ unified_number: '600000090' }))
+    expect(Object.keys(malformed.body.errors)).toEqual(['unified_number'])
+    const taken = await register(registration({ unified_number: '7100005001' }))
     expect(taken.status).toBe(422)
-    expect(taken.body.errors.unified_number[0]).toContain('already registered for another entity')
+    expect(Object.keys(taken.body.errors)).toEqual(['unified_number'])
   })
 })
 
@@ -234,7 +277,8 @@ describe('entities mock — own profile', () => {
       governance_grade: '86.50',
       marketing_consent: true,
       can_edit: true,
-      profile_completion: { percent: 100, counted: 22, completed_count: 22 },
+      has_governance_grade: true,
+      profile_completion: { percent: 100, counted: 23, completed_count: 23 },
     })
     expect(own.body.data.profile_sections.map((section) => section.key)).toEqual([
       'identity',

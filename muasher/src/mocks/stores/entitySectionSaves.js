@@ -3,10 +3,11 @@ import { MockRejection } from '../contract/rejection'
 import {
   blank,
   checkChoices,
-  checkGrade,
+  checkGovernanceAnswer,
   checkNumbers,
   checkPlace,
   collector,
+  governanceFrom,
   optionalCount,
   strategicPlanFrom,
 } from './entityValidation'
@@ -22,7 +23,13 @@ const PERSON_NAME = { MIN: 3, MAX: 150 }
 const SECTION_KEYS = Object.freeze({
   identity: ['name', 'unifiedNumber', 'licenseNumber', 'foundedOn'],
   classification: ['entityType', 'developmentSector', 'orgSize', 'regionId', 'cityId'],
-  governance: ['governanceGrade', 'employeesCount', 'annualBeneficiariesCount', 'hasStrategicPlan'],
+  governance: [
+    'hasGovernanceGrade',
+    'governanceGrade',
+    'employeesCount',
+    'annualBeneficiariesCount',
+    'hasStrategicPlan',
+  ],
   contact: ['authorizedPersonName', 'phone', 'websiteUrl', 'marketingConsent'],
   billing: BILLING_KEYS,
 })
@@ -55,7 +62,7 @@ function checkClassification(errors, body) {
 }
 
 function checkGovernance(errors, body) {
-  checkGrade(errors, body.governanceGrade)
+  checkGovernanceAnswer(errors, body)
   checkNumbers(errors, body)
   const plan = body.hasStrategicPlan
   if (plan !== null && plan !== undefined && typeof plan !== 'boolean')
@@ -119,9 +126,7 @@ const APPLY = {
     entity.cityId = Number(body.cityId)
   },
   governance(entity, body) {
-    entity.governanceGrade = blank(body.governanceGrade)
-      ? null
-      : Number(body.governanceGrade).toFixed(2)
+    Object.assign(entity, governanceFrom(body))
     entity.employeesCount = optionalCount(body.employeesCount)
     entity.annualBeneficiariesCount = optionalCount(body.annualBeneficiariesCount)
     entity.hasStrategicPlan = strategicPlanFrom(body.hasStrategicPlan)

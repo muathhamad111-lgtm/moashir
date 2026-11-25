@@ -115,6 +115,12 @@ return [
         'vat_certificate' => [
             'max_kb' => 5120,
         ],
+        'license_certificate' => [
+            'max_kb' => 5120,
+        ],
+        'authorization_letter' => [
+            'max_kb' => 5120,
+        ],
     ],
 
     'sms' => [

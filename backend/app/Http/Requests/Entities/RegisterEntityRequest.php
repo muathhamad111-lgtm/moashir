@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace App\Http\Requests\Entities;
 
 use App\Data\Entities\EntityRegistrationData;
+use App\Data\Entities\RegistrationDocuments;
+use App\Enums\Entities\EntityDocument;
 use App\Enums\Identity\Locale;
 use App\Enums\Identity\RoleKey;
 use App\Enums\Identity\TermsKind;
@@ -20,6 +22,8 @@ use App\Support\ValueObjects\EmailAddress;
 use App\Support\ValueObjects\NationalId;
 use Closure;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Http\UploadedFile;
+use LogicException;
 
 final class RegisterEntityRequest extends FormRequest
 {
@@ -39,7 +43,7 @@ final class RegisterEntityRequest extends FormRequest
             ...EntityProfileInput::rules($this->input('region_id')),
             'name.en' => ['required', 'string', 'max:200'],
             'unified_number' => EntityProfileInput::unifiedNumberRules(null),
-            'license_number' => EntityProfileInput::licenseNumberRules(null),
+            'license_number' => ['required', ...EntityProfileInput::licenseNumberRules(null)],
             'founded_on' => EntityProfileInput::foundedOnRules(),
             'official_email' => ['required', 'string', 'email:filter', 'max:254'],
             'email_verification_token' => ['nullable', 'string', 'max:128'],
@@ -49,7 +53,22 @@ final class RegisterEntityRequest extends FormRequest
             'terms_accepted' => ['accepted'],
             'marketing_consent' => ['sometimes', 'boolean'],
             'national_id' => $nationalId->isRequiredForRoles([RoleKey::Entity]) ? ['required', 'string', new SaudiNationalId] : ['exclude'],
+            ...$this->documentRules(),
         ];
+    }
+
+    /**
+     * @return array<string, list<string>>
+     */
+    private function documentRules(): array
+    {
+        $rules = [];
+
+        foreach (EntityDocument::required() as $document) {
+            $rules[$document->value] = ['required', 'file', 'extensions:pdf', 'mimes:pdf', 'max:'.config()->integer($document->maxKilobytesKey())];
+        }
+
+        return $rules;
     }
 
     protected function prepareForValidation(): void
@@ -75,6 +94,18 @@ final class RegisterEntityRequest extends FormRequest
             Locale::tryFrom(app()->getLocale()) ?? Locale::Arabic,
             isset($validated['national_id']) ? new NationalId(ScalarValue::string($validated['national_id'])) : null,
         );
+    }
+
+    public function documents(): RegistrationDocuments
+    {
+        $uploads = [];
+
+        foreach (EntityDocument::required() as $document) {
+            $file = $this->file($document->value);
+            $uploads[$document->value] = $file instanceof UploadedFile ? $file : throw new LogicException('Every registration document is validated before it is read.');
+        }
+
+        return new RegistrationDocuments($uploads);
     }
 
     public function emailVerificationToken(): ?string

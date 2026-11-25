@@ -22,6 +22,7 @@ const ENTITY = {
   foundingYear: 2018,
   region: { id: 1 },
   city: { id: 1 },
+  hasGovernanceGrade: false,
   governanceGrade: null,
   employeesCount: null,
   annualBeneficiariesCount: null,

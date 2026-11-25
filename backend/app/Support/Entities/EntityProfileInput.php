@@ -94,7 +94,8 @@ final class EntityProfileInput
     public static function governanceRules(): array
     {
         return [
-            'governance_grade' => ['nullable', 'decimal:0,2', 'between:0,100'],
+            'has_governance_grade' => ['required', 'boolean'],
+            'governance_grade' => ['exclude_unless:has_governance_grade,true', 'required', 'decimal:0,2', 'between:0,100'],
             'employees_count' => ['nullable', 'integer', 'min:0', 'max:10000000'],
             'annual_beneficiaries_count' => ['nullable', 'integer', 'min:0', 'max:100000000'],
             'has_strategic_plan' => ['present', 'nullable', 'boolean'],
@@ -203,9 +204,19 @@ final class EntityProfileInput
     /**
      * @param  array<array-key, mixed>  $validated
      */
+    public static function hasGovernanceGrade(array $validated): bool
+    {
+        return filter_var($validated['has_governance_grade'] ?? false, FILTER_VALIDATE_BOOLEAN);
+    }
+
+    /**
+     * The grade only stands beside a "yes" answer; a "no" answer never carries one.
+     *
+     * @param  array<array-key, mixed>  $validated
+     */
     public static function governanceGrade(array $validated): ?string
     {
-        $grade = $validated['governance_grade'] ?? null;
+        $grade = self::hasGovernanceGrade($validated) ? $validated['governance_grade'] ?? null : null;
 
         return is_string($grade) || is_int($grade) || is_float($grade) ? GovernanceGrade::of($grade)->toDecimal() : null;
     }

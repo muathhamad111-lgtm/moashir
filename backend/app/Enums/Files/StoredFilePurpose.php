@@ -22,6 +22,8 @@ enum StoredFilePurpose: string
     case UserAvatar = 'user_avatar';
     case VatCertificate = 'vat_certificate';
     case OfficeRendition = 'office_rendition';
+    case EntityLicenseCertificate = 'entity_license_certificate';
+    case EntityAuthorizationLetter = 'entity_authorization_letter';
 
     private const array PUBLIC_ASSETS = ['apple_pay_domain_association', 'cms_image', 'cms_logo', 'kpi_image', 'branding_logo'];
 
@@ -38,6 +40,8 @@ enum StoredFilePurpose: string
         'entity_logo' => ['png' => ['image/png'], 'jpg' => ['image/jpeg'], 'jpeg' => ['image/jpeg']],
         'user_avatar' => ['png' => ['image/png'], 'jpg' => ['image/jpeg'], 'jpeg' => ['image/jpeg']],
         'vat_certificate' => ['pdf' => ['application/pdf']],
+        'entity_license_certificate' => ['pdf' => ['application/pdf']],
+        'entity_authorization_letter' => ['pdf' => ['application/pdf']],
     ];
 
     /**
@@ -91,8 +95,9 @@ enum StoredFilePurpose: string
     }
 
     /**
-     * Only assessment evidence is stamped (operator decision, 2026-11-21): transfer proofs, refund evidence and VAT
-     * certificates sit outside the assessment and are served as uploaded.
+     * Only assessment evidence is stamped (operator decision, 2026-11-21): transfer proofs, refund evidence, VAT
+     * certificates and the entity's license certificate and authorization letter (operator decision, 2026-11-25) sit
+     * outside the assessment and are served as uploaded.
      *
      * @return list<self>
      */

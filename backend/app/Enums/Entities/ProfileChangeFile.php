@@ -11,25 +11,78 @@ enum ProfileChangeFile: string
 {
     case Logo = 'logo';
     case VatCertificate = 'vat_certificate';
+    case LicenseCertificate = 'license_certificate';
+    case AuthorizationLetter = 'authorization_letter';
 
     public function pendingColumn(): string
     {
-        return match ($this) {
-            self::Logo => 'pending_logo_file_id',
-            self::VatCertificate => 'pending_vat_certificate_file_id',
-        };
+        return 'pending_'.$this->value.'_file_id';
     }
 
     public function removalColumn(): string
     {
+        return 'removes_'.$this->value;
+    }
+
+    public function entityColumn(): string
+    {
+        return $this->value.'_file_id';
+    }
+
+    /**
+     * The relation to the file waiting for approval, on the change request.
+     */
+    public function pendingRelation(): string
+    {
         return match ($this) {
-            self::Logo => 'removes_logo',
-            self::VatCertificate => 'removes_vat_certificate',
+            self::Logo => 'pendingLogo',
+            self::VatCertificate => 'pendingVatCertificate',
+            self::LicenseCertificate => 'pendingLicenseCertificate',
+            self::AuthorizationLetter => 'pendingAuthorizationLetter',
+        };
+    }
+
+    /**
+     * The relation to the approved file it replaces, on the entity.
+     */
+    public function approvedRelation(): string
+    {
+        return match ($this) {
+            self::Logo => 'logo',
+            self::VatCertificate => 'vatCertificate',
+            self::LicenseCertificate => 'licenseCertificate',
+            self::AuthorizationLetter => 'authorizationLetter',
+        };
+    }
+
+    public function section(): ?ProfileSection
+    {
+        return match ($this) {
+            self::Logo => null,
+            self::VatCertificate => ProfileSection::Billing,
+            self::LicenseCertificate => ProfileSection::Identity,
+            self::AuthorizationLetter => ProfileSection::Contact,
         };
     }
 
     public function labelKey(): string
     {
         return 'entities.profile_fields.'.$this->value;
+    }
+
+    /**
+     * @return list<string>
+     */
+    public static function pendingRelations(): array
+    {
+        return array_map(static fn (self $file): string => $file->pendingRelation(), self::cases());
+    }
+
+    /**
+     * @return list<string>
+     */
+    public static function approvedRelations(): array
+    {
+        return array_map(static fn (self $file): string => $file->approvedRelation(), self::cases());
     }
 }

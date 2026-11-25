@@ -21,7 +21,7 @@ use Illuminate\Http\Resources\Json\JsonResource;
  */
 final class OwnEntityResource extends JsonResource
 {
-    public const array RELATIONS = ['owner', 'region', 'city', 'emailChangeRequests', 'logo', 'vatCertificate', 'pendingProfileChange'];
+    public const array RELATIONS = ['owner', 'region', 'city', 'emailChangeRequests', 'logo', 'vatCertificate', 'licenseCertificate', 'authorizationLetter', 'pendingProfileChange'];
 
     /**
      * @return array<string, mixed>
@@ -38,6 +38,7 @@ final class OwnEntityResource extends JsonResource
             ...EntityPresenter::contact($entity),
             ...EntityPresenter::billing($entity, $request),
             'billing_complete' => $entity->hasCompleteBilling(),
+            'documents' => EntityPresenter::documents($entity, $request),
             'marketing_consent' => $entity->marketing_consent_at !== null,
             'marketing_consent_at' => $entity->marketing_consent_at?->toIso8601String(),
             'pending_email_change' => $this->pendingEmailChange($entity),

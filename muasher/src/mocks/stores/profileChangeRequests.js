@@ -1,5 +1,6 @@
 import {
   PROFILE_CHANGE_COUPLED,
+  PROFILE_CHANGE_NEEDS,
   PROFILE_CHANGE_FILES as F,
   PROFILE_CHANGE_STATUSES as S,
   PROFILE_CHANGE_VERDICTS as V,
@@ -12,7 +13,7 @@ import { setMarketingConsent } from './entitiesStore'
 import { recordProfileChanges } from './profileChangesStore'
 import { actorDisplayName } from './actorName'
 import { PROFILE_CHANGE_FIELDS, fieldsOfSection, sameValue } from './profileChangeFields'
-import { applyApprovedItems } from './profileChangeApply'
+import { ENTITY_KEY_OF_FILE, applyApprovedItems } from './profileChangeApply'
 import { persistRequests, restoredRequests } from './profileChangePersistence'
 
 const REASON_MIN = 10
@@ -106,8 +107,9 @@ function applyConsent(entity, body, user) {
 
 /** The entity's section edit joins its pending request; marketing consent alone applies at once. */
 export function proposeSection(entity, section, body, user) {
-  if (section === 'contact') applyConsent(entity, body, user)
   const draft = applySection(section, snapshotOf(entity), body)
+  assertLetterBacksPerson(section, draft, entity)
+  if (section === 'contact') applyConsent(entity, body, user)
   const request = openFor(entity, user)
   for (const field of fieldsOfSection(section)) {
     const { read } = PROFILE_CHANGE_FIELDS[field]
@@ -121,8 +123,16 @@ export function proposeSection(entity, section, body, user) {
   return store(request, user)
 }
 
+/** A new authorized person comes with a new authorization letter in the same request. */
+function assertLetterBacksPerson(section, draft, entity) {
+  const { read } = PROFILE_CHANGE_FIELDS.authorized_person_name
+  if (section !== 'contact' || sameValue(read(draft), read(entity))) return
+  const letter = pendingRequestOf(entity.id)?.files[F.AUTHORIZATION_LETTER]
+  if (!letter?.upload) throw entityReject.authorizationLetterRequired()
+}
+
 function approvedFileOf(entity, kind) {
-  return kind === F.LOGO ? entity.logo : entity.vatCertificate
+  return entity[ENTITY_KEY_OF_FILE[kind]]
 }
 
 export function mayHoldVatCertificate(entity) {
@@ -169,6 +179,10 @@ function assertItems(items, approved, reason) {
     return new Set(present.map((field) => approved.includes(field))).size > 1
   })
   if (split) throw new MockRejection(422, 'profile.change_coupled_items')
+  const unbacked = Object.entries(PROFILE_CHANGE_NEEDS).some(
+    ([item, partner]) => approved.includes(item) && !approved.includes(partner),
+  )
+  if (unbacked) throw new MockRejection(422, 'profile.change_authorization_letter_required')
   const rejects = items.some((item) => !approved.includes(item))
   if (rejects && String(reason ?? '').trim().length < REASON_MIN)
     throw new MockRejection(422, 'profile.change_reason_required')

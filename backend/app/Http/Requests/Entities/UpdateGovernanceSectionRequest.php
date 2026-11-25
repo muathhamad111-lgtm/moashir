@@ -24,6 +24,7 @@ final class UpdateGovernanceSectionRequest extends ProfileSectionRequest
     protected function write(array $validated): EntityProfileWrite
     {
         return new EntityProfileWrite([
+            EntityProfileField::HasGovernanceGrade->value => EntityProfileInput::hasGovernanceGrade($validated),
             EntityProfileField::GovernanceGrade->value => EntityProfileInput::governanceGrade($validated),
             EntityProfileField::EmployeesCount->value => EntityProfileInput::optionalCount($validated, EntityProfileField::EmployeesCount->value),
             EntityProfileField::AnnualBeneficiariesCount->value => EntityProfileInput::optionalCount($validated, EntityProfileField::AnnualBeneficiariesCount->value),

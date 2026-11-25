@@ -1,4 +1,5 @@
 import { apiClient } from '@/api/client'
+import { toSnakeKey } from '@/api/caseMapping'
 import { domainRequests } from './domainRequest'
 import { withJsonErrorBody } from './mappers/blobError'
 import { toDownload } from './mappers/download'
@@ -53,6 +54,31 @@ export const entitiesService = {
       'requestVatCertificateDownload',
       () => apiClient.post('/entities/me/vat-certificate/download'),
       {},
+      [NOT_FOUND],
+    )
+  },
+  uploadOwnDocument(document, file) {
+    const body = new FormData()
+    body.append('file', file)
+    return write(
+      'uploadOwnDocument',
+      () => apiClient.post(`/entities/me/documents/${toSnakeKey(document)}`, body),
+      { document, file: file.type },
+    ).then(withOwnEntity)
+  },
+  requestOwnDocumentDownload(document) {
+    return write(
+      'requestOwnDocumentDownload',
+      () => apiClient.post(`/entities/me/documents/${toSnakeKey(document)}/download`),
+      { document },
+      [NOT_FOUND],
+    )
+  },
+  requestDocumentDownload(id, document) {
+    return write(
+      'requestDocumentDownload',
+      () => apiClient.post(`/entities/${id}/documents/${toSnakeKey(document)}/download`),
+      { document },
       [NOT_FOUND],
     )
   },

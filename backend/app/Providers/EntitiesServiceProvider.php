@@ -10,6 +10,7 @@ use App\Models\Entities\Entity;
 use App\Models\Entities\Region;
 use App\Models\Identity\EmailChangeRequest;
 use App\Services\Entities\EntityAccountDirectory;
+use App\Services\Entities\EntityDocumentsEraser;
 use App\Services\Entities\EntityEraser;
 use App\Services\Entities\EntityLogoEraser;
 use App\Services\Entities\EntityVatCertificateEraser;
@@ -22,7 +23,7 @@ final class EntitiesServiceProvider extends ServiceProvider
     public function register(): void
     {
         $this->app->bind(EntityAccounts::class, EntityAccountDirectory::class);
-        $this->app->tag([EntityLogoEraser::class, EntityVatCertificateEraser::class, EntityProfileChangeEraser::class], EntityEraser::TAG);
+        $this->app->tag([EntityLogoEraser::class, EntityVatCertificateEraser::class, EntityDocumentsEraser::class, EntityProfileChangeEraser::class], EntityEraser::TAG);
     }
 
     public function boot(): void

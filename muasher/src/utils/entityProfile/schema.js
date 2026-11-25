@@ -1,7 +1,7 @@
 import { boolean as yupBoolean, object as yupObject, string as yupString } from 'yup'
 import { entityProfileShape, registryShape, unifiedNumberField } from '@/utils/entitySchemas'
-import { VAT_DEPENDENT_FIELDS } from '@/constants/entityProfile'
 import { editableFieldsOf } from './formValues'
+import { isGatedField } from './sections'
 import { billingRules } from './billingSchema'
 
 function rulesOf(t, today) {
@@ -18,6 +18,7 @@ function rulesOf(t, today) {
     orgSize: profile.orgSize,
     regionId: profile.regionId,
     cityId: profile.cityId,
+    hasGovernanceGrade: profile.hasGovernanceGrade,
     governanceGrade: profile.governanceGrade,
     employeesCount: profile.employeesCount,
     annualBeneficiariesCount: profile.annualBeneficiariesCount,
@@ -35,7 +36,7 @@ function withRequirement(t, rule, required) {
 }
 
 function isRequired(name, required) {
-  return required.includes(name) && !VAT_DEPENDENT_FIELDS.includes(name)
+  return required.includes(name) && !isGatedField(name)
 }
 
 function nest(shape) {

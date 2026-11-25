@@ -85,7 +85,7 @@ it('completes the billing section without VAT data when the entity is not regist
         ->assertOk()
         ->assertJsonPath('data.billing_complete', true)
         ->assertJsonPath('data.profile_completion.percent', 100)
-        ->assertJsonPath('data.profile_completion.counted', 22)
+        ->assertJsonPath('data.profile_completion.counted', 23)
         ->assertJsonPath('data.profile_completed', true);
 });
 
@@ -94,15 +94,15 @@ it('counts the VAT number and certificate only after a «yes» answer', function
     $owner = ownerOf($entity);
 
     switchTo($owner)->getJson('/api/v1/entities/me')->assertOk()
-        ->assertJsonPath('data.profile_completion.counted', 22)
-        ->assertJsonPath('data.profile_completion.completed_count', 15)
-        ->assertJsonPath('data.profile_completion.percent', 68)
+        ->assertJsonPath('data.profile_completion.counted', 23)
+        ->assertJsonPath('data.profile_completion.completed_count', 16)
+        ->assertJsonPath('data.profile_completion.percent', 69)
         ->assertJsonPath('data.profile_completed', false);
 
     saveAndApproveSection($entity, ProfileSection::Billing, billingDetails())->assertOk()
-        ->assertJsonPath('data.profile_completion.counted', 24)
-        ->assertJsonPath('data.profile_completion.completed_count', 23)
-        ->assertJsonPath('data.profile_completion.percent', 95);
+        ->assertJsonPath('data.profile_completion.counted', 25)
+        ->assertJsonPath('data.profile_completion.completed_count', 24)
+        ->assertJsonPath('data.profile_completion.percent', 96);
 });
 
 it('refuses each malformed billing value', function (string $field, mixed $value): void {

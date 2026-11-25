@@ -39,6 +39,7 @@ async function revisionOf(key) {
 function governance(revision, overrides = {}) {
   return {
     base_revision: revision,
+    has_governance_grade: true,
     governance_grade: '82.50',
     employees_count: 14,
     annual_beneficiaries_count: 3200,
@@ -74,14 +75,14 @@ describe('entity profile sections mock (Task-82b contract)', () => {
         key: 'governance',
         state: 'incomplete',
         missing_count: 3,
-        missing_fields: ['governance_grade', 'employees_count', 'annual_beneficiaries_count'],
+        missing_fields: ['has_governance_grade', 'employees_count', 'annual_beneficiaries_count'],
       },
       { key: 'contact', state: 'complete', missing_count: 0, missing_fields: [] },
       { key: 'billing', state: 'complete', missing_count: 0, missing_fields: [] },
     ])
   })
 
-  it('puts a section edit in a pending request and moves to 87 % once it is approved', async () => {
+  it('puts a section edit in a pending request and moves to 88 % once it is approved', async () => {
     startWithIncompleteProfile()
     seedMockSession(NAMAA)
     const saved = await call(
@@ -92,13 +93,14 @@ describe('entity profile sections mock (Task-82b contract)', () => {
     expect(saved.status).toBe(202)
     expect(saved.body.meta).toEqual({ section: 'governance' })
     expect(saved.body.data.pending_profile_change.items).toEqual([
+      'has_governance_grade',
       'governance_grade',
       'employees_count',
       'annual_beneficiaries_count',
     ])
     expect(saved.body.data.profile_completion.percent).toBe(75)
     approvePendingChange(6001)
-    expect((await call('GET', '/entities/me')).body.data.profile_completion.percent).toBe(87)
+    expect((await call('GET', '/entities/me')).body.data.profile_completion.percent).toBe(88)
   })
 
   it('answers 409 profile.section_stale with the current revision', async () => {
@@ -129,6 +131,37 @@ describe('entity profile sections mock (Task-82b contract)', () => {
     expect(approved.has_strategic_plan).toBeNull()
     const section = approved.profile_completion.sections[2]
     expect(section.missing_fields).toEqual(['has_strategic_plan'])
+  })
+
+  it('clears the governance grade after a «no» and stops counting it', async () => {
+    seedMockSession(NAMAA)
+    const saved = await call(
+      'PATCH',
+      '/entities/me/profile/governance',
+      governance(await revisionOf('governance'), { has_governance_grade: false }),
+    )
+    expect(saved.status).toBe(202)
+    approvePendingChange(6001)
+    const approved = (await call('GET', '/entities/me')).body.data
+    expect(approved).toMatchObject({ has_governance_grade: false, governance_grade: null })
+    expect(approved.profile_completion.sections[2].missing_fields).toEqual([])
+  })
+
+  it('requires the governance answer and a grade after a «yes»', async () => {
+    seedMockSession(NAMAA)
+    const revision = await revisionOf('governance')
+    const unanswered = await call(
+      'PATCH',
+      '/entities/me/profile/governance',
+      governance(revision, { has_governance_grade: null }),
+    )
+    expect(Object.keys(unanswered.body.errors)).toEqual(['has_governance_grade'])
+    const blank = await call(
+      'PATCH',
+      '/entities/me/profile/governance',
+      governance(revision, { governance_grade: null }),
+    )
+    expect(Object.keys(blank.body.errors)).toEqual(['governance_grade'])
   })
 
   it('refuses absent keys, a missing unified number and the official e-mail', async () => {

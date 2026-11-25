@@ -47,13 +47,28 @@ export const PROFILE_CHANGE_STATUSES = {
 
 export const PROFILE_CHANGE_VERDICTS = { APPROVED: 'approved', REJECTED: 'rejected' }
 
-export const PROFILE_CHANGE_FILES = { LOGO: 'logo', VAT_CERTIFICATE: 'vat_certificate' }
+export const PROFILE_CHANGE_FILES = {
+  LOGO: 'logo',
+  VAT_CERTIFICATE: 'vat_certificate',
+  LICENSE_CERTIFICATE: 'license_certificate',
+  AUTHORIZATION_LETTER: 'authorization_letter',
+}
 
-/** Fields that only make sense together: a city belongs to its region, a VAT number to a registration. */
+/**
+ * Items that only make sense together: a city belongs to its region, a VAT number to a registration, a new
+ * authorized person to the authorization letter that names them.
+ */
 export const PROFILE_CHANGE_COUPLED = Object.freeze([
   ['region_id', 'city_id'],
   ['vat_registered', 'vat_number'],
+  ['has_governance_grade', 'governance_grade'],
+  ['authorized_person_name', 'authorization_letter'],
 ])
+
+/** An item that can only be approved when its partner is in the same request. */
+export const PROFILE_CHANGE_NEEDS = Object.freeze({
+  authorized_person_name: 'authorization_letter',
+})
 
 export const EMAIL_CHANGE_POLICIES = {
   REQUIRES_APPROVAL: 'requires_approval',

@@ -8,6 +8,7 @@ use App\Data\Audit\AuditEntry;
 use App\Data\Entities\EntityProfileChangeSet;
 use App\Data\Entities\ProfileChangeDecision;
 use App\Enums\Audit\AuditEvent;
+use App\Enums\Entities\ProfileChangeFile;
 use App\Enums\Entities\ProfileChangeStatus;
 use App\Enums\Entities\ProfileChangeVerdict;
 use App\Models\Entities\Entity;
@@ -40,7 +41,7 @@ final readonly class DecideEntityProfileChange
         $this->context->recordReason($decision->reason);
 
         DB::transaction(function () use ($reviewer, $request, $decision): void {
-            $locked = EntityProfileChangeRequest::query()->with(['submitter', 'pendingLogo', 'pendingVatCertificate'])->whereKey($request->id)->lockForUpdate()->firstOrFail();
+            $locked = EntityProfileChangeRequest::query()->with(['submitter', ...ProfileChangeFile::pendingRelations()])->whereKey($request->id)->lockForUpdate()->firstOrFail();
             $this->guard->assertDecidable($locked, $decision);
 
             $entity = $this->lockedEntity($locked->entity_id);

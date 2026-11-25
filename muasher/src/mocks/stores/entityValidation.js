@@ -3,6 +3,7 @@ import { activeCityOf, findRegion } from './regionsStore'
 import { entityReject, fieldError } from './entityRejection'
 import { checkUnifiedNumber } from './entityUnifiedNumber'
 import { checkRegistry } from './entityRegistry'
+import { checkRegistrationDocuments } from './entityDocuments'
 
 const PHONE_PATTERN = /^(05\d{8}|\+9665\d{8})$/
 const GOVERNANCE_DECIMALS = 2
@@ -57,11 +58,32 @@ export function checkPlace(errors, body) {
   }
 }
 
-export function checkGrade(errors, value) {
-  if (blank(value)) return
+function checkGrade(errors, value) {
+  if (blank(value)) {
+    errors.add('governanceGrade', 'field.required')
+    return
+  }
   const text = String(value)
   if (!GRADE_PATTERN.test(text) || Number(text) > 100)
     errors.add('governanceGrade', 'field.governance_grade')
+}
+
+export function checkGovernanceAnswer(errors, body) {
+  if (typeof body.hasGovernanceGrade !== 'boolean') {
+    errors.add('hasGovernanceGrade', 'field.required')
+    return
+  }
+  if (body.hasGovernanceGrade) checkGrade(errors, body.governanceGrade)
+}
+
+export function governanceFrom(body) {
+  const hasGovernanceGrade = body.hasGovernanceGrade === true
+  return {
+    hasGovernanceGrade,
+    governanceGrade: hasGovernanceGrade
+      ? Number(body.governanceGrade).toFixed(GOVERNANCE_DECIMALS)
+      : null,
+  }
 }
 
 export function checkNumbers(errors, body) {
@@ -97,7 +119,7 @@ function profileErrors(body) {
   checkContact(errors, body)
   checkChoices(errors, body)
   checkPlace(errors, body)
-  checkGrade(errors, body.governanceGrade)
+  checkGovernanceAnswer(errors, body)
   checkNumbers(errors, body)
   return errors
 }
@@ -122,9 +144,7 @@ export function profileFrom(body) {
     foundingYear: Number(body.foundingYear),
     regionId: Number(body.regionId),
     cityId: Number(body.cityId),
-    governanceGrade: blank(body.governanceGrade)
-      ? null
-      : Number(body.governanceGrade).toFixed(GOVERNANCE_DECIMALS),
+    ...governanceFrom(body),
     employeesCount: optionalCount(body.employeesCount),
     annualBeneficiariesCount: optionalCount(body.annualBeneficiariesCount),
     hasStrategicPlan: strategicPlanFrom(body.hasStrategicPlan),
@@ -158,6 +178,8 @@ export function assertRegistration(body, terms) {
   if (blank(body.name?.en)) errors.add('name.en', 'field.required')
   checkUnifiedNumber(errors, body, { required: true })
   checkRegistry(errors, registrationRegistry(body), null)
+  if (blank(body.licenseNumber)) errors.add('licenseNumber', 'field.required')
+  checkRegistrationDocuments(errors, body)
   if (blank(body.officialEmail) || !EMAIL_PATTERN.test(String(body.officialEmail)))
     errors.add('officialEmail', 'field.email')
   if (String(body.password ?? '').length < PASSWORD_MIN)

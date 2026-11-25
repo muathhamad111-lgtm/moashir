@@ -1,4 +1,9 @@
-import { boolean as yupBoolean, object as yupObject, string as yupString } from 'yup'
+import {
+  boolean as yupBoolean,
+  mixed as yupMixed,
+  object as yupObject,
+  string as yupString,
+} from 'yup'
 import {
   DEVELOPMENT_SECTORS,
   EARLIEST_FOUNDING_DATE,
@@ -11,6 +16,8 @@ import {
   UNIFIED_NUMBER_PATTERN,
 } from '@/constants/entityEnums'
 import { isValidGovernanceGrade } from '@/utils/governanceGrade'
+import { entityDocumentIssue } from '@/utils/entityDocumentRules'
+import { ENTITY_DOCUMENT_RULES } from '@/constants/entityDocuments'
 import { toWesternDigits } from '@/utils/numerals'
 import { riyadhDateKey } from '@/utils/datetime'
 
@@ -24,6 +31,8 @@ const LICENSE_PATTERN = /^\d{3,20}$/
 const DATE_PATTERN = /^\d{4}-\d{2}-\d{2}$/
 const WEBSITE_MAX = 255
 const HTTPS_PREFIX = 'https://'
+const YES = 'yes'
+const YES_NO = ['yes', 'no']
 
 function requiredText(t, max) {
   return yupString()
@@ -59,6 +68,16 @@ function foundingYear(t) {
         )
       },
     )
+}
+
+function governanceGradeField(t) {
+  return yupString().when('hasGovernanceGrade', ([answer]) =>
+    answer === YES
+      ? yupString()
+          .required(t('validation.required'))
+          .test('grade', t('entities.validation.governanceGrade'), isValidGovernanceGrade)
+      : yupString().nullable(),
+  )
 }
 
 export function unifiedNumberField(t, { required = true } = {}) {
@@ -97,14 +116,11 @@ export function entityProfileShape(t) {
     foundingYear: foundingYear(t),
     regionId: yupString().required(t('validation.required')),
     cityId: yupString().required(t('validation.required')),
-    governanceGrade: yupString().test(
-      'grade',
-      t('entities.validation.governanceGrade'),
-      isValidGovernanceGrade,
-    ),
+    hasGovernanceGrade: choice(t, YES_NO),
+    governanceGrade: governanceGradeField(t),
     employeesCount: optionalCount(t),
     annualBeneficiariesCount: optionalCount(t),
-    hasStrategicPlan: choice(t, ['yes', 'no']),
+    hasStrategicPlan: choice(t, YES_NO),
   }
 }
 
@@ -159,6 +175,18 @@ export function staffProfileSchema(t, { unifiedNumberRequired = false } = {}) {
   })
 }
 
+export function entityDocumentRule(t) {
+  return yupMixed()
+    .nullable()
+    .test('entity-document', (file, context) => {
+      const issue = entityDocumentIssue(file)
+      if (!issue) return true
+      return context.createError({
+        message: t(`entities.documents.errors.${issue}`, { max: ENTITY_DOCUMENT_RULES.maxMb }),
+      })
+    })
+}
+
 export function registrationSchema(t) {
   const registry = registryShape(t, riyadhDateKey(new Date()))
   return yupObject({
@@ -166,7 +194,9 @@ export function registrationSchema(t) {
     name: yupObject({ ar: requiredText(t, NAME_MAX), en: requiredText(t, NAME_MAX) }),
     foundingYear: yupString(),
     foundedOn: registry.foundedOn.required(t('validation.required')),
-    licenseNumber: registry.licenseNumber,
+    licenseNumber: registry.licenseNumber.required(t('validation.required')),
+    licenseCertificate: entityDocumentRule(t),
+    authorizationLetter: entityDocumentRule(t),
     hasStrategicPlan: yupString().oneOf(['', 'yes', 'no']),
     unifiedNumber: unifiedNumberField(t),
     officialEmail: yupString()

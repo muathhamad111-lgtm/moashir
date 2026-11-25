@@ -17,12 +17,12 @@ function localPhone(phone) {
   return phone ? phone.replace(/^\+966/, '0') : ''
 }
 
-function strategicPlanValue(value) {
+function answerValue(value) {
   if (value === null || value === undefined) return ''
   return value ? YES : NO
 }
 
-function strategicPlanPayload(value) {
+function answerPayload(value) {
   if (value === YES) return true
   return value === NO ? false : null
 }
@@ -44,6 +44,7 @@ export function emptyProfileValues() {
     foundingYear: '',
     regionId: '',
     cityId: '',
+    hasGovernanceGrade: '',
     governanceGrade: '',
     employeesCount: '',
     annualBeneficiariesCount: '',
@@ -63,10 +64,11 @@ export function profileFormValues(entity) {
     foundingYear: text(entity.foundingYear),
     regionId: text(entity.region?.id),
     cityId: text(entity.city?.id),
+    hasGovernanceGrade: answerValue(entity.hasGovernanceGrade),
     governanceGrade: text(entity.governanceGrade),
     employeesCount: text(entity.employeesCount),
     annualBeneficiariesCount: text(entity.annualBeneficiariesCount),
-    hasStrategicPlan: strategicPlanValue(entity.hasStrategicPlan),
+    hasStrategicPlan: answerValue(entity.hasStrategicPlan),
   }
 }
 
@@ -82,10 +84,12 @@ export function profilePayload(values) {
     foundingYear: Number(toWesternDigits(values.foundingYear)),
     regionId: Number(values.regionId),
     cityId: Number(values.cityId),
-    governanceGrade: governanceGradePayload(values.governanceGrade),
+    hasGovernanceGrade: answerPayload(values.hasGovernanceGrade),
+    governanceGrade:
+      values.hasGovernanceGrade === YES ? governanceGradePayload(values.governanceGrade) : null,
     employeesCount: optionalNumber(values.employeesCount),
     annualBeneficiariesCount: optionalNumber(values.annualBeneficiariesCount),
-    hasStrategicPlan: strategicPlanPayload(values.hasStrategicPlan),
+    hasStrategicPlan: answerPayload(values.hasStrategicPlan),
   }
 }
 
@@ -105,6 +109,8 @@ export function registrationPayload(values, terms) {
     foundingYear: foundingYearOf(values.foundedOn),
     foundedOn: values.foundedOn,
     licenseNumber: optionalText(values.licenseNumber),
+    licenseCertificate: values.licenseCertificate,
+    authorizationLetter: values.authorizationLetter,
     officialEmail: values.officialEmail.trim(),
     emailVerificationToken: values.emailVerificationToken,
     password: values.password,

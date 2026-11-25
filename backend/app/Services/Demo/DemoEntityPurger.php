@@ -48,7 +48,7 @@ final readonly class DemoEntityPurger
             ...$this->files->ofEntity($entity, $ownerIds),
         ];
         $this->purgeEntityRecords($entity, $ownerIds);
-        Entity::withTrashed()->whereKey($entity->id)->toBase()->update(['logo_file_id' => null, 'vat_certificate_file_id' => null]);
+        Entity::withTrashed()->whereKey($entity->id)->toBase()->update(['logo_file_id' => null, 'vat_certificate_file_id' => null, 'license_certificate_file_id' => null, 'authorization_letter_file_id' => null]);
 
         $removed = $this->files->removeRecords(array_values(array_unique($fileIds)));
         $tally->add(DemoPurgeCount::Files, count($removed));

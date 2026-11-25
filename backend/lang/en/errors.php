@@ -119,6 +119,7 @@ return [
         'verification_cooldown' => 'A verification reminder was sent recently. Please try again later.',
         'vat_not_registered' => 'Answer «Yes» to the VAT registration question and save the billing details first, then upload the VAT registration certificate.',
         'vat_certificate_missing' => 'This entity has no VAT registration certificate uploaded.',
+        'document_missing' => 'This document is not attached for this entity.',
     ],
     'email_change' => [
         'pending_approval' => 'An official e-mail change is already awaiting approval.',
@@ -216,6 +217,7 @@ return [
         'change_unknown_items' => 'Choose only among the changes in this request.',
         'change_coupled_items' => 'Region and city, and VAT registration and VAT number, are approved or rejected together.',
         'change_reason_required' => 'Write the reason for rejection (at least 10 characters) when you reject any change.',
+        'change_authorization_letter_required' => 'A new authorized person needs a new authorization letter in the same request, and the two are approved or rejected together.',
         'change_missing' => 'There is no profile change awaiting approval.',
     ],
     'prices' => [

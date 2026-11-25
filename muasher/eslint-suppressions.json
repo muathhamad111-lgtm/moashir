@@ -389,11 +389,6 @@
       "count": 1
     }
   },
-  "src/composables/useProofPreview.js": {
-    "max-lines-per-function": {
-      "count": 1
-    }
-  },
   "src/composables/useRefundForm.js": {
     "max-lines-per-function": {
       "count": 1

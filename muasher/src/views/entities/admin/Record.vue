@@ -16,6 +16,7 @@ import EntityAssessmentsTable from '@/components/entities/admin/EntityAssessment
 import EntityAccountTimeline from '@/components/entities/admin/EntityAccountTimeline.vue'
 import EntityLevelCard from '@/components/entities/admin/EntityLevelCard.vue'
 import EntityPendingChangeCard from '@/components/entities/admin/EntityPendingChangeCard.vue'
+import EntityDocumentsCard from '@/components/entities/admin/EntityDocumentsCard.vue'
 import { usePermissions } from '@/composables/usePermissions'
 import { PERMISSIONS } from '@/constants/permissionKeys'
 import { useEntityRecord } from '@/composables/useEntityRecord'
@@ -132,6 +133,7 @@ onMounted(load)
           <Card :title="t('entities.record.sections.tax')">
             <EntityDetailsList :rows="addressRows.taxRowsOf(entity)" />
           </Card>
+          <EntityDocumentsCard v-if="entity.documents" :entity="entity" />
         </div>
         <Card v-else-if="activeTab === 'contact'" :title="t('entities.record.sections.contact')">
           <EntityDetailsList

@@ -1,16 +1,16 @@
 @use '../tokens' as *;
 @use '../mixins' as *;
 
-.proof-viewer {
+.document-viewer {
   @include flex(column, stretch, flex-start, var(--space-4));
 }
 
-.proof-viewer__head {
+.document-viewer__head {
   @include flex(row, center, flex-start, var(--space-3));
   flex-wrap: wrap;
 }
 
-.proof-viewer__icon {
+.document-viewer__icon {
   @include flex-center;
   inline-size: var(--size-icon-box-sm);
   block-size: var(--size-icon-box-sm);
@@ -19,35 +19,35 @@
   color: var(--theme-accent-text);
 }
 
-.proof-viewer__meta {
+.document-viewer__meta {
   @include flex(column, flex-start, flex-start, var(--space-1));
   flex: 1;
   min-inline-size: 0;
 }
 
-.proof-viewer__name {
+.document-viewer__name {
   font-weight: var(--fw-emphasis);
   color: var(--theme-heading);
   overflow-wrap: anywhere;
 }
 
-.proof-viewer__size {
+.document-viewer__size {
   color: var(--theme-text-muted);
   font-size: var(--fs-xs);
 }
 
-.proof-viewer__zoom {
+.document-viewer__zoom {
   @include flex(row, center, flex-start, var(--space-2));
 }
 
-.proof-viewer__zoom-value {
+.document-viewer__zoom-value {
   min-inline-size: var(--space-12);
   text-align: center;
   font-family: var(--font-latin);
   font-weight: var(--fw-body);
 }
 
-.proof-viewer__stage {
+.document-viewer__stage {
   @include flex-center;
   min-block-size: var(--size-proof-stage-compact);
   border-radius: var(--radius-lg);
@@ -59,7 +59,7 @@
   }
 }
 
-.proof-viewer__placeholder {
+.document-viewer__placeholder {
   @include flex(column, center, center, var(--space-2));
   margin: 0;
   padding: var(--space-6);
@@ -67,32 +67,32 @@
   color: var(--theme-text-muted);
 }
 
-.proof-viewer__image-frame {
+.document-viewer__image-frame {
   inline-size: 100%;
   max-block-size: var(--size-proof-stage);
   overflow: auto;
   text-align: center;
 }
 
-.proof-viewer__image {
+.document-viewer__image {
   max-inline-size: 100%;
   transform-origin: top center;
   transition: transform var(--t-fast) var(--ease);
 }
 
 @each $level, $scale in $proof-zoom-levels {
-  .proof-viewer__image--zoom-#{$level} {
+  .document-viewer__image--zoom-#{$level} {
     transform: scale($scale);
   }
 }
 
-.proof-viewer__pdf {
+.document-viewer__pdf {
   inline-size: 100%;
   block-size: var(--size-proof-stage);
   border: none;
 }
 
-.proof-viewer__logged {
+.document-viewer__logged {
   @include flex(row, center, flex-start, var(--space-2));
   margin: 0;
   color: var(--theme-text-muted);

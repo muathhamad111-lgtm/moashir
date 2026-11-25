@@ -63,7 +63,7 @@ it('turns a unified national number taken by a concurrent registration into the 
         [],
         false,
         Locale::Arabic,
-    ), emailVerificationTokenFor('race@alamal.example.sa')))->toThrow(ValidationException::class, __('validation.custom.unified_number.unique'));
+    ), registrationDocuments(), emailVerificationTokenFor('race@alamal.example.sa')))->toThrow(ValidationException::class, __('validation.custom.unified_number.unique'));
 });
 
 it('updates the number from the identity section with a history entry', function (): void {

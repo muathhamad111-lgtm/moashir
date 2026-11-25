@@ -6,14 +6,14 @@ import { useConfirm } from '@/composables/useConfirm'
 import { useToast } from '@/composables/useToast'
 import { useSignedDownload } from '@/composables/useSignedDownload'
 import { fileUploadMessage } from '@/utils/fileUploadError'
-import { vatCertificateIssue } from '@/utils/entityProfile/vatCertificateRules'
-import { VAT_CERTIFICATE_RULES } from '@/constants/entityProfile'
+import { entityDocumentIssue } from '@/utils/entityDocumentRules'
+import { ENTITY_DOCUMENT_RULES } from '@/constants/entityDocuments'
 
 const DOWNLOAD_KEY = 'vat-certificate'
 const MESSAGES = 'portal.profile.billing.certificate'
 
 function issueMessage(t, issue) {
-  return issue ? t(`${MESSAGES}.errors.${issue}`, { max: VAT_CERTIFICATE_RULES.maxMb }) : ''
+  return issue ? t(`${MESSAGES}.errors.${issue}`, { max: ENTITY_DOCUMENT_RULES.maxMb }) : ''
 }
 
 function removalQuestion(t) {
@@ -63,7 +63,7 @@ export function useVatCertificate() {
 
   async function upload(file) {
     if (busy.value) return
-    const issue = vatCertificateIssue(file)
+    const issue = entityDocumentIssue(file)
     error.value = issueMessage(t, issue)
     if (!issue) await run(() => entitiesService.uploadVatCertificate(file), `${MESSAGES}.uploaded`)
   }

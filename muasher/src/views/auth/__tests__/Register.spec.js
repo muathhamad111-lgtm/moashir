@@ -66,6 +66,7 @@ async function settle() {
 
 const ENTITY_VALUES = {
   unifiedNumber: '7000000901',
+  licenseNumber: '880000901',
   'name.ar': 'جمعية الوفاء الخيرية',
   'name.en': 'Al-Wafa Charity',
   foundedOn: '2016-03-21',
@@ -75,6 +76,17 @@ const ACCOUNT_VALUES = {
   officialEmail: 'info@alwafa-charity.example.sa',
   password: 'Wafa-Charity-Account-2026',
   passwordConfirmation: 'Wafa-Charity-Account-2026',
+}
+
+function pdfFile(name, size = 2048, type = 'application/pdf') {
+  return new File([new Uint8Array(size)], name, { type })
+}
+
+async function attachDocument(wrapper, name, file) {
+  const input = wrapper.find(`input[type="file"][name="${name}"]`)
+  Object.defineProperty(input.element, 'files', { value: [file], configurable: true })
+  await input.trigger('change')
+  await flushPromises()
 }
 
 async function setValues(wrapper, values) {
@@ -91,19 +103,28 @@ async function goNext(wrapper) {
   await settle()
 }
 
+async function answerGovernance(wrapper, answer) {
+  await wrapper.find(`input[name="hasGovernanceGrade"][value="${answer}"]`).setValue(true)
+  await flushPromises()
+}
+
 async function fillEntityStep(wrapper, overrides = {}) {
+  const { licenseCertificate = pdfFile('license.pdf'), ...values } = overrides
   await chooseNamedOption(wrapper, 'entityType', 'waqf')
-  await setValues(wrapper, { ...ENTITY_VALUES, ...overrides })
+  await answerGovernance(wrapper, 'no')
+  await setValues(wrapper, { ...ENTITY_VALUES, ...values })
   await chooseNamedOption(wrapper, 'regionId', '2')
   await chooseNamedOption(wrapper, 'cityId', '12')
   await chooseNamedOption(wrapper, 'developmentSector', 'health')
   await chooseNamedOption(wrapper, 'orgSize', 'small')
+  if (licenseCertificate) await attachDocument(wrapper, 'licenseCertificate', licenseCertificate)
 }
 
 async function fill(wrapper, overrides = {}) {
   await fillEntityStep(wrapper, overrides)
   await goNext(wrapper)
   await setValues(wrapper, ACCOUNT_VALUES)
+  await attachDocument(wrapper, 'authorizationLetter', pdfFile('letter.pdf'))
 }
 
 async function proveEmail(wrapper) {
@@ -149,6 +170,7 @@ describe('Register', () => {
       'entityType',
       'unifiedNumber',
       'licenseNumber',
+      'licenseCertificate',
       'name.ar',
       'name.en',
       'regionId',
@@ -157,8 +179,8 @@ describe('Register', () => {
       'orgSize',
       'foundedOn',
       'employeesCount',
-      'governanceGrade',
       'annualBeneficiariesCount',
+      'hasGovernanceGrade',
     ])
     expect(wrapper.findAll('.entity-register__step .field__hint')).toHaveLength(0)
     expect(nextButton(wrapper).text()).toBe('Next')
@@ -188,6 +210,7 @@ describe('Register', () => {
     await goNext(wrapper)
     expect(stepFieldNames(wrapper)).toEqual([
       'authorizedPersonName',
+      'authorizationLetter',
       'phone',
       'officialEmail',
       'password',
@@ -254,8 +277,12 @@ describe('Register', () => {
         name: { ar: 'جمعية الوفاء الخيرية', en: 'Al-Wafa Charity' },
         entityType: 'waqf',
         unifiedNumber: '7000000901',
+        licenseNumber: '880000901',
+        licenseCertificate: expect.objectContaining({ name: 'license.pdf' }),
+        authorizationLetter: expect.objectContaining({ name: 'letter.pdf' }),
         regionId: 2,
         cityId: 12,
+        hasGovernanceGrade: false,
         governanceGrade: null,
         employeesCount: null,
         annualBeneficiariesCount: null,
@@ -305,6 +332,70 @@ describe('Register', () => {
     )
     expect(wrapper.find('[name="unifiedNumber"]').exists()).toBe(true)
     expect(wrapper.text()).toContain(DUPLICATE)
+  })
+
+  it('asks for the governance grade only after a «yes» and requires it then', async () => {
+    const { wrapper } = await mountRegister()
+    await fillEntityStep(wrapper)
+    expect(wrapper.find('[name="governanceGrade"]').exists()).toBe(false)
+
+    await answerGovernance(wrapper, 'yes')
+    expect(wrapper.find('[name="governanceGrade"]').exists()).toBe(true)
+    await goNext(wrapper)
+    expect(wrapper.find('[name="officialEmail"]').exists()).toBe(false)
+    expect(wrapper.find('[name="governanceGrade"]').attributes('aria-invalid')).toBe('true')
+
+    await setValues(wrapper, { governanceGrade: '87.5' })
+    await goNext(wrapper)
+    expect(wrapper.find('[name="officialEmail"]').exists()).toBe(true)
+  })
+
+  it('requires the governance question before leaving the entity step', async () => {
+    const { wrapper } = await mountRegister()
+    await chooseNamedOption(wrapper, 'entityType', 'waqf')
+    await setValues(wrapper, ENTITY_VALUES)
+    await chooseNamedOption(wrapper, 'regionId', '2')
+    await chooseNamedOption(wrapper, 'cityId', '12')
+    await chooseNamedOption(wrapper, 'developmentSector', 'health')
+    await chooseNamedOption(wrapper, 'orgSize', 'small')
+    await goNext(wrapper)
+    expect(wrapper.find('[name="officialEmail"]').exists()).toBe(false)
+    expect(wrapper.text()).toContain('This field is required')
+  })
+
+  it('requires the licence number and a PDF licence certificate of at most 5 MB', async () => {
+    const { wrapper } = await mountRegister()
+    await fillEntityStep(wrapper, { licenseNumber: '', licenseCertificate: null })
+    await goNext(wrapper)
+    expect(wrapper.find('[name="officialEmail"]').exists()).toBe(false)
+    expect(wrapper.find('[name="licenseNumber"]').attributes('aria-invalid')).toBe('true')
+    expect(wrapper.text()).toContain('Upload the document as a PDF.')
+
+    await setValues(wrapper, { licenseNumber: '880000901' })
+    await attachDocument(wrapper, 'licenseCertificate', pdfFile('license.png', 2048, 'image/png'))
+    await goNext(wrapper)
+    expect(wrapper.text()).toContain('Upload the document as a PDF only.')
+
+    await attachDocument(wrapper, 'licenseCertificate', pdfFile('license.pdf', 6 * 1024 * 1024))
+    await goNext(wrapper)
+    expect(wrapper.text()).toContain('The file is larger than 5 MB.')
+
+    await attachDocument(wrapper, 'licenseCertificate', pdfFile('license.pdf'))
+    await goNext(wrapper)
+    expect(wrapper.find('[name="officialEmail"]').exists()).toBe(true)
+  })
+
+  it('requires the authorization letter before registering', async () => {
+    const { wrapper } = await mountRegister()
+    await fillEntityStep(wrapper)
+    await goNext(wrapper)
+    await setValues(wrapper, ACCOUNT_VALUES)
+    await proveEmail(wrapper)
+    await wrapper.find('[name="termsAccepted"]').setValue(true)
+    await wrapper.find('form').trigger('submit')
+    await settle()
+    expect(authService.register).not.toHaveBeenCalled()
+    expect(wrapper.text()).toContain('Upload the document as a PDF.')
   })
 
   it('requires the unified number before leaving the entity step', async () => {

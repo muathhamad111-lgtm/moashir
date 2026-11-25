@@ -6,6 +6,7 @@ export const REGISTRATION_STEPS = Object.freeze([
       'entityType',
       'unifiedNumber',
       'licenseNumber',
+      'licenseCertificate',
       'name.ar',
       'name.en',
       'regionId',
@@ -14,8 +15,9 @@ export const REGISTRATION_STEPS = Object.freeze([
       'orgSize',
       'foundedOn',
       'employeesCount',
-      'governanceGrade',
       'annualBeneficiariesCount',
+      'hasGovernanceGrade',
+      'governanceGrade',
     ]),
   }),
   Object.freeze({
@@ -23,6 +25,7 @@ export const REGISTRATION_STEPS = Object.freeze([
     labelKey: 'entities.registration.steps.account',
     fields: Object.freeze([
       'authorizedPersonName',
+      'authorizationLetter',
       'nationalId',
       'phone',
       'officialEmail',

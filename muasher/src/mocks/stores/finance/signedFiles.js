@@ -5,6 +5,8 @@ import { nowIso } from './paymentLifecycle'
 import { FIXTURE_ENTITY_LOGO_FILE_ID, fixtureEntityLogoBytes } from '../../fixtures/entityLogos'
 import { transferProofSample } from './proofSamples'
 import { assertMayOpenFile } from '../fileAccessGate'
+import { samplePdf } from '../samplePdf'
+import { ENTITY_DOCUMENT_PURPOSES } from '../../fixtures/entityDocuments'
 
 export const SIGNED_LINK_MINUTES = 5
 
@@ -58,8 +60,14 @@ export function signedDownloadOf(user, file) {
   }
 }
 
+const SAMPLE_PDF_PURPOSES = Object.freeze([
+  ...Object.values(ENTITY_DOCUMENT_PURPOSES),
+  'vat_certificate',
+])
+
 function placeholderContent(file) {
   if (file.id === FIXTURE_ENTITY_LOGO_FILE_ID) return fixtureEntityLogoBytes()
+  if (SAMPLE_PDF_PURPOSES.includes(file.purpose)) return samplePdf(file.name)
   if (file.mimeType === 'text/csv') return '\uFEFFreference,status\n'
   if (file.mimeType === 'application/pdf') return `%PDF-1.4\n% ${file.name}\n%%EOF\n`
   return new Uint8Array([0x89, 0x50, 0x4e, 0x47])

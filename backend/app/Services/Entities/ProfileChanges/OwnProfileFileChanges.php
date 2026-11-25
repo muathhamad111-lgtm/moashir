@@ -14,8 +14,8 @@ use App\Models\Identity\User;
 use Illuminate\Support\Facades\DB;
 
 /**
- * Puts the entity's logo or VAT certificate upload or removal into its pending change request. Pending files stay
- * private and are never set on the entity until staff approve them.
+ * Puts the entity's upload or removal of its logo, VAT certificate, license certificate or authorization letter into
+ * its pending change request. Pending files stay private and are never set on the entity until staff approve them.
  */
 final readonly class OwnProfileFileChanges
 {
@@ -81,9 +81,8 @@ final readonly class OwnProfileFileChanges
 
     private function approvedFileId(Entity $entity, ProfileChangeFile $file): ?int
     {
-        return match ($file) {
-            ProfileChangeFile::Logo => $entity->logo_file_id,
-            ProfileChangeFile::VatCertificate => $entity->vat_certificate_file_id,
-        };
+        $fileId = $entity->getAttribute($file->entityColumn());
+
+        return is_int($fileId) ? $fileId : null;
     }
 }

@@ -31,7 +31,7 @@ it('reports a complete profile at 100 percent without the optional phone, websit
         ->assertJsonPath('data.profile_completed', true)
         ->assertJsonPath('data.phone', null)
         ->assertJsonPath('data.logo', null)
-        ->assertJsonPath('data.profile_completion', ['percent' => 100, 'counted' => 22, 'completed_count' => 22, 'sections' => completionSections()]);
+        ->assertJsonPath('data.profile_completion', ['percent' => 100, 'counted' => 23, 'completed_count' => 23, 'sections' => completionSections()]);
 });
 
 it('reports the design mock at 72 percent by section', function (): void {
@@ -48,7 +48,7 @@ it('reports the design mock at 72 percent by section', function (): void {
             'completed_count' => 16,
             'sections' => completionSections([
                 'identity' => ['unified_number', 'license_number', 'founded_on'],
-                'governance' => ['governance_grade', 'employees_count', 'annual_beneficiaries_count'],
+                'governance' => ['has_governance_grade', 'employees_count', 'annual_beneficiaries_count'],
             ]),
         ]);
 });
@@ -56,8 +56,8 @@ it('reports the design mock at 72 percent by section', function (): void {
 it('follows each section save and keeps the completion timestamp on 100 percent only', function (): void {
     $entity = entityWithOwner(static fn (EntityFactory $factory): EntityFactory => $factory->incompleteProfile());
 
-    saveAndApproveSection($entity, ProfileSection::Governance, ['governance_grade' => '82.50'])->assertOk()
-        ->assertJsonPath('data.profile_completion.percent', 90)
+    saveAndApproveSection($entity, ProfileSection::Governance, ['has_governance_grade' => true, 'governance_grade' => '82.50'])->assertOk()
+        ->assertJsonPath('data.profile_completion.percent', 91)
         ->assertJsonPath('data.profile_completed', false);
     expect($entity->refresh()->profile_completed_at)->toBeNull();
 

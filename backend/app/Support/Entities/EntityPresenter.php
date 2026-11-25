@@ -4,8 +4,9 @@ declare(strict_types=1);
 
 namespace App\Support\Entities;
 
+use App\Enums\Entities\EntityDocument;
+use App\Http\Resources\Entities\EntityDocumentResource;
 use App\Http\Resources\Entities\EntityLogoResource;
-use App\Http\Resources\Entities\VatCertificateResource;
 use App\Models\Entities\City;
 use App\Models\Entities\Entity;
 use App\Models\Entities\Region;
@@ -40,6 +41,7 @@ final class EntityPresenter
             'region' => self::place($entity->region),
             'city' => self::place($entity->city),
             'governance_grade' => $entity->governance_grade,
+            'has_governance_grade' => $entity->has_governance_grade,
             'employees_count' => $entity->employees_count,
             'annual_beneficiaries_count' => $entity->annual_beneficiaries_count,
             'has_strategic_plan' => $entity->has_strategic_plan,
@@ -80,8 +82,25 @@ final class EntityPresenter
             'address_short_code' => $entity->address_short_code,
             'vat_registered' => $entity->vat_registered,
             'vat_number' => $entity->vat_number,
-            'vat_certificate' => $certificate instanceof StoredFile ? new VatCertificateResource($certificate)->toArray($request) : null,
+            'vat_certificate' => $certificate instanceof StoredFile ? new EntityDocumentResource($certificate)->toArray($request) : null,
         ];
+    }
+
+    /**
+     * Each document of the entity, or null when it has none; the caller loads the relations of the documents.
+     *
+     * @return array<string, array{id: string, name: string, mime_type: string, size_bytes: int, uploaded_at: string}|null>
+     */
+    public static function documents(Entity $entity, Request $request): array
+    {
+        $documents = [];
+
+        foreach (EntityDocument::cases() as $document) {
+            $file = $entity->getRelationValue($document->profileChangeFile()->approvedRelation());
+            $documents[$document->value] = $file instanceof StoredFile ? new EntityDocumentResource($file)->toArray($request) : null;
+        }
+
+        return $documents;
     }
 
     /**

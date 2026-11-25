@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use App\Enums\Audit\AuditEvent;
+use App\Enums\Entities\EntityDocument;
 use App\Enums\Entities\EntityProfileField;
 use App\Enums\Entities\ProfileSection;
 use App\Enums\Notifications\NotificationCode;
@@ -32,16 +33,18 @@ it('applies an approved governance section, records every changed field and tell
     $entity = entityWithOwner(static fn (EntityFactory $factory): EntityFactory => $factory->incompleteProfile());
     $owner = ownerOf($entity);
 
-    saveAndApproveSection($entity, ProfileSection::Governance, ['governance_grade' => '91.5', 'employees_count' => 60, 'annual_beneficiaries_count' => 3200, 'has_strategic_plan' => null])
+    saveAndApproveSection($entity, ProfileSection::Governance, ['has_governance_grade' => true, 'governance_grade' => '91.5', 'employees_count' => 60, 'annual_beneficiaries_count' => 3200, 'has_strategic_plan' => null])
         ->assertOk()
+        ->assertJsonPath('data.has_governance_grade', true)
         ->assertJsonPath('data.governance_grade', '91.50')
         ->assertJsonPath('data.employees_count', 60)
         ->assertJsonPath('data.has_strategic_plan', null)
         ->assertJsonPath('data.profile_completion.percent', 95)
-        ->assertJsonPath('data.profile_completion.completed_count', 21)
+        ->assertJsonPath('data.profile_completion.completed_count', 22)
         ->assertJsonPath('data.profile_completion.sections.2', ['key' => 'governance', 'state' => 'incomplete', 'missing_count' => 1, 'missing_fields' => ['has_strategic_plan']]);
 
     expect(historyOf($entity->id))->toBe([
+        'has_governance_grade' => [null, true],
         'governance_grade' => [null, '91.50'],
         'employees_count' => [null, 60],
         'annual_beneficiaries_count' => [null, 3200],
@@ -52,6 +55,35 @@ it('applies an approved governance section, records every changed field and tell
     Notification::assertSentTo($admin, EntityNotification::class, static fn (EntityNotification $notification): bool => $notification->notice->code === NotificationCode::EntityProfileChangeRequested);
     Notification::assertNotSentTo($admin, EntityNotification::class, static fn (EntityNotification $notification): bool => $notification->notice->code === NotificationCode::EntityCoreDataEdited);
     Notification::assertSentTo($owner, EntityNotification::class, static fn (EntityNotification $notification): bool => $notification->notice->code === NotificationCode::EntityProfileChangeDecided);
+});
+
+it('clears the approved governance grade once the entity answers that it has none', function (): void {
+    $entity = entityWithOwner();
+
+    saveAndApproveSection($entity, ProfileSection::Governance, ['has_governance_grade' => false, 'governance_grade' => '91.5'])
+        ->assertOk()
+        ->assertJsonPath('data.has_governance_grade', false)
+        ->assertJsonPath('data.governance_grade', null)
+        ->assertJsonPath('data.profile_completion.percent', 100)
+        ->assertJsonPath('data.profile_completion.sections.2.missing_fields', []);
+
+    expect(historyOf($entity->id))->toBe([
+        'has_governance_grade' => [true, false],
+        'governance_grade' => ['82.50', null],
+    ]);
+});
+
+it('asks a legacy entity without an answer for the governance question before counting its grade', function (): void {
+    $entity = entityWithOwner(static fn (EntityFactory $factory): EntityFactory => $factory->state(['governance_grade' => null]));
+
+    switchTo(ownerOf($entity))->getJson('/api/v1/entities/me')->assertOk()
+        ->assertJsonPath('data.has_governance_grade', null)
+        ->assertJsonPath('data.profile_completion.sections.2.missing_fields', ['has_governance_grade']);
+
+    saveAndApproveSection($entity, ProfileSection::Governance, ['has_governance_grade' => true, 'governance_grade' => '70'])
+        ->assertOk()
+        ->assertJsonPath('data.governance_grade', '70.00')
+        ->assertJsonPath('data.profile_completion.sections.2.missing_fields', []);
 });
 
 it('saves the identity section and derives the founding year from the founding date', function (): void {
@@ -94,6 +126,7 @@ it('saves the contact section with a masked phone in the history and keeps conta
     $admin = systemAdmin();
     $entity = entityWithOwner();
     $owner = ownerOf($entity);
+    uploadOwnDocument($owner, EntityDocument::AuthorizationLetter)->assertAccepted();
 
     saveAndApproveSection($entity, ProfileSection::Contact, [
         'authorized_person_name' => 'ريم بنت خالد الحربي',
@@ -118,7 +151,7 @@ it('saves the contact section with a masked phone in the history and keeps conta
         'marketing_consent' => [false, true],
     ])
         ->and($everyAudit)->not->toContain('ريم بنت خالد الحربي')->not->toContain('569876543')
-        ->and($audit->new_values['approved'] ?? null)->toBe(['website_url', 'authorized_person_name', 'phone'])
+        ->and($audit->new_values['approved'] ?? null)->toBe(['website_url', 'authorized_person_name', 'phone', 'authorization_letter'])
         ->and(Audit::query()->where('event', AuditEvent::EntityProfileUpdated->value)->sole()->new_values['changed_fields'] ?? null)->toBe(['marketing_consent']);
     Notification::assertSentTo($admin, EntityNotification::class);
 });
@@ -126,6 +159,7 @@ it('saves the contact section with a masked phone in the history and keeps conta
 it('raises no core-data notice when an approved change applies', function (): void {
     $admin = systemAdmin();
     $entity = entityWithOwner();
+    uploadOwnDocument(ownerOf($entity), EntityDocument::AuthorizationLetter)->assertAccepted();
 
     saveAndApproveSection($entity, ProfileSection::Contact, ['authorized_person_name' => 'ريم بنت خالد الحربي'])->assertOk();
 
@@ -212,6 +246,9 @@ it('rejects invalid section data', function (ProfileSection $section, array $ove
     'classification without a region' => [ProfileSection::Classification, ['region_id' => null], 'region_id'],
     'governance above 100' => [ProfileSection::Governance, ['governance_grade' => 101], 'governance_grade'],
     'governance with four decimals' => [ProfileSection::Governance, ['governance_grade' => '82.5051'], 'governance_grade'],
+    'governance answered yes without a grade' => [ProfileSection::Governance, ['governance_grade' => null], 'governance_grade'],
+    'governance question unanswered' => [ProfileSection::Governance, ['has_governance_grade' => null], 'has_governance_grade'],
+    'governance answer not a yes or no' => [ProfileSection::Governance, ['has_governance_grade' => 'perhaps'], 'has_governance_grade'],
     'negative employees' => [ProfileSection::Governance, ['employees_count' => -1], 'employees_count'],
     'strategic plan not a yes or no' => [ProfileSection::Governance, ['has_strategic_plan' => 'sometimes'], 'has_strategic_plan'],
     'contact without the person name' => [ProfileSection::Contact, ['authorized_person_name' => ''], 'authorized_person_name'],
@@ -240,6 +277,7 @@ it('requires every field of the section to be sent', function (ProfileSection $s
 })->with([
     [ProfileSection::Identity, 'license_number'],
     [ProfileSection::Identity, 'founded_on'],
+    [ProfileSection::Governance, 'has_governance_grade'],
     [ProfileSection::Governance, 'governance_grade'],
     [ProfileSection::Governance, 'has_strategic_plan'],
     [ProfileSection::Contact, 'phone'],

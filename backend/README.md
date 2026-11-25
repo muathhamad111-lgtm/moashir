@@ -545,8 +545,10 @@ php artisan moashir:criteria:install-seed     # idempotent: skipped as soon as a
   an entity's city belongs to its region.
 - `entities`: bilingual `name` (Arabic required, English optional), `entity_type` (`civil_association |
   civil_foundation | waqf`), `development_sector`, `org_size`, `founding_year`, `region_id`, `city_id`,
-  `governance_grade` (NCNP percentage `numeric(6,3)` — up to three decimals since 2026-11-15, operator decision — 0–100, sent as a decimal string `"87.455"`), `employees_count`,
-  `annual_beneficiaries_count`, `has_strategic_plan` (nullable since Task-82b: `null` = unanswered, P-6), `status` (`pending_verification | active | deactivated`),
+  `governance_grade` (NCNP percentage `numeric(6,3)` — up to three decimals since 2026-11-15, operator decision — 0–100, sent as a decimal string `"87.455"`), `has_governance_grade` (2026-11-25, operator decision: the
+  required yes/no answer to «هل لدى الجهة درجة حوكمة؟»; `true` carries a grade, `false` none, `null` = an entity registered
+  before the question, backfilled `true` where a grade was stored; two CHECK constraints keep the pair consistent),
+  `employees_count`, `annual_beneficiaries_count`, `has_strategic_plan` (nullable since Task-82b: `null` = unanswered, P-6), `status` (`pending_verification | active | deactivated`),
   consent and lifecycle timestamps, soft delete (`deleted_at` = "Deleted entities"), `anonymized_at` (erased tombstone),
   and since Task-47 the registry details `license_number`, `founded_on`, `website_url` and the logo reference
   `logo_file_id` (see "Registry details and logo"). Every value is guarded by a CHECK constraint. The human reference is
@@ -702,9 +704,9 @@ data; retention = the entity's lifetime, cleared by the permanent deletion):
   the same save (`Services\Entities\EntityVatCertificateDetacher`, audited `entity.vat_certificate_removed`, file
   removed after commit). History rows for the nine editable fields; `entity.profile_updated` audit as for the other
   sections.
-- **Completion.** The six address parts and `vat_registered` are `required` profile fields (22 counted fields). The VAT
-  number and the certificate are counted only when `vat_registered` is true (24 counted fields)
-  (`ProfileSectionField::dependsOnVatRegistration()`, `ProfileFieldValues::countedFields()`). `billing_complete` =
+- **Completion.** The six address parts and `vat_registered` are `required` profile fields (22 counted fields, 23 with a
+  governance grade). The VAT number and the certificate are counted only when `vat_registered` is true (two more)
+  (`ProfileSectionField::gate()`, `ProfileFieldValues::countedFields()`). `billing_complete` =
   the billing section has no missing field (`Entity::hasCompleteBilling()`).
 - **Certificate.** `POST /entities/me/vat-certificate` (multipart `file`, PDF only, ≤ `moashir.entities.vat_certificate.max_kb`
   = 5120 KB; extension, detected type and `%PDF` magic bytes checked, ClamAV scan through `FileIntake`, random path
@@ -716,8 +718,31 @@ data; retention = the entity's lifetime, cleared by the permanent deletion):
 - **Downloads.** `POST /entities/me/vat-certificate/download` (`can:viewOwn`) and
   `POST /finance/bank-transfers/{bankTransfer}/vat-certificate/download` (`can:viewTransfers`) answer a signed
   `GET /files/{file}/download` link (5 minutes, bound to the viewer); no certificate → 404
-  `entity.vat_certificate_missing`. The file policy (`EntityPolicy::viewVatCertificate`) allows the owner and Finance
-  (`finance.transfers.review` or `finance.operations.view`) only; anyone else → 404.
+  `entity.vat_certificate_missing`. The file policy (`EntityPolicy::viewVatCertificate`) allows the owner, Finance
+  (`finance.transfers.review` or `finance.operations.view`), profile-change approvers and `entities.manage` holders;
+  anyone else → 404.
+- **Entity documents (operator decision 2026-11-25).** Registration (`POST /auth/register`, now multipart) requires
+  `license_number` and two PDFs of at most 5120 KB each (`moashir.entities.license_certificate.max_kb`,
+  `moashir.entities.authorization_letter.max_kb`): `license_certificate` and `authorization_letter`. Both go through
+  `FileIntake` (extension, MIME, `%PDF` bytes, password-locked PDF refused, synchronous ClamAV scan, private disk, random
+  names under `files/entity-license-certificate/` and `files/entity-authorization-letter/`, purposes
+  `entity_license_certificate` / `entity_authorization_letter`, class C, never watermarked) BEFORE the registration
+  transaction (`Services\Entities\EntityRegistrationDocuments`); a refused or infected file answers 422 and the other
+  document is removed; a failed registration removes both; the orphan purge is the safety net. They are attached to the
+  new entity (`entities.license_certificate_file_id`, `entities.authorization_letter_file_id`, FK `restrictOnDelete`,
+  migration `2026_11_26_120000_add_documents_to_entities_table`) and audited `entity.document_uploaded`.
+  The entity replaces a document through its profile change request: `POST /entities/me/documents/{license_certificate|authorization_letter}`
+  (multipart `file`) → 202; approval swaps the file and removes the previous one after commit. A changed
+  `authorized_person_name` in the contact section needs a pending authorization letter in the same request (422
+  `profile.change_authorization_letter_required` on `authorization_letter`), and the reviewer approves or rejects the
+  person and the letter together (`ProfileChanges\AuthorizationLetterRequirement`). Existing entities are not blocked;
+  their profile shows a «وثائق ناقصة» notice. Signed links: `POST /entities/me/documents/{document}/download`
+  (`can:viewOwn`) and `POST /entities/{entity}/documents/{document}/download` (`can:viewDocuments` =
+  `entities.manage` on a viewable entity; `{document}` also accepts `vat_certificate`); no file → 404
+  `entity.document_missing`. Every view or download is audited `file.downloaded`. Permanent deletion removes both files
+  (`EntityDocumentsEraser`). Resources: `OwnEntityResource.documents` and, for `entities.manage` holders on the record,
+  `StaffEntityResource.documents` = `{ license_certificate, authorization_letter, vat_certificate }`, each
+  `{ id, name, mime_type, size_bytes, uploaded_at } | null`.
 - **Read.** `OwnEntityResource` and `StaffEntityResource` carry the billing keys flat (`address_*`, `vat_registered`,
   `vat_number`, `vat_certificate { id, name, size_bytes, uploaded_at } | null`) and `billing_complete`. The staff
   bank-transfer detail (`GET /finance/bank-transfers/{bankTransfer}`, also the approve / reject answers) carries
@@ -741,12 +766,15 @@ no notification. A staff decision after the cancellation answers 409 `state.tran
 ### Own profile by section (Task-82b)
 - **Sections** (`Enums\Entities\ProfileSection`): `identity` (`name.ar`, `name.en`, `unified_number`, `license_number`,
   `founded_on`), `classification` (`entity_type`, `development_sector`, `org_size`, `region_id`, `city_id`),
-  `governance` (`governance_grade`, `employees_count`, `annual_beneficiaries_count`, `has_strategic_plan`), `contact`
+  `governance` (`has_governance_grade`, `governance_grade`, `employees_count`, `annual_beneficiaries_count`, `has_strategic_plan`), `contact`
   (`official_email`, `authorized_person_name`, `phone`, `website_url`, `marketing_consent`), `billing` (see "Billing
   details"). Each field
   (`Enums\Entities\ProfileSectionField`) has ONE requirement level (`ProfileFieldRequirement`: `required`,
-  `completion`, `optional`); `required` + `completion` = the counted fields (22, or 24 when the entity is registered
-  for VAT).
+  `completion`, `optional`); `required` + `completion` = the counted fields (22, plus `governance_grade` when the entity
+  answers it has a governance grade, plus the VAT number and certificate when it is registered for VAT;
+  `ProfileSectionField::gate()`). Registration, the staff edit and the governance section require
+  `has_governance_grade`; `governance_grade` is required after a "yes" and excluded (stored `null`) after a "no", and a
+  change request approves or rejects the pair together.
 - **`GET /entities/me`** adds `can_edit` (the `updateOwn` policy on the loaded entity), `profile_sections [{ key,
   revision, fields[{ key, requirement }] }]` and `profile_completion { percent, counted, completed_count, sections[{ key,
   state: complete|incomplete, missing_count, missing_fields[] }] }`. `percent` = floor(100 × completed_count / counted). A
@@ -833,6 +861,9 @@ no notification. A staff decision after the cancellation answers 409 `state.tran
 | PATCH | `/entities/me/profile/{identity\|classification\|governance\|contact\|billing}` | `entity.profile.edit`, own ACTIVE entity; `throttle:sensitive`; 409 `profile.section_stale` (Task-82b; `billing` row 49) |
 | POST / DELETE | `/entities/me/vat-certificate` (POST multipart `file`, PDF) | `entity.profile.edit` (own, active entity); POST `throttle:uploads` → 201 (409 `entity.vat_not_registered`), DELETE `throttle:sensitive` → 200 |
 | POST | `/entities/me/vat-certificate/download` | `entity.profile.view` (own entity); `throttle:downloads`; 404 `entity.vat_certificate_missing` |
+| POST | `/entities/me/documents/{license_certificate\|authorization_letter}` (multipart `file`, PDF ≤ 5 MB) | `entity.profile.edit` (own, active entity); `throttle:uploads` → 202 |
+| POST | `/entities/me/documents/{document}/download` | `entity.profile.view` (own entity); `throttle:downloads`; 404 `entity.document_missing` |
+| POST | `/entities/{entity}/documents/{document}/download` | `entities.manage` on a viewable entity (`EntityPolicy::viewDocuments`); `throttle:downloads`; 404 `entity.document_missing` |
 | POST / DELETE | `/entities/me/logo` (POST multipart `file`) | `entity.profile.edit` (own, active entity); POST `throttle:uploads` → 201, DELETE `throttle:sensitive` → 200; both answer the own entity |
 | POST | `/entities/me/email/change`, `/entities/me/email/confirm`, `/entities/me/email/cancel` | `entity.profile.edit`, own ACTIVE entity; `throttle:email-change` (3/10 min) / `throttle:otp-verify` / `throttle:sensitive` |
 | GET | `/entities/me/profile-changes` (`page`, `per_page`, `section`) | `entity.profile.view` (own entity) |

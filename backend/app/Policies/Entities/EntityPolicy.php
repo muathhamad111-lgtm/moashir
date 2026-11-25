@@ -70,10 +70,31 @@ final readonly class EntityPolicy
     public function viewVatCertificate(User $actor, Entity $entity): Response
     {
         if ($actor->entity_id !== null) {
-            return $actor->entity_id === $entity->id && $this->viewOwn($actor) ? Response::allow() : Response::denyAsNotFound();
+            return $this->ownsEntity($actor, $entity);
         }
 
-        return $actor->can('viewTransfers', Payment::class) || $this->approvesProfileChanges($actor) ? Response::allow() : Response::denyAsNotFound();
+        $allowed = $actor->can('viewTransfers', Payment::class) || $this->approvesProfileChanges($actor) || $this->viewDocuments($actor, $entity)->allowed();
+
+        return $allowed ? Response::allow() : Response::denyAsNotFound();
+    }
+
+    /**
+     * The entity's documents on its record: the entity itself and the staff who manage entities (operator decision,
+     * 2026-11-25).
+     */
+    public function viewDocuments(User $actor, Entity $entity): Response
+    {
+        if ($actor->entity_id !== null) {
+            return $this->ownsEntity($actor, $entity);
+        }
+
+        $view = $this->view($actor, $entity);
+
+        if ($view->denied()) {
+            return $view;
+        }
+
+        return $actor->can(PermissionKey::EntitiesManage->value) ? Response::allow() : Response::deny();
     }
 
     /**
@@ -142,6 +163,11 @@ final readonly class EntityPolicy
     public function export(User $actor): bool
     {
         return $actor->can(PermissionKey::EntitiesExport->value) && $this->scope->accessOf($actor) === EntityAccess::Full;
+    }
+
+    private function ownsEntity(User $actor, Entity $entity): Response
+    {
+        return $actor->entity_id === $entity->id && $this->viewOwn($actor) ? Response::allow() : Response::denyAsNotFound();
     }
 
     private function approvesProfileChanges(User $actor): bool

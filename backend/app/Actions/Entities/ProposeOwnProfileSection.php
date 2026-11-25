@@ -9,6 +9,7 @@ use App\Exceptions\Entities\ProfileSectionRejected;
 use App\Models\Entities\Entity;
 use App\Models\Identity\User;
 use App\Services\Entities\OwnMarketingConsentWriter;
+use App\Services\Entities\ProfileChanges\AuthorizationLetterRequirement;
 use App\Services\Entities\ProfileChanges\PendingProfileChanges;
 use App\Services\Entities\ProfileChanges\ProfileChangeValues;
 use App\Support\Entities\ProfileFieldValues;
@@ -25,6 +26,7 @@ final readonly class ProposeOwnProfileSection
         private PendingProfileChanges $pending,
         private ProfileChangeValues $values,
         private OwnMarketingConsentWriter $consent,
+        private AuthorizationLetterRequirement $letter,
     ) {}
 
     public function handle(User $owner, ProfileSectionUpdate $update): Entity
@@ -37,6 +39,7 @@ final readonly class ProposeOwnProfileSection
             $request = $this->pending->openFor($entity, $owner);
             $proposed = $this->values->proposedBy($entity, $update->write);
             $request->proposeFields($update->section->historyFields(), $proposed, $this->values->approvedOf($entity, array_keys($proposed)));
+            $this->letter->assertProposable($request, $update->section);
             $this->pending->store($request, $owner);
 
             return $entity->refresh();

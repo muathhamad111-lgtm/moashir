@@ -14,7 +14,7 @@ final class RegisterEntityController
 {
     public function __invoke(RegisterEntityRequest $request, RegisterEntity $registerEntity, LoginOutcomeResponder $responder): JsonResponse
     {
-        $outcome = $registerEntity->handle($request->registration(), $request->emailVerificationToken());
+        $outcome = $registerEntity->handle($request->registration(), $request->documents(), $request->emailVerificationToken());
 
         return $responder->respond($outcome)->setStatusCode(Response::HTTP_CREATED);
     }

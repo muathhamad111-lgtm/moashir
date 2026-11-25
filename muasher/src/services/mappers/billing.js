@@ -1,15 +1,7 @@
+import { toEntityDocument } from './entityDocuments'
+
 function textOrNull(value) {
   return value === null || value === undefined || value === '' ? null : String(value)
-}
-
-function toCertificate(raw) {
-  if (!raw?.id) return null
-  return {
-    id: raw.id,
-    name: raw.name ?? '',
-    sizeBytes: Number(raw.sizeBytes ?? 0),
-    uploadedAt: raw.uploadedAt ?? null,
-  }
 }
 
 export function toBilling(raw) {
@@ -24,7 +16,7 @@ export function toBilling(raw) {
     addressShortCode: textOrNull(raw.addressShortCode),
     vatRegistered: typeof raw.vatRegistered === 'boolean' ? raw.vatRegistered : null,
     vatNumber: textOrNull(raw.vatNumber),
-    vatCertificate: toCertificate(raw.vatCertificate),
+    vatCertificate: toEntityDocument(raw.vatCertificate),
   }
 }
 

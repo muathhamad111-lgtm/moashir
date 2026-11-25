@@ -1,4 +1,5 @@
 import { toCamelKey } from '@/api/caseMapping'
+import { toEntityDocuments } from './entityDocuments'
 
 export function profileFieldName(key) {
   return String(key ?? '')
@@ -41,6 +42,7 @@ export function toOwnEntity(raw) {
   return {
     ...raw,
     canEdit: raw.canEdit === true,
+    documents: toEntityDocuments(raw.documents),
     profileSections: (raw.profileSections ?? []).map(toSectionCatalog),
     profileCompletion: toCompletion(raw.profileCompletion ?? {}),
   }

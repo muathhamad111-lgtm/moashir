@@ -12,6 +12,7 @@ const ENUM_GROUPS = Object.freeze({
 const PLACE_FIELDS = new Set(['region_id', 'city_id'])
 const COUNT_FIELDS = new Set(['employees_count', 'annual_beneficiaries_count'])
 const STAFF = 'staff'
+const UNSET_LABELS = Object.freeze({ has_governance_grade: 'entities.display.notSet' })
 
 export function useProfileChangeFormat() {
   const { t, te, locale } = useI18n()
@@ -28,6 +29,7 @@ export function useProfileChangeFormat() {
   const FORMATTERS = {
     name: nameValue,
     governance_grade: (value) => formatGovernanceGrade(value),
+    has_governance_grade: (value) => t(value ? 'common.yes' : 'common.no'),
     has_strategic_plan: (value) => t(value ? 'common.yes' : 'common.no'),
     vat_registered: (value) => t(value ? 'common.yes' : 'common.no'),
     marketing_consent: (value) =>
@@ -36,7 +38,7 @@ export function useProfileChangeFormat() {
 
   function valueLabel(field, value) {
     if (value === null || value === undefined || value === '')
-      return t('entities.display.notProvided')
+      return t(UNSET_LABELS[field] ?? 'entities.display.notProvided')
     if (FORMATTERS[field]) return FORMATTERS[field](value)
     if (ENUM_GROUPS[field]) return enumValue(ENUM_GROUPS[field], value)
     if (PLACE_FIELDS.has(field)) return localizedText(value.name, locale.value)

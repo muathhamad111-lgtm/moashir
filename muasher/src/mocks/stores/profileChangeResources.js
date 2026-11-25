@@ -5,8 +5,15 @@ import { findFile } from './finance/financeState'
 import { signedDownloadOf } from './finance/signedFiles'
 import { PROFILE_CHANGE_FIELDS } from './profileChangeFields'
 import { itemsOf, labelOf, staleFieldsOf } from './profileChangeRequests'
+import { ENTITY_KEY_OF_FILE } from './profileChangeApply'
 
 const PLACES = { region_id: findRegion, city_id: findCity }
+
+const FILE_SECTIONS = Object.freeze({
+  [F.VAT_CERTIFICATE]: 'billing',
+  [F.LICENSE_CERTIFICATE]: 'identity',
+  [F.AUTHORIZATION_LETTER]: 'contact',
+})
 
 function presented(field, value) {
   const find = PLACES[field]
@@ -23,6 +30,8 @@ function fileValue(descriptor, viewer) {
     name: descriptor.name ?? file.name,
     url: viewer ? signedDownloadOf(viewer, file).url : null,
     uploadedAt: descriptor.uploadedAt ?? null,
+    mimeType: file.mimeType,
+    sizeBytes: file.sizeBytes,
   }
 }
 
@@ -65,11 +74,11 @@ function fieldRow(request, field, stale) {
 function fileRow(request, entity, kind, viewer) {
   const change = request.files[kind]
   const isPending = request.decidedAt === null
-  const approved = kind === F.LOGO ? entity.logo : entity.vatCertificate
+  const approved = entity[ENTITY_KEY_OF_FILE[kind]]
   return {
     item: kind,
     kind: 'file',
-    section: kind === F.VAT_CERTIFICATE ? 'billing' : null,
+    section: FILE_SECTIONS[kind] ?? null,
     label: labelOf(kind),
     oldValue: isPending ? fileValue(approved, viewer) : null,
     newValue: isPending ? fileValue(change.upload, viewer) : null,

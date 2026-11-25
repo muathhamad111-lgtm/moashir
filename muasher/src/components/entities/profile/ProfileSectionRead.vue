@@ -26,10 +26,7 @@ const display = useProfileFieldDisplay()
 
 <template>
   <dl class="profile-section__grid">
-    <template
-      v-for="field in shownFieldsOf(section.fields, profile.vatRegistered)"
-      :key="field.name"
-    >
+    <template v-for="field in shownFieldsOf(section.fields, profile)" :key="field.name">
       <component
         :is="SPECIAL_CELLS[field.name]"
         v-if="SPECIAL_CELLS[field.name]"

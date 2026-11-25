@@ -9,12 +9,12 @@ function blank(value) {
   return value === null || value === undefined || String(value).trim() === ''
 }
 
-function field(key, requirement, read, { editable = true, dependsOnVat = false } = {}) {
-  return { key, requirement, read, editable, dependsOnVat }
+function field(key, requirement, read, { editable = true, gate = null } = {}) {
+  return { key, requirement, read, editable, gate }
 }
 
 function vatField(key, read, options = {}) {
-  return field(key, REQUIRED, read, { ...options, dependsOnVat: true })
+  return field(key, REQUIRED, read, { ...options, gate: 'vatRegistered' })
 }
 
 export const PROFILE_SECTION_CATALOG = Object.freeze([
@@ -41,7 +41,10 @@ export const PROFILE_SECTION_CATALOG = Object.freeze([
   {
     key: 'governance',
     fields: [
-      field('governance_grade', COMPLETION, (entity) => entity.governanceGrade ?? null),
+      field('has_governance_grade', REQUIRED, (entity) => entity.hasGovernanceGrade ?? null),
+      field('governance_grade', COMPLETION, (entity) => entity.governanceGrade ?? null, {
+        gate: 'hasGovernanceGrade',
+      }),
       field('employees_count', COMPLETION, (entity) => entity.employeesCount ?? null),
       field(
         'annual_beneficiaries_count',
@@ -95,7 +98,7 @@ export function sectionOf(key) {
 }
 
 function isCounted(entry, entity) {
-  return entry.requirement !== OPTIONAL && (!entry.dependsOnVat || entity.vatRegistered === true)
+  return entry.requirement !== OPTIONAL && (!entry.gate || entity[entry.gate] === true)
 }
 
 function hashWith(seed, text) {

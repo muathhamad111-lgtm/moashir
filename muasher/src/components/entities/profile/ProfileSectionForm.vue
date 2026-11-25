@@ -7,11 +7,17 @@ import ProfileFieldCell from './ProfileFieldCell.vue'
 import ProfileFormNotice from './ProfileFormNotice.vue'
 import ProfileSectionFooter from './ProfileSectionFooter.vue'
 import VatCertificateUpload from './VatCertificateUpload.vue'
+import AuthorizationLetterField from './AuthorizationLetterField.vue'
 import { useProfileSectionForm } from '@/composables/useProfileSectionForm'
 import { useProfileFieldDisplay } from '@/composables/useProfileFieldDisplay'
+import { useAuthorizationLetterRule } from '@/composables/useAuthorizationLetterRule'
 import { readPath } from '@/utils/entityProfile/paths'
-import { fieldLabelKey, nextMissingAfter, shownFieldsOf } from '@/utils/entityProfile/sections'
-import { isVatRegisteredAnswer } from '@/utils/entityProfile/billingSchema'
+import {
+  fieldLabelKey,
+  formAnswersOf,
+  nextMissingAfter,
+  shownFieldsOf,
+} from '@/utils/entityProfile/sections'
 import {
   PROFILE_FILE_FIELDS,
   PROFILE_READ_ONLY_FIELDS,
@@ -36,10 +42,14 @@ const { form, status, isDirty, errorFields, submit } = useProfileSectionForm(
   { onSaved: () => emit('saved') },
 )
 
+const letter = useAuthorizationLetterRule({
+  sectionKey: () => props.section.key,
+  values: () => form.values,
+  profile: () => props.profile,
+})
+
 const cityOptions = computed(() => props.cityOptionsFor(form.values.regionId))
-const shownFields = computed(() =>
-  shownFieldsOf(props.section.fields, isVatRegisteredAnswer(form.values.vatRegistered)),
-)
+const shownFields = computed(() => shownFieldsOf(props.section.fields, formAnswersOf(form.values)))
 const blankMissing = computed(() =>
   shownFields.value
     .filter((field) => field.counted && !PROFILE_READ_ONLY_FIELDS.includes(field.name))
@@ -60,6 +70,10 @@ function focusOn(name) {
 function rememberField(event) {
   const name = event.target?.getAttribute?.('name')
   if (name && props.section.fields.some((field) => field.name === name)) lastField.value = name
+}
+
+function save() {
+  if (letter.allowsSave()) submit()
 }
 
 function focusNextMissing() {
@@ -89,7 +103,7 @@ onMounted(() => nextTick(() => focusOn(props.focusField)))
     novalidate
     :aria-busy="status === S.SAVING"
     @focusin="rememberField"
-    @submit.prevent="submit"
+    @submit.prevent="save"
   >
     <button
       v-if="blankMissing.length"
@@ -120,6 +134,11 @@ onMounted(() => nextTick(() => focusOn(props.focusField)))
           :city-options="cityOptions"
         />
       </template>
+      <AuthorizationLetterField
+        v-if="letter.required.value"
+        :attached="letter.attached.value"
+        :error="letter.error.value"
+      />
     </fieldset>
     <ProfileSectionFooter :status="status" :dirty="isDirty" editing>
       <BaseButton variant="ghost" :disabled="status === S.SAVING" @click="emit('cancel')">

@@ -61,7 +61,7 @@ beforeEach(function (): void {
 });
 
 it('creates the entity, its single owner and the consent records and holds it for review', function (): void {
-    $outcome = app(RegisterEntity::class)->handle(registrationData('contact@alnamaa.example.sa'), emailVerificationTokenFor('contact@alnamaa.example.sa'));
+    $outcome = app(RegisterEntity::class)->handle(registrationData('contact@alnamaa.example.sa'), registrationDocuments(), emailVerificationTokenFor('contact@alnamaa.example.sa'));
     $owner = User::query()->where('email', 'contact@alnamaa.example.sa')->firstOrFail();
     $entity = Entity::query()->findOrFail($owner->entity_id);
 
@@ -79,13 +79,13 @@ it('creates the entity, its single owner and the consent records and holds it fo
 it('refuses an address that is already registered and creates nothing', function (): void {
     User::factory()->create(['email' => 'contact@alnamaa.example.sa']);
 
-    expect(fn () => app(RegisterEntity::class)->handle(registrationData('contact@alnamaa.example.sa'), emailVerificationTokenFor('contact@alnamaa.example.sa')))
+    expect(fn () => app(RegisterEntity::class)->handle(registrationData('contact@alnamaa.example.sa'), registrationDocuments(), emailVerificationTokenFor('contact@alnamaa.example.sa')))
         ->toThrow(RegistrationRejected::class)
         ->and(Entity::query()->count())->toBe(0);
 });
 
 it('refuses a registration without a token for its address and creates nothing', function (?string $token): void {
-    expect(fn () => app(RegisterEntity::class)->handle(registrationData('contact@alnamaa.example.sa'), $token))
+    expect(fn () => app(RegisterEntity::class)->handle(registrationData('contact@alnamaa.example.sa'), registrationDocuments(), $token))
         ->toThrow(RegistrationRejected::class)
         ->and(Entity::query()->count())->toBe(0);
 })->with([

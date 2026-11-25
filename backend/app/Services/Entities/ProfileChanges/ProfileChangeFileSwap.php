@@ -7,16 +7,18 @@ namespace App\Services\Entities\ProfileChanges;
 use App\Data\Audit\AuditEntry;
 use App\Data\Entities\ProfileChangeFileSet;
 use App\Enums\Audit\AuditEvent;
+use App\Enums\Entities\EntityDocument;
 use App\Enums\Entities\ProfileChangeFile;
 use App\Models\Entities\Entity;
 use App\Models\Files\StoredFile;
 use App\Services\Audit\AuditRecorder;
+use App\Services\Entities\EntityDocumentAttachments;
 use App\Services\Entities\EntityLogoReleaser;
 use App\Services\Entities\EntityVatCertificateDetacher;
 
 /**
- * Sets an approved pending logo or VAT certificate on the entity, or removes the current one, and releases the file
- * it replaces. The caller saves the entity.
+ * Sets an approved pending logo, VAT certificate, license certificate or authorization letter on the entity, or
+ * removes the current one, and releases the file it replaces. The caller saves the entity.
  */
 final readonly class ProfileChangeFileSwap
 {
@@ -24,6 +26,7 @@ final readonly class ProfileChangeFileSwap
         private EntityLogoReleaser $logos,
         private EntityVatCertificateDetacher $certificates,
         private AuditRecorder $audit,
+        private EntityDocumentAttachments $documents,
     ) {}
 
     public function apply(Entity $entity, ProfileChangeFileSet $files, ProfileChangeFile $file): void
@@ -34,7 +37,20 @@ final readonly class ProfileChangeFileSwap
         match ($file) {
             ProfileChangeFile::Logo => $this->swapLogo($entity, $next),
             ProfileChangeFile::VatCertificate => $this->swapVatCertificate($entity, $next),
+            ProfileChangeFile::LicenseCertificate => $this->swapDocument($entity, EntityDocument::LicenseCertificate, $next),
+            ProfileChangeFile::AuthorizationLetter => $this->swapDocument($entity, EntityDocument::AuthorizationLetter, $next),
         };
+    }
+
+    private function swapDocument(Entity $entity, EntityDocument $document, ?StoredFile $next): void
+    {
+        if ($next instanceof StoredFile) {
+            $this->documents->attach($entity, $document, $next);
+
+            return;
+        }
+
+        $this->documents->detach($entity, $document);
     }
 
     private function swapLogo(Entity $entity, ?StoredFile $next): void

@@ -1,6 +1,8 @@
 export const PROFILE_FIELD_LABELS = Object.freeze({
   logo: { ar: 'شعار الجهة', en: 'Entity logo' },
   vat_certificate: { ar: 'شهادة التسجيل الضريبي', en: 'VAT registration certificate' },
+  license_certificate: { ar: 'شهادة الترخيص', en: 'Licence certificate' },
+  authorization_letter: { ar: 'خطاب التفويض', en: 'Authorization letter' },
   name: { ar: 'اسم الجهة', en: 'Entity name' },
   entity_type: { ar: 'نوع الجهة', en: 'Entity type' },
   development_sector: { ar: 'القطاع التنموي', en: 'Development sector' },
@@ -8,6 +10,7 @@ export const PROFILE_FIELD_LABELS = Object.freeze({
   founding_year: { ar: 'سنة التأسيس', en: 'Founding year' },
   region_id: { ar: 'المنطقة', en: 'Region' },
   city_id: { ar: 'المدينة', en: 'City' },
+  has_governance_grade: { ar: 'وجود درجة الحوكمة', en: 'Has a governance score' },
   governance_grade: { ar: 'درجة الحوكمة', en: 'Governance grade' },
   employees_count: { ar: 'عدد الموظفين', en: 'Number of employees' },
   annual_beneficiaries_count: { ar: 'عدد المستفيدين سنويًا', en: 'Annual beneficiaries' },

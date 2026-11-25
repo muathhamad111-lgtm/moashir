@@ -35,6 +35,7 @@ export function useProfileFieldDisplay() {
     orgSize: (profile) => enumLabel('orgSize', profile.orgSize),
     regionId: (profile) => localizedText(profile.region?.name, locale.value),
     cityId: (profile) => localizedText(profile.city?.name, locale.value),
+    hasGovernanceGrade: (profile) => yesNo(profile.hasGovernanceGrade),
     governanceGrade: (profile) => formatGovernanceGrade(profile.governanceGrade),
     employeesCount: (profile) => count(profile.employeesCount),
     annualBeneficiariesCount: (profile) => count(profile.annualBeneficiariesCount),

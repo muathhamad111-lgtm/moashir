@@ -88,7 +88,7 @@ for (const variant of VARIANTS) {
     ).toBeVisible()
     await capture(page, 'c1-review-queue', testInfo, variant)
     await page.goto(`/finance/transfers/${UNDER_REVIEW}`)
-    await expect(page.locator('.proof-viewer__image')).toBeVisible()
+    await expect(page.locator('.document-viewer__image')).toBeVisible()
     await capture(page, 'c2-review-detail', testInfo, variant)
     await page.locator('.transfer-review__decisions .btn--secondary').click()
     await expect(page.locator('.modal__panel')).toBeVisible()

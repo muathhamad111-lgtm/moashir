@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use App\Enums\Audit\AuditEvent;
+use App\Enums\Entities\EntityDocument;
 use App\Enums\Entities\ProfileChangeStatus;
 use App\Enums\Entities\ProfileSection;
 use App\Enums\Identity\PermissionKey;
@@ -53,6 +54,7 @@ it('puts a section edit into a pending request without touching the approved pro
 it('keeps the authorized person and phone on the owner until approval', function (): void {
     $entity = entityWithOwner();
     $owner = ownerOf($entity);
+    uploadOwnDocument($owner, EntityDocument::AuthorizationLetter)->assertAccepted();
 
     saveSection($entity, ProfileSection::Contact, ['authorized_person_name' => 'نورة بنت سعد القحطاني', 'phone' => '0559876543'])->assertAccepted();
 
@@ -221,6 +223,32 @@ it('refuses items outside the request and splitting coupled fields', function ()
     decideProfileChange($request, ['region_id', 'city_id'])->assertOk();
 
     expect($entity->refresh()->city_id)->toBe($city->id);
+});
+
+it('decides the governance answer and its grade only together', function (): void {
+    $entity = entityWithOwner();
+    saveSection($entity, ProfileSection::Governance, ['has_governance_grade' => false, 'governance_grade' => null])->assertAccepted();
+    $request = pendingProfileChangeOf($entity);
+
+    expect($request->changed_fields)->toBe(['has_governance_grade', 'governance_grade']);
+    decideProfileChange($request, ['has_governance_grade'], PROFILE_CHANGE_REASON)->assertUnprocessable()->assertJsonPath('code', 'profile.change_coupled_items');
+    decideProfileChange($request, ['governance_grade'], PROFILE_CHANGE_REASON)->assertUnprocessable()->assertJsonPath('code', 'profile.change_coupled_items');
+    expect($entity->refresh()->governance_grade)->toBe('82.50');
+
+    decideProfileChange($request, ['has_governance_grade', 'governance_grade'])->assertOk();
+
+    expect($entity->refresh()->has_governance_grade)->toBeFalse()
+        ->and($entity->governance_grade)->toBeNull();
+});
+
+it('keeps the approved governance pair when staff reject the new answer', function (): void {
+    $entity = entityWithOwner();
+    saveSection($entity, ProfileSection::Governance, ['has_governance_grade' => false, 'governance_grade' => null])->assertAccepted();
+
+    decideProfileChange(pendingProfileChangeOf($entity), [], PROFILE_CHANGE_REASON)->assertOk();
+
+    expect($entity->refresh()->has_governance_grade)->toBeTrue()
+        ->and($entity->governance_grade)->toBe('82.50');
 });
 
 it('lets only staff with the approval permission see and decide requests', function (): void {

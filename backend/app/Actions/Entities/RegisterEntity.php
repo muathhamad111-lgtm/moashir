@@ -7,23 +7,28 @@ namespace App\Actions\Entities;
 use App\Actions\Identity\CompleteSignIn;
 use App\Data\Audit\AuditEntry;
 use App\Data\Entities\EntityRegistrationData;
+use App\Data\Entities\RegistrationDocuments;
 use App\Data\Identity\LoginOutcome;
 use App\Enums\Audit\AuditEvent;
 use App\Enums\Identity\SignInMethod;
 use App\Exceptions\Entities\RegistrationRejected;
 use App\Models\Entities\Entity;
+use App\Models\Files\StoredFile;
 use App\Models\Identity\User;
 use App\Services\Audit\AuditRecorder;
 use App\Services\Entities\EntityAccountCreator;
+use App\Services\Entities\EntityRegistrationDocuments;
 use App\Services\Entities\RegistrationEmailTokens;
 use App\Support\Entities\EntityUniqueViolation;
 use Illuminate\Database\UniqueConstraintViolationException;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
+use Throwable;
 
 /**
- * Registers an entity whose official e-mail was already proven on the registration form, then
- * confirms it exactly like a verified registration: held for staff review, or activated and signed in.
+ * Registers an entity whose official e-mail was already proven on the registration form, with its license
+ * certificate and authorization letter, then confirms it exactly like a verified registration: held for staff
+ * review, or activated and signed in. The documents are scanned before the transaction and removed if it fails.
  */
 final readonly class RegisterEntity
 {
@@ -33,16 +38,37 @@ final readonly class RegisterEntity
         private VerifyEntityRegistration $verifyRegistration,
         private AuditRecorder $audit,
         private CompleteSignIn $completeSignIn,
+        private EntityRegistrationDocuments $documents,
     ) {}
 
-    public function handle(EntityRegistrationData $data, ?string $emailVerificationToken): LoginOutcome
+    public function handle(EntityRegistrationData $data, RegistrationDocuments $documents, ?string $emailVerificationToken): LoginOutcome
+    {
+        $accepted = $this->documents->accept($documents);
+
+        try {
+            $owner = $this->registerWith($data, $accepted, $emailVerificationToken);
+        } catch (Throwable $failure) {
+            $this->documents->discard($accepted);
+
+            throw $failure;
+        }
+
+        return $this->outcomeFor($owner->refresh());
+    }
+
+    /**
+     * @param  array<string, StoredFile>  $accepted
+     */
+    private function registerWith(EntityRegistrationData $data, array $accepted, ?string $emailVerificationToken): User
     {
         try {
-            $owner = DB::transaction(function () use ($data, $emailVerificationToken): User {
+            return DB::transaction(function () use ($data, $accepted, $emailVerificationToken): User {
                 $this->emailTokens->consume($emailVerificationToken, $data->officialEmail);
                 $this->assertAddressFree($data);
 
-                $owner = $this->register($data)->owner()->firstOrFail();
+                $entity = $this->register($data);
+                $owner = $entity->owner()->firstOrFail();
+                $this->documents->attachTo($entity, $owner, $accepted);
                 $this->verifyRegistration->handle($owner);
 
                 return $owner;
@@ -52,8 +78,6 @@ final readonly class RegisterEntity
 
             throw RegistrationRejected::emailTaken();
         }
-
-        return $this->outcomeFor($owner->refresh());
     }
 
     private function assertAddressFree(EntityRegistrationData $data): void

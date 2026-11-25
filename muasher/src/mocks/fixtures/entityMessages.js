@@ -166,6 +166,22 @@ export const entityMessages = {
     ar: 'اختر «نعم» في سؤال التسجيل في ضريبة القيمة المضافة واحفظ بيانات الفوترة أولًا، ثم ارفع شهادة التسجيل الضريبي.',
     en: 'Answer «Yes» to the VAT registration question and save the billing details first, then upload the VAT registration certificate.',
   },
+  'field.document_type': {
+    ar: 'يجب أن تكون الوثيقة ملف PDF.',
+    en: 'The document must be a PDF file.',
+  },
+  'field.document_size': {
+    ar: 'يجب ألا يتجاوز حجم الوثيقة :max ميجابايت.',
+    en: 'The document must not be larger than :max MB.',
+  },
+  'entity.document_missing': {
+    ar: 'هذه الوثيقة غير مرفقة لهذه الجهة.',
+    en: 'This document is not attached for this entity.',
+  },
+  'profile.change_authorization_letter_required': {
+    ar: 'تغيير الشخص المفوّض يحتاج خطاب تفويض جديدًا في الطلب نفسه، ويُعتمدان معًا أو يُرفضان معًا.',
+    en: 'A new authorized person needs a new authorization letter in the same request, and the two are approved or rejected together.',
+  },
   'entity.vat_certificate_missing': {
     ar: 'لا توجد شهادة تسجيل ضريبي مرفوعة لهذه الجهة.',
     en: 'This entity has no VAT registration certificate uploaded.',

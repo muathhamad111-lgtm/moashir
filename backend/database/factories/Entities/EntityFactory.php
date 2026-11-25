@@ -46,6 +46,7 @@ final class EntityFactory extends Factory
             'region_id' => Region::factory(),
             'city_id' => static fn (array $attributes): int => City::factory()->create(['region_id' => $attributes['region_id']])->id,
             'governance_grade' => '82.50',
+            'has_governance_grade' => static fn (array $attributes): ?bool => $attributes['governance_grade'] === null ? null : true,
             'employees_count' => fake()->numberBetween(5, 200),
             'annual_beneficiaries_count' => fake()->numberBetween(100, 40_000),
             'has_strategic_plan' => true,
@@ -95,7 +96,12 @@ final class EntityFactory extends Factory
 
     public function incompleteProfile(): self
     {
-        return $this->state(['governance_grade' => null, 'employees_count' => null, 'annual_beneficiaries_count' => null, 'profile_completed_at' => null]);
+        return $this->state(['governance_grade' => null, 'has_governance_grade' => null, 'employees_count' => null, 'annual_beneficiaries_count' => null, 'profile_completed_at' => null]);
+    }
+
+    public function withoutGovernanceGrade(): self
+    {
+        return $this->state(['governance_grade' => null, 'has_governance_grade' => false]);
     }
 
     public function withoutBilling(): self

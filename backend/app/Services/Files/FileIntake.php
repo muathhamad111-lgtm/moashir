@@ -26,7 +26,10 @@ final readonly class FileIntake
         private AuditRecorder $audit,
     ) {}
 
-    public function accept(UploadedFile $upload, StoredFilePurpose $purpose, User $uploader, string $field): StoredFile
+    /**
+     * The uploader is null only for a guest's upload, such as the documents of an entity registration.
+     */
+    public function accept(UploadedFile $upload, StoredFilePurpose $purpose, ?User $uploader, string $field): StoredFile
     {
         $candidate = $this->candidateOf($upload);
         $this->contentCheck->assertAcceptable($candidate, $purpose->uploadTypes(), $field);
@@ -62,7 +65,7 @@ final readonly class FileIntake
         );
     }
 
-    private function store(UploadedFile $upload, StoredFilePurpose $purpose, User $uploader, UploadCandidate $candidate): StoredFile
+    private function store(UploadedFile $upload, StoredFilePurpose $purpose, ?User $uploader, UploadCandidate $candidate): StoredFile
     {
         $path = $this->disk->newPath($purpose, $candidate->extension);
         $this->disk->put($path, $candidate->contents);
@@ -79,7 +82,7 @@ final readonly class FileIntake
             'visibility' => $purpose->visibility(),
             'content_class' => $purpose->contentClass(),
             'malware_scan_status' => MalwareScanStatus::Pending,
-            'uploaded_by_user_id' => $uploader->id,
+            'uploaded_by_user_id' => $uploader?->id,
         ]);
 
         $this->audit->record(new AuditEntry(AuditEvent::FileUploaded, $file, [], [

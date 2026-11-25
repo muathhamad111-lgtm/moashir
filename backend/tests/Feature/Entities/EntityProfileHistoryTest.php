@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use App\Enums\Entities\EntityDocument;
 use App\Enums\Entities\EntityProfileField;
 use App\Enums\Entities\ProfileSection;
 use App\Enums\Identity\RoleKey;
@@ -44,6 +45,7 @@ function unchangedProfileOf(Entity $entity, array $overrides = []): array
         'founding_year' => $entity->founding_year,
         'region_id' => $entity->region_id,
         'city_id' => $entity->city_id,
+        'has_governance_grade' => $entity->has_governance_grade,
         'governance_grade' => $entity->governance_grade,
         'employees_count' => $entity->employees_count,
         'annual_beneficiaries_count' => $entity->annual_beneficiaries_count,
@@ -316,6 +318,7 @@ it('filters both histories by section', function (): void {
     $newCity = regionWithCity();
     editOwnProfile($entity, ['employees_count' => 3]);
     editOwnProfile($entity, ['region_id' => $newCity->region_id, 'city_id' => $newCity->id], ProfileSection::Classification);
+    uploadOwnDocument(ownerOf($entity), EntityDocument::AuthorizationLetter)->assertAccepted();
     editOwnProfile($entity, ['authorized_person_name' => HISTORY_AUTHORIZED_PERSON, 'phone' => '0551234567', 'marketing_consent' => true], ProfileSection::Contact);
 
     $fieldsOf = static fn (array $items): array => collect($items)->pluck('field')->sort()->values()->all();

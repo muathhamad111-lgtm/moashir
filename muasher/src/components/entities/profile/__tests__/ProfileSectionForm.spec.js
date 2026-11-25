@@ -15,7 +15,8 @@ vi.mock('@/services/entitiesService', () => ({
 function profileWith(overrides = {}) {
   return toOwnEntity({
     name: { ar: 'مؤسسة نماء للتنمية', en: 'Namaa Development Foundation' },
-    governanceGrade: null,
+    hasGovernanceGrade: true,
+    governanceGrade: '80.00',
     employeesCount: null,
     annualBeneficiariesCount: null,
     hasStrategicPlan: true,
@@ -25,6 +26,7 @@ function profileWith(overrides = {}) {
         key: 'governance',
         revision: 'r-1',
         fields: [
+          { key: 'has_governance_grade', requirement: 'required' },
           { key: 'governance_grade', requirement: 'completion' },
           { key: 'employees_count', requirement: 'completion' },
           { key: 'annual_beneficiaries_count', requirement: 'completion' },
@@ -40,8 +42,8 @@ function profileWith(overrides = {}) {
         {
           key: 'governance',
           state: 'incomplete',
-          missingCount: 3,
-          missingFields: ['governance_grade', 'employees_count', 'annual_beneficiaries_count'],
+          missingCount: 2,
+          missingFields: ['employees_count', 'annual_beneficiaries_count'],
         },
       ],
     },
@@ -105,12 +107,28 @@ describe('ProfileSectionForm', () => {
     await submit(wrapper)
     expect(entitiesService.saveProfileSection).toHaveBeenCalledWith('governance', {
       baseRevision: 'r-1',
+      hasGovernanceGrade: true,
       governanceGrade: '82.50',
       employeesCount: null,
       annualBeneficiariesCount: null,
       hasStrategicPlan: true,
     })
     expect(wrapper.emitted('saved')).toHaveLength(1)
+    wrapper.unmount()
+  })
+
+  it('hides the governance grade after a «no» and sends it as null', async () => {
+    entitiesService.saveProfileSection.mockResolvedValue({ data: profileWith() })
+    const { wrapper } = await factory()
+    await wrapper.find('[name="governanceGrade"]').setValue('120')
+    await wrapper.find('input[name="hasGovernanceGrade"][value="no"]').setValue(true)
+    await flushPromises()
+    expect(wrapper.find('[name="governanceGrade"]').exists()).toBe(false)
+    await submit(wrapper)
+    expect(entitiesService.saveProfileSection).toHaveBeenCalledWith(
+      'governance',
+      expect.objectContaining({ hasGovernanceGrade: false, governanceGrade: null }),
+    )
     wrapper.unmount()
   })
 

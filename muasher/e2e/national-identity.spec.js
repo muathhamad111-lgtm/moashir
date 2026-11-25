@@ -257,7 +257,7 @@ test('a finance reviewer opens a transfer receipt as uploaded, with no national 
   await seed(page, testInfo, { id: 22, roles: ['finance_officer'] })
   await page.goto('/finance/transfers/3f0c9a52-6d1e-4b7a-9c21-5a1e00000022')
 
-  await expect(page.locator('.proof-viewer__image')).toBeVisible()
+  await expect(page.locator('.document-viewer__image')).toBeVisible()
   await expect(page.getByTestId('account-completion')).toHaveCount(0)
   await expect(page.getByTestId('file-access-refusal')).toHaveCount(0)
 })

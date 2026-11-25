@@ -1,6 +1,7 @@
 import { apiClient } from '@/api/client'
 import { CODE_REQUEST_REJECTIONS, SIGN_IN_REJECTIONS } from '@/constants/signIn'
 import { payloadShape } from '@/utils/payloadShape'
+import { toFormData } from '@/utils/formData'
 import { serviceRequest } from './serviceRequest'
 import { toLoginOutcome, toMfaEnrollment, toSessionUser } from './mappers/session'
 
@@ -15,11 +16,11 @@ function mapData(envelope, mapper) {
   return { ...envelope, data: mapper(envelope?.data ?? {}) }
 }
 
-function postOutcome(action, path, body, { expectedStatuses = [], ...context } = {}) {
+function postOutcome(action, path, body, { expectedStatuses = [], shape = body, ...context } = {}) {
   return serviceRequest(
     action,
     () => apiClient.post(path, body, AUTH_FLOW_CONFIG),
-    { entity: 'session', payloadShape: payloadShape(body), ...context },
+    { entity: 'session', payloadShape: payloadShape(shape), ...context },
     { expectedStatuses },
   ).then((envelope) => mapData(envelope, toLoginOutcome))
 }
@@ -55,7 +56,8 @@ export const authService = {
   },
 
   register(payload) {
-    return postOutcome('auth.register', '/auth/register', payload, {
+    return postOutcome('auth.register', '/auth/register', toFormData(payload), {
+      shape: payload,
       entity: 'entity',
       expectedStatuses: AUTH_REJECTIONS,
     })

@@ -5,6 +5,10 @@ import { findFile } from './finance/financeState'
 import { signedDownloadOf } from './finance/signedFiles'
 import { entityLevelFields, hasOpenAccreditedRequest } from './entityLevels'
 import { lastAccreditedAssessmentOf } from './entityLastAssessment'
+import { entityDocumentsOf } from './entityDocuments'
+import { sessionCan } from './sessionPermissions'
+
+const MANAGE_ENTITIES = 'entities.manage'
 
 export const ENTITY_ACCESS = { FULL: 'full', CONTACT: 'contact', NONE: 'none' }
 
@@ -34,6 +38,7 @@ export function entityProfileOf(entity) {
     foundingYear: entity.foundingYear,
     region: place(findRegion(entity.regionId)),
     city: place(findCity(entity.cityId)),
+    hasGovernanceGrade: entity.hasGovernanceGrade ?? null,
     governanceGrade: entity.governanceGrade,
     employeesCount: entity.employeesCount,
     annualBeneficiariesCount: entity.annualBeneficiariesCount,
@@ -112,6 +117,7 @@ export function ownEntityResource(
     marketingConsentAt: entity.marketingConsentAt,
     pendingEmailChange: pendingChange(awaitingChange),
     pendingProfileChange,
+    documents: entityDocumentsOf(entity),
     logo: entity.logo ? { ...entity.logo } : null,
     canEdit,
     profileSections: profileSectionsOf(entity),
@@ -139,6 +145,7 @@ function staffEntityResource(entity, viewer) {
     ...entityContact(entity),
     ...entityBilling(entity),
     logo: staffLogoOf(entity, viewer),
+    ...(sessionCan(MANAGE_ENTITIES) ? { documents: entityDocumentsOf(entity) } : {}),
     marketingConsent: entity.marketingConsentAt !== null,
     deactivatedAt: entity.deactivatedAt,
     deactivationReason: entity.deactivationReason,

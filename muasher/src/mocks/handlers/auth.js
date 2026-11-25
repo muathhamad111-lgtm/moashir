@@ -26,6 +26,8 @@ import {
   standingOf,
 } from '../stores/entityRegistration'
 import { entityRoute, readJson } from '../stores/entityRejection'
+import { readRegistration } from '../stores/registrationForm'
+import { attachRegistrationDocuments } from '../stores/entityDocuments'
 import { findEntity } from '../stores/entitiesStore'
 import { accountOfIdentifier, parseIdentifier } from '../stores/signInIdentifiers'
 import {
@@ -167,7 +169,7 @@ export const authHandlers = [
   http.post(
     '/api/v1/auth/register',
     entityRoute(async ({ request }) => {
-      const body = await readJson(request)
+      const body = await readRegistration(request)
       validateRegistration(body)
       const nationalIdRequired = nationalIdRequiredFor(['entity'])
       if (nationalIdRequired && !isValidNationalId(body.nationalId))
@@ -179,6 +181,7 @@ export const authHandlers = [
       if (!created)
         throw authReject.validation({ officialEmail: [authField('registration.email_taken')] })
       consumeEmailVerificationToken(body.emailVerificationToken)
+      await attachRegistrationDocuments(created, body)
       completeVerification(created)
       if (nationalIdRequired)
         assignNationalId(created.id, body.nationalId, {

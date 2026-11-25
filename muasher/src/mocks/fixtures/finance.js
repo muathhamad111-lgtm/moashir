@@ -1,5 +1,6 @@
 import { FIXTURE_ENTITY_LOGO_FILE } from './entityLogos'
 import { FIXTURE_VAT_CERTIFICATE_FILE } from './entityBilling'
+import { entityDocumentFilesSeed } from './entityDocuments'
 export const FINANCE_YEAR = 2026
 
 export const financeSettingsSeed = {
@@ -384,6 +385,7 @@ export function storedFilesSeed() {
     },
     { ...FIXTURE_ENTITY_LOGO_FILE },
     { ...FIXTURE_VAT_CERTIFICATE_FILE },
+    ...entityDocumentFilesSeed(),
   ]
 }
 

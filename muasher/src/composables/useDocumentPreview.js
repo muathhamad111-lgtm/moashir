@@ -23,19 +23,39 @@ function revoke(url) {
   if (url && typeof URL.revokeObjectURL === 'function') URL.revokeObjectURL(url)
 }
 
-export function useProofPreview(requestLink) {
+function useZoom() {
+  const zoom = ref(PROOF_ZOOM.DEFAULT)
+  return {
+    zoom,
+    canZoomIn: computed(() => zoom.value < PROOF_ZOOM.MAX),
+    canZoomOut: computed(() => zoom.value > PROOF_ZOOM.MIN),
+    zoomIn: () => (zoom.value = Math.min(PROOF_ZOOM.MAX, zoom.value + PROOF_ZOOM.STEP)),
+    zoomOut: () => (zoom.value = Math.max(PROOF_ZOOM.MIN, zoom.value - PROOF_ZOOM.STEP)),
+  }
+}
+
+function useLoadedFile() {
+  const objectUrl = ref('')
+  const file = ref(null)
+
+  function keep(loaded) {
+    file.value = loaded
+    revoke(objectUrl.value)
+    objectUrl.value = objectUrlOf(loaded.blob)
+  }
+
+  onBeforeUnmount(() => revoke(objectUrl.value))
+  return { objectUrl, file, keep }
+}
+
+/** Fetches a signed file for an inline preview, and downloads it, from the link `requestLink` issues. */
+export function useDocumentPreview(requestLink) {
   const i18n = useI18n()
   const toast = useToast()
   const completion = useAccountCompletionStore()
   const state = ref(PREVIEW_STATES.IDLE)
-  const objectUrl = ref('')
-  const fileName = ref('')
-  const zoom = ref(PROOF_ZOOM.DEFAULT)
   const downloading = ref(false)
-  let blob = null
-
-  const canZoomIn = computed(() => zoom.value < PROOF_ZOOM.MAX)
-  const canZoomOut = computed(() => zoom.value > PROOF_ZOOM.MIN)
+  const loaded = useLoadedFile()
 
   async function fetchFile(intent) {
     const { data: link } = await requestLink()
@@ -46,11 +66,7 @@ export function useProofPreview(requestLink) {
     if (state.value === PREVIEW_STATES.LOADING) return
     state.value = PREVIEW_STATES.LOADING
     try {
-      const file = await fetchFile(FILE_INTENTS.VIEW)
-      blob = file.blob
-      fileName.value = file.fileName
-      revoke(objectUrl.value)
-      objectUrl.value = objectUrlOf(file.blob)
+      loaded.keep(await fetchFile(FILE_INTENTS.VIEW))
       state.value = PREVIEW_STATES.READY
     } catch (error) {
       completion.refuseFileAccess(error)
@@ -62,9 +78,7 @@ export function useProofPreview(requestLink) {
     if (downloading.value) return
     downloading.value = true
     try {
-      const file = blob
-        ? { blob, fileName: fileName.value }
-        : await fetchFile(FILE_INTENTS.DOWNLOAD)
+      const file = loaded.file.value ?? (await fetchFile(FILE_INTENTS.DOWNLOAD))
       downloadBlob(file.blob, file.fileName)
     } catch (error) {
       if (!completion.refuseFileAccess(error))
@@ -74,26 +88,5 @@ export function useProofPreview(requestLink) {
     }
   }
 
-  function zoomIn() {
-    zoom.value = Math.min(PROOF_ZOOM.MAX, zoom.value + PROOF_ZOOM.STEP)
-  }
-
-  function zoomOut() {
-    zoom.value = Math.max(PROOF_ZOOM.MIN, zoom.value - PROOF_ZOOM.STEP)
-  }
-
-  onBeforeUnmount(() => revoke(objectUrl.value))
-
-  return {
-    state,
-    objectUrl,
-    zoom,
-    downloading,
-    canZoomIn,
-    canZoomOut,
-    load,
-    download,
-    zoomIn,
-    zoomOut,
-  }
+  return { state, objectUrl: loaded.objectUrl, downloading, load, download, ...useZoom() }
 }

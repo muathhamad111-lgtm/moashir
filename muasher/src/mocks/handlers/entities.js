@@ -26,6 +26,12 @@ import { applyUnifiedNumber } from '../stores/entityUnifiedNumber'
 import { acceptEntityLogo } from '../stores/entityLogo'
 import { acceptVatCertificate, vatCertificateFileOf } from '../stores/entityBilling'
 import {
+  acceptEntityDocument,
+  changeKindOf,
+  documentKeyOf,
+  entityDocumentFileOf,
+} from '../stores/entityDocuments'
+import {
   mayHoldVatCertificate,
   proposeFile,
   proposeFileRemoval,
@@ -135,6 +141,42 @@ export const entitiesHandlers = [
       const user = ownEntityActor(P.PROFILE_VIEW)
       const file = vatCertificateFileOf(ownEntityOf(user), findFile)
       return envelope(signedDownloadOf(user, file))
+    }),
+  ),
+
+  http.post(
+    '/api/v1/entities/me/documents/:document',
+    entityRoute(async ({ params, request }) => {
+      const key = documentKeyOf(params.document, { uploadable: true })
+      const { user, entity } = ownEditableEntity()
+      const form = await request.formData()
+      proposeFile(
+        entity,
+        changeKindOf(key),
+        await acceptEntityDocument(key, form.get('file')),
+        user,
+      )
+      return envelope(ownResource(entity), {}, { status: ACCEPTED })
+    }),
+  ),
+
+  http.post(
+    '/api/v1/entities/me/documents/:document/download',
+    entityRoute(({ params }) => {
+      const user = ownEntityActor(P.PROFILE_VIEW)
+      const file = entityDocumentFileOf(ownEntityOf(user), documentKeyOf(params.document))
+      return envelope(signedDownloadOf(user, file))
+    }),
+  ),
+
+  http.post(
+    '/api/v1/entities/:id/documents/:document/download',
+    entityRoute(({ params }) => {
+      const user = actorWith(P.MANAGE)
+      const entity = viewableEntity(user, params.id)
+      return envelope(
+        signedDownloadOf(user, entityDocumentFileOf(entity, documentKeyOf(params.document))),
+      )
     }),
   ),
 

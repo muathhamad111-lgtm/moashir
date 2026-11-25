@@ -34,6 +34,7 @@ final class StaffEntityResource extends JsonResource
             ...EntityPresenter::contact($entity),
             ...EntityPresenter::billing($entity, $request),
             'billing_complete' => $entity->hasCompleteBilling(),
+            'documents' => $this->when($this->showsDocuments($entity, $request), fn (): array => EntityPresenter::documents($entity, $request)),
             'marketing_consent' => $entity->marketing_consent_at !== null,
             'approved_at' => $entity->approved_at?->toIso8601String(),
             'rejected_at' => $entity->rejected_at?->toIso8601String(),
@@ -47,5 +48,13 @@ final class StaffEntityResource extends JsonResource
             'deletion_reason' => $entity->deletion_reason,
             'restored_at' => $entity->restored_at?->toIso8601String(),
         ];
+    }
+
+    /**
+     * The documents belong to the entity's record only, never to the list, and only to the staff allowed to read them.
+     */
+    private function showsDocuments(Entity $entity, Request $request): bool
+    {
+        return $entity->relationLoaded('licenseCertificate') && $request->user()?->can('viewDocuments', $entity) === true;
     }
 }

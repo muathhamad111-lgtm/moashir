@@ -12,6 +12,7 @@ export function toReviewEntity(raw) {
     foundingYear: raw.foundingYear ?? null,
     region: toPlace(raw.region),
     city: toPlace(raw.city),
+    hasGovernanceGrade: raw.hasGovernanceGrade ?? null,
     governanceGrade: raw.governanceGrade ?? null,
     employeesCount: raw.employeesCount ?? null,
     annualBeneficiariesCount: raw.annualBeneficiariesCount ?? null,

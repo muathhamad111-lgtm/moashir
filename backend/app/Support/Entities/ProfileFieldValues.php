@@ -31,6 +31,7 @@ final readonly class ProfileFieldValues
             ProfileSectionField::OrgSize => $this->entity->org_size->value,
             ProfileSectionField::Region => $this->entity->region_id,
             ProfileSectionField::City => $this->entity->city_id,
+            ProfileSectionField::HasGovernanceGrade => $this->entity->has_governance_grade,
             ProfileSectionField::GovernanceGrade => $this->entity->governance_grade,
             ProfileSectionField::EmployeesCount => $this->entity->employees_count,
             ProfileSectionField::AnnualBeneficiariesCount => $this->entity->annual_beneficiaries_count,
@@ -55,7 +56,9 @@ final readonly class ProfileFieldValues
 
     public function isCounted(ProfileSectionField $field): bool
     {
-        return $field->isCounted() && (! $field->dependsOnVatRegistration() || $this->entity->isVatRegistered());
+        $gate = $field->gate();
+
+        return $field->isCounted() && (! $gate instanceof ProfileSectionField || $this->valueOf($gate) === true);
     }
 
     /**

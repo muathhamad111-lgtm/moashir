@@ -24,6 +24,8 @@ const REGISTRATION_DEFAULTS = {
   termsAccepted: false,
   hasStrategicPlan: '',
   licenseNumber: '',
+  licenseCertificate: null,
+  authorizationLetter: null,
   foundedOn: '',
 }
 

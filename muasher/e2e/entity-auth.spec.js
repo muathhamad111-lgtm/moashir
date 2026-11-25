@@ -60,6 +60,7 @@ test('register asks for the entity first, then the authorized person and sign-in
     'entityType',
     'unifiedNumber',
     'licenseNumber',
+    'licenseCertificate',
     'name.ar',
     'name.en',
     'regionId',
@@ -68,9 +69,15 @@ test('register asks for the entity first, then the authorized person and sign-in
     'orgSize',
     'foundedOn',
     'employeesCount',
-    'governanceGrade',
     'annualBeneficiariesCount',
+    'hasGovernanceGrade',
   ])
+  const grade = page.locator('[name="governanceGrade"]')
+  await expect(grade).toHaveCount(0)
+  await page.locator('input[name="hasGovernanceGrade"][value="yes"]').check()
+  await expect(grade).toBeVisible()
+  await page.locator('input[name="hasGovernanceGrade"][value="no"]').check()
+  await expect(grade).toHaveCount(0)
   await expect(page.locator('.entity-register__step .field__hint')).toHaveCount(0)
   await expect(page.locator('[name="officialEmail"]')).toHaveCount(0)
 

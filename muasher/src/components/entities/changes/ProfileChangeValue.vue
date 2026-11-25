@@ -2,18 +2,21 @@
 import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useProfileChangeFormat } from '@/composables/useProfileChangeFormat'
+import { localizedText } from '@/utils/localizedText'
+import ProfileChangeFileLink from './ProfileChangeFileLink.vue'
 
 const props = defineProps({
   change: { type: Object, required: true },
   side: { type: String, required: true, validator: (value) => ['old', 'new'].includes(value) },
 })
 
-const { t } = useI18n()
+const { t, locale } = useI18n()
 const { valueLabel } = useProfileChangeFormat()
 
 const value = computed(() => (props.side === 'old' ? props.change.oldValue : props.change.newValue))
 const isFile = computed(() => props.change.kind === 'file')
 const removesFile = computed(() => isFile.value && props.side === 'new' && props.change.removes)
+const label = computed(() => localizedText(props.change.label, locale.value))
 </script>
 
 <template>
@@ -24,9 +27,7 @@ const removesFile = computed(() => isFile.value && props.side === 'new' && props
     {{ t('entities.profileChanges.review.noFile') }}
   </span>
   <span v-else-if="isFile" class="change-value">
-    <a v-if="value.url" :href="value.url" target="_blank" rel="noopener" class="change-value__file">
-      {{ value.name || t('entities.profileChanges.review.openFile') }}
-    </a>
+    <ProfileChangeFileLink v-if="value.url" :file="value" :label="label" />
     <span v-else class="change-value--empty">{{
       t('entities.profileChanges.review.scanPending')
     }}</span>

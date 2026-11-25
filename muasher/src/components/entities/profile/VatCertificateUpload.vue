@@ -5,7 +5,7 @@ import BaseFileUpload from '@/components/form/BaseFileUpload.vue'
 import BaseButton from '@/components/ui/BaseButton.vue'
 import { useVatCertificate } from '@/composables/useVatCertificate'
 import { fieldLabelKey } from '@/utils/entityProfile/sections'
-import { VAT_CERTIFICATE_RULES } from '@/constants/entityProfile'
+import { ENTITY_DOCUMENT_RULES } from '@/constants/entityDocuments'
 
 defineProps({
   field: { type: Object, required: true },
@@ -19,7 +19,7 @@ const files = computed(() =>
     : [],
 )
 const hint = computed(() =>
-  t('portal.profile.billing.certificate.hint', { max: VAT_CERTIFICATE_RULES.maxMb }),
+  t('portal.profile.billing.certificate.hint', { max: ENTITY_DOCUMENT_RULES.maxMb }),
 )
 </script>
 
@@ -29,7 +29,7 @@ const hint = computed(() =>
       :files="files"
       :label="t(fieldLabelKey(field.name))"
       :name="field.name"
-      :accept="VAT_CERTIFICATE_RULES.accept"
+      :accept="ENTITY_DOCUMENT_RULES.accept"
       :hint="hint"
       :error="vat.error.value"
       :disabled="vat.busy.value || !vat.canUpload.value"

@@ -72,7 +72,7 @@ describe('entity billing mock (row 49)', () => {
       vat_registered: true,
       vat_number: '300060010000003',
       billing_complete: true,
-      profile_completion: { percent: 100, counted: 24 },
+      profile_completion: { percent: 100, counted: 25 },
     })
     expect(data.vat_certificate.name).toMatch(/\.pdf$/)
   })

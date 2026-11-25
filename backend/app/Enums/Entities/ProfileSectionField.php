@@ -16,6 +16,7 @@ enum ProfileSectionField: string
     case OrgSize = 'org_size';
     case Region = 'region_id';
     case City = 'city_id';
+    case HasGovernanceGrade = 'has_governance_grade';
     case GovernanceGrade = 'governance_grade';
     case EmployeesCount = 'employees_count';
     case AnnualBeneficiariesCount = 'annual_beneficiaries_count';
@@ -41,7 +42,7 @@ enum ProfileSectionField: string
         return match ($this) {
             self::NameAr, self::NameEn, self::UnifiedNumber, self::LicenseNumber, self::FoundedOn => ProfileSection::Identity,
             self::EntityType, self::DevelopmentSector, self::OrgSize, self::Region, self::City => ProfileSection::Classification,
-            self::GovernanceGrade, self::EmployeesCount, self::AnnualBeneficiariesCount, self::HasStrategicPlan => ProfileSection::Governance,
+            self::HasGovernanceGrade, self::GovernanceGrade, self::EmployeesCount, self::AnnualBeneficiariesCount, self::HasStrategicPlan => ProfileSection::Governance,
             self::OfficialEmail, self::AuthorizedPersonName, self::Phone, self::WebsiteUrl, self::MarketingConsent => ProfileSection::Contact,
             self::AddressBuildingNumber, self::AddressStreet, self::AddressDistrict, self::AddressCity, self::AddressPostalCode,
             self::AddressAdditionalNumber, self::AddressShortCode, self::VatRegistered, self::VatNumber, self::VatCertificate => ProfileSection::Billing,
@@ -52,9 +53,9 @@ enum ProfileSectionField: string
     {
         return match ($this) {
             self::NameAr, self::UnifiedNumber, self::EntityType, self::DevelopmentSector, self::OrgSize, self::Region, self::City,
-            self::OfficialEmail, self::AuthorizedPersonName, self::AddressBuildingNumber, self::AddressStreet, self::AddressDistrict,
-            self::AddressCity, self::AddressPostalCode, self::AddressAdditionalNumber, self::VatRegistered, self::VatNumber,
-            self::VatCertificate => ProfileFieldRequirement::Required,
+            self::HasGovernanceGrade, self::OfficialEmail, self::AuthorizedPersonName, self::AddressBuildingNumber,
+            self::AddressStreet, self::AddressDistrict, self::AddressCity, self::AddressPostalCode, self::AddressAdditionalNumber,
+            self::VatRegistered, self::VatNumber, self::VatCertificate => ProfileFieldRequirement::Required,
             self::LicenseNumber, self::FoundedOn, self::GovernanceGrade, self::EmployeesCount, self::AnnualBeneficiariesCount,
             self::HasStrategicPlan => ProfileFieldRequirement::Completion,
             self::NameEn, self::Phone, self::WebsiteUrl, self::MarketingConsent, self::AddressShortCode => ProfileFieldRequirement::Optional,
@@ -71,9 +72,16 @@ enum ProfileSectionField: string
         return $this !== self::OfficialEmail && $this !== self::VatCertificate;
     }
 
-    public function dependsOnVatRegistration(): bool
+    /**
+     * The yes/no answer this field depends on: it only counts, and only shows, when that answer is yes.
+     */
+    public function gate(): ?self
     {
-        return $this === self::VatNumber || $this === self::VatCertificate;
+        return match ($this) {
+            self::VatNumber, self::VatCertificate => self::VatRegistered,
+            self::GovernanceGrade => self::HasGovernanceGrade,
+            default => null,
+        };
     }
 
     public function labelKey(): string

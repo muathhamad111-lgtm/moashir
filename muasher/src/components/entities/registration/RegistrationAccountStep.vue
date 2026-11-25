@@ -6,6 +6,7 @@ import PasswordPolicyHints from '@/components/auth/PasswordPolicyHints.vue'
 import TermsConsentFields from '@/components/entities/form/TermsConsentFields.vue'
 import RegistrationEmailField from '@/components/entities/registration/RegistrationEmailField.vue'
 import NationalIdField from '@/components/identity/NationalIdField.vue'
+import RegistrationDocumentField from './RegistrationDocumentField.vue'
 
 defineProps({
   nationalIdRequired: { type: Boolean, default: false },
@@ -23,6 +24,10 @@ const values = useFormValues()
         :label="t('entities.fields.authorizedPersonName')"
         autocomplete="name"
         required
+      />
+      <RegistrationDocumentField
+        name="authorizationLetter"
+        :label="t('entities.documents.kinds.authorizationLetter')"
       />
       <NationalIdField v-if="nationalIdRequired" />
       <FieldInput

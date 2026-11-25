@@ -27,7 +27,6 @@
 @use 'components/page-actions';
 @use 'components/phone-nav-drawer';
 @use 'components/data-table';
-@use 'components/column-manager';
 @use 'components/data-card';
 @use 'components/stats-card';
 @use 'components/toolbar';
@@ -229,7 +228,7 @@
 @use 'components/transfer-review';
 @use 'components/transfer-billing';
 @use 'components/linked-request';
-@use 'components/proof-viewer';
+@use 'components/document-viewer';
 @use 'components/method-choice';
 @use 'components/transfer-panel';
 @use 'components/proof-upload';
@@ -263,6 +262,7 @@
 @use 'components/entity-details';
 @use 'components/email-change';
 @use 'components/entity-deletion';
+@use 'components/entity-documents';
 @use 'components/open-requests';
 @use 'components/entities-admin';
 @use 'components/entity-record-layout';

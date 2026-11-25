@@ -9,7 +9,7 @@ import ErrorState from '@/components/feedback/ErrorState.vue'
 import EmptyState from '@/components/feedback/EmptyState.vue'
 import MoneyAmount from '@/components/payments/MoneyAmount.vue'
 import PaymentStatusBadge from '@/components/payments/PaymentStatusBadge.vue'
-import ProofViewer from './ProofViewer.vue'
+import DocumentViewer from '@/components/files/DocumentViewer.vue'
 import TransferRequestFacts from './TransferRequestFacts.vue'
 import TransferFlags from './TransferFlags.vue'
 import DuplicateProofNotice from './DuplicateProofNotice.vue'
@@ -66,10 +66,11 @@ onMounted(review.load)
       :title="t('finance.transfers.detail.notFound')"
     />
     <div v-else class="transfer-review-modal__layout">
-      <ProofViewer
+      <DocumentViewer
         v-if="transfer.proof"
         class="transfer-review-modal__proof"
-        :proof="transfer.proof"
+        :file="transfer.proof"
+        :label="t('finance.transfers.proof.title')"
         :request-link="review.requestProofLink"
       />
       <div class="transfer-review-modal__side">

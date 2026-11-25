@@ -31,7 +31,7 @@ final class EntityResourceVariant
     {
         $class = self::classFor($access);
 
-        $entity->loadMissing(['owner', 'region', 'city', 'logo', 'vatCertificate', EntityLevelQuery::RELATION, EntityLevelQuery::DISPLAY_RELATION, LastAccreditedAssessmentQuery::RELATION, LastAccreditedAssessmentQuery::RESULT_RELATION]);
+        $entity->loadMissing(['owner', 'region', 'city', 'logo', 'vatCertificate', 'licenseCertificate', 'authorizationLetter', EntityLevelQuery::RELATION, EntityLevelQuery::DISPLAY_RELATION, LastAccreditedAssessmentQuery::RELATION, LastAccreditedAssessmentQuery::RESULT_RELATION]);
 
         return new $class($entity->loadExists(EntityLevelQuery::openAccreditedRequestFlag()));
     }

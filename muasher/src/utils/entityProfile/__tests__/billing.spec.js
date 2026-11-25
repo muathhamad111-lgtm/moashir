@@ -4,8 +4,8 @@ import en from '@/i18n/locales/en.json'
 import ar from '@/i18n/locales/ar.json'
 import { sectionFormValues, sectionPayload } from '@/utils/entityProfile/formValues'
 import { profileSectionSchema } from '@/utils/entityProfile/schema'
-import { isFieldShown, shownFieldsOf } from '@/utils/entityProfile/sections'
-import { vatCertificateIssue } from '@/utils/entityProfile/vatCertificateRules'
+import { formAnswersOf, isFieldShown, shownFieldsOf } from '@/utils/entityProfile/sections'
+import { entityDocumentIssue } from '@/utils/entityDocumentRules'
 import { billingCompleteOf, toBilling } from '@/services/mappers/billing'
 
 const { t } = createI18n({ legacy: false, locale: 'en', messages: { en, ar } }).global
@@ -125,17 +125,29 @@ describe('billing section schema', () => {
 describe('billing helpers', () => {
   it('shows the VAT number and certificate only to a VAT-registered entity', () => {
     const fields = BILLING.map((name) => ({ name }))
-    expect(isFieldShown('vatNumber', false)).toBe(false)
-    expect(isFieldShown('addressCity', false)).toBe(true)
-    expect(shownFieldsOf(fields, true)).toHaveLength(10)
-    expect(shownFieldsOf(fields, false).map((field) => field.name)).not.toContain('vatCertificate')
+    expect(isFieldShown('vatNumber', { vatRegistered: false })).toBe(false)
+    expect(isFieldShown('addressCity', { vatRegistered: false })).toBe(true)
+    expect(shownFieldsOf(fields, { vatRegistered: true })).toHaveLength(10)
+    expect(
+      shownFieldsOf(fields, { vatRegistered: false }).map((field) => field.name),
+    ).not.toContain('vatCertificate')
+  })
+
+  it('shows the governance grade only after a «yes» to the governance question', () => {
+    expect(isFieldShown('governanceGrade', { hasGovernanceGrade: true })).toBe(true)
+    expect(isFieldShown('governanceGrade', { hasGovernanceGrade: false })).toBe(false)
+    expect(isFieldShown('governanceGrade', { hasGovernanceGrade: null })).toBe(false)
+    expect(formAnswersOf({ hasGovernanceGrade: 'yes', vatRegistered: 'no' })).toEqual({
+      hasGovernanceGrade: true,
+      vatRegistered: false,
+    })
   })
 
   it('accepts only a PDF within 5 MB', () => {
-    expect(vatCertificateIssue(null)).toBe('required')
-    expect(vatCertificateIssue({ name: 'a.png', type: 'image/png', size: 10 })).toBe('type')
-    expect(vatCertificateIssue({ name: 'a.pdf', type: 'application/pdf', size: 6e6 })).toBe('size')
-    expect(vatCertificateIssue({ name: 'a.pdf', type: 'application/pdf', size: 1e5 })).toBeNull()
+    expect(entityDocumentIssue(null)).toBe('required')
+    expect(entityDocumentIssue({ name: 'a.png', type: 'image/png', size: 10 })).toBe('type')
+    expect(entityDocumentIssue({ name: 'a.pdf', type: 'application/pdf', size: 6e6 })).toBe('size')
+    expect(entityDocumentIssue({ name: 'a.pdf', type: 'application/pdf', size: 1e5 })).toBeNull()
   })
 
   it('maps the Finance billing object and its flag', () => {

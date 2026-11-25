@@ -64,6 +64,16 @@ server {
             include /etc/nginx/snippets/moashir-{{ENVIRONMENT}}-laravel.conf;
         }
 
+        location ~ ^/api/v1/entities/me/(?:vat-certificate|documents/(?:license_certificate|authorization_letter))$ {
+            client_max_body_size {{ENTITY_DOCUMENT_BODY_LIMIT}};
+            include /etc/nginx/snippets/moashir-{{ENVIRONMENT}}-laravel.conf;
+        }
+
+        location = /api/v1/auth/register {
+            client_max_body_size {{REGISTRATION_BODY_LIMIT}};
+            include /etc/nginx/snippets/moashir-{{ENVIRONMENT}}-laravel.conf;
+        }
+
         location = /api/v1/settings/branding/logo {
             client_max_body_size {{BRANDING_LOGO_BODY_LIMIT}};
             include /etc/nginx/snippets/moashir-{{ENVIRONMENT}}-laravel.conf;

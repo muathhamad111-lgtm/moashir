@@ -35,6 +35,7 @@ export const PROFILE_CHANGE_FIELDS = Object.freeze({
   org_size: entityField('classification', 'orgSize'),
   region_id: entityField('classification', 'regionId'),
   city_id: entityField('classification', 'cityId'),
+  has_governance_grade: entityField('governance', 'hasGovernanceGrade'),
   governance_grade: entityField('governance', 'governanceGrade'),
   employees_count: entityField('governance', 'employeesCount'),
   annual_beneficiaries_count: entityField('governance', 'annualBeneficiariesCount'),

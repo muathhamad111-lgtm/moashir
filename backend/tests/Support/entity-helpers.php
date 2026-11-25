@@ -3,7 +3,9 @@
 declare(strict_types=1);
 
 use App\Data\Entities\OpenEntityRequest;
+use App\Data\Entities\RegistrationDocuments;
 use App\Enums\Audit\AuditEvent;
+use App\Enums\Entities\EntityDocument;
 use App\Enums\Entities\EntityRequestPath;
 use App\Enums\Entities\ProfileSection;
 use App\Enums\Identity\TermsKind;
@@ -22,6 +24,7 @@ use App\Services\Settings\SettingsStore;
 use App\Support\Entities\ProfileFieldValues;
 use App\Support\Entities\ProfileSectionRevision;
 use App\Support\ValueObjects\EmailAddress;
+use Illuminate\Http\UploadedFile;
 use Illuminate\Notifications\AnonymousNotifiable;
 use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\Notification;
@@ -64,6 +67,7 @@ function registrationPayload(array $overrides = []): array
         'authorized_person_name' => 'سلمان بن فهد العتيبي',
         'official_email' => 'info@alamal.example.sa',
         'unified_number' => '7001234567',
+        'license_number' => '44'.(is_string($overrides['unified_number'] ?? null) ? $overrides['unified_number'] : '7001234567'),
         'phone' => '0551234567',
         'password' => 'Wadi-Hanifa-Spring-2026',
         'password_confirmation' => 'Wadi-Hanifa-Spring-2026',
@@ -73,6 +77,7 @@ function registrationPayload(array $overrides = []): array
         'founding_year' => 2011,
         'region_id' => $city->region_id,
         'city_id' => $city->id,
+        'has_governance_grade' => true,
         'governance_grade' => '87.45',
         'employees_count' => 42,
         'annual_beneficiaries_count' => 8500,
@@ -80,10 +85,25 @@ function registrationPayload(array $overrides = []): array
         'terms_version_id' => $terms->id,
         'terms_accepted' => true,
         'marketing_consent' => false,
+        'license_certificate' => entityDocumentPdf('شهادة-الترخيص.pdf'),
+        'authorization_letter' => entityDocumentPdf('خطاب-التفويض.pdf'),
         ...$overrides,
     ];
 
     return withEmailVerificationToken($payload, $overrides);
+}
+
+function entityDocumentPdf(string $name, string $contents = SAMPLE_PDF): UploadedFile
+{
+    return UploadedFile::fake()->createWithContent($name, $contents);
+}
+
+function registrationDocuments(): RegistrationDocuments
+{
+    return new RegistrationDocuments([
+        EntityDocument::LicenseCertificate->value => entityDocumentPdf('شهادة-الترخيص.pdf'),
+        EntityDocument::AuthorizationLetter->value => entityDocumentPdf('خطاب-التفويض.pdf'),
+    ]);
 }
 
 /**
@@ -129,6 +149,7 @@ function profilePayload(Entity $entity, array $overrides = []): array
         'founding_year' => 2011,
         'region_id' => $entity->region_id,
         'city_id' => $entity->city_id,
+        'has_governance_grade' => true,
         'governance_grade' => '87.45',
         'employees_count' => 42,
         'annual_beneficiaries_count' => 8500,
