@@ -2583,7 +2583,8 @@
     },
     "edit": {
       "title": "Edit the entity on its behalf",
-      "submit": "Save changes"
+      "submit": "Save changes",
+      "letterNote": "You changed the authorized person: attach a new authorization letter in their name (PDF, up to {max} MB). It is saved with this edit and replaces the current letter."
     },
     "record": {
       "backToList": "Back to entities",

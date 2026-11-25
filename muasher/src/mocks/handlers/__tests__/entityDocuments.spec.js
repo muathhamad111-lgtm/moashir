@@ -170,3 +170,83 @@ describe('entity documents mock', () => {
     expect(findEntity(5001).owner.name).toBe('ريم بنت خالد الحربي')
   })
 })
+
+describe('staff edit with a new authorized person (operator 2026-11-25)', () => {
+  const REASON = 'Board letter names a new authorized person.'
+
+  async function staffEditBody(overrides = {}) {
+    const { data } = (await call('GET', '/entities/5001')).body
+    return {
+      name: data.name,
+      authorized_person_name: data.authorized_person_name,
+      phone: data.phone,
+      entity_type: data.entity_type,
+      development_sector: data.development_sector,
+      org_size: data.org_size,
+      founding_year: data.founding_year,
+      region_id: data.region.id,
+      city_id: data.city.id,
+      has_governance_grade: data.has_governance_grade,
+      governance_grade: data.governance_grade,
+      employees_count: data.employees_count,
+      annual_beneficiaries_count: data.annual_beneficiaries_count,
+      has_strategic_plan: data.has_strategic_plan,
+      reason: REASON,
+      ...overrides,
+    }
+  }
+
+  function multipartOf(body, letter) {
+    const form = new FormData()
+    Object.entries({ ...body, _method: 'PUT' }).forEach(([key, value]) => {
+      if (value && typeof value === 'object') {
+        Object.entries(value).forEach(([child, nested]) => form.append(`${key}[${child}]`, nested))
+      } else if (typeof value === 'boolean') form.append(key, value ? '1' : '0')
+      else form.append(key, value ?? '')
+    })
+    form.append('authorization_letter', letter, letter.name)
+    return form
+  }
+
+  it('refuses a new authorized person without a new letter', async () => {
+    seedMockSession(SYSTEM_ADMIN)
+    const before = findEntity(5001).owner.name
+    const refused = await call(
+      'PUT',
+      '/entities/5001',
+      await staffEditBody({ authorized_person_name: 'ريم بنت خالد الحربي' }),
+    )
+    expect([refused.status, refused.body.code]).toEqual([
+      422,
+      'profile.change_authorization_letter_required',
+    ])
+    expect(Object.keys(refused.body.errors)).toEqual(['authorization_letter'])
+    expect(findEntity(5001).owner.name).toBe(before)
+  })
+
+  it('saves the new person with the letter, which replaces the current one', async () => {
+    seedMockSession(SYSTEM_ADMIN)
+    const previous = findEntity(5001).authorizationLetter.id
+    const letter = new File(['%PDF-1.4'], 'letter-reem.pdf', { type: 'application/pdf' })
+    const body = await staffEditBody({ authorized_person_name: 'ريم بنت خالد الحربي' })
+    const saved = await call('POST', '/entities/5001', multipartOf(body, letter))
+    expect(saved.status).toBe(200)
+    expect(saved.body.data.authorized_person_name).toBe('ريم بنت خالد الحربي')
+    expect(saved.body.data.documents.authorization_letter).toMatchObject({
+      mime_type: 'application/pdf',
+    })
+    expect(findEntity(5001).authorizationLetter.id).not.toBe(previous)
+  })
+
+  it('refuses a letter that is not a PDF and a POST that does not name the PUT method', async () => {
+    seedMockSession(SYSTEM_ADMIN)
+    const image = new File(['png'], 'letter.png', { type: 'image/png' })
+    const body = await staffEditBody({ authorized_person_name: 'ريم بنت خالد الحربي' })
+    const refused = await call('POST', '/entities/5001', multipartOf(body, image))
+    expect([refused.status, Object.keys(refused.body.errors)]).toEqual([
+      422,
+      ['authorization_letter'],
+    ])
+    expect((await call('POST', '/entities/5001', pdfForm())).status).toBe(404)
+  })
+})

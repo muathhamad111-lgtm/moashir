@@ -437,7 +437,7 @@ get Nginx's HTML page.
 | `POST /api/v1/assessments/{id}/evidence`, `POST /api/v1/finance/payments/{id}/refunds`, `POST /api/v1/payments` (bank transfer with its receipt) | setting `upload_max_file_mb` / `general_upload_max_file_mb` (default 20 MB, the validation allows up to 100 MB) | `101m` |
 | `POST /api/v1/admin/content/images`, `POST /api/v1/admin/kpis/images` | `moashir.cms.image_max_kb` = 5120 KB | `5376k` |
 | `POST /api/v1/entities/me/logo` | `moashir.entities.logo.max_kb` = 2048 KB | `2304k` |
-| `POST /api/v1/entities/me/vat-certificate`, `POST /api/v1/entities/me/documents/{license_certificate,authorization_letter}` | `moashir.entities.{vat_certificate,license_certificate,authorization_letter}.max_kb` = 5120 KB | `5376k` |
+| `POST /api/v1/entities/me/vat-certificate`, `POST /api/v1/entities/me/documents/{license_certificate,authorization_letter}`, `PUT /api/v1/entities/{id}` (staff edit with a new authorization letter, sent as `POST` + `_method=PUT`) | `moashir.entities.{vat_certificate,license_certificate,authorization_letter}.max_kb` = 5120 KB | `5376k` |
 | `POST /api/v1/auth/register` (multipart, licence certificate + authorization letter) | 2 × 5120 KB | `10752k` |
 | `POST /api/v1/settings/branding/logo` | `moashir.branding.logo_max_kb` = 1024 KB | `1280k` |
 | every other `/api` and `/sanctum` route (JSON) | n/a (Apple Pay association file: 64 KB) | `2m` |

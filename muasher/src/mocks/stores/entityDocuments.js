@@ -74,6 +74,23 @@ export async function acceptEntityDocument(key, file) {
   return storedDocument(key, file)
 }
 
+/**
+ * Mirrors the API's staff edit (operator 2026-11-25): a new authorized person needs a new authorization letter, and a
+ * letter sent with the edit replaces the current one. Answers the stored letter, or null when none was sent.
+ */
+export async function acceptStaffLetter(entity, body) {
+  const file = body.authorizationLetter
+  const personChanged =
+    (body.authorizedPersonName ?? '').trim() !== (entity.owner?.name ?? '').trim()
+  if (!isFile(file)) {
+    if (personChanged) throw entityReject.authorizationLetterRequired()
+    return null
+  }
+  const issue = documentIssue(file)
+  if (issue) throw entityReject.validation({ authorizationLetter: [fieldError(issue, LIMIT)] })
+  return storedDocument('authorizationLetter', file)
+}
+
 export function documentKeyOf(segment, { uploadable = false } = {}) {
   const key = KEY_OF_SEGMENT[segment]
   if (!key || (uploadable && !REQUIRED_DOCUMENT_KEYS.includes(key))) throw entityReject.notFound()

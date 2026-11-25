@@ -26,10 +26,13 @@ function assign(body, key, value) {
   body[parent] = { ...body[parent], [child]: fieldValue(child, value) }
 }
 
-/** The registration body the way the API reads it: a multipart form with its files, or JSON for older callers. */
-export async function readRegistration(request) {
+/** A body the way the API reads it: a multipart form with its files, or JSON when it carries none. */
+export async function readFormOrJson(request) {
   if (!FORM_TYPE.test(request.headers.get('content-type') ?? '')) return readJson(request)
   const body = {}
   ;(await request.formData()).forEach((value, key) => assign(body, key, value))
   return body
 }
+
+/** The registration body: a multipart form with its documents, or JSON for older callers. */
+export const readRegistration = readFormOrJson

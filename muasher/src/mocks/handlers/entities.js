@@ -27,6 +27,7 @@ import { acceptEntityLogo } from '../stores/entityLogo'
 import { acceptVatCertificate, vatCertificateFileOf } from '../stores/entityBilling'
 import {
   acceptEntityDocument,
+  acceptStaffLetter,
   changeKindOf,
   documentKeyOf,
   entityDocumentFileOf,
@@ -43,6 +44,7 @@ import { assertProfile, assertReason, contactFrom, profileFrom } from '../stores
 import { sessionCan } from '../stores/sessionPermissions'
 import { entitiesCsv, exportFileName } from '../stores/entityCsv'
 import { recordProfileChanges } from '../stores/profileChangesStore'
+import { readFormOrJson } from '../stores/registrationForm'
 import { ownEditableEntity, ownEntityActor, ownResource } from '../stores/ownEntity'
 import { PROFILE_SECTION_KEYS } from '../stores/entityProfileSections'
 import { assertFreshRevision, assertSection, snapshotOf } from '../stores/entitySectionSaves'
@@ -83,6 +85,21 @@ function visibleTo(user, filters) {
 
 function statsFor(user, filters) {
   return accessOf(user) === ENTITY_ACCESS.NONE ? { total: 0 } : entityStats(filters)
+}
+
+async function saveStaffEdit(params, body) {
+  const user = manager()
+  const entity = viewableEntity(user, params.id)
+  assertProfile(body, entity.id)
+  assertReason(body)
+  if (isDeleted(entity)) throw entityReject.deleted()
+  const letter = await acceptStaffLetter(entity, body)
+  const before = snapshotOf(entity)
+  applyProfile(entity, profileFrom(body), contactFrom(body))
+  applyUnifiedNumber(entity, body)
+  if (letter) entity.authorizationLetter = letter
+  recordProfileChanges(entity, before, entity, { actor: user, isStaff: true })
+  return envelope(staffResource(user, entity))
 }
 
 export const entitiesHandlers = [
@@ -223,18 +240,18 @@ export const entitiesHandlers = [
 
   http.put(
     '/api/v1/entities/:id',
+    entityRoute(async ({ params, request }) =>
+      saveStaffEdit(params, await readFormOrJson(request)),
+    ),
+  ),
+
+  // The staff edit with a new authorization letter: multipart, sent as a POST that names the PUT method.
+  http.post(
+    '/api/v1/entities/:id',
     entityRoute(async ({ params, request }) => {
-      const user = manager()
-      const entity = viewableEntity(user, params.id)
-      const body = await readJson(request)
-      assertProfile(body, entity.id)
-      assertReason(body)
-      if (isDeleted(entity)) throw entityReject.deleted()
-      const before = snapshotOf(entity)
-      applyProfile(entity, profileFrom(body), contactFrom(body))
-      applyUnifiedNumber(entity, body)
-      recordProfileChanges(entity, before, entity, { actor: user, isStaff: true })
-      return envelope(staffResource(user, entity))
+      const body = await readFormOrJson(request)
+      if (body._method !== 'PUT') throw entityReject.notFound()
+      return saveStaffEdit(params, body)
     }),
   ),
 ]

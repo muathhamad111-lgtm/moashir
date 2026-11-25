@@ -1,5 +1,6 @@
 import { apiClient } from '@/api/client'
 import { toSnakeKey } from '@/api/caseMapping'
+import { toFormData } from '@/utils/formData'
 import { domainRequests } from './domainRequest'
 import { withJsonErrorBody } from './mappers/blobError'
 import { toDownload } from './mappers/download'
@@ -115,8 +116,12 @@ export const entitiesService = {
   timeline(id, params = {}) {
     return read('timeline', () => apiClient.get(`/entities/${id}/timeline`, { params }), params)
   },
+  // With a new authorization letter the edit is multipart, which PHP reads only from a POST that names the PUT method.
   updateOnBehalf(id, payload) {
-    return write('updateOnBehalf', () => apiClient.put(`/entities/${id}`, payload), payload)
+    const execute = payload.authorizationLetter
+      ? () => apiClient.post(`/entities/${id}`, toFormData({ ...payload, _method: 'PUT' }))
+      : () => apiClient.put(`/entities/${id}`, payload)
+    return write('updateOnBehalf', execute, payload)
   },
   exportCsv(params = {}) {
     const execute = () =>

@@ -166,25 +166,48 @@ export function registryShape(t, today) {
   }
 }
 
-export function staffProfileSchema(t, { unifiedNumberRequired = false } = {}) {
+export function staffProfileSchema(
+  t,
+  { unifiedNumberRequired = false, currentPersonName = '' } = {},
+) {
   return yupObject({
     ...entityProfileShape(t),
     hasStrategicPlan: yupString().oneOf(['', 'yes', 'no']),
     unifiedNumber: unifiedNumberField(t, { required: unifiedNumberRequired }),
+    authorizationLetter: staffAuthorizationLetterRule(t, currentPersonName),
     reason: reasonText(t),
+  })
+}
+
+export function isAuthorizedPersonChanged(name, currentPersonName) {
+  return (name ?? '').trim() !== (currentPersonName ?? '').trim()
+}
+
+// A staff edit that names a new authorized person carries a new letter (operator 2026-11-25); otherwise a letter is optional.
+function staffAuthorizationLetterRule(t, currentPersonName) {
+  return yupMixed()
+    .nullable()
+    .test('staff-letter', (file, context) => {
+      const changed = isAuthorizedPersonChanged(
+        context.parent.authorizedPersonName,
+        currentPersonName,
+      )
+      return !file && !changed ? true : documentCheck(t, file, context)
+    })
+}
+
+function documentCheck(t, file, context) {
+  const issue = entityDocumentIssue(file)
+  if (!issue) return true
+  return context.createError({
+    message: t(`entities.documents.errors.${issue}`, { max: ENTITY_DOCUMENT_RULES.maxMb }),
   })
 }
 
 export function entityDocumentRule(t) {
   return yupMixed()
     .nullable()
-    .test('entity-document', (file, context) => {
-      const issue = entityDocumentIssue(file)
-      if (!issue) return true
-      return context.createError({
-        message: t(`entities.documents.errors.${issue}`, { max: ENTITY_DOCUMENT_RULES.maxMb }),
-      })
-    })
+    .test('entity-document', (file, context) => documentCheck(t, file, context))
 }
 
 export function registrationSchema(t) {

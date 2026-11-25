@@ -1,3 +1,4 @@
+import { Buffer } from 'node:buffer'
 import { test, expect } from '@playwright/test'
 import { seedSignedIn } from './support/session'
 
@@ -83,4 +84,39 @@ test('an entity with both documents sees no notice', async ({ page }, testInfo) 
   await page.goto('/entity/profile')
   await expect(page.getByTestId('own-entity-documents')).toBeVisible()
   await expect(page.getByTestId('documents-notice')).toHaveCount(0)
+})
+
+test('staff who change the authorized person attach a new authorization letter in the same save', async ({
+  page,
+}, testInfo) => {
+  await seedSignedIn(page, SYSTEM_ADMIN, { locale: localeOf(testInfo) })
+  await page.setViewportSize(DESKTOP)
+  await page.goto('/admin/entities/5001')
+  await page
+    .getByRole('button', { name: text(testInfo, 'Edit on behalf', 'تعديل نيابة عن الجهة') })
+    .click()
+  const dialog = page.locator('.modal__panel')
+  const letterField = dialog.getByTestId('staff-authorization-letter')
+  await expect(letterField).toHaveCount(0)
+
+  await dialog.locator('[name="authorizedPersonName"]').fill('ريم بنت خالد الحربي')
+  await expect(letterField).toBeVisible()
+  await dialog.locator('[name="reason"]').fill('خطاب مجلس الإدارة بتعيين مفوّض جديد للجهة.')
+  const save = dialog.getByRole('button', { name: text(testInfo, 'Save changes', 'حفظ التغييرات') })
+  await save.click()
+  await expect(letterField).toContainText(
+    text(testInfo, 'Upload the document as a PDF.', 'ارفع الوثيقة بصيغة PDF.'),
+  )
+
+  await letterField.locator('input[type="file"]').setInputFiles({
+    name: 'letter-reem.pdf',
+    mimeType: 'application/pdf',
+    buffer: Buffer.from('%PDF-1.4\n%%EOF\n'),
+  })
+  await expect(letterField).toContainText('letter-reem.pdf')
+  await page.setViewportSize(MOBILE)
+  await letterField.scrollIntoViewIfNeeded()
+  await page.screenshot({ path: shotName(testInfo, 'staff-edit-letter-390') })
+  await save.click()
+  await expect(dialog).toHaveCount(0)
 })

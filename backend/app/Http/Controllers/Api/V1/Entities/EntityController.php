@@ -39,7 +39,7 @@ final readonly class EntityController
 
     public function update(UpdateEntityRequest $request, Entity $entity, #[CurrentUser] User $actor, UpdateEntityOnBehalf $updateEntity): JsonResponse
     {
-        $updated = $updateEntity->handle($actor, $entity, $request->profile(), $request->contact(), $request->reason());
+        $updated = $updateEntity->handle($actor, $entity, $request->update());
 
         return ApiResponse::resource(EntityResourceVariant::of($updated, $this->scope->accessOf($actor)));
     }

@@ -4,11 +4,13 @@ declare(strict_types=1);
 
 namespace App\Http\Requests\Entities;
 
-use App\Data\Entities\EntityContactData;
-use App\Data\Entities\EntityProfileData;
+use App\Data\Entities\StaffEntityUpdate;
+use App\Enums\Entities\EntityDocument;
 use App\Models\Entities\Entity;
+use App\Services\Entities\StaffAuthorizationLetter;
 use App\Support\Entities\EntityProfileInput;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Http\UploadedFile;
 
 final class UpdateEntityRequest extends FormRequest
 {
@@ -21,22 +23,27 @@ final class UpdateEntityRequest extends FormRequest
             ...EntityProfileInput::rules($this->input('region_id')),
             ...EntityProfileInput::registryRules($this->entityId()),
             'reason' => ['required', 'string', 'min:10', 'max:1000'],
+            StaffAuthorizationLetter::FIELD => [
+                'nullable',
+                'file',
+                'extensions:pdf',
+                'mimes:pdf',
+                'max:'.config()->integer(EntityDocument::AuthorizationLetter->maxKilobytesKey()),
+            ],
         ];
     }
 
-    public function profile(): EntityProfileData
+    public function update(): StaffEntityUpdate
     {
-        return EntityProfileInput::profile($this->validated());
-    }
+        $validated = $this->validated();
+        $letter = $this->file(StaffAuthorizationLetter::FIELD);
 
-    public function contact(): EntityContactData
-    {
-        return EntityProfileInput::contact($this->validated());
-    }
-
-    public function reason(): string
-    {
-        return $this->string('reason')->trim()->toString();
+        return new StaffEntityUpdate(
+            EntityProfileInput::profile($validated),
+            EntityProfileInput::contact($validated),
+            $this->string('reason')->trim()->toString(),
+            $letter instanceof UploadedFile ? $letter : null,
+        );
     }
 
     private function entityId(): ?int

@@ -3,6 +3,7 @@ import { toRef, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import FormModal from '@/components/modal/FormModal.vue'
 import FieldTextarea from '@/components/form/FieldTextarea.vue'
+import RegistrationDocumentField from '@/components/entities/registration/RegistrationDocumentField.vue'
 import Skeleton from '@/components/feedback/Skeleton.vue'
 import EntityIdentityFields from '@/components/entities/form/EntityIdentityFields.vue'
 import EntityClassificationFields from '@/components/entities/form/EntityClassificationFields.vue'
@@ -11,6 +12,7 @@ import EntityMetricsFields from '@/components/entities/form/EntityMetricsFields.
 import { useEntityEditOnBehalf } from '@/composables/useEntityEditOnBehalf'
 import { useRegions } from '@/composables/useRegions'
 import { REASON_LENGTH } from '@/constants/entityEnums'
+import { ENTITY_DOCUMENT_RULES } from '@/constants/entityDocuments'
 
 const props = defineProps({
   modelValue: { type: Boolean, required: true },
@@ -21,7 +23,7 @@ const emit = defineEmits(['update:modelValue', 'saved'])
 
 const { t } = useI18n()
 const regions = useRegions()
-const { form, start, unifiedNumberRequired } = useEntityEditOnBehalf({
+const { form, start, unifiedNumberRequired, personChanged } = useEntityEditOnBehalf({
   entity: toRef(props, 'entity'),
   onSaved: (data) => {
     emit('update:modelValue', false)
@@ -53,6 +55,19 @@ watch(
       <Skeleton v-if="regions.status.value === 'loading'" variant="text" :count="4" />
       <fieldset v-else class="entity-form__sections" :disabled="form.submitting.value">
         <EntityIdentityFields :unified-number-required="unifiedNumberRequired" />
+        <div
+          v-if="personChanged"
+          class="authorization-letter"
+          data-testid="staff-authorization-letter"
+        >
+          <p class="authorization-letter__note" role="status">
+            {{ t('entities.edit.letterNote', { max: ENTITY_DOCUMENT_RULES.maxMb }) }}
+          </p>
+          <RegistrationDocumentField
+            name="authorizationLetter"
+            :label="t('entities.documents.kinds.authorizationLetter')"
+          />
+        </div>
         <EntityClassificationFields />
         <EntityLocationFields
           :region-options="regions.regionOptions.value"

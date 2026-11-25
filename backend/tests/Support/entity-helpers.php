@@ -134,6 +134,8 @@ function emailVerificationTokenFor(string $email): string
 }
 
 /**
+ * The staff edit body; it keeps the current authorized person, whose change needs a new authorization letter.
+ *
  * @param  array<string, mixed>  $overrides
  * @return array<string, mixed>
  */
@@ -141,7 +143,7 @@ function profilePayload(Entity $entity, array $overrides = []): array
 {
     return [
         'name' => ['ar' => 'جمعية الأمل الخيرية', 'en' => 'Al-Amal Charitable Association'],
-        'authorized_person_name' => 'سلمان بن فهد العتيبي',
+        'authorized_person_name' => User::query()->where('entity_id', $entity->id)->value('name') ?? 'سلمان بن فهد العتيبي',
         'phone' => '+966551234567',
         'entity_type' => 'civil_association',
         'development_sector' => 'social',

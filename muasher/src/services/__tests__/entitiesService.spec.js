@@ -87,6 +87,17 @@ describe('entitiesService — staff', () => {
     expect(apiClient.put).toHaveBeenCalledWith('/entities/5001', {
       reason: 'Formal correction request',
     })
+    const letter = new File(['%PDF-1.4'], 'letter.pdf', { type: 'application/pdf' })
+    await entitiesService.updateOnBehalf(5001, {
+      reason: 'New authorized person',
+      authorizationLetter: letter,
+    })
+    const [path, form] = apiClient.post.mock.calls.at(-1)
+    expect(path).toBe('/entities/5001')
+    expect(form).toBeInstanceOf(FormData)
+    expect([form.get('_method'), form.get('reason'), form.get('authorizationLetter').name]).toEqual(
+      ['PUT', 'New authorized person', 'letter.pdf'],
+    )
     const blob = new Blob(['csv'])
     apiClient.post.mockResolvedValue({
       data: blob,
