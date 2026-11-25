@@ -59,11 +59,11 @@
 }
 
 .dev-home__name {
-  font-weight: var(--fw-semibold);
+  font-weight: var(--fw-emphasis);
 }
 
 .dev-home__value {
   color: var(--theme-accent-text);
-  font-weight: var(--fw-bold);
+  font-weight: var(--fw-body);
   white-space: nowrap;
 }

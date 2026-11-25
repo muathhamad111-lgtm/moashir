@@ -29,7 +29,7 @@
   margin: 0;
   color: var(--theme-heading);
   font-size: var(--fs-base);
-  font-weight: var(--fw-semibold);
+  font-weight: var(--fw-heading);
 }
 
 .pending-change__note {
@@ -65,7 +65,7 @@
   flex: 1 1 12rem;
   color: var(--theme-heading);
   font-size: var(--fs-sm);
-  font-weight: var(--fw-semibold);
+  font-weight: var(--fw-body);
 }
 
 .pending-change__values {
@@ -83,14 +83,14 @@
 
   &--new {
     color: var(--theme-heading);
-    font-weight: var(--fw-semibold);
+    font-weight: var(--fw-body);
   }
 }
 
 .pending-change__caption {
   color: var(--theme-text-muted);
   font-size: var(--fs-xs);
-  font-weight: var(--fw-regular);
+  font-weight: var(--fw-body);
 }
 
 .change-value--removed {

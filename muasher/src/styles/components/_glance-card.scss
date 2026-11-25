@@ -40,7 +40,7 @@
   color: var(--theme-heading);
   font-family: var(--font-heading);
   font-size: var(--fs-sm);
-  font-weight: var(--fw-medium);
+  font-weight: var(--fw-heading);
 
   @include respond-to('lg') {
     font-size: var(--fs-base);
@@ -68,7 +68,7 @@
   border-radius: var(--radius-md);
   color: var(--theme-accent-text);
   font-size: var(--fs-caption);
-  font-weight: var(--fw-semibold);
+  font-weight: var(--fw-emphasis);
 
   &:hover {
     text-decoration: underline;

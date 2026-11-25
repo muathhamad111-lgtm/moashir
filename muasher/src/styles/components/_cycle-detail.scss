@@ -76,7 +76,7 @@
 .cycle-overview__value {
   grid-area: value;
   margin: 0;
-  font-weight: var(--fw-semibold);
+  font-weight: var(--fw-body);
   color: var(--theme-heading);
 }
 
@@ -181,7 +181,7 @@
   padding-inline: var(--space-4);
   border-block-end: var(--border-width-thick) solid transparent;
   color: var(--theme-text-muted);
-  font-weight: var(--fw-semibold);
+  font-weight: var(--fw-emphasis);
   text-decoration: none;
   white-space: nowrap;
 

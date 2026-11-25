@@ -15,7 +15,7 @@
 .kpis-admin__title {
   margin: 0;
   font-size: var(--fs-2xl);
-  font-weight: var(--fw-bold);
+  font-weight: var(--fw-heading);
   color: var(--theme-heading);
 }
 
@@ -54,7 +54,7 @@
 
 .kpis-admin__order-number {
   min-inline-size: var(--space-6);
-  font-weight: var(--fw-bold);
+  font-weight: var(--fw-figure);
   font-variant-numeric: tabular-nums;
   color: var(--theme-heading);
 }
@@ -133,7 +133,7 @@
 }
 
 .kpis-admin__name-label {
-  font-weight: var(--fw-medium);
+  font-weight: var(--fw-body);
   color: var(--theme-text);
 }
 
@@ -188,7 +188,7 @@
 .kpi-form__legend {
   padding-inline: var(--space-2);
   font-size: var(--fs-sm);
-  font-weight: var(--fw-semibold);
+  font-weight: var(--fw-figure);
   color: var(--theme-heading);
 }
 
@@ -208,7 +208,7 @@
 
 .kpi-form__label {
   font-size: var(--fs-sm);
-  font-weight: var(--fw-medium);
+  font-weight: var(--fw-body);
   color: var(--theme-text);
 }
 
@@ -297,13 +297,13 @@
   flex-wrap: wrap;
   margin: 0;
   font-size: var(--fs-sm);
-  font-weight: var(--fw-semibold);
+  font-weight: var(--fw-body);
   color: var(--theme-text-muted);
 }
 
 .kpi-form__preview-color {
   margin-inline-start: auto;
-  font-weight: var(--fw-normal);
+  font-weight: var(--fw-figure);
   font-size: var(--fs-xs);
   color: var(--theme-text-muted);
 }

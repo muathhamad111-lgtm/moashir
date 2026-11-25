@@ -23,7 +23,7 @@
   margin: 0;
   color: var(--theme-heading);
   font-size: var(--fs-lg);
-  font-weight: var(--fw-semibold);
+  font-weight: var(--fw-heading);
 }
 
 .path-price-row__lead {
@@ -61,7 +61,7 @@
   color: var(--theme-accent-text);
   font: inherit;
   font-size: var(--fs-sm);
-  font-weight: var(--fw-semibold);
+  font-weight: var(--fw-figure);
   cursor: pointer;
 
   &:focus-visible {
@@ -86,7 +86,7 @@
   margin: 0;
   color: var(--theme-heading);
   font-size: var(--fs-base);
-  font-weight: var(--fw-semibold);
+  font-weight: var(--fw-heading);
 }
 
 .path-price-version__meta {
@@ -103,7 +103,7 @@
   margin: 0;
   color: var(--theme-heading);
   font-size: var(--fs-base);
-  font-weight: var(--fw-semibold);
+  font-weight: var(--fw-heading);
 }
 
 .path-price-history__empty {

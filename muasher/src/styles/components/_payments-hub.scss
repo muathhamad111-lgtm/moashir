@@ -62,7 +62,7 @@
   color: var(--theme-heading);
   font-family: var(--font-latin);
   font-size: var(--fs-lg);
-  font-weight: var(--fw-bold);
+  font-weight: var(--fw-figure);
 
   @include respond-to('lg') {
     font-size: var(--fs-xl);
@@ -78,7 +78,7 @@
   color: var(--theme-text-muted);
   font-family: var(--font-arabic);
   font-size: var(--fs-xs);
-  font-weight: var(--fw-regular);
+  font-weight: var(--fw-body);
 }
 
 .pending-order {
@@ -125,7 +125,7 @@
   background-color: var(--color-warning-soft);
   color: var(--theme-warning-text);
   font-size: var(--fs-xs);
-  font-weight: var(--fw-semibold);
+  font-weight: var(--fw-emphasis);
 }
 
 .pending-order__dot {
@@ -140,7 +140,7 @@
   color: var(--theme-heading);
   font-family: var(--font-heading);
   font-size: var(--fs-lg);
-  font-weight: var(--fw-semibold);
+  font-weight: var(--fw-heading);
 
   @include respond-to('lg') {
     font-size: var(--fs-xl);
@@ -211,7 +211,7 @@
     padding-block: var(--space-3);
     padding-inline: var(--space-3);
     color: var(--theme-text-secondary);
-    font-weight: var(--fw-medium);
+    font-weight: var(--fw-body);
     text-align: start;
     white-space: nowrap;
   }
@@ -241,7 +241,7 @@
 .receipt-cell__number {
   color: var(--theme-heading);
   font-family: var(--font-latin);
-  font-weight: var(--fw-semibold);
+  font-weight: var(--fw-figure);
   white-space: nowrap;
 }
 
@@ -263,7 +263,7 @@
   color: var(--theme-accent-text);
   font: inherit;
   font-size: var(--fs-xs);
-  font-weight: var(--fw-semibold);
+  font-weight: var(--fw-body);
   white-space: nowrap;
   cursor: pointer;
 
@@ -331,7 +331,7 @@
 .payment-service__name {
   border-radius: var(--radius-sm);
   color: var(--theme-heading);
-  font-weight: var(--fw-medium);
+  font-weight: var(--fw-emphasis);
 
   &:hover {
     text-decoration: underline;
@@ -368,7 +368,7 @@
   color: var(--theme-accent-text);
   font: inherit;
   font-size: var(--fs-sm);
-  font-weight: var(--fw-semibold);
+  font-weight: var(--fw-body);
   white-space: nowrap;
   cursor: pointer;
 
@@ -408,7 +408,7 @@
   min-block-size: var(--size-touch-target);
   border-radius: var(--radius-sm);
   color: var(--theme-accent-text);
-  font-weight: var(--fw-semibold);
+  font-weight: var(--fw-body);
 
   &:focus-visible {
     @include focus-ring;

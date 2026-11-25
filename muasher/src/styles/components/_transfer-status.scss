@@ -51,7 +51,7 @@
 .transfer-status__reason {
   margin: 0;
   color: var(--theme-danger-text);
-  font-weight: var(--fw-semibold);
+  font-weight: var(--fw-figure);
 }
 
 .transfer-status__note {
@@ -103,7 +103,7 @@
   dd {
     margin: 0;
     color: var(--theme-heading);
-    font-weight: var(--fw-semibold);
+    font-weight: var(--fw-body);
   }
 }
 
@@ -129,7 +129,7 @@
   }
 
   &.is-active {
-    font-weight: var(--fw-bold);
+    font-weight: var(--fw-emphasis);
   }
 }
 
@@ -140,7 +140,7 @@
   border: var(--border-width-thick) solid var(--theme-border-strong);
   border-radius: var(--radius-circle);
   font-family: var(--font-latin);
-  font-weight: var(--fw-bold);
+  font-weight: var(--fw-body);
 
   .is-done & {
     border-color: var(--theme-accent-text);
@@ -190,7 +190,7 @@
 }
 
 .transfer-record__event-title {
-  font-weight: var(--fw-semibold);
+  font-weight: var(--fw-heading);
   color: var(--theme-heading);
 }
 
@@ -202,7 +202,7 @@
 .transfer-record__reason {
   margin: 0;
   color: var(--theme-danger-text);
-  font-weight: var(--fw-semibold);
+  font-weight: var(--fw-body);
 }
 
 .transfer-record__note {
@@ -220,7 +220,7 @@
 .payment-facts__link {
   margin-inline-start: var(--space-2);
   color: var(--theme-accent-text);
-  font-weight: var(--fw-semibold);
+  font-weight: var(--fw-emphasis);
 
   &:focus-visible {
     @include focus-ring;

@@ -1,0 +1,39 @@
+/* Hacen Maghreb (HacenType, commercial licence held by the platform owner; the files are kept out
+   of the public repository). Loaded through vite-plugins/licensedFonts.js only when the files are
+   present; otherwise the stack falls back to IBM Plex Sans Arabic (styles/base/_fonts.scss).
+   The three cuts are mapped by how heavy they draw, not by their names: Lt matches Montserrat 400
+   and carries text up to 400, Bd is a medium-bold for 500-700, and the plain cut is the heaviest,
+   kept for display weights 800-900. The browser never synthesises a weight. */
+
+@font-face {
+  font-family: 'Hacen Maghreb';
+  src: url('@/assets/fonts/hacen-maghreb-light.woff') format('woff');
+  font-weight: 100 400;
+  font-style: normal;
+  font-display: swap;
+  unicode-range:
+    U+0600-06FF, U+0750-077F, U+0870-088E, U+0890-0891, U+0897-08E1, U+08E3-08FF, U+200C-200E,
+    U+2010-2011, U+204F, U+2E41, U+FB50-FDFF, U+FE70-FE74, U+FE76-FEFC;
+}
+
+@font-face {
+  font-family: 'Hacen Maghreb';
+  src: url('@/assets/fonts/hacen-maghreb-bold.woff') format('woff');
+  font-weight: 500 700;
+  font-style: normal;
+  font-display: swap;
+  unicode-range:
+    U+0600-06FF, U+0750-077F, U+0870-088E, U+0890-0891, U+0897-08E1, U+08E3-08FF, U+200C-200E,
+    U+2010-2011, U+204F, U+2E41, U+FB50-FDFF, U+FE70-FE74, U+FE76-FEFC;
+}
+
+@font-face {
+  font-family: 'Hacen Maghreb';
+  src: url('@/assets/fonts/hacen-maghreb-regular.woff') format('woff');
+  font-weight: 800 900;
+  font-style: normal;
+  font-display: swap;
+  unicode-range:
+    U+0600-06FF, U+0750-077F, U+0870-088E, U+0890-0891, U+0897-08E1, U+08E3-08FF, U+200C-200E,
+    U+2010-2011, U+204F, U+2E41, U+FB50-FDFF, U+FE70-FE74, U+FE76-FEFC;
+}

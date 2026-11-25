@@ -87,7 +87,7 @@
     isolation: isolate;
     border-radius: 99px;
     font-size: 0.86rem;
-    font-weight: 600;
+    font-weight: var(--fw-emphasis);
     color: var(--lp-accent);
     background: linear-gradient(135deg, rgba(255, 255, 255, 0.55), rgba(255, 255, 255, 0.18));
     border: 1px solid rgba(255, 255, 255, 0.7);
@@ -151,7 +151,7 @@
 
   &__read-num {
     font-size: clamp(3.6rem, 9vw, 6.4rem);
-    font-weight: 700;
+    font-weight: var(--fw-figure);
     line-height: 1.05;
     letter-spacing: -0.02em;
     font-variant-numeric: tabular-nums;
@@ -159,14 +159,14 @@
     small {
       margin-inline-start: 4px;
       font-size: 0.45em;
-      font-weight: 600;
+      font-weight: var(--fw-figure);
       color: var(--lp-ink-3);
     }
   }
 
   &__read-tier {
     font-size: 1.15rem;
-    font-weight: 700;
+    font-weight: var(--fw-body);
     color: var(--tier-ink, var(--lp-ink-2));
     transition: color 0.4s;
   }
@@ -294,14 +294,14 @@
   figcaption {
     display: grid;
     font-size: 0.82rem;
-    font-weight: 600;
+    font-weight: var(--fw-body);
     line-height: 1.5;
     white-space: nowrap;
     color: var(--lp-ink-2);
   }
 
   &__range {
-    font-weight: 500;
+    font-weight: var(--fw-body);
     font-size: 0.76rem;
     color: var(--lp-ink-3);
   }

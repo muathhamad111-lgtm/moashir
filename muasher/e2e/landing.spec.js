@@ -1,9 +1,11 @@
 import { mkdirSync, readFileSync } from 'node:fs'
+import process from 'node:process'
 import { test, expect } from '@playwright/test'
 import { seedPreferences, seedSignedIn } from './support/session'
 import { chooseNamed } from './support/dropdown'
 import { closeSuccess, decisionAction } from './support/dialogs'
 import { AA_TEXT, contrastOf } from './support/contrast'
+import { licensedFontsPresent } from '../vite-plugins/licensedFonts.js'
 import { LANDING_SECTIONS, loadLanding, revealSection } from './support/landing'
 
 const SHOTS = 'e2e/__screenshots__/landing'
@@ -421,7 +423,18 @@ async function settleSection(page, id) {
   await page.evaluate(() => document.fonts.ready)
 }
 
+// The baselines are rendered on macOS with the licensed Arabic font. Linux CI, and any checkout
+// without the font, render text differently, so only that setup compares them.
+const HAS_SCREENSHOT_BASELINES =
+  process.platform === 'darwin' && licensedFontsPresent(process.cwd())
+
 test.describe('landing — screenshot baselines', () => {
+  // eslint-disable-next-line playwright/no-skipped-test -- a conditional skip: baselines need macOS and the font
+  test.skip(
+    !HAS_SCREENSHOT_BASELINES,
+    'The landing baselines need macOS and the licensed Arabic font.',
+  )
+
   for (const [name, viewport] of Object.entries(VIEWPORTS)) {
     for (const theme of THEMES) {
       test(`${name} ${theme} matches its baselines`, async ({ page }, testInfo) => {

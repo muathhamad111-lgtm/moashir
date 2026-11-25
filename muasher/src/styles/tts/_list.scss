@@ -31,7 +31,7 @@
   @include in-tts-shell {
     // A narrow card (a phone) shrinks a long amount instead of letting it overflow.
     font-size: clamp(#{$tts-fs-stat-min}, #{$tts-fs-stat-fluid}, #{$tts-fs-stat});
-    font-weight: var(--fw-semibold);
+    font-weight: var(--fw-figure);
     line-height: $tts-lh-heading-lg;
   }
 }
@@ -136,7 +136,7 @@
 .portal-layout__main .portal-area__title {
   @include in-tts-shell {
     font-size: $tts-fs-display-xxs;
-    font-weight: var(--fw-semibold);
+    font-weight: var(--fw-heading);
     line-height: $tts-lh-display-xxs;
   }
 }

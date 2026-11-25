@@ -7,7 +7,7 @@
 .accredited-result__eyebrow {
   margin-block-end: var(--space-1);
   font-size: var(--fs-sm);
-  font-weight: var(--fw-medium);
+  font-weight: var(--fw-body);
   color: var(--theme-accent-text);
 }
 
@@ -48,7 +48,7 @@
 
 .accredited-result-summary__value {
   font-size: var(--fs-lg);
-  font-weight: var(--fw-bold);
+  font-weight: var(--fw-body);
   color: var(--theme-heading);
   font-variant-numeric: tabular-nums;
 }
@@ -64,7 +64,7 @@
 .accredited-result-summary__total {
   margin: 0;
   font-size: var(--fs-lg);
-  font-weight: var(--fw-semibold);
+  font-weight: var(--fw-figure);
   color: var(--theme-heading);
 }
 

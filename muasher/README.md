@@ -371,8 +371,10 @@ with 422 `notification_preference.locked`); `contact` adds `GET /me/contact-mess
 - Logos: official SVGs in `src/assets/logos/` (on light, on dark, mono dark / grey / teal, star, arrow), extracted from
   the guide's vector outlines. Patterns: `src/assets/patterns/` through `components/ui/BrandPattern.vue`.
 - Favicon / app icons / social cards in `public/` use the star mark on `#0a2325`.
-- Fonts: Montserrat (Latin) + Tajawal / IBM Plex Sans Arabic (Arabic) until a web licence for the guide's Arabic font is
-  provided — see `src/assets/fonts/README.md`.
+- Fonts: Montserrat (Latin and digits) + Hacen Maghreb (Arabic, licensed, not in the public repository), with IBM Plex
+  Sans Arabic as the fallback — see `src/assets/fonts/README.md`. Components use only the five role weights
+  (`--fw-body`, `--fw-emphasis`, `--fw-heading`, `--fw-figure`, `--fw-display`); `src/styles/__tests__/fontWeights.spec.js`
+  guards it.
 
 ## Icons (TTS icon set, inline SVG)
 

@@ -17,7 +17,7 @@
 .auth-form__title {
   margin: 0;
   font-size: var(--fs-2xl);
-  font-weight: var(--fw-bold);
+  font-weight: var(--fw-heading);
   color: var(--theme-heading);
 }
 
@@ -50,7 +50,7 @@
 .auth-form__legend {
   padding: 0;
   font-size: var(--fs-sm);
-  font-weight: var(--fw-semibold);
+  font-weight: var(--fw-heading);
   color: var(--theme-accent-text);
 }
 
@@ -88,7 +88,7 @@
 
 .auth-form__link {
   color: var(--theme-accent-text);
-  font-weight: var(--fw-semibold);
+  font-weight: var(--fw-emphasis);
   background: none;
   border: 0;
   padding: 0;
@@ -169,7 +169,7 @@
   @include flex(row, center, center, var(--space-2));
   margin: 0;
   color: var(--theme-success-text);
-  font-weight: var(--fw-semibold);
+  font-weight: var(--fw-body);
 }
 
 .auth-otp__tick {
@@ -209,7 +209,7 @@
 }
 
 .auth-otp__target {
-  font-weight: var(--fw-semibold);
+  font-weight: var(--fw-body);
   color: var(--theme-heading);
 }
 

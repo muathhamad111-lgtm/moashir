@@ -17,6 +17,7 @@ use App\Models\Finance\Payment;
 use App\Models\Finance\PaymentEvent;
 use App\Models\Finance\PaymentReceipt;
 use App\Notifications\Entities\EntityNotification;
+use App\Services\Documents\DocumentHtmlComposer;
 use App\Services\Entities\EntityEraser;
 use App\Services\Finance\ReceiptDocumentBuilder;
 use Illuminate\Support\Facades\Date;
@@ -219,5 +220,11 @@ it('prints the bank transfer and the destination bank on the receipt', function 
 
     expect($document->data['method_label'] ?? null)->toBe(['ar' => 'تحويل بنكي', 'en' => 'Bank transfer'])
         ->and($document->data['bank_name'] ?? null)->toBe(['ar' => 'بنك المثال (مثال)', 'en' => 'Example Bank (example)'])
-        ->and($document->data['card_last4'] ?? null)->toBeNull();
+        ->and($document->data['card_last4'] ?? null)->toBeNull()
+        ->and(app(DocumentHtmlComposer::class)->compose($document))
+        ->toContain('البنك المحوّل إليه', 'Destination bank', 'بنك المثال (مثال)', 'Example Bank (example)', 'تحويل بنكي', 'Bank transfer')
+        ->not->toContain('البطاقة')
+        ->not->toContain('•••• ')
+        ->not->toContain('مرجع بوابة الدفع')
+        ->not->toContain('Payment gateway reference');
 });

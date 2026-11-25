@@ -1,4 +1,5 @@
 import '@/styles/main.scss'
+import 'virtual:licensed-fonts'
 
 import { createApp } from 'vue'
 import App from '@/App.vue'

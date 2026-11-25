@@ -17,7 +17,7 @@
 
 .review-strip__rounds {
   font-size: var(--fs-xs);
-  font-weight: var(--fw-semibold);
+  font-weight: var(--fw-body);
   color: var(--theme-warning-text);
 }
 
@@ -45,12 +45,12 @@
 
   thead th {
     font-size: var(--fs-xs);
-    font-weight: var(--fw-semibold);
+    font-weight: var(--fw-body);
     color: var(--theme-text-secondary);
   }
 
   tbody th {
-    font-weight: var(--fw-medium);
+    font-weight: var(--fw-body);
     color: var(--theme-heading);
   }
 }
@@ -59,7 +59,7 @@
   padding-block-end: var(--space-2);
   text-align: start;
   font-size: var(--fs-xs);
-  font-weight: var(--fw-semibold);
+  font-weight: var(--fw-body);
   color: var(--theme-text-secondary);
 }
 
@@ -95,7 +95,7 @@
 
 .override-band__title {
   margin: 0;
-  font-weight: var(--fw-semibold);
+  font-weight: var(--fw-heading);
   color: var(--theme-danger-text);
 }
 
@@ -135,7 +135,7 @@
   padding: var(--space-3);
   border-radius: var(--radius-md);
   background-color: var(--theme-danger-soft);
-  font-weight: var(--fw-medium);
+  font-weight: var(--fw-body);
   color: var(--theme-heading);
 }
 
@@ -195,7 +195,7 @@
 }
 
 .completion-review__label {
-  font-weight: var(--fw-medium);
+  font-weight: var(--fw-body);
   color: var(--theme-heading);
 }
 

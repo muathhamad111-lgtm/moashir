@@ -22,12 +22,12 @@
 }
 
 .billing-notice__title {
-  font-weight: var(--fw-semibold);
+  font-weight: var(--fw-heading);
   color: var(--theme-heading);
 }
 
 .billing-notice__link {
-  font-weight: var(--fw-semibold);
+  font-weight: var(--fw-emphasis);
   color: var(--theme-accent-text);
   text-decoration: underline;
 

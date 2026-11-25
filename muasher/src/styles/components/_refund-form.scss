@@ -8,7 +8,7 @@
 .refund-form__total {
   @include flex(row, baseline, space-between, var(--space-3));
   margin: 0;
-  font-weight: var(--fw-medium);
+  font-weight: var(--fw-figure);
 }
 
 .refund-form__grid {

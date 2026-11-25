@@ -90,12 +90,4 @@ return [
         'generated_on' => 'Report generated on',
     ],
 
-    'receipt' => [
-        'price_before_vat' => 'Price before VAT',
-        'vat' => 'VAT',
-        'vat_rate' => 'VAT rate',
-        'status' => 'Status',
-        'card' => 'Card',
-    ],
-
 ];

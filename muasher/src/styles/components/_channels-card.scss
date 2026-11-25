@@ -67,7 +67,7 @@
 .channels-card__link {
   @include flex(row, center, flex-start, var(--space-1));
   color: var(--theme-accent-text);
-  font-weight: var(--fw-semibold);
+  font-weight: var(--fw-emphasis);
 
   &:focus-visible {
     @include focus-ring;
@@ -121,6 +121,6 @@
   background-color: var(--theme-tint);
   color: var(--theme-text-secondary);
   font-size: var(--fs-sm);
-  font-weight: var(--fw-medium);
+  font-weight: var(--fw-body);
   align-self: flex-start;
 }

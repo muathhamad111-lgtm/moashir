@@ -9,7 +9,7 @@
 .kpi-history__caption {
   margin-block-end: var(--space-2);
   font-size: var(--fs-lg);
-  font-weight: var(--fw-semibold);
+  font-weight: var(--fw-body);
   color: var(--theme-heading);
   text-align: start;
 }
@@ -17,7 +17,7 @@
 .kpi-history__head {
   padding: var(--space-2) var(--space-3);
   border-block-end: var(--border-width) solid var(--theme-border);
-  font-weight: var(--fw-semibold);
+  font-weight: var(--fw-figure);
   color: var(--theme-text-muted);
   text-align: start;
 }
@@ -30,7 +30,7 @@
 
 .kpi-history__cell--number {
   font-variant-numeric: tabular-nums;
-  font-weight: var(--fw-semibold);
+  font-weight: var(--fw-figure);
   color: var(--theme-heading);
 }
 

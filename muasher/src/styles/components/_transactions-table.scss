@@ -7,12 +7,12 @@
 
 .transactions-table__title {
   color: var(--theme-heading);
-  font-weight: var(--fw-medium);
+  font-weight: var(--fw-heading);
 }
 
 .transactions-table__reference {
   color: var(--theme-heading);
-  font-weight: var(--fw-semibold);
+  font-weight: var(--fw-body);
   font-variant-numeric: tabular-nums;
 }
 
@@ -61,7 +61,7 @@
   background-color: var(--theme-accent-soft);
   color: var(--theme-accent-text);
   font-size: var(--fs-xs);
-  font-weight: var(--fw-bold);
+  font-weight: var(--fw-body);
 }
 
 .transactions-table__nowrap,
@@ -80,7 +80,7 @@
 }
 
 .transactions-table__link {
-  font-weight: var(--fw-semibold);
+  font-weight: var(--fw-emphasis);
   color: var(--theme-accent-text);
 
   &:focus-visible {

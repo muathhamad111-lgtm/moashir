@@ -24,7 +24,7 @@
   @include flex(row, center, flex-start, var(--space-1));
   color: var(--theme-heading);
   font-size: var(--fs-sm);
-  font-weight: var(--fw-semibold);
+  font-weight: var(--fw-body);
 
   .sg-summary__tile--strength & {
     color: var(--insight-class-strength-ink);
@@ -48,7 +48,7 @@
   color: var(--theme-heading);
   font-family: var(--font-latin);
   font-size: var(--fs-2xl);
-  font-weight: var(--fw-bold);
+  font-weight: var(--fw-figure);
 }
 
 .sg-summary__unit {
@@ -60,7 +60,7 @@
   margin: 0;
   color: var(--theme-heading);
   font-size: var(--fs-sm);
-  font-weight: var(--fw-semibold);
+  font-weight: var(--fw-heading);
 }
 
 .sg-summary__mains {
@@ -119,7 +119,7 @@
   background: transparent;
   color: var(--theme-text);
   font: inherit;
-  font-weight: var(--fw-semibold);
+  font-weight: var(--fw-emphasis);
   cursor: pointer;
 
   &.is-active {
@@ -187,7 +187,7 @@
   color: var(--theme-heading);
   font-family: var(--font-heading);
   font-size: var(--fs-lg);
-  font-weight: var(--fw-bold);
+  font-weight: var(--fw-heading);
 }
 
 .gap-column__range {
@@ -203,7 +203,7 @@
   border-radius: var(--radius-circle);
   font-family: var(--font-latin);
   font-size: var(--fs-sm);
-  font-weight: var(--fw-bold);
+  font-weight: var(--fw-figure);
 
   @each $tone in ('strength', 'opportunity', 'critical') {
     .gap-column--#{$tone} & {
@@ -234,7 +234,7 @@
   background: transparent;
   color: var(--theme-accent-text);
   font: inherit;
-  font-weight: var(--fw-semibold);
+  font-weight: var(--fw-body);
   cursor: pointer;
 
   &:focus-visible {
@@ -268,7 +268,7 @@
   margin: 0;
   color: var(--theme-heading);
   font-size: var(--fs-base);
-  font-weight: var(--fw-bold);
+  font-weight: var(--fw-heading);
 }
 
 .gap-item__percent {

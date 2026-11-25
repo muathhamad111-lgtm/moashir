@@ -24,12 +24,12 @@
 .bank-accounts__position {
   min-inline-size: var(--space-5);
   font-family: var(--font-latin);
-  font-weight: var(--fw-bold);
+  font-weight: var(--fw-figure);
   color: var(--theme-heading);
 }
 
 .bank-accounts__bank {
-  font-weight: var(--fw-semibold);
+  font-weight: var(--fw-figure);
   color: var(--theme-heading);
 }
 
@@ -45,7 +45,7 @@
 .bank-account-card__iban,
 .bank-account-payee__iban {
   font-family: var(--font-latin);
-  font-weight: var(--fw-semibold);
+  font-weight: var(--fw-figure);
   color: var(--theme-heading);
   white-space: nowrap;
 }
@@ -82,7 +82,7 @@
 .bank-account-card__title {
   @include flex(row, center, flex-start, var(--space-2));
   flex: 1;
-  font-weight: var(--fw-bold);
+  font-weight: var(--fw-heading);
   color: var(--theme-heading);
 }
 
@@ -118,7 +118,7 @@
   dd {
     margin: 0;
     color: var(--theme-heading);
-    font-weight: var(--fw-semibold);
+    font-weight: var(--fw-body);
   }
 }
 

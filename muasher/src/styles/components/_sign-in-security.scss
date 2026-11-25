@@ -17,7 +17,7 @@
   margin-inline-start: calc(var(--space-5) + var(--space-2));
   color: var(--theme-accent-text);
   font-size: var(--fs-sm);
-  font-weight: var(--fw-semibold);
+  font-weight: var(--fw-body);
 
   &:focus-visible {
     @include focus-ring;

@@ -28,7 +28,7 @@
   padding: 0;
   margin: 0;
   font-size: var(--fs-lg);
-  font-weight: var(--fw-semibold);
+  font-weight: var(--fw-heading);
   color: var(--theme-heading);
 }
 
@@ -48,7 +48,7 @@
 
 .settings-form__label {
   font-size: var(--fs-sm);
-  font-weight: var(--fw-medium);
+  font-weight: var(--fw-body);
   color: var(--theme-text);
 }
 
@@ -129,7 +129,7 @@
 }
 
 .settings-form__entity {
-  font-weight: var(--fw-medium);
+  font-weight: var(--fw-body);
   color: var(--theme-text);
 }
 
@@ -169,7 +169,7 @@
 }
 
 .settings-form__kb-name {
-  font-weight: var(--fw-medium);
+  font-weight: var(--fw-emphasis);
   color: var(--theme-text);
   overflow-wrap: anywhere;
 }

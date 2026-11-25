@@ -16,7 +16,7 @@
 }
 
 .entity-assessments__link {
-  font-weight: var(--fw-semibold);
+  font-weight: var(--fw-emphasis);
   color: var(--theme-accent-text);
 }
 
@@ -31,7 +31,7 @@
 
 .entity-assessments__score {
   margin-inline-start: auto;
-  font-weight: var(--fw-semibold);
+  font-weight: var(--fw-figure);
   color: var(--theme-heading);
   font-variant-numeric: tabular-nums;
 }

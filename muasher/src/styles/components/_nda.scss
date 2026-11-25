@@ -22,7 +22,7 @@
 .nda-text__changes-title {
   margin: 0 0 var(--space-1);
   font-size: var(--fs-sm);
-  font-weight: var(--fw-semibold);
+  font-weight: var(--fw-heading);
 }
 
 .nda-text__body {
@@ -72,7 +72,7 @@
   &[aria-current='step'] {
     background-color: var(--theme-accent-soft);
     color: var(--theme-accent-text);
-    font-weight: var(--fw-semibold);
+    font-weight: var(--fw-emphasis);
   }
 }
 
@@ -106,7 +106,7 @@
 
 .nda-admin__count-value {
   font-size: var(--fs-xl);
-  font-weight: var(--fw-bold);
+  font-weight: var(--fw-figure);
 }
 
 .nda-admin__note {
@@ -134,7 +134,7 @@
     border-color: var(--theme-accent-text);
     background-color: var(--theme-accent-soft);
     color: var(--theme-accent-text);
-    font-weight: var(--fw-semibold);
+    font-weight: var(--fw-emphasis);
   }
 
   &:focus-visible {

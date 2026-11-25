@@ -15,7 +15,7 @@
 .template-editor__legend {
   padding-inline: var(--space-1);
   font-size: var(--fs-sm);
-  font-weight: var(--fw-semibold);
+  font-weight: var(--fw-body);
   color: var(--theme-heading);
 }
 
@@ -59,7 +59,7 @@
 
 .template-editor__chip-token {
   font-size: var(--fs-xs);
-  font-weight: var(--fw-semibold);
+  font-weight: var(--fw-emphasis);
   color: var(--theme-accent-text);
 }
 
@@ -84,7 +84,7 @@
     position: static;
     padding-inline: 0;
     font-size: var(--fs-sm);
-    font-weight: var(--fw-medium);
+    font-weight: var(--fw-body);
     color: var(--theme-text);
     background-color: transparent;
   }

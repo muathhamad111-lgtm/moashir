@@ -26,7 +26,7 @@
     border-radius: $tts-radius-option;
     color: tts-neutral(600);
     font-size: $tts-fs-sm;
-    font-weight: $tts-fw-label;
+    font-weight: var(--fw-body);
 
     &.is-active {
       background-color: tts-neutral(50);
@@ -79,7 +79,7 @@
   @include in-tts-shell {
     color: tts-neutral(900);
     font-size: $tts-fs-heading-lg;
-    font-weight: $tts-fw-label;
+    font-weight: var(--fw-heading);
     line-height: $tts-lh-heading-lg;
   }
 }
@@ -127,7 +127,7 @@
     background-color: tts-neutral(900);
     color: $tts-white;
     font-size: $tts-fs-xxs;
-    font-weight: $tts-fw-label;
+    font-weight: var(--fw-body);
     box-shadow: none;
   }
 }

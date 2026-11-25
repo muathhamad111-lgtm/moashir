@@ -91,7 +91,7 @@
   margin: 0;
   color: var(--theme-heading);
   font-size: var(--fs-sm);
-  font-weight: var(--fw-semibold);
+  font-weight: var(--fw-heading);
 }
 
 .overview-geography__legend {
@@ -147,7 +147,7 @@
 
   &.is-active {
     background-color: var(--theme-tint);
-    font-weight: var(--fw-semibold);
+    font-weight: var(--fw-emphasis);
   }
 
   &:focus-visible {
@@ -166,7 +166,7 @@
 
 .overview-geography__value {
   flex-shrink: 0;
-  font-weight: var(--fw-semibold);
+  font-weight: var(--fw-body);
 }
 
 .overview-geography__none {

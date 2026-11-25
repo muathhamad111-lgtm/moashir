@@ -21,7 +21,7 @@
   margin: 0;
   color: var(--theme-accent-text);
   font-size: var(--fs-caption);
-  font-weight: var(--fw-semibold);
+  font-weight: var(--fw-body);
 }
 
 .legal-page__title {
@@ -29,7 +29,7 @@
   color: var(--theme-heading);
   font-family: var(--font-heading);
   font-size: var(--fs-2xl);
-  font-weight: var(--fw-semibold);
+  font-weight: var(--fw-heading);
 
   @include respond-to('lg') {
     font-size: var(--fs-3xl);
@@ -50,7 +50,7 @@
     margin: 0;
     color: var(--theme-heading);
     font-family: var(--font-latin);
-    font-weight: var(--fw-semibold);
+    font-weight: var(--fw-body);
   }
 }
 
@@ -63,7 +63,7 @@
   color: var(--theme-heading);
   font-family: var(--font-heading);
   font-size: var(--fs-xl);
-  font-weight: var(--fw-semibold);
+  font-weight: var(--fw-heading);
 }
 
 .rich-text {
@@ -76,7 +76,7 @@
   color: var(--theme-heading);
   font-family: var(--font-heading);
   font-size: var(--fs-lg);
-  font-weight: var(--fw-semibold);
+  font-weight: var(--fw-heading);
 }
 
 .rich-text__paragraph {
@@ -125,7 +125,7 @@
   th {
     background-color: var(--theme-bg);
     color: var(--theme-heading);
-    font-weight: var(--fw-semibold);
+    font-weight: var(--fw-body);
   }
 
   tr:last-child td {
@@ -136,7 +136,7 @@
 .legal-link {
   border-radius: var(--radius-sm);
   color: var(--theme-accent-text);
-  font-weight: var(--fw-semibold);
+  font-weight: var(--fw-emphasis);
 
   &:is(a):hover {
     text-decoration: underline;
@@ -150,7 +150,7 @@
     @include flex(row, center, flex-start, var(--space-2));
     display: inline-flex;
     color: inherit;
-    font-weight: var(--fw-regular);
+    font-weight: var(--fw-body);
   }
 }
 

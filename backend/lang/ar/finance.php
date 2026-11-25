@@ -68,6 +68,19 @@ return [
         'paid_at' => 'تاريخ الدفع',
         'void_notice' => 'أُلغي هذا الإيصال بعد تسجيل مبلغ مسترد.',
         'footer' => 'هذا المستند إيصال دفع صادر عن منصة مؤشر.',
+        'no_number' => 'دون رقم',
+        'statuses' => [
+            'issued' => 'صادر',
+            'voided' => 'ملغى',
+        ],
+        'payer' => 'الجهة الدافعة',
+        'entity_reference' => 'رقم الجهة',
+        'amounts' => 'تفاصيل المبلغ',
+        'description' => 'البيان',
+        'amount' => 'المبلغ',
+        'payment' => 'بيانات الدفع',
+        'card' => 'البطاقة',
+        'gateway_reference' => 'مرجع بوابة الدفع',
     ],
     'export' => [
         'columns' => [

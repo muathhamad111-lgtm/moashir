@@ -19,7 +19,7 @@
 .criteria-page__title {
   margin: 0;
   font-size: var(--fs-2xl);
-  font-weight: var(--fw-bold);
+  font-weight: var(--fw-heading);
   color: var(--theme-heading);
 }
 
@@ -59,7 +59,7 @@
 
   &.is-current {
     color: var(--theme-text-muted);
-    font-weight: var(--fw-medium);
+    font-weight: var(--fw-emphasis);
     text-decoration: none;
     cursor: default;
   }
@@ -139,7 +139,7 @@
 
 .criteria-form__legend {
   padding: 0;
-  font-weight: var(--fw-semibold);
+  font-weight: var(--fw-heading);
   color: var(--theme-heading);
 }
 
@@ -155,7 +155,7 @@
 
 .attachments-editor__legend {
   padding: 0;
-  font-weight: var(--fw-semibold);
+  font-weight: var(--fw-body);
   color: var(--theme-heading);
 }
 

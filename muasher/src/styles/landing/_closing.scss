@@ -43,7 +43,7 @@
     padding: 3px 12px;
     border-radius: 8px;
     font-size: 0.8rem;
-    font-weight: 700;
+    font-weight: var(--fw-body);
     color: var(--lp-gold-ink);
     background: color-mix(in srgb, var(--lp-gold) 22%, transparent);
   }

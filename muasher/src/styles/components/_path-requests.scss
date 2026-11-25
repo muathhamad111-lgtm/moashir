@@ -19,7 +19,7 @@
   color: var(--theme-heading);
   font-family: var(--font-heading);
   font-size: var(--fs-lg);
-  font-weight: var(--fw-bold);
+  font-weight: var(--fw-heading);
 }
 
 .path-requests__scroll {
@@ -35,7 +35,7 @@
     padding: var(--space-3);
     background-color: var(--color-info-soft);
     color: var(--theme-heading);
-    font-weight: var(--fw-semibold);
+    font-weight: var(--fw-body);
     text-align: start;
     white-space: nowrap;
   }
@@ -90,7 +90,7 @@
   @include flex(row, center, flex-start, var(--space-1));
   min-block-size: var(--size-touch-target);
   color: var(--theme-accent-text);
-  font-weight: var(--fw-semibold);
+  font-weight: var(--fw-body);
 
   &:focus-visible {
     @include focus-ring;
@@ -140,7 +140,7 @@
 
 .paths-sheet__name {
   color: var(--theme-heading);
-  font-weight: var(--fw-semibold);
+  font-weight: var(--fw-emphasis);
 }
 
 .paths-sheet__status {

@@ -16,7 +16,7 @@
   white-space: nowrap;
   text-overflow: ellipsis;
   font-size: var(--fs-base);
-  font-weight: var(--fw-regular);
+  font-weight: var(--fw-body);
   color: var(--theme-text-secondary);
   background: var(--field-label-rest);
   pointer-events: none;
@@ -54,7 +54,7 @@
 .field--floated .field__label {
   inset-block-start: calc(var(--space-2) * -1);
   font-size: var(--fs-xs);
-  font-weight: var(--fw-medium);
+  font-weight: var(--fw-body);
   background: linear-gradient(
     to bottom,
     var(--field-label-backdrop) calc(var(--space-2) + var(--border-width)),

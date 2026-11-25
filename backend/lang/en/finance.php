@@ -68,6 +68,19 @@ return [
         'paid_at' => 'Paid on',
         'void_notice' => 'This receipt was voided after a refund was recorded.',
         'footer' => 'This document is a payment receipt issued by the Moashir platform.',
+        'no_number' => 'No number',
+        'statuses' => [
+            'issued' => 'Issued',
+            'voided' => 'Voided',
+        ],
+        'payer' => 'Paying entity',
+        'entity_reference' => 'Entity number',
+        'amounts' => 'Amount details',
+        'description' => 'Description',
+        'amount' => 'Amount',
+        'payment' => 'Payment details',
+        'card' => 'Card',
+        'gateway_reference' => 'Payment gateway reference',
     ],
     'export' => [
         'columns' => [

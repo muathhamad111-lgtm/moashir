@@ -33,7 +33,7 @@
 .maturity-comparison__title {
   margin: 0;
   color: var(--theme-heading);
-  font-weight: var(--fw-semibold);
+  font-weight: var(--fw-heading);
 }
 
 .maturity-comparison__text {
@@ -51,7 +51,7 @@
   margin: 0;
   color: var(--theme-heading);
   font-size: var(--fs-sm);
-  font-weight: var(--fw-semibold);
+  font-weight: var(--fw-heading);
 }
 
 .maturity-legend__list {
@@ -97,7 +97,7 @@
   color: var(--theme-heading);
   font-family: var(--font-heading);
   font-size: var(--fs-lg);
-  font-weight: var(--fw-bold);
+  font-weight: var(--fw-heading);
 }
 
 .maturity-card__measures {
@@ -150,7 +150,7 @@
   background-color: var(--color-info-soft);
   color: var(--theme-info-text);
   font-size: var(--fs-xs);
-  font-weight: var(--fw-semibold);
+  font-weight: var(--fw-body);
 }
 
 .maturity-card__toggle {
@@ -163,7 +163,7 @@
   color: var(--theme-accent-text);
   font: inherit;
   font-size: var(--fs-sm);
-  font-weight: var(--fw-semibold);
+  font-weight: var(--fw-body);
   cursor: pointer;
 
   &:focus-visible {

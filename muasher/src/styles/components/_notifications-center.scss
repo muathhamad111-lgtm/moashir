@@ -24,7 +24,7 @@
   margin: 0;
   color: var(--theme-accent-text);
   font-size: var(--fs-caption);
-  font-weight: var(--fw-semibold);
+  font-weight: var(--fw-body);
 }
 
 .notifications-center__title {
@@ -32,7 +32,7 @@
   color: var(--theme-heading);
   font-family: var(--font-heading);
   font-size: var(--fs-2xl);
-  font-weight: var(--fw-semibold);
+  font-weight: var(--fw-heading);
 
   @include respond-to('lg') {
     font-size: var(--fs-3xl);
@@ -76,7 +76,7 @@
   padding-inline: var(--space-2);
   color: var(--theme-text-secondary);
   font-size: var(--fs-caption);
-  font-weight: var(--fw-semibold);
+  font-weight: var(--fw-heading);
 }
 
 .notification-day-group__list {
@@ -124,7 +124,7 @@
 .notification-center-item__title {
   color: var(--theme-heading);
   font-size: var(--fs-sm);
-  font-weight: var(--fw-medium);
+  font-weight: var(--fw-heading);
   border-radius: var(--radius-sm);
 
   &:hover {
@@ -210,7 +210,7 @@
   color: var(--theme-heading);
   font-family: var(--font-heading);
   font-size: var(--fs-lg);
-  font-weight: var(--fw-semibold);
+  font-weight: var(--fw-heading);
 }
 
 .notification-preferences-card__text {
@@ -239,7 +239,7 @@
   margin: 0;
   color: var(--theme-heading);
   font-size: var(--fs-sm);
-  font-weight: var(--fw-semibold);
+  font-weight: var(--fw-body);
 }
 
 .notification-preferences__rows {

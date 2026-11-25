@@ -35,7 +35,7 @@
   margin-inline-start: var(--space-2);
   font-family: var(--font-latin);
   font-size: var(--fs-lg);
-  font-weight: var(--fw-medium);
+  font-weight: var(--fw-figure);
   color: var(--theme-text-muted);
   white-space: nowrap;
 }
@@ -54,7 +54,7 @@
 .request-detail__reference {
   font-family: var(--font-latin);
   font-size: var(--fs-sm);
-  font-weight: var(--fw-regular);
+  font-weight: var(--fw-body);
   color: var(--theme-text-muted);
 }
 
@@ -128,7 +128,7 @@
   @include flex(row, center, flex-start, var(--space-2));
   flex-wrap: wrap;
   font-size: var(--fs-base);
-  font-weight: var(--fw-semibold);
+  font-weight: var(--fw-body);
 }
 
 .request-facts__entity-link {
@@ -168,7 +168,7 @@
   margin: 0;
   font-family: var(--font-heading);
   font-size: var(--fs-3xl);
-  font-weight: var(--fw-bold);
+  font-weight: var(--fw-figure);
   color: var(--theme-heading);
 }
 
@@ -186,7 +186,7 @@
 
 .award-detail__history {
   summary {
-    font-weight: var(--fw-semibold);
+    font-weight: var(--fw-emphasis);
     color: var(--theme-heading);
     cursor: pointer;
   }

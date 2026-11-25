@@ -24,7 +24,7 @@
 
 .kpi-catalog__name {
   @include flex(row, center, flex-start, var(--space-2));
-  font-weight: var(--fw-medium);
+  font-weight: var(--fw-emphasis);
   color: var(--theme-heading);
 }
 
@@ -49,7 +49,7 @@
 .kpi-reorder__position {
   min-inline-size: var(--space-6);
   font-variant-numeric: tabular-nums;
-  font-weight: var(--fw-semibold);
+  font-weight: var(--fw-figure);
   color: var(--theme-text-muted);
 }
 

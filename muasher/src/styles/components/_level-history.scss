@@ -30,7 +30,7 @@
   @include flex(row, center, flex-start, var(--space-2));
   flex-wrap: wrap;
   color: var(--theme-heading);
-  font-weight: var(--fw-semibold);
+  font-weight: var(--fw-emphasis);
 }
 
 .level-history__chip {
@@ -40,7 +40,7 @@
   background-color: var(--tier-neutral-surface);
   color: var(--tier-neutral-ink);
   font-size: var(--fs-xs);
-  font-weight: var(--fw-medium);
+  font-weight: var(--fw-emphasis);
 
   &--current {
     border-color: var(--color-success);
@@ -58,5 +58,5 @@
 .level-history__percent {
   color: var(--theme-heading);
   font-family: var(--font-latin);
-  font-weight: var(--fw-bold);
+  font-weight: var(--fw-figure);
 }

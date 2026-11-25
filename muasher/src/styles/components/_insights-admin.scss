@@ -8,7 +8,7 @@
   background-color: var(--tier-neutral-surface);
   color: var(--tier-neutral-ink);
   font-size: var(--fs-xs);
-  font-weight: var(--fw-semibold);
+  font-weight: var(--fw-emphasis);
 }
 
 .insights-settings__header {
@@ -34,7 +34,7 @@
 .insights-settings__warning-title {
   margin: 0;
   color: var(--theme-heading);
-  font-weight: var(--fw-semibold);
+  font-weight: var(--fw-heading);
 }
 
 .insights-settings__warning-text {
@@ -53,7 +53,7 @@
   margin: 0;
   color: var(--theme-heading);
   font-size: var(--fs-base);
-  font-weight: var(--fw-bold);
+  font-weight: var(--fw-heading);
 }
 
 .rules-preview__label {
@@ -124,7 +124,7 @@
   color: var(--theme-heading);
   font-family: var(--font-heading);
   font-size: var(--fs-lg);
-  font-weight: var(--fw-bold);
+  font-weight: var(--fw-heading);
 }
 
 .maturity-texts__lead {
@@ -165,7 +165,7 @@
 .maturity-texts__criterion {
   margin: 0;
   color: var(--theme-heading);
-  font-weight: var(--fw-semibold);
+  font-weight: var(--fw-body);
 }
 
 .maturity-texts__orphan {
@@ -175,7 +175,7 @@
   background-color: var(--color-warning-soft);
   color: var(--theme-warning-text);
   font-size: var(--fs-xs);
-  font-weight: var(--fw-semibold);
+  font-weight: var(--fw-body);
 }
 
 .maturity-texts__meta,
@@ -211,7 +211,7 @@
   color: var(--theme-heading);
   font-family: var(--font-heading);
   font-size: var(--fs-lg);
-  font-weight: var(--fw-bold);
+  font-weight: var(--fw-heading);
 }
 
 .review-summary__lead,
@@ -228,7 +228,7 @@
   background-color: var(--insight-class-strength-surface);
   color: var(--insight-class-strength-ink);
   font-size: var(--fs-xs);
-  font-weight: var(--fw-semibold);
+  font-weight: var(--fw-body);
 }
 
 .review-summary__counter {
@@ -239,7 +239,7 @@
 
   &.is-over {
     color: var(--theme-danger-text);
-    font-weight: var(--fw-semibold);
+    font-weight: var(--fw-figure);
   }
 }
 

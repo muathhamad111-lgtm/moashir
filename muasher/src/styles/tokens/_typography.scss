@@ -9,10 +9,18 @@ $font-heading:
   $font-family-latin, $font-family-arabic, $font-family-arabic-fallback, $font-fallback;
 
 $fw-regular: 400;
-$fw-medium: 500;
 $fw-semibold: 600;
 $fw-bold: 700;
 $fw-black: 900;
+
+// Role weights: the only values components use (guarded by styles/__tests__/fontWeights.spec.js).
+// In Arabic, body draws Hacen Lt, emphasis, heading and figure draw Hacen Bd, and display draws
+// the heavy plain cut (see base/_fonts).
+$fw-body: $fw-regular; // labels, values, table cells, descriptions, form fields
+$fw-emphasis: $fw-semibold; // buttons, badges, tabs, nav, a table's primary cell
+$fw-heading: $fw-bold; // page, section, card and dialog titles
+$fw-figure: $fw-bold; // key numbers: stats, amounts, scores
+$fw-display: $fw-black; // hero names and display numbers only
 
 $fs-xs: 12px;
 $fs-sm: 14px;

@@ -18,7 +18,7 @@
 .criteria-problems__title {
   margin: 0;
   font-size: var(--fs-base);
-  font-weight: var(--fw-bold);
+  font-weight: var(--fw-heading);
 }
 
 .criteria-problems__list {
@@ -51,7 +51,7 @@
   @include flex(row, center, flex-start, var(--space-1));
   min-block-size: var(--size-touch-target);
   color: var(--theme-accent-text);
-  font-weight: var(--fw-semibold);
+  font-weight: var(--fw-body);
   text-decoration: underline;
 
   &:focus-visible {

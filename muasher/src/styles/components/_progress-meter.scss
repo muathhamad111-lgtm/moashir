@@ -9,7 +9,7 @@
   @include flex(row, center, space-between, var(--space-3));
   color: var(--theme-text-secondary);
   font-size: var(--fs-caption);
-  font-weight: var(--fw-semibold);
+  font-weight: var(--fw-body);
 }
 
 .progress-meter__value {

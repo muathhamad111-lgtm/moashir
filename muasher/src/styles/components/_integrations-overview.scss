@@ -11,7 +11,7 @@
 .integrations-overview__title {
   margin: 0;
   font-size: var(--fs-2xl);
-  font-weight: var(--fw-bold);
+  font-weight: var(--fw-heading);
   color: var(--theme-heading);
 }
 
@@ -59,7 +59,7 @@
 .overview-card__title {
   margin: 0;
   font-size: var(--fs-lg);
-  font-weight: var(--fw-semibold);
+  font-weight: var(--fw-heading);
   color: var(--theme-heading);
 }
 
@@ -73,7 +73,7 @@
   @include flex(row, center, flex-start, var(--space-2));
   align-self: flex-start;
   min-block-size: var(--size-touch-target);
-  font-weight: var(--fw-semibold);
+  font-weight: var(--fw-emphasis);
   color: var(--theme-accent-text);
 
   &:hover {

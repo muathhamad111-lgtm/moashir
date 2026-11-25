@@ -83,13 +83,13 @@
 
 .transfer-queue__reference bdi {
   font-family: var(--font-latin);
-  font-weight: var(--fw-bold);
+  font-weight: var(--fw-body);
   color: var(--theme-heading);
   white-space: nowrap;
 }
 
 .transfer-queue__entity > span:first-child {
-  font-weight: var(--fw-semibold);
+  font-weight: var(--fw-body);
   color: var(--theme-heading);
 }
 
@@ -149,13 +149,13 @@
 
 .transfer-card__title {
   @include flex(column, flex-start, flex-start, var(--space-1));
-  font-weight: var(--fw-semibold);
+  font-weight: var(--fw-heading);
   color: var(--theme-heading);
 }
 
 .transfer-card__reference {
   font-family: var(--font-latin);
-  font-weight: var(--fw-bold);
+  font-weight: var(--fw-body);
 }
 
 .transfer-card__amount,
@@ -192,7 +192,7 @@
 
 .transfer-bulk-bar__count {
   margin: 0;
-  font-weight: var(--fw-semibold);
+  font-weight: var(--fw-figure);
   color: var(--theme-heading);
 }
 
@@ -201,7 +201,7 @@
   background: none;
   padding: var(--space-1);
   color: var(--theme-accent-text);
-  font-weight: var(--fw-medium);
+  font-weight: var(--fw-body);
   cursor: pointer;
 
   &:focus-visible {

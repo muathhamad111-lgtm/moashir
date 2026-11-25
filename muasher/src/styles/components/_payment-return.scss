@@ -13,7 +13,7 @@
 .payment-return__eyebrow {
   margin: 0;
   font-size: var(--fs-sm);
-  font-weight: var(--fw-medium);
+  font-weight: var(--fw-body);
   color: var(--theme-accent-text);
 }
 
@@ -39,13 +39,13 @@
 
   dd {
     margin: 0;
-    font-weight: var(--fw-semibold);
+    font-weight: var(--fw-body);
     color: var(--theme-heading);
   }
 }
 
 .payment-return__link {
-  font-weight: var(--fw-semibold);
+  font-weight: var(--fw-emphasis);
   color: var(--theme-accent-text);
 
   &:focus-visible {

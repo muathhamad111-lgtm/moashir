@@ -34,7 +34,7 @@
     background: none;
     color: tts-neutral(600);
     font-size: $tts-fs-sm;
-    font-weight: $tts-fw-label;
+    font-weight: var(--fw-body);
     line-height: $tts-lh-label-sm;
     pointer-events: auto;
   }

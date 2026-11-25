@@ -44,7 +44,7 @@
 
     a {
       display: inline-block;
-      font-weight: 600;
+      font-weight: var(--fw-emphasis);
       transition: color 0.2s;
 
       &:hover {
@@ -61,7 +61,7 @@
 
     > span {
       margin-inline-end: 8px;
-      font-weight: 600;
+      font-weight: var(--fw-body);
     }
 
     a {

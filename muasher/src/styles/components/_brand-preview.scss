@@ -72,7 +72,7 @@
 .brand-sample__nav-item--active {
   background-color: var(--theme-surface);
   color: var(--theme-heading);
-  font-weight: var(--fw-semibold);
+  font-weight: var(--fw-emphasis);
   box-shadow: var(--shadow-sm);
 }
 
@@ -90,7 +90,7 @@
 
 .brand-sample__title {
   margin: 0;
-  font-weight: var(--fw-bold);
+  font-weight: var(--fw-heading);
   color: var(--theme-heading);
 }
 
@@ -111,7 +111,7 @@
   border-radius: var(--radius-sm);
   background-color: var(--draft-primary);
   color: var(--draft-on-primary);
-  font-weight: var(--fw-semibold);
+  font-weight: var(--fw-emphasis);
 }
 
 .brand-sample__button--hover {
@@ -149,12 +149,12 @@
   border-radius: var(--radius-pill);
   background-color: var(--draft-primary-tint);
   color: var(--draft-primary-text);
-  font-weight: var(--fw-semibold);
+  font-weight: var(--fw-emphasis);
 }
 
 .brand-sample__link {
   color: var(--draft-primary-text);
-  font-weight: var(--fw-semibold);
+  font-weight: var(--fw-emphasis);
   text-decoration: underline;
 }
 
@@ -184,7 +184,7 @@
 }
 
 .brand-sample__brand {
-  font-weight: var(--fw-bold);
+  font-weight: var(--fw-heading);
   color: var(--draft-secondary);
 }
 
@@ -201,7 +201,7 @@
 .brand-sample__tab--active {
   border-block-end: 2px solid var(--draft-primary-text);
   color: var(--draft-primary-text);
-  font-weight: var(--fw-bold);
+  font-weight: var(--fw-emphasis);
 }
 
 .brand-sample__hero {
@@ -215,7 +215,7 @@
 .brand-sample__hero-title {
   margin: 0;
   font-size: var(--fs-sm);
-  font-weight: var(--fw-bold);
+  font-weight: var(--fw-heading);
 }
 
 .brand-sample__hero-text {

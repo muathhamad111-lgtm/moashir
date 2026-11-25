@@ -25,7 +25,7 @@
   margin: 0;
   color: var(--data-on-band);
   font-size: var(--fs-sm);
-  font-weight: var(--fw-semibold);
+  font-weight: var(--fw-heading);
 }
 
 .insights-band__title {
@@ -33,7 +33,7 @@
   color: var(--band-ink);
   font-family: var(--font-heading);
   font-size: var(--fs-2xl);
-  font-weight: var(--fw-bold);
+  font-weight: var(--fw-heading);
 
   @include respond-to('md') {
     font-size: var(--fs-3xl);
@@ -130,7 +130,7 @@
 .insights-notice__title {
   margin: 0;
   color: var(--theme-heading);
-  font-weight: var(--fw-semibold);
+  font-weight: var(--fw-heading);
 }
 
 .insights-notice__text {
@@ -147,7 +147,7 @@
   border: var(--border-width) solid transparent;
   border-radius: var(--radius-pill);
   font-size: var(--fs-xs);
-  font-weight: var(--fw-semibold);
+  font-weight: var(--fw-emphasis);
   white-space: nowrap;
 }
 
@@ -185,7 +185,7 @@
 
 .insight-percent {
   font-family: var(--font-latin);
-  font-weight: var(--fw-bold);
+  font-weight: var(--fw-figure);
 }
 
 .assessor-quote {
@@ -200,7 +200,7 @@
   @include flex(row, center, flex-start, var(--space-1));
   color: var(--insight-class-strength-ink);
   font-size: var(--fs-xs);
-  font-weight: var(--fw-semibold);
+  font-weight: var(--fw-body);
 
   .assessor-quote--improvements & {
     color: var(--insight-class-opportunity-ink);
@@ -233,7 +233,7 @@
   @include flex(row, center, flex-start, var(--space-1));
   min-block-size: var(--size-badge-m);
   color: var(--theme-accent-text);
-  font-weight: var(--fw-semibold);
+  font-weight: var(--fw-emphasis);
   text-decoration: none;
 
   &:hover {

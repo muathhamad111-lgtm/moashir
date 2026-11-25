@@ -30,7 +30,7 @@
   background-color: var(--theme-accent-soft);
   color: var(--theme-accent-text);
   font-size: var(--fs-xs);
-  font-weight: var(--fw-semibold);
+  font-weight: var(--fw-figure);
   text-align: center;
   white-space: nowrap;
 }
@@ -60,7 +60,7 @@
   border-radius: var(--radius-pill);
   color: var(--theme-text-secondary);
   font-size: var(--fs-sm);
-  font-weight: var(--fw-semibold);
+  font-weight: var(--fw-body);
 
   &.is-active {
     background-color: var(--theme-accent-soft);
@@ -83,7 +83,7 @@
 }
 
 .notification-type-label__name {
-  font-weight: var(--fw-semibold);
+  font-weight: var(--fw-emphasis);
   color: var(--theme-heading);
 }
 
@@ -111,7 +111,7 @@
 .notification-type-label__core {
   background-color: var(--theme-warning-soft);
   color: var(--theme-warning-text);
-  font-weight: var(--fw-semibold);
+  font-weight: var(--fw-body);
 }
 
 .notification-type-label__audience {
@@ -152,7 +152,7 @@
     grid-template-columns: repeat(3, 6.5rem);
     margin-inline-end: calc(8rem + var(--space-3));
     font-size: var(--fs-xs);
-    font-weight: var(--fw-semibold);
+    font-weight: var(--fw-body);
     color: var(--theme-text-secondary);
     text-align: center;
   }

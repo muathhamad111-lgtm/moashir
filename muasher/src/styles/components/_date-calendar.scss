@@ -70,7 +70,7 @@ $days-per-week: 7;
   flex: 1 1 auto;
   margin: 0;
   font-size: var(--fs-lg);
-  font-weight: var(--fw-semibold);
+  font-weight: var(--fw-heading);
   text-align: center;
 }
 
@@ -121,7 +121,7 @@ $days-per-week: 7;
   padding-block: var(--space-1);
   color: var(--color-gray-300);
   font-size: var(--fs-xs);
-  font-weight: var(--fw-medium);
+  font-weight: var(--fw-body);
   text-align: center;
   white-space: nowrap;
 }
@@ -159,14 +159,14 @@ $days-per-week: 7;
   &.is-today {
     border-color: var(--brand-line-on-dark);
     background-color: var(--brand-glass-on-dark);
-    font-weight: var(--fw-semibold);
+    font-weight: var(--fw-body);
   }
 
   &.is-selected {
     border-color: var(--theme-accent);
     background-color: var(--theme-accent);
     color: var(--theme-on-accent);
-    font-weight: var(--fw-semibold);
+    font-weight: var(--fw-emphasis);
   }
 
   &:disabled {

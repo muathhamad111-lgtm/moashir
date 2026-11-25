@@ -73,7 +73,7 @@
 .chat-widget__title {
   margin: 0;
   font-size: var(--fs-base);
-  font-weight: var(--fw-bold);
+  font-weight: var(--fw-heading);
   color: var(--color-white);
 }
 
@@ -256,7 +256,7 @@
 
 .chat-message__sender {
   font-size: var(--fs-xs);
-  font-weight: var(--fw-semibold);
+  font-weight: var(--fw-body);
   color: var(--theme-text-muted);
 }
 
@@ -329,7 +329,7 @@
   background-color: transparent;
   color: inherit;
   font: inherit;
-  font-weight: var(--fw-semibold);
+  font-weight: var(--fw-body);
   cursor: pointer;
 
   &:disabled {

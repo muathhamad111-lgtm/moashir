@@ -32,7 +32,7 @@ $table-actions-labelled-width: 13rem;
 .table__head {
   background-color: var(--theme-surface-raised);
   font-size: var(--fs-sm);
-  font-weight: var(--fw-medium);
+  font-weight: var(--fw-body);
   text-align: start;
 }
 
@@ -99,7 +99,7 @@ $table-actions-labelled-width: 13rem;
 .table__meta {
   color: var(--theme-text-muted);
   font-size: var(--fs-xs);
-  font-weight: var(--fw-regular);
+  font-weight: var(--fw-body);
   font-variant-numeric: tabular-nums;
   white-space: nowrap;
 }
@@ -354,7 +354,7 @@ $table-stack-below: 40rem;
     // The first column is the block's title: no label, full width.
     .table tbody .table__cell:first-child {
       grid-template-columns: minmax(0, 1fr);
-      font-weight: var(--fw-semibold);
+      font-weight: var(--fw-body);
 
       &::before {
         content: none;

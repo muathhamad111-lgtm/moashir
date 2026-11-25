@@ -8,7 +8,7 @@
 .review-page__eyebrow {
   margin-block-end: var(--space-1);
   font-size: var(--fs-sm);
-  font-weight: var(--fw-medium);
+  font-weight: var(--fw-body);
   color: var(--theme-accent-text);
 }
 
@@ -29,7 +29,7 @@
 }
 
 .request-queue__link {
-  font-weight: var(--fw-semibold);
+  font-weight: var(--fw-emphasis);
   color: var(--theme-accent-text);
 
   &:focus-visible {
@@ -60,7 +60,7 @@
 
 .assigned-request__entity {
   display: block;
-  font-weight: var(--fw-semibold);
+  font-weight: var(--fw-emphasis);
   color: var(--theme-heading);
 }
 

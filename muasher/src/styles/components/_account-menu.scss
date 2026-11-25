@@ -33,7 +33,7 @@
   background-color: var(--theme-tint);
   color: var(--theme-accent-text);
   font-size: var(--fs-caption);
-  font-weight: var(--fw-semibold);
+  font-weight: var(--fw-figure);
 
   &--lg {
     inline-size: var(--size-icon-box);
@@ -62,7 +62,7 @@
   @include truncate;
   max-inline-size: var(--size-control-min);
   font-size: var(--fs-caption);
-  font-weight: var(--fw-semibold);
+  font-weight: var(--fw-figure);
 }
 
 .account-menu__user {
@@ -98,7 +98,7 @@
 
 .account-menu__identity-entity {
   font-size: var(--fs-label);
-  font-weight: var(--fw-semibold);
+  font-weight: var(--fw-figure);
   color: var(--theme-heading);
 }
 

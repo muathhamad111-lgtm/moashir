@@ -17,7 +17,7 @@
   align-self: flex-start;
   color: var(--theme-accent-text);
   font-size: var(--fs-sm);
-  font-weight: var(--fw-medium);
+  font-weight: var(--fw-body);
 
   &:hover {
     text-decoration: underline;
@@ -27,7 +27,7 @@
 .homepage-cms__title {
   margin: 0;
   font-size: var(--fs-2xl);
-  font-weight: var(--fw-bold);
+  font-weight: var(--fw-heading);
   color: var(--theme-heading);
 }
 
@@ -71,7 +71,7 @@
 .site-settings__title {
   margin: 0;
   font-size: var(--fs-xl);
-  font-weight: var(--fw-bold);
+  font-weight: var(--fw-heading);
   color: var(--theme-heading);
 }
 
@@ -110,7 +110,7 @@
   padding: 0;
   margin: 0;
   font-size: var(--fs-lg);
-  font-weight: var(--fw-semibold);
+  font-weight: var(--fw-heading);
   color: var(--theme-heading);
 }
 
@@ -197,7 +197,7 @@
 .social-links__platform {
   @include flex(row, center, flex-start, var(--space-2));
   min-block-size: var(--size-touch-target);
-  font-weight: var(--fw-semibold);
+  font-weight: var(--fw-emphasis);
   color: var(--theme-heading);
 }
 

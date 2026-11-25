@@ -12,7 +12,7 @@
 .advanced-intro__eyebrow {
   margin: 0;
   font-size: var(--fs-sm);
-  font-weight: var(--fw-medium);
+  font-weight: var(--fw-body);
   color: var(--theme-accent-text);
 }
 
@@ -85,7 +85,7 @@
 
 .cycle-dates__label {
   font-size: var(--fs-sm);
-  font-weight: var(--fw-semibold);
+  font-weight: var(--fw-body);
   color: var(--theme-text-muted);
 }
 
@@ -106,7 +106,7 @@
 .cycle-regions__label {
   margin: 0;
   font-size: var(--fs-sm);
-  font-weight: var(--fw-semibold);
+  font-weight: var(--fw-body);
   color: var(--theme-text-muted);
 }
 
@@ -196,7 +196,7 @@
 }
 
 .advanced-content__name {
-  font-weight: var(--fw-semibold);
+  font-weight: var(--fw-emphasis);
   color: var(--theme-heading);
 }
 

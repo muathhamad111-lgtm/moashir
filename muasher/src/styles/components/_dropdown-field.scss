@@ -113,7 +113,7 @@
   background-color: var(--theme-accent-soft);
   color: var(--theme-accent-text);
   font-size: var(--fs-sm);
-  font-weight: var(--fw-medium);
+  font-weight: var(--fw-emphasis);
 }
 
 .dropdown-tag.is-locked {
@@ -138,7 +138,7 @@
   padding-inline: var(--space-2);
   border-radius: var(--radius-sm);
   color: var(--theme-accent-text);
-  font-weight: var(--fw-semibold);
+  font-weight: var(--fw-body);
 
   &:focus-visible {
     @include focus-ring;
@@ -223,7 +223,7 @@
 .dropdown-filter__value {
   flex: 1 1 auto;
   min-inline-size: 0;
-  font-weight: var(--fw-medium);
+  font-weight: var(--fw-body);
   @include truncate;
 
   .dropdown-filter.is-applied & {

@@ -1974,10 +1974,16 @@ Administrators, who return the money outside the platform and record the refund 
 `ReceiptIssuer` runs in the same transaction as the `paid` transition. `ReceiptNumberGenerator` takes the next value of
 the per-year counter `finance.receipt` in `yearly_number_sequences` (Asia/Riyadh year); the upsert locks the counter row
 until the transaction commits, so concurrent issuers wait and a rolled-back issue leaves no gap (it refuses to run
-outside a transaction). Test-mode payments get a receipt without a number (`is_test`, watermark `TEST`), excluded from
-every statistic, summary and export. PDFs go through `Contracts\Documents\PdfRenderer` (`RenderReceiptPdfJob` after
-issue, or on the first download): bilingual labels, Gregorian and Umm al-Qura dates with Western digits, watermark
-`TEST` or `VOID`, printed by the Chromium renderer (template `documents.payment_receipt`, see "PDF documents"). Without a
+outside a transaction). Test-mode payments get a receipt without a number (`is_test`; the PDF prints «دون رقم» / "No
+number" and no watermark), excluded from every statistic, summary and export. PDFs go through
+`Contracts\Documents\PdfRenderer` (`RenderReceiptPdfJob` after issue, or on the first download), printed by the
+Chromium renderer (template `documents.payment_receipt`, see "PDF documents"): one A4 page, Arabic labels with the
+English one under each; a header with the status (صادر / Issued, ملغى / Voided); the number, issue date, payment
+reference and VAT registration number; the paying entity (name and entity number) and the service; the amounts table
+(price before VAT, VAT with its rate, total; thousands separators via `Support\GroupedAmount`); the payment details
+(method, card last 4 or destination bank, paid on, payment gateway reference). Dates are Gregorian and Umm al-Qura with
+Western digits; a voided receipt carries the `VOID` watermark and the void notice. It is not labelled a tax invoice and
+has no QR code (ZATCA e-invoicing is an open operator decision). Without a
 renderer (`UnavailablePdfRenderer`) the download answers 503 `document.renderer_unavailable` and the job defers. Reissue
 (`finance.receipts.manage`, reason) renders a new file and keeps the previous one; a voided receipt cannot be reissued
 (409 `receipt.voided`).

@@ -28,13 +28,13 @@
   background-color: var(--color-dark);
   color: var(--color-primary);
   font-size: var(--fs-xs);
-  font-weight: var(--fw-semibold);
+  font-weight: var(--fw-body);
 }
 
 .lenses-page__title {
   margin: 0;
   font-size: var(--fs-4xl);
-  font-weight: var(--fw-black);
+  font-weight: var(--fw-display);
   color: var(--color-white);
 }
 
@@ -105,7 +105,7 @@
 .lens-card__title {
   margin: 0;
   font-size: var(--fs-lg);
-  font-weight: var(--fw-bold);
+  font-weight: var(--fw-heading);
   color: var(--theme-heading);
 }
 
@@ -139,7 +139,7 @@
 .lenses-page__rule-title {
   margin: 0;
   font-size: var(--fs-base);
-  font-weight: var(--fw-bold);
+  font-weight: var(--fw-heading);
   color: var(--theme-heading);
 }
 

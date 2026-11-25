@@ -2,7 +2,7 @@ body {
   font-family: var(--font-latin);
   font-size: var(--fs-base);
   line-height: var(--lh-base);
-  font-weight: var(--fw-regular);
+  font-weight: var(--fw-body);
 }
 
 html[lang='ar'] body {
@@ -17,6 +17,7 @@ h4,
 h5,
 h6 {
   font-family: var(--font-heading);
+  font-weight: var(--fw-heading);
   line-height: var(--lh-tight);
   color: var(--theme-heading);
 }
@@ -44,4 +45,13 @@ h6 {
 
 small {
   font-size: var(--fs-sm);
+}
+
+strong,
+b {
+  font-weight: var(--fw-emphasis);
+}
+
+th {
+  font-weight: var(--fw-body);
 }

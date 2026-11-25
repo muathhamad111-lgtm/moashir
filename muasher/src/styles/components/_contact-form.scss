@@ -9,7 +9,7 @@
   margin: 0;
   font-family: var(--font-heading);
   font-size: var(--fs-2xl);
-  font-weight: var(--fw-bold);
+  font-weight: var(--fw-heading);
   color: var(--theme-heading);
 }
 
@@ -43,7 +43,7 @@
   background-color: var(--color-danger-soft);
   color: var(--theme-danger-text);
   font-size: var(--fs-sm);
-  font-weight: var(--fw-medium);
+  font-weight: var(--fw-body);
 }
 
 .contact-form__footer {
@@ -90,7 +90,7 @@
 .contact-form__reference-value {
   font-family: var(--font-latin);
   font-size: var(--fs-lg);
-  font-weight: var(--fw-bold);
+  font-weight: var(--fw-figure);
   letter-spacing: var(--ls-number);
   color: var(--theme-heading);
 }

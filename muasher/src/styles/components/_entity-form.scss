@@ -30,7 +30,7 @@
   padding: 0;
   margin-block-end: var(--space-1);
   font-size: var(--fs-sm);
-  font-weight: var(--fw-semibold);
+  font-weight: var(--fw-heading);
   color: var(--theme-accent-text);
 }
 
@@ -130,7 +130,7 @@
   background-color: var(--theme-tint);
   color: var(--theme-text-secondary);
   font-size: var(--fs-sm);
-  font-weight: var(--fw-medium);
+  font-weight: var(--fw-emphasis);
   white-space: nowrap;
 }
 

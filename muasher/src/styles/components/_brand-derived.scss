@@ -29,13 +29,13 @@
 .brand-derived__label {
   @include flex(column, flex-start, flex-start, 0);
   color: var(--theme-heading);
-  font-weight: var(--fw-semibold);
+  font-weight: var(--fw-body);
 }
 
 .brand-derived__hex,
 .brand-derived__auto {
   font-size: var(--fs-xs);
-  font-weight: var(--fw-regular);
+  font-weight: var(--fw-body);
   color: var(--theme-text-muted);
 }
 
@@ -47,7 +47,7 @@
   block-size: var(--size-touch-target);
   border: var(--border-width) solid var(--theme-border-strong);
   border-radius: var(--radius-md);
-  font-weight: var(--fw-bold);
+  font-weight: var(--fw-body);
 
   &[data-color='onPrimary'] {
     background-color: var(--draft-primary);
@@ -77,7 +77,7 @@
 
 .brand-derived__use {
   font-size: var(--fs-xs);
-  font-weight: var(--fw-regular);
+  font-weight: var(--fw-body);
   color: var(--theme-text-muted);
 }
 

@@ -7,7 +7,7 @@
 
 .committee-member__name {
   display: block;
-  font-weight: var(--fw-semibold);
+  font-weight: var(--fw-emphasis);
   color: var(--theme-heading);
 }
 
@@ -32,7 +32,7 @@
 .committee-work__entity {
   display: block;
   min-inline-size: 10rem;
-  font-weight: var(--fw-semibold);
+  font-weight: var(--fw-emphasis);
   color: var(--theme-heading);
 }
 
@@ -65,7 +65,7 @@
 .committee-prior__title {
   @include flex(row, center, flex-start, var(--space-2));
   margin: 0;
-  font-weight: var(--fw-semibold);
+  font-weight: var(--fw-heading);
   color: var(--theme-heading);
 }
 

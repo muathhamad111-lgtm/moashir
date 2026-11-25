@@ -15,7 +15,7 @@
   background-color: var(--color-danger);
   color: var(--color-white);
   font-size: var(--fs-xs);
-  font-weight: var(--fw-bold);
+  font-weight: var(--fw-figure);
   line-height: var(--lh-tight);
   @include flex-center;
 }
@@ -47,7 +47,7 @@
 .notification-panel__title {
   margin: 0;
   font-size: var(--fs-base);
-  font-weight: var(--fw-semibold);
+  font-weight: var(--fw-heading);
   color: var(--theme-heading);
 }
 
@@ -127,7 +127,7 @@
 }
 
 .notification-item__title {
-  font-weight: var(--fw-semibold);
+  font-weight: var(--fw-heading);
   font-size: var(--fs-sm);
 
   .notification-item.is-unread & {

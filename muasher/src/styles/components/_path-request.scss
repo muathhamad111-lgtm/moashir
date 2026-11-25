@@ -48,7 +48,7 @@
   color: var(--theme-heading);
   font-family: var(--font-heading);
   font-size: var(--fs-lg);
-  font-weight: var(--fw-bold);
+  font-weight: var(--fw-heading);
 }
 
 .request-overview__facts {
@@ -78,7 +78,7 @@
 .request-overview__link {
   align-self: flex-start;
   color: var(--theme-accent-text);
-  font-weight: var(--fw-semibold);
+  font-weight: var(--fw-emphasis);
 
   &:focus-visible {
     @include focus-ring;
@@ -135,7 +135,7 @@
   color: var(--theme-heading);
   font-family: var(--font-heading);
   font-size: var(--fs-lg);
-  font-weight: var(--fw-bold);
+  font-weight: var(--fw-heading);
 }
 
 .kit-offer__text {

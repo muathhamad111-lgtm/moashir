@@ -20,7 +20,7 @@
   font-family: var(--font-arabic);
 
   &--current {
-    font-weight: var(--fw-semibold);
+    font-weight: var(--fw-emphasis);
     fill: var(--band-ink);
   }
 }
@@ -29,7 +29,7 @@
   font-family: var(--font-latin);
 
   &--next {
-    font-weight: var(--fw-bold);
+    font-weight: var(--fw-body);
     fill: var(--data-on-band);
   }
 }

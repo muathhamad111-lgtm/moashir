@@ -21,7 +21,7 @@
 .users-page__title {
   margin: 0;
   font-size: var(--fs-2xl);
-  font-weight: var(--fw-bold);
+  font-weight: var(--fw-heading);
   color: var(--theme-heading);
 }
 
@@ -36,7 +36,7 @@
 }
 
 .users-page__name {
-  font-weight: var(--fw-medium);
+  font-weight: var(--fw-emphasis);
   color: var(--theme-text);
 }
 
@@ -67,7 +67,7 @@
 
 .user-form__label {
   font-size: var(--fs-sm);
-  font-weight: var(--fw-medium);
+  font-weight: var(--fw-body);
   color: var(--theme-text);
 }
 
@@ -103,7 +103,7 @@
 .user-form__hint-title {
   @include flex(row, center, flex-start, var(--space-2));
   margin: 0;
-  font-weight: var(--fw-semibold);
+  font-weight: var(--fw-heading);
   color: var(--color-info);
 }
 

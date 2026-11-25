@@ -264,9 +264,13 @@ test.describe('excellence tools — staff and settings', () => {
     await page.locator('textarea[name="assessor-summary"]').fill('ملخص تجريبي لنتيجة التقييم.')
     await capture(page, 'assessor-summary', testInfo, { fullPage: false })
     await page.locator('.modal__footer .btn').first().click()
-    await expect(page.locator('.toast--success').first()).toContainText(
-      localeOf(testInfo) === 'en' ? 'The assessor summary was saved.' : 'حُفظ ملخص المقيّم.',
-    )
+    // Each scored item left a success toast of its own; look for the summary's by its text.
+    await expect(
+      page.locator('.toast--success', {
+        hasText:
+          localeOf(testInfo) === 'en' ? 'The assessor summary was saved.' : 'حُفظ ملخص المقيّم.',
+      }),
+    ).toBeVisible()
   })
 
   test('lets the Content Officer read the maturity texts', async ({ page }, testInfo) => {

@@ -151,7 +151,7 @@
 
 .chart-legend__value {
   color: var(--theme-heading);
-  font-weight: var(--fw-semibold);
+  font-weight: var(--fw-body);
   font-variant-numeric: tabular-nums;
 }
 
@@ -185,7 +185,7 @@
 .chart-tooltip__title {
   margin: 0 0 var(--space-1);
   color: var(--theme-heading);
-  font-weight: var(--fw-semibold);
+  font-weight: var(--fw-heading);
 }
 
 .chart-tooltip__rows {
@@ -203,7 +203,7 @@
   dd {
     margin: 0;
     color: var(--theme-heading);
-    font-weight: var(--fw-semibold);
+    font-weight: var(--fw-body);
     font-variant-numeric: tabular-nums;
   }
 }
@@ -254,7 +254,7 @@
 .chart-donut__total-value {
   color: var(--theme-heading);
   font-size: var(--fs-xl);
-  font-weight: var(--fw-bold);
+  font-weight: var(--fw-figure);
 }
 
 .chart-donut__total-label {
@@ -303,7 +303,7 @@
   margin: calc(var(--space-8) * -1) 0 0;
   color: var(--theme-heading);
   font-size: var(--fs-2xl);
-  font-weight: var(--fw-bold);
+  font-weight: var(--fw-body);
 }
 
 .chart-gauge__note {
@@ -347,7 +347,7 @@
 
 .chart-segmented__share {
   color: var(--theme-heading);
-  font-weight: var(--fw-semibold);
+  font-weight: var(--fw-emphasis);
   font-variant-numeric: tabular-nums;
 }
 
@@ -376,7 +376,7 @@
 .chart-progress__figures {
   @include flex(row, baseline, flex-end, var(--space-1));
   color: var(--theme-heading);
-  font-weight: var(--fw-semibold);
+  font-weight: var(--fw-figure);
   font-variant-numeric: tabular-nums;
 }
 

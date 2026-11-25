@@ -33,7 +33,7 @@
 .linked-request__link {
   @include flex(row, center, flex-start, var(--space-2));
   min-block-size: var(--size-touch-target);
-  font-weight: var(--fw-semibold);
+  font-weight: var(--fw-emphasis);
   color: var(--theme-accent-text);
 
   &:focus-visible {

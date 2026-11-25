@@ -18,7 +18,7 @@
 .request-payment-card__record {
   @include flex(row, center, flex-start, var(--space-2));
   min-block-size: var(--size-touch-target);
-  font-weight: var(--fw-semibold);
+  font-weight: var(--fw-body);
   color: var(--theme-accent-text);
 
   &:focus-visible {
@@ -43,7 +43,7 @@
   dd {
     margin: 0;
     font-size: var(--fs-sm);
-    font-weight: var(--fw-semibold);
+    font-weight: var(--fw-body);
     color: var(--theme-heading);
   }
 }

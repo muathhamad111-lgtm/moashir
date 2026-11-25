@@ -13,7 +13,7 @@
 .audit-log__title {
   margin: 0;
   font-size: var(--fs-2xl);
-  font-weight: var(--fw-bold);
+  font-weight: var(--fw-heading);
   color: var(--theme-heading);
 }
 
@@ -120,7 +120,7 @@
 .audit-entry__heading {
   margin-block: 0 var(--space-2);
   font-size: var(--fs-base);
-  font-weight: var(--fw-semibold);
+  font-weight: var(--fw-heading);
 }
 
 .audit-entry__json {

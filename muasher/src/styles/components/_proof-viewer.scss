@@ -26,7 +26,7 @@
 }
 
 .proof-viewer__name {
-  font-weight: var(--fw-semibold);
+  font-weight: var(--fw-emphasis);
   color: var(--theme-heading);
   overflow-wrap: anywhere;
 }
@@ -44,7 +44,7 @@
   min-inline-size: var(--space-12);
   text-align: center;
   font-family: var(--font-latin);
-  font-weight: var(--fw-semibold);
+  font-weight: var(--fw-body);
 }
 
 .proof-viewer__stage {

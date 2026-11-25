@@ -83,7 +83,7 @@ $auth-two-columns: 28rem;
   min-block-size: 44px;
   padding-inline: 4px;
   font-size: 0.9rem;
-  font-weight: 600;
+  font-weight: var(--fw-emphasis);
   color: var(--lp-ink-2);
   transition: color 0.2s;
 
@@ -272,7 +272,7 @@ $auth-two-columns: 28rem;
 .lp-auth .auth-form__link,
 .lp-auth .auth-form__switch a {
   color: var(--lp-accent);
-  font-weight: 600;
+  font-weight: var(--fw-body);
 }
 
 .lp-auth .auth-layout__card .btn--primary {

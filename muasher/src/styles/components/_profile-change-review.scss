@@ -19,7 +19,7 @@
 
 .change-review__summary {
   color: var(--theme-heading);
-  font-weight: var(--fw-semibold);
+  font-weight: var(--fw-body);
 }
 
 .change-review__list {
@@ -50,12 +50,12 @@
 .change-review__label {
   color: var(--theme-heading);
   font-size: var(--fs-sm);
-  font-weight: var(--fw-semibold);
+  font-weight: var(--fw-body);
 }
 
 .change-review__decision {
   font-size: var(--fs-xs);
-  font-weight: var(--fw-semibold);
+  font-weight: var(--fw-body);
 
   &[data-decision='approved'] {
     color: var(--theme-success-text);
@@ -90,7 +90,7 @@
 
   &--new dd {
     color: var(--theme-heading);
-    font-weight: var(--fw-semibold);
+    font-weight: var(--fw-body);
   }
 }
 
@@ -98,5 +98,5 @@
   margin: 0;
   color: var(--theme-warning-text);
   font-size: var(--fs-xs);
-  font-weight: var(--fw-semibold);
+  font-weight: var(--fw-body);
 }

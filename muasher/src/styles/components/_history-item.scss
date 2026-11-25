@@ -19,7 +19,7 @@
 }
 
 .history-item__path {
-  font-weight: var(--fw-semibold);
+  font-weight: var(--fw-body);
   color: var(--theme-heading);
 }
 
@@ -37,12 +37,12 @@
 
 .history-item__score {
   font-size: var(--fs-sm);
-  font-weight: var(--fw-semibold);
+  font-weight: var(--fw-figure);
   color: var(--theme-heading);
   font-variant-numeric: tabular-nums;
 
   &--muted {
     color: var(--theme-text-muted);
-    font-weight: var(--fw-regular);
+    font-weight: var(--fw-figure);
   }
 }

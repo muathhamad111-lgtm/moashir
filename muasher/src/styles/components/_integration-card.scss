@@ -22,7 +22,7 @@
 .integration-card__title {
   margin: 0;
   font-size: var(--fs-lg);
-  font-weight: var(--fw-semibold);
+  font-weight: var(--fw-heading);
   color: var(--theme-heading);
 }
 
@@ -58,7 +58,7 @@
 }
 
 .last-test__outcome {
-  font-weight: var(--fw-semibold);
+  font-weight: var(--fw-body);
   color: var(--theme-text);
 }
 

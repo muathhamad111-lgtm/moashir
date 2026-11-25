@@ -63,6 +63,9 @@ async function collapseSidebar(page) {
   await page.locator('.navbar__toggle').click()
   await expect(page.locator('.sidebar')).toHaveClass(/sidebar--collapsed/)
   await expect(page.locator('.sidebar__label').first()).toBeHidden()
+  // Clicking the sticky toggle can scroll the page a little to bring it into view; the shell layout
+  // is measured from the top of the page, as a user sees it on arrival.
+  await page.evaluate(() => window.scrollTo(0, 0))
 }
 
 async function focusByKeyboard(page, selector) {

@@ -5,7 +5,7 @@
   @include in-tts-shell {
     color: tts-neutral(900);
     font-size: $tts-fs-heading-lg;
-    font-weight: $tts-fw-label;
+    font-weight: var(--fw-heading);
     line-height: $tts-lh-heading-lg;
     letter-spacing: normal;
   }
@@ -23,7 +23,7 @@
     border-block-end-color: tts-neutral(50);
     color: tts-neutral(900);
     font-size: $tts-fs-heading-md;
-    font-weight: $tts-fw-label;
+    font-weight: var(--fw-heading);
   }
 }
 
@@ -47,7 +47,7 @@
     inline-size: 100%;
     color: tts-neutral(900);
     font-size: $tts-fs-heading-md;
-    font-weight: $tts-fw-label;
+    font-weight: var(--fw-heading);
   }
 }
 

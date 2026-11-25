@@ -11,7 +11,7 @@
   padding-inline: var(--space-4);
   border-block-end: var(--border-width-thick) solid transparent;
   color: var(--theme-text-muted);
-  font-weight: var(--fw-medium);
+  font-weight: var(--fw-emphasis);
   white-space: nowrap;
   transition:
     color var(--t-fast) var(--ease),
@@ -24,7 +24,7 @@
   &.is-active {
     color: var(--theme-accent-text);
     border-block-end-color: var(--theme-accent);
-    font-weight: var(--fw-semibold);
+    font-weight: var(--fw-emphasis);
   }
 
   &:focus-visible {
@@ -48,7 +48,7 @@
   background-color: var(--theme-danger-text);
   color: var(--color-white);
   font-size: var(--fs-xs);
-  font-weight: var(--fw-bold);
+  font-weight: var(--fw-emphasis);
 }
 
 .tabs__panel {

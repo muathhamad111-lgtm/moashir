@@ -44,7 +44,7 @@
   padding-inline: var(--space-3);
   color: var(--sidebar-caption);
   font-size: var(--fs-xs);
-  font-weight: var(--fw-semibold);
+  font-weight: var(--fw-emphasis);
 
   &--collapsed {
     justify-content: center;
@@ -71,7 +71,7 @@
   border-radius: var(--tts-radius-menu-item);
   color: var(--sidebar-text);
   font-size: var(--fs-sm);
-  font-weight: var(--fw-medium);
+  font-weight: var(--fw-body);
   transition:
     background-color var(--t-fast) var(--ease),
     color var(--t-fast) var(--ease);
@@ -90,7 +90,7 @@
   &.is-active:hover {
     background-color: var(--sidebar-active-bg);
     color: var(--sidebar-active-text);
-    font-weight: var(--fw-bold);
+    font-weight: var(--fw-emphasis);
     box-shadow: var(--sidebar-active-shadow, none);
   }
 
@@ -141,7 +141,7 @@
   color: var(--color-dark);
   font-family: var(--font-latin);
   font-size: var(--fs-xs);
-  font-weight: var(--fw-bold);
+  font-weight: var(--fw-figure);
 }
 
 .side-nav-item__sr {
@@ -164,7 +164,7 @@
   color: var(--sidebar-caption);
   font: inherit;
   font-size: var(--fs-sm);
-  font-weight: var(--fw-semibold);
+  font-weight: var(--fw-emphasis);
   cursor: pointer;
 
   &:hover {

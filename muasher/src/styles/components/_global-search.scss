@@ -92,7 +92,7 @@
   .global-search.is-floated & {
     inset-block-start: 0;
     font-size: var(--fs-xs);
-    font-weight: var(--fw-medium);
+    font-weight: var(--fw-body);
     color: var(--theme-accent-text);
     background-color: var(--navbar-bg);
   }
@@ -187,12 +187,12 @@
   padding-block: var(--space-1);
   padding-inline: var(--space-3);
   font-size: var(--fs-xs);
-  font-weight: var(--fw-semibold);
+  font-weight: var(--fw-body);
   color: var(--theme-text-muted);
 }
 
 .global-search__group-count {
-  font-weight: var(--fw-regular);
+  font-weight: var(--fw-figure);
 }
 
 .global-search__option {
@@ -232,7 +232,7 @@
 
 .global-search__option-title {
   max-inline-size: 100%;
-  font-weight: var(--fw-semibold);
+  font-weight: var(--fw-heading);
   @include truncate;
 }
 

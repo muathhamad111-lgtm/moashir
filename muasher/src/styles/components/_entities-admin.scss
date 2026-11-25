@@ -28,7 +28,7 @@
 .entity-record__title {
   margin: 0;
   font-size: var(--fs-2xl);
-  font-weight: var(--fw-bold);
+  font-weight: var(--fw-heading);
   color: var(--theme-heading);
 }
 
@@ -88,7 +88,7 @@
 .entity-table__reference {
   color: var(--theme-text-muted);
   font-size: var(--fs-xs);
-  font-weight: var(--fw-medium);
+  font-weight: var(--fw-body);
   white-space: nowrap;
 }
 
@@ -113,7 +113,7 @@
 
 .entity-last-assessment__percent {
   white-space: nowrap;
-  font-weight: var(--fw-semibold);
+  font-weight: var(--fw-figure);
   font-variant-numeric: tabular-nums;
   color: var(--theme-heading);
 }
@@ -129,7 +129,7 @@
 }
 
 .entity-table__name {
-  font-weight: var(--fw-semibold);
+  font-weight: var(--fw-emphasis);
   color: var(--theme-accent-text);
   text-decoration: none;
 
@@ -158,7 +158,7 @@
   align-self: flex-start;
   color: var(--theme-accent-text);
   font-size: var(--fs-sm);
-  font-weight: var(--fw-medium);
+  font-weight: var(--fw-body);
   text-decoration: none;
 
   &:hover {

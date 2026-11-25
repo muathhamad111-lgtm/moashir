@@ -35,7 +35,7 @@
 .level-ribbon__eyebrow {
   color: var(--level-on-band);
   font-size: var(--fs-xs);
-  font-weight: var(--fw-semibold);
+  font-weight: var(--fw-body);
 }
 
 .level-ribbon__name {
@@ -44,7 +44,7 @@
   color: var(--level-on-band);
   font-family: var(--font-heading);
   font-size: var(--fs-xl);
-  font-weight: var(--fw-bold);
+  font-weight: var(--fw-emphasis);
 }
 
 .level-ribbon__meta {
@@ -57,7 +57,7 @@
   color: var(--band-ink);
   font-family: var(--font-latin);
   font-size: var(--fs-2xl);
-  font-weight: var(--fw-bold);
+  font-weight: var(--fw-figure);
 }
 
 .level-ribbon__chip {
@@ -69,7 +69,7 @@
   background-color: var(--glass-fill);
   color: var(--band-ink);
   font-size: var(--fs-xs);
-  font-weight: var(--fw-semibold);
+  font-weight: var(--fw-emphasis);
 }
 
 .level-ribbon--expired {

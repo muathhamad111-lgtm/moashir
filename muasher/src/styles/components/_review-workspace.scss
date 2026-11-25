@@ -42,7 +42,7 @@
   dd {
     margin: 0;
     font-size: var(--fs-sm);
-    font-weight: var(--fw-semibold);
+    font-weight: var(--fw-body);
     color: var(--theme-heading);
   }
 }
@@ -62,7 +62,7 @@
   display: block;
   margin-block-start: var(--space-1);
   font-size: var(--fs-xs);
-  font-weight: var(--fw-regular);
+  font-weight: var(--fw-body);
   color: var(--theme-text-muted);
 }
 
@@ -105,7 +105,7 @@
     display: block;
     overflow: hidden;
     text-overflow: ellipsis;
-    font-weight: var(--fw-semibold);
+    font-weight: var(--fw-body);
     color: var(--theme-heading);
   }
 }
@@ -139,7 +139,7 @@
 
 .review-bar .review-header__progress-text {
   font-family: var(--font-latin);
-  font-weight: var(--fw-semibold);
+  font-weight: var(--fw-body);
   color: var(--theme-text-secondary);
 }
 
@@ -172,7 +172,7 @@
 .review-entity__context-title {
   margin-block: 0 var(--space-2);
   font-size: var(--fs-sm);
-  font-weight: var(--fw-semibold);
+  font-weight: var(--fw-heading);
   color: var(--theme-heading);
 }
 

@@ -21,7 +21,7 @@
 
     a {
       color: var(--lp-accent);
-      font-weight: 600;
+      font-weight: var(--fw-emphasis);
     }
   }
 }
@@ -39,7 +39,7 @@
   b {
     justify-self: start;
     font-size: clamp(2.2rem, 4vw, 3.2rem);
-    font-weight: 700;
+    font-weight: var(--fw-figure);
     line-height: 1.1;
     font-variant-numeric: tabular-nums;
 

@@ -15,7 +15,7 @@
   @include flex(row, center, flex-start, var(--space-2));
   margin: 0;
   font-size: var(--fs-base);
-  font-weight: var(--fw-semibold);
+  font-weight: var(--fw-heading);
   color: var(--theme-heading);
 }
 
@@ -29,7 +29,7 @@
 }
 
 .cycle-bindings__hint {
-  font-weight: var(--fw-semibold);
+  font-weight: var(--fw-body);
 }
 
 .cycle-bindings__drafts {

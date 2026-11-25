@@ -138,7 +138,7 @@
   color: var(--level-on-band);
   font-family: var(--font-heading);
   font-size: var(--fs-2xl);
-  font-weight: var(--fw-black);
+  font-weight: var(--fw-display);
   line-height: var(--lh-tight);
 
   @include respond-to('md') {
@@ -238,7 +238,7 @@
 .level-hero__number {
   color: var(--band-ink);
   font-size: var(--fs-5xl);
-  font-weight: var(--fw-bold);
+  font-weight: var(--fw-figure);
 
   @include respond-to('xl') {
     font-size: var(--fs-display);
@@ -248,7 +248,7 @@
 .level-hero__unit {
   color: var(--data-on-band);
   font-size: var(--fs-xl);
-  font-weight: var(--fw-semibold);
+  font-weight: var(--fw-body);
 }
 
 .level-hero__caption,
@@ -277,7 +277,7 @@
   margin: 0;
   color: var(--band-ink);
   font-size: var(--fs-base);
-  font-weight: var(--fw-semibold);
+  font-weight: var(--fw-body);
 
   @include respond-to('md') {
     align-self: center;
@@ -299,7 +299,7 @@
   min-block-size: var(--size-badge-m);
   color: var(--data-on-band);
   font-size: var(--fs-sm);
-  font-weight: var(--fw-semibold);
+  font-weight: var(--fw-emphasis);
   text-decoration: none;
 
   @include respond-to('md') {
@@ -335,7 +335,7 @@
   background-color: var(--glass-fill);
   color: var(--band-ink);
   font-size: var(--fs-xs);
-  font-weight: var(--fw-semibold);
+  font-weight: var(--fw-emphasis);
 
   &--expiring,
   &--expired {

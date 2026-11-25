@@ -28,7 +28,7 @@
   color: var(--theme-text-secondary);
   font: inherit;
   font-size: var(--fs-sm);
-  font-weight: var(--fw-medium);
+  font-weight: var(--fw-emphasis);
   cursor: pointer;
   transition:
     background-color var(--t-fast) var(--ease),
@@ -46,7 +46,7 @@
 
   &.is-selected {
     color: var(--theme-on-accent);
-    font-weight: var(--fw-semibold);
+    font-weight: var(--fw-emphasis);
   }
 }
 

@@ -131,7 +131,7 @@
 }
 
 .account-card__bank {
-  font-weight: var(--fw-bold);
+  font-weight: var(--fw-figure);
   color: var(--theme-heading);
 }
 
@@ -141,7 +141,7 @@
 }
 
 .account-card__last4 {
-  font-weight: var(--fw-semibold);
+  font-weight: var(--fw-figure);
   color: var(--theme-heading);
 }
 
@@ -195,7 +195,7 @@
 
 .copy-row__value {
   min-inline-size: 0;
-  font-weight: var(--fw-bold);
+  font-weight: var(--fw-body);
   color: var(--theme-heading);
   overflow-wrap: anywhere;
 }

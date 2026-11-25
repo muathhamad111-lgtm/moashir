@@ -7,7 +7,7 @@
   border: var(--border-width) solid var(--theme-border);
   border-radius: var(--radius-lg);
   background-color: var(--theme-bg);
-  font-weight: var(--fw-regular);
+  font-weight: var(--fw-body);
 }
 
 .phone-otp__title {
@@ -15,7 +15,7 @@
   margin: 0;
   color: var(--theme-heading);
   font-size: var(--fs-sm);
-  font-weight: var(--fw-semibold);
+  font-weight: var(--fw-heading);
 }
 
 .phone-otp__sent,
@@ -30,7 +30,7 @@
   margin: 0;
   color: var(--theme-danger-text);
   font-size: var(--fs-sm);
-  font-weight: var(--fw-regular);
+  font-weight: var(--fw-body);
 }
 
 .phone-otp__actions {

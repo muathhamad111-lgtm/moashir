@@ -94,7 +94,7 @@
 .kpi-card__name {
   margin: 0;
   font-size: var(--fs-base);
-  font-weight: var(--fw-semibold);
+  font-weight: var(--fw-heading);
   color: var(--theme-heading);
   line-height: var(--lh-base);
 }
@@ -107,7 +107,7 @@
 
 .kpi-card__number {
   font-size: var(--fs-5xl);
-  font-weight: var(--fw-black);
+  font-weight: var(--fw-display);
   color: var(--theme-heading);
   line-height: var(--lh-tight);
   font-variant-numeric: tabular-nums;
@@ -229,7 +229,7 @@
 .kpi-card__fact-value {
   margin: 0;
   font-size: var(--fs-sm);
-  font-weight: var(--fw-semibold);
+  font-weight: var(--fw-figure);
   color: var(--theme-heading);
   font-variant-numeric: tabular-nums;
 }
@@ -238,7 +238,7 @@
   @include flex(row, center, flex-start, var(--space-1));
   padding-block-start: var(--space-2);
   font-size: var(--fs-xs);
-  font-weight: var(--fw-semibold);
+  font-weight: var(--fw-figure);
   color: var(--theme-accent-text);
 
   &::after {

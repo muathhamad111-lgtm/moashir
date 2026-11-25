@@ -57,7 +57,7 @@
 
 .modal__title {
   font-size: var(--fs-lg);
-  font-weight: var(--fw-semibold);
+  font-weight: var(--fw-heading);
   color: var(--theme-heading);
 }
 
@@ -220,7 +220,7 @@
 
   &.is-current {
     color: var(--theme-heading);
-    font-weight: var(--fw-semibold);
+    font-weight: var(--fw-emphasis);
   }
 }
 

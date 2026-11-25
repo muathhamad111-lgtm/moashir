@@ -136,7 +136,7 @@
       border: 1px solid var(--lp-line-strong);
       background: none;
       font-size: 0.82rem;
-      font-weight: 600;
+      font-weight: var(--fw-emphasis);
       cursor: pointer;
 
       &:hover,
@@ -163,7 +163,7 @@
   &__cta {
     justify-self: start;
     color: var(--lp-accent);
-    font-weight: 700;
+    font-weight: var(--fw-emphasis);
   }
 
   &__form {

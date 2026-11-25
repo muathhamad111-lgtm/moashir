@@ -59,7 +59,7 @@
   color: var(--theme-heading);
   font-family: var(--font-heading);
   font-size: var(--fs-xl);
-  font-weight: var(--fw-semibold);
+  font-weight: var(--fw-heading);
 
   @include respond-to('lg') {
     font-size: var(--fs-2xl);
@@ -100,7 +100,7 @@
   color: var(--theme-heading);
   font-family: var(--font-heading);
   font-size: var(--fs-lg);
-  font-weight: var(--fw-semibold);
+  font-weight: var(--fw-heading);
 }
 
 .station-row__legend {
@@ -115,7 +115,7 @@
     padding-inline: var(--space-3);
     border-radius: var(--radius-pill);
     font-size: var(--fs-xs);
-    font-weight: var(--fw-semibold);
+    font-weight: var(--fw-figure);
   }
 }
 
@@ -171,7 +171,7 @@
 
   &.is-active {
     color: var(--theme-heading);
-    font-weight: var(--fw-semibold);
+    font-weight: var(--fw-figure);
   }
 }
 
@@ -183,7 +183,7 @@
   border-radius: var(--radius-circle);
   background-color: var(--theme-surface);
   font-family: var(--font-latin);
-  font-weight: var(--fw-semibold);
+  font-weight: var(--fw-figure);
 
   .station-row__button--complete & {
     border-color: var(--theme-accent-text);
@@ -480,7 +480,7 @@
   color: var(--theme-heading);
   font-family: var(--font-heading);
   font-size: var(--fs-xl);
-  font-weight: var(--fw-semibold);
+  font-weight: var(--fw-heading);
 }
 
 .station-panel__description {

@@ -12,7 +12,7 @@
 .accredited-current__label {
   margin: 0;
   font-size: var(--fs-xs);
-  font-weight: var(--fw-medium);
+  font-weight: var(--fw-body);
   color: var(--theme-text-muted);
 }
 
@@ -20,7 +20,7 @@
   @include flex(row, center, space-between, var(--space-2));
   flex-wrap: wrap;
   margin: 0;
-  font-weight: var(--fw-semibold);
+  font-weight: var(--fw-body);
   color: var(--theme-heading);
 }
 
@@ -39,7 +39,7 @@
   display: inline-flex;
   align-items: center;
   font-size: var(--fs-sm);
-  font-weight: var(--fw-medium);
+  font-weight: var(--fw-emphasis);
   color: var(--theme-accent-text);
 
   &:focus-visible {

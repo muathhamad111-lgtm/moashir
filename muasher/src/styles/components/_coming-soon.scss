@@ -35,13 +35,13 @@
   background-color: var(--color-info-soft);
   color: var(--theme-info-text);
   font-size: var(--fs-sm);
-  font-weight: var(--fw-semibold);
+  font-weight: var(--fw-emphasis);
 }
 
 .coming-soon__title {
   margin: 0;
   font-size: var(--fs-2xl);
-  font-weight: var(--fw-bold);
+  font-weight: var(--fw-heading);
   color: var(--theme-heading);
 }
 
@@ -57,7 +57,7 @@
   padding-inline: var(--space-4);
   border-radius: var(--radius-md);
   color: var(--theme-accent-text);
-  font-weight: var(--fw-semibold);
+  font-weight: var(--fw-body);
   text-decoration: none;
 
   &:hover {

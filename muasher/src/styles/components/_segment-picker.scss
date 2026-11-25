@@ -16,7 +16,7 @@
   padding: 0;
   margin-block-end: var(--space-2);
   font-size: var(--fs-sm);
-  font-weight: var(--fw-medium);
+  font-weight: var(--fw-body);
   color: var(--theme-text);
 }
 
@@ -70,7 +70,7 @@
 }
 
 .segment-picker__option-title {
-  font-weight: var(--fw-medium);
+  font-weight: var(--fw-heading);
   color: var(--theme-text);
 }
 

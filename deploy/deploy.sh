@@ -199,7 +199,9 @@ build_frontend() {
     (
         cd "${build}/muasher"
         npm ci --no-audit --no-fund
-        VITE_SENTRY_RELEASE="${VITE_SENTRY_RELEASE:-${label}}" npm run build -- --mode "${ENVIRONMENT}"
+        # The licensed Hacen Maghreb files are not in the public repository; the build fails without them.
+        MOASHIR_REQUIRE_LICENSED_FONTS=true VITE_SENTRY_RELEASE="${VITE_SENTRY_RELEASE:-${label}}" \
+            npm run build -- --mode "${ENVIRONMENT}"
     )
 
     [[ -f "${build}/muasher/dist/index.html" ]] || die "The SPA build produced no dist/index.html."

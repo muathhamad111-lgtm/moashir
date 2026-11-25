@@ -14,6 +14,7 @@ use App\Services\Paths\PathIdentityReader;
 use App\Support\HijriDate;
 use App\Support\ScalarValue;
 use App\Support\ValueObjects\LocalizedText;
+use Carbon\CarbonInterface;
 use Illuminate\Contracts\Config\Repository;
 use Illuminate\Support\Facades\Date;
 
@@ -41,6 +42,7 @@ final readonly class ReceiptDocumentBuilder
             'currency_label' => LocalizedText::fromTranslation('finance.currencies.'.ScalarValue::string($receipt->snapshot['currency'] ?? null))->toArray(),
             'method_label' => $this->methodLabelOf($receipt),
             'paid_on' => $this->paidOnOf($receipt, $timezone),
+            'paid_on_hijri' => $this->paidOnHijriOf($receipt, $timezone),
             'labels' => ['ar' => trans('finance.receipt', [], 'ar'), 'en' => trans('finance.receipt', [], 'en')],
         ], $receipt->isVoided() ? self::VOID_WATERMARK : null);
     }
@@ -88,8 +90,23 @@ final readonly class ReceiptDocumentBuilder
 
     private function paidOnOf(PaymentReceipt $receipt, string $timezone): ?string
     {
+        return $this->paidAtOf($receipt, $timezone)?->toDateString();
+    }
+
+    /**
+     * @return array{ar: string, en: string}|null
+     */
+    private function paidOnHijriOf(PaymentReceipt $receipt, string $timezone): ?array
+    {
+        $paidAt = $this->paidAtOf($receipt, $timezone);
+
+        return $paidAt instanceof CarbonInterface ? ['ar' => HijriDate::format($paidAt, 'ar', $timezone), 'en' => HijriDate::format($paidAt, 'en', $timezone)] : null;
+    }
+
+    private function paidAtOf(PaymentReceipt $receipt, string $timezone): ?CarbonInterface
+    {
         $paidAt = $receipt->snapshot['paid_at'] ?? null;
 
-        return is_string($paidAt) && $paidAt !== '' ? Date::parse($paidAt)->setTimezone($timezone)->toDateString() : null;
+        return is_string($paidAt) && $paidAt !== '' ? Date::parse($paidAt)->setTimezone($timezone) : null;
     }
 }

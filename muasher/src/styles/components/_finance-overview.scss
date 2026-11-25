@@ -55,7 +55,7 @@ $overview-cell-min: 7.5rem;
 .finance-overview__value {
   white-space: nowrap;
   font-size: var(--fs-2xl);
-  font-weight: var(--fw-bold);
+  font-weight: var(--fw-body);
   color: var(--theme-heading);
   font-variant-numeric: tabular-nums;
 }
@@ -63,7 +63,7 @@ $overview-cell-min: 7.5rem;
 .finance-overview__label {
   margin: 0;
   font-size: var(--fs-sm);
-  font-weight: var(--fw-regular);
+  font-weight: var(--fw-body);
   color: var(--theme-text-muted);
 }
 
@@ -150,7 +150,7 @@ $overview-cell-min: 7.5rem;
 
 .finance-overview__count {
   font-size: var(--fs-base);
-  font-weight: var(--fw-semibold);
+  font-weight: var(--fw-figure);
   color: var(--theme-heading);
   font-variant-numeric: tabular-nums;
 }

@@ -9,7 +9,7 @@
     gap: var(--space-1);
     border-radius: $tts-radius-control-md;
     font-size: $tts-fs-sm;
-    font-weight: $tts-fw-label;
+    font-weight: var(--fw-emphasis);
     line-height: $tts-lh-label-sm;
 
     &:hover:not(:disabled) {

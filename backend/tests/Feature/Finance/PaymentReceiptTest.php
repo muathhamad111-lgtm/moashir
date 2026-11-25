@@ -13,6 +13,7 @@ use App\Models\Files\StoredFile;
 use App\Models\Finance\PaymentReceipt;
 use App\Services\Documents\DocumentHtmlComposer;
 use App\Services\Finance\ReceiptDocumentBuilder;
+use App\Support\GroupedAmount;
 use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Facades\Storage;
@@ -21,6 +22,11 @@ beforeEach(function (): void {
     Storage::fake('local');
     Notification::fake();
 });
+
+function receiptHtml(PaymentReceipt $receipt): string
+{
+    return app(DocumentHtmlComposer::class)->compose(app(ReceiptDocumentBuilder::class)->for($receipt));
+}
 
 it('shows the own receipt and renders it as a bilingual PDF with the Hijri date', function (): void {
     ['gateway' => $gateway, 'owner' => $owner] = payingEntity(IntegrationMode::Live);
@@ -67,6 +73,48 @@ it('prints a test-mode receipt without any proof disclaimer and names its file a
         ->and($html)->not->toContain('تجريبي')
         ->and($html)->not->toContain('اختبار')
         ->and(app(ReceiptDocumentBuilder::class)->fileNameOf($receipt))->toBe($payment->reference.'.pdf');
+});
+
+it('lays out a paid card receipt in Arabic and English with the payer, amounts and payment details', function (): void {
+    $payment = storedPaidPayment(null, IntegrationMode::Live);
+    $receipt = PaymentReceipt::query()->where('payment_id', $payment->id)->sole();
+    $receipt->snapshot = [...$receipt->snapshot, 'method' => 'mada', 'card_last4' => '4242'];
+    $document = app(ReceiptDocumentBuilder::class)->for($receipt);
+    $html = receiptHtml($receipt);
+
+    expect($html)->toContain('إيصال دفع', 'Payment receipt', 'rc-status--issued">صادر · <span class="en" lang="en">Issued</span>')
+        ->toContain('الجهة الدافعة', 'Paying entity', 'رقم الجهة', 'Entity number')
+        ->toContain('تفاصيل المبلغ', 'Amount details', 'الإجمالي', 'Total')
+        ->toContain('بيانات الدفع', 'Payment details', 'مرجع بوابة الدفع', 'Payment gateway reference')
+        ->toContain((string) $receipt->number, $payment->reference, $payment->entity->reference(), (string) $payment->provider_payment_id)
+        ->toContain('ضريبة القيمة المضافة (15%)', 'VAT (15%)', GroupedAmount::format(ACCREDITED_TOTAL))
+        ->toContain('مدى', '•••• 4242', $document->data['paid_on_hijri']['ar'])
+        ->not->toContain('دون رقم')
+        ->not->toContain('No number')
+        ->not->toContain('rc-status--voided">')
+        ->not->toContain('class="watermark"');
+});
+
+it('prints «دون رقم» in place of the number on a receipt issued without one', function (): void {
+    ['gateway' => $gateway, 'owner' => $owner] = payingEntity();
+    $payment = paidPayment($owner, $gateway);
+    $receipt = PaymentReceipt::query()->sole();
+    $html = receiptHtml($receipt);
+
+    expect($receipt->number)->toBeNull()
+        ->and($html)->toContain('دون رقم', 'No number', 'rc-status--issued">صادر · <span class="en" lang="en">Issued</span>', $payment->reference)
+        ->and($html)->not->toContain('RCP-');
+});
+
+it('marks a voided receipt as voided in Arabic and English', function (): void {
+    $payment = storedPaidPayment(null, IntegrationMode::Live);
+    $receipt = PaymentReceipt::query()->where('payment_id', $payment->id)->sole();
+    $receipt->forceFill(['status' => 'voided', 'voided_at' => now(), 'void_reason' => REFUND_REASON])->save();
+    $html = receiptHtml($receipt);
+
+    expect($html)->toContain('rc-status--voided">ملغى · <span class="en" lang="en">Voided</span>', 'class="watermark"')
+        ->toContain('أُلغي هذا الإيصال بعد تسجيل مبلغ مسترد.', 'This receipt was voided after a refund was recorded.')
+        ->not->toContain('rc-status--issued">');
 });
 
 it('watermarks VOID receipts after a recorded refund, test-mode ones included', function (): void {

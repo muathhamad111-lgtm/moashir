@@ -24,7 +24,7 @@
 .lp {
   :where(h1, h2, h3, h4) {
     margin: 0;
-    font-weight: 700;
+    font-weight: var(--fw-heading);
     line-height: 1.35;
     text-wrap: balance;
     color: inherit;
@@ -83,7 +83,7 @@ html:has(.lp) {
   border-radius: 10px;
   background: var(--lp-btn);
   color: var(--lp-btn-ink);
-  font-weight: 600;
+  font-weight: var(--fw-body);
   translate: 0 -200%;
   transition: translate 0.2s;
 
@@ -124,7 +124,7 @@ html:has(.lp) {
   isolation: isolate;
   border-radius: 99px;
   font-size: 0.85rem;
-  font-weight: 600;
+  font-weight: var(--fw-body);
   color: var(--lp-accent);
   background: linear-gradient(135deg, rgba(255, 255, 255, 0.55), rgba(255, 255, 255, 0.18));
   border: 1px solid rgba(255, 255, 255, 0.7);
@@ -219,7 +219,7 @@ html:has(.lp) {
 
 .lp-soft {
   color: var(--lp-ink-3);
-  font-weight: 600;
+  font-weight: var(--fw-body);
 }
 
 .lp-deep {

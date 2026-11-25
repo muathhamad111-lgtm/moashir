@@ -43,7 +43,7 @@
 
   &.is-selected {
     color: var(--theme-accent-text);
-    font-weight: var(--fw-medium);
+    font-weight: var(--fw-emphasis);
   }
 
   &.is-disabled {
@@ -78,7 +78,7 @@
 
 .dropdown-option__description {
   font-size: var(--fs-xs);
-  font-weight: var(--fw-regular);
+  font-weight: var(--fw-body);
   color: var(--theme-text-muted);
 
   .dropdown-option.is-danger.is-active & {
@@ -92,7 +92,7 @@
   border: var(--border-width) solid var(--theme-border-strong);
   border-radius: var(--radius-pill);
   font-size: var(--fs-xs);
-  font-weight: var(--fw-semibold);
+  font-weight: var(--fw-emphasis);
   color: var(--theme-text);
 }
 

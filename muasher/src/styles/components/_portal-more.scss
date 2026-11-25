@@ -16,7 +16,7 @@
   margin: 0;
   color: var(--theme-accent-text);
   font-size: var(--fs-caption);
-  font-weight: var(--fw-semibold);
+  font-weight: var(--fw-body);
 }
 
 .portal-more__title,
@@ -25,7 +25,7 @@
   color: var(--theme-heading);
   font-family: var(--font-heading);
   font-size: var(--fs-2xl);
-  font-weight: var(--fw-semibold);
+  font-weight: var(--fw-heading);
 }
 
 .portal-help__subtitle {
@@ -51,7 +51,7 @@
   background-color: var(--theme-tint);
   color: var(--theme-accent-text);
   font-family: var(--font-heading);
-  font-weight: var(--fw-medium);
+  font-weight: var(--fw-body);
 }
 
 .portal-more__names {
@@ -62,7 +62,7 @@
   color: var(--theme-heading);
   font-family: var(--font-heading);
   font-size: var(--fs-lg);
-  font-weight: var(--fw-semibold);
+  font-weight: var(--fw-emphasis);
 }
 
 .portal-more__user {
@@ -78,7 +78,7 @@
   margin: 0;
   color: var(--theme-text-secondary);
   font-size: var(--fs-caption);
-  font-weight: var(--fw-semibold);
+  font-weight: var(--fw-heading);
 }
 
 .portal-more__list {
@@ -117,7 +117,7 @@
   color: var(--theme-heading);
   font-family: var(--font-heading);
   font-size: var(--fs-lg);
-  font-weight: var(--fw-semibold);
+  font-weight: var(--fw-heading);
 }
 
 .portal-help__message-text,

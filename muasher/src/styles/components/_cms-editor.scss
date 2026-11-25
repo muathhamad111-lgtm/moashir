@@ -16,7 +16,7 @@
 .cms-page-editor__title {
   margin: 0;
   font-size: var(--fs-lg);
-  font-weight: var(--fw-semibold);
+  font-weight: var(--fw-heading);
   color: var(--theme-heading);
 }
 
@@ -43,7 +43,7 @@
 }
 
 .cms-section-row__name {
-  font-weight: var(--fw-semibold);
+  font-weight: var(--fw-emphasis);
   color: var(--theme-heading);
   overflow-wrap: anywhere;
 }
@@ -117,7 +117,7 @@
 .cms-items__name {
   flex: 1 1 var(--size-control-min);
   min-inline-size: 0;
-  font-weight: var(--fw-medium);
+  font-weight: var(--fw-emphasis);
   color: var(--theme-heading);
   overflow-wrap: anywhere;
 }
@@ -144,7 +144,7 @@
   margin: 0;
   padding: 0;
   font-size: var(--fs-lg);
-  font-weight: var(--fw-semibold);
+  font-weight: var(--fw-heading);
   color: var(--theme-heading);
 }
 

@@ -14,7 +14,7 @@
     background-color: $tts-white;
     color: tts-neutral(600);
     font-size: $tts-fs-xs;
-    font-weight: $tts-fw-label;
+    font-weight: var(--fw-body);
   }
 }
 
@@ -23,7 +23,7 @@
     background-color: $tts-white;
     color: tts-neutral(500);
     font-size: $tts-fs-xs;
-    font-weight: $tts-fw-label;
+    font-weight: var(--fw-body);
   }
 }
 
@@ -78,7 +78,7 @@
   @include in-tts-shell {
     color: tts-neutral(600);
     font-size: $tts-fs-sm;
-    font-weight: $tts-fw-label;
+    font-weight: var(--fw-body);
 
     &::placeholder {
       color: tts-neutral(500);
@@ -117,7 +117,7 @@
     padding-inline: var(--space-5);
     color: tts-neutral(600);
     font-size: $tts-fs-sm;
-    font-weight: $tts-fw-label;
+    font-weight: var(--fw-body);
 
     &:hover {
       color: tts-neutral(900);
@@ -156,7 +156,7 @@
     background-color: tts-neutral(50);
     color: tts-neutral(600);
     font-size: $tts-fs-xxs;
-    font-weight: $tts-fw-label;
+    font-weight: var(--fw-emphasis);
   }
 }
 
@@ -194,7 +194,7 @@
   @include in-tts-shell {
     color: tts-neutral(900);
     font-size: $tts-fs-display-xxs;
-    font-weight: $tts-fw-label;
+    font-weight: var(--fw-figure);
   }
 }
 
@@ -202,7 +202,7 @@
   @include in-tts-shell {
     color: tts-neutral(500);
     font-size: $tts-fs-sm;
-    font-weight: $tts-fw-label;
+    font-weight: var(--fw-body);
   }
 }
 
@@ -240,7 +240,7 @@
   @include in-tts-shell {
     color: tts-neutral(900);
     font-size: $tts-fs-heading-md;
-    font-weight: $tts-fw-label;
+    font-weight: var(--fw-heading);
   }
 }
 

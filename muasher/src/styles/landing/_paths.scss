@@ -61,7 +61,7 @@
     padding: 3px 12px;
     border-radius: 99px;
     font-size: 0.8rem;
-    font-weight: 700;
+    font-weight: var(--fw-emphasis);
     background: $lp-dark;
     color: $lp-pale;
   }
@@ -99,10 +99,10 @@
     font-size: 0.98rem;
 
     b {
-      font-weight: 700;
+      font-weight: var(--fw-emphasis);
 
       small {
-        font-weight: 500;
+        font-weight: var(--fw-body);
         font-size: 0.78rem;
         color: var(--lp-ink-3);
       }
@@ -111,7 +111,7 @@
 
   &__cost-label,
   &__vat {
-    font-weight: 500;
+    font-weight: var(--fw-body);
     font-size: 0.8rem;
     color: var(--lp-ink-3);
   }

@@ -19,7 +19,7 @@
 .bag-manage__back {
   color: var(--theme-accent-text);
   font-size: var(--fs-sm);
-  font-weight: var(--fw-medium);
+  font-weight: var(--fw-body);
 
   &:focus-visible {
     @include focus-ring;
@@ -44,7 +44,7 @@
 .bag-manage__eyebrow {
   margin: 0;
   font-size: var(--fs-xs);
-  font-weight: var(--fw-semibold);
+  font-weight: var(--fw-body);
   letter-spacing: var(--tracking-wide, normal);
   color: var(--theme-text-muted);
   text-transform: uppercase;
@@ -54,7 +54,7 @@
 .bag-manage__title {
   margin: 0;
   font-size: var(--fs-2xl);
-  font-weight: var(--fw-bold);
+  font-weight: var(--fw-heading);
   color: var(--theme-heading);
 }
 
@@ -70,7 +70,7 @@
 .bag-manage__section-title {
   margin: 0;
   font-size: var(--fs-lg);
-  font-weight: var(--fw-semibold);
+  font-weight: var(--fw-heading);
   color: var(--theme-heading);
 }
 
@@ -86,7 +86,7 @@
 .bag__fee-title {
   margin: 0;
   font-size: var(--fs-lg);
-  font-weight: var(--fw-semibold);
+  font-weight: var(--fw-heading);
   color: var(--theme-heading);
 }
 
@@ -112,7 +112,7 @@
 .bag__fee-value {
   margin: 0;
   font-size: var(--fs-xl);
-  font-weight: var(--fw-bold);
+  font-weight: var(--fw-figure);
   color: var(--theme-heading);
 }
 
@@ -124,7 +124,7 @@
 .bag__stage-eyebrow {
   margin-block-end: var(--space-1);
   font-size: var(--fs-xs);
-  font-weight: var(--fw-semibold);
+  font-weight: var(--fw-body);
   color: var(--theme-text-muted);
   text-transform: uppercase;
 }
@@ -132,7 +132,7 @@
 .bag__stage-title {
   margin: 0;
   font-size: var(--fs-lg);
-  font-weight: var(--fw-semibold);
+  font-weight: var(--fw-heading);
   color: var(--theme-heading);
 }
 
@@ -183,7 +183,7 @@
 
 .bag__helper-link {
   color: var(--theme-accent-text);
-  font-weight: var(--fw-medium);
+  font-weight: var(--fw-emphasis);
   text-decoration: none;
 
   &:hover,
@@ -216,7 +216,7 @@
 .bag-manage__stage-name {
   margin: 0;
   font-size: var(--fs-base);
-  font-weight: var(--fw-semibold);
+  font-weight: var(--fw-emphasis);
   color: var(--theme-heading);
 }
 
@@ -238,7 +238,7 @@
 
 .bag-manage__active-stage {
   margin: 0;
-  font-weight: var(--fw-medium);
+  font-weight: var(--fw-emphasis);
   color: var(--theme-heading);
 }
 
@@ -279,7 +279,7 @@
 }
 
 .bag-manage__checkbox-label {
-  font-weight: var(--fw-medium);
+  font-weight: var(--fw-body);
 }
 
 .bag-manage__attach {
@@ -304,7 +304,7 @@
 
 .bag__how-title {
   margin: 0 0 var(--space-1);
-  font-weight: var(--fw-semibold);
+  font-weight: var(--fw-heading);
   color: var(--theme-text);
 }
 
@@ -362,7 +362,7 @@
 
 .bag__comparison-link-title {
   display: block;
-  font-weight: var(--fw-semibold);
+  font-weight: var(--fw-heading);
   color: var(--theme-heading);
 }
 
@@ -393,7 +393,7 @@
 .gap-guidance__title {
   margin: 0;
   font-size: var(--fs-sm);
-  font-weight: var(--fw-semibold);
+  font-weight: var(--fw-heading);
   color: var(--theme-heading);
 }
 
@@ -422,7 +422,7 @@
 .bag-comparison__eyebrow {
   margin: 0;
   font-size: var(--fs-xs);
-  font-weight: var(--fw-semibold);
+  font-weight: var(--fw-body);
   letter-spacing: var(--tracking-wide, normal);
   color: var(--theme-text-muted);
   text-transform: uppercase;
@@ -431,7 +431,7 @@
 .bag-comparison__title {
   margin: 0;
   font-size: var(--fs-2xl);
-  font-weight: var(--fw-bold);
+  font-weight: var(--fw-heading);
   color: var(--theme-heading);
 }
 
@@ -475,7 +475,7 @@
 
 .bag-comparison__overall-value {
   font-size: var(--fs-2xl);
-  font-weight: var(--fw-bold);
+  font-weight: var(--fw-figure);
   color: var(--theme-heading);
   font-variant-numeric: tabular-nums;
 }
@@ -486,7 +486,7 @@
 
 .bag-comparison__overall-gain {
   font-size: var(--fs-xl);
-  font-weight: var(--fw-bold);
+  font-weight: var(--fw-heading);
   color: var(--color-success);
   font-variant-numeric: tabular-nums;
 }
@@ -511,7 +511,7 @@
 
 .bag-comparison__count-value {
   font-size: var(--fs-xl);
-  font-weight: var(--fw-bold);
+  font-weight: var(--fw-figure);
   color: var(--theme-heading);
   font-variant-numeric: tabular-nums;
 }
@@ -528,7 +528,7 @@
 .bag-comparison__group-title {
   margin: 0;
   font-size: var(--fs-lg);
-  font-weight: var(--fw-semibold);
+  font-weight: var(--fw-heading);
   color: var(--theme-heading);
 }
 
@@ -571,7 +571,7 @@
 .reassessment-row__sub {
   margin: 0;
   font-size: var(--fs-base);
-  font-weight: var(--fw-semibold);
+  font-weight: var(--fw-body);
   color: var(--theme-heading);
 }
 
@@ -583,7 +583,7 @@
 
 .reassessment-row__scope {
   font-size: var(--fs-xs);
-  font-weight: var(--fw-semibold);
+  font-weight: var(--fw-body);
   color: var(--theme-accent-text);
 }
 
@@ -607,14 +607,14 @@
 
 .reassessment-row__score-value {
   font-size: var(--fs-lg);
-  font-weight: var(--fw-bold);
+  font-weight: var(--fw-figure);
   color: var(--theme-heading);
   font-variant-numeric: tabular-nums;
 }
 
 .reassessment-row__diff {
   font-size: var(--fs-lg);
-  font-weight: var(--fw-bold);
+  font-weight: var(--fw-body);
   font-variant-numeric: tabular-nums;
 }
 
@@ -679,7 +679,7 @@
 .bag-intro__eyebrow {
   margin: 0;
   font-size: var(--fs-xs);
-  font-weight: var(--fw-semibold);
+  font-weight: var(--fw-body);
   letter-spacing: var(--tracking-wide, normal);
   color: var(--theme-accent-text);
   text-transform: uppercase;
@@ -688,7 +688,7 @@
 .bag-intro__title {
   margin: 0;
   font-size: var(--fs-3xl, var(--fs-2xl));
-  font-weight: var(--fw-bold);
+  font-weight: var(--fw-heading);
   color: var(--theme-heading);
 }
 
@@ -709,7 +709,7 @@
 .bag-intro__block-title {
   margin: 0 0 var(--space-2);
   font-size: var(--fs-lg);
-  font-weight: var(--fw-semibold);
+  font-weight: var(--fw-heading);
   color: var(--theme-heading);
 }
 
@@ -722,7 +722,7 @@
 .bag-intro__section-title {
   margin: 0 0 var(--space-4);
   font-size: var(--fs-lg);
-  font-weight: var(--fw-semibold);
+  font-weight: var(--fw-heading);
   color: var(--theme-heading);
 }
 
@@ -754,13 +754,13 @@
   border-radius: var(--radius-pill);
   background-color: var(--theme-accent);
   color: var(--theme-on-accent);
-  font-weight: var(--fw-bold);
+  font-weight: var(--fw-figure);
   font-variant-numeric: tabular-nums;
 }
 
 .bag-intro__step-label {
   font-size: var(--fs-sm);
-  font-weight: var(--fw-medium);
+  font-weight: var(--fw-body);
   color: var(--theme-text);
 }
 
@@ -845,14 +845,14 @@
 
 .bag-context__track {
   font-size: var(--fs-sm);
-  font-weight: var(--fw-semibold);
+  font-weight: var(--fw-body);
   color: var(--theme-heading);
 }
 
 .bag-context__score {
   margin: var(--space-2) 0 0;
   font-size: var(--fs-xl);
-  font-weight: var(--fw-bold);
+  font-weight: var(--fw-figure);
   color: var(--theme-heading);
   font-variant-numeric: tabular-nums;
 }
@@ -871,7 +871,7 @@
 .bag-requests__eyebrow {
   margin: 0;
   font-size: var(--fs-xs);
-  font-weight: var(--fw-semibold);
+  font-weight: var(--fw-body);
   letter-spacing: var(--tracking-wide, normal);
   color: var(--theme-text-muted);
   text-transform: uppercase;
@@ -880,7 +880,7 @@
 .bag-requests__title {
   margin: var(--space-1) 0 0;
   font-size: var(--fs-2xl);
-  font-weight: var(--fw-bold);
+  font-weight: var(--fw-heading);
   color: var(--theme-heading);
 }
 
@@ -890,7 +890,7 @@
 }
 
 .bag-requests__entity {
-  font-weight: var(--fw-medium);
+  font-weight: var(--fw-emphasis);
   color: var(--theme-heading);
   margin-inline-end: var(--space-2);
 }
@@ -968,7 +968,7 @@
 }
 
 .bag__history-name {
-  font-weight: var(--fw-semibold);
+  font-weight: var(--fw-emphasis);
   color: var(--theme-heading);
 }
 
@@ -984,7 +984,7 @@
 
 .bag__history-score--after {
   color: var(--color-success);
-  font-weight: var(--fw-semibold);
+  font-weight: var(--fw-figure);
 }
 
 .bag__history-arrow {
@@ -997,5 +997,5 @@
   border-radius: var(--radius-pill);
   background-color: var(--color-success-soft);
   color: var(--color-success);
-  font-weight: var(--fw-semibold);
+  font-weight: var(--fw-body);
 }

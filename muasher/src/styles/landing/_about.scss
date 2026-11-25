@@ -8,7 +8,7 @@
   max-width: 920px;
   margin-block-end: clamp(48px, 6vw, 80px);
   font-size: clamp(1.55rem, 3.3vw, 2.6rem);
-  font-weight: 700;
+  font-weight: var(--fw-heading);
   line-height: 1.7;
   letter-spacing: -0.005em;
 
@@ -35,7 +35,7 @@
 
   &__label {
     font-size: 0.9rem;
-    font-weight: 700;
+    font-weight: var(--fw-body);
     color: var(--lp-ink-3);
   }
 
@@ -89,7 +89,7 @@
   &__title {
     margin-block-end: 18px;
     font-size: 1.1rem;
-    font-weight: 700;
+    font-weight: var(--fw-heading);
     color: var(--lp-ink-3);
   }
 
@@ -139,7 +139,7 @@
       inset-inline-end: -10px;
       font-style: normal;
       font-size: 1.05rem;
-      font-weight: 700;
+      font-weight: var(--fw-figure);
       line-height: 1;
       letter-spacing: 0.02em;
       color: color-mix(in srgb, var(--lp-accent) 70%, transparent);

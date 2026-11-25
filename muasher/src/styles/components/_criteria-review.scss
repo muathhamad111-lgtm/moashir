@@ -21,7 +21,7 @@
 
 .criteria-review-page__count {
   margin: 0;
-  font-weight: var(--fw-semibold);
+  font-weight: var(--fw-figure);
   color: var(--theme-heading);
 }
 
@@ -100,7 +100,7 @@
 }
 
 .criteria-change__name {
-  font-weight: var(--fw-semibold);
+  font-weight: var(--fw-emphasis);
   color: var(--theme-heading);
 }
 
@@ -151,7 +151,7 @@
 
 .criteria-change__after {
   text-decoration: none;
-  font-weight: var(--fw-semibold);
+  font-weight: var(--fw-body);
   color: var(--theme-heading);
 }
 
@@ -213,7 +213,7 @@
 .criteria-versions__name {
   display: block;
   margin-block-end: var(--space-1);
-  font-weight: var(--fw-semibold);
+  font-weight: var(--fw-emphasis);
   color: var(--theme-heading);
 }
 
@@ -267,7 +267,7 @@
 
 .criteria-change-tile__count {
   font-size: var(--fs-2xl);
-  font-weight: var(--fw-bold);
+  font-weight: var(--fw-figure);
   color: var(--theme-heading);
 }
 

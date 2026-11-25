@@ -13,7 +13,7 @@
   color: var(--theme-heading);
   font-family: var(--font-heading);
   font-size: var(--fs-xl);
-  font-weight: var(--fw-bold);
+  font-weight: var(--fw-heading);
 }
 
 .path-tiles__grid {
@@ -54,7 +54,7 @@
   color: var(--theme-heading);
   font-family: var(--font-heading);
   font-size: var(--fs-lg);
-  font-weight: var(--fw-bold);
+  font-weight: var(--fw-heading);
 }
 
 .path-tile__tag {
@@ -66,7 +66,7 @@
   background-color: var(--color-info-soft);
   color: var(--theme-info-text);
   font-size: var(--fs-caption);
-  font-weight: var(--fw-semibold);
+  font-weight: var(--fw-body);
 }
 
 .path-tile__line,
@@ -96,7 +96,7 @@
 
 .path-tile__history {
   font-size: var(--fs-sm);
-  font-weight: var(--fw-medium);
+  font-weight: var(--fw-body);
   color: var(--theme-accent-text);
   text-decoration: underline;
   text-underline-offset: var(--space-1);
@@ -117,12 +117,12 @@
 }
 
 .path-price__line--total {
-  font-weight: var(--fw-semibold);
+  font-weight: var(--fw-figure);
 }
 
 .path-price__free {
   color: var(--theme-success-text);
-  font-weight: var(--fw-semibold);
+  font-weight: var(--fw-figure);
 }
 
 .path-price__muted {

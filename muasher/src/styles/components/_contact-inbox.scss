@@ -12,7 +12,7 @@
   flex-wrap: wrap;
   margin: 0;
   font-size: var(--fs-2xl);
-  font-weight: var(--fw-bold);
+  font-weight: var(--fw-heading);
   color: var(--theme-heading);
 }
 
@@ -21,7 +21,7 @@
 }
 
 .contact-inbox__reference {
-  font-weight: var(--fw-semibold);
+  font-weight: var(--fw-body);
   color: var(--theme-accent-text);
 
   &:focus-visible {
@@ -43,7 +43,7 @@
   inline-size: fit-content;
   min-block-size: var(--size-touch-target);
   color: var(--theme-accent-text);
-  font-weight: var(--fw-semibold);
+  font-weight: var(--fw-body);
 
   &:focus-visible {
     @include focus-ring;
@@ -135,7 +135,7 @@
 }
 
 .contact-entries__author {
-  font-weight: var(--fw-semibold);
+  font-weight: var(--fw-body);
   color: var(--theme-heading);
 }
 

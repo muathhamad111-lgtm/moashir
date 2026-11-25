@@ -162,7 +162,7 @@
   border-radius: var(--radius-md);
   color: var(--theme-text);
   font-size: var(--fs-sm);
-  font-weight: var(--fw-medium);
+  font-weight: var(--fw-emphasis);
 
   @include respond-to('2xl') {
     padding-inline: var(--space-3);
@@ -181,7 +181,7 @@
 
   &.is-active {
     color: var(--theme-accent-text);
-    font-weight: var(--fw-semibold);
+    font-weight: var(--fw-emphasis);
   }
 
   .public-nav-links--bar &::after {

@@ -19,7 +19,7 @@
   color: var(--band-ink);
   font-family: var(--font-heading);
   font-size: var(--fs-section-title-fluid);
-  font-weight: var(--fw-bold);
+  font-weight: var(--fw-heading);
   line-height: var(--lh-heading);
 }
 
@@ -45,7 +45,7 @@
   background-color: var(--glass-fill);
   color: var(--band-ink);
   font-size: var(--fs-caption);
-  font-weight: var(--fw-semibold);
+  font-weight: var(--fw-emphasis);
 
   &--free {
     box-shadow: inset 0 0 0 var(--border-width) var(--tier-diamond-graphic-on-band);
@@ -79,7 +79,7 @@
   margin: 0;
   color: var(--data-on-band);
   font-size: var(--fs-caption);
-  font-weight: var(--fw-semibold);
+  font-weight: var(--fw-body);
 }
 
 .path-header-card__title {
@@ -87,7 +87,7 @@
   color: var(--band-ink);
   font-family: var(--font-heading);
   font-size: var(--fs-xl);
-  font-weight: var(--fw-bold);
+  font-weight: var(--fw-heading);
 }
 
 .path-header-card__body {
@@ -127,7 +127,7 @@
   background-color: var(--color-white);
   color: var(--color-teal-deep);
   font-size: var(--fs-caption);
-  font-weight: var(--fw-semibold);
+  font-weight: var(--fw-emphasis);
 }
 
 .path-primary-action {
@@ -210,7 +210,7 @@
   margin: 0;
   color: var(--band-ink);
   font-size: var(--fs-sm);
-  font-weight: var(--fw-semibold);
+  font-weight: var(--fw-body);
 }
 
 .path-header__skeleton {

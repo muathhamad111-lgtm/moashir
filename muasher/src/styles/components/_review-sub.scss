@@ -3,7 +3,7 @@
 .review-main__title {
   margin: 0;
   font-size: var(--fs-lg);
-  font-weight: var(--fw-semibold);
+  font-weight: var(--fw-heading);
   color: var(--theme-heading);
 }
 
@@ -47,7 +47,7 @@
 .review-sub__title {
   margin: 0;
   font-size: var(--fs-base);
-  font-weight: var(--fw-semibold);
+  font-weight: var(--fw-heading);
   color: var(--theme-heading);
 }
 
@@ -60,7 +60,7 @@
 .review-sub__label {
   margin-block: 0 var(--space-1);
   font-size: var(--fs-xs);
-  font-weight: var(--fw-semibold);
+  font-weight: var(--fw-body);
   color: var(--theme-text-muted);
 }
 
@@ -91,7 +91,7 @@
 .review-evidence__title {
   margin-block: 0 var(--space-2);
   font-size: var(--fs-sm);
-  font-weight: var(--fw-semibold);
+  font-weight: var(--fw-heading);
   color: var(--theme-heading);
 }
 
@@ -123,7 +123,7 @@
   color: var(--theme-accent-text);
   font-family: var(--font-latin);
   font-size: var(--fs-xs);
-  font-weight: var(--fw-bold);
+  font-weight: var(--fw-body);
 }
 
 .review-evidence__meta {
@@ -135,7 +135,7 @@
 .review-evidence__name {
   @include truncate;
   font-size: var(--fs-sm);
-  font-weight: var(--fw-semibold);
+  font-weight: var(--fw-emphasis);
   color: var(--theme-heading);
 }
 
@@ -168,7 +168,7 @@
 .review-feedback__legend {
   padding-inline: var(--space-1);
   font-size: var(--fs-sm);
-  font-weight: var(--fw-semibold);
+  font-weight: var(--fw-body);
   color: var(--theme-heading);
 }
 
@@ -181,7 +181,7 @@
 .review-evidence__indicator {
   margin-block: 0 var(--space-2);
   font-size: var(--fs-sm);
-  font-weight: var(--fw-semibold);
+  font-weight: var(--fw-body);
   color: var(--theme-heading);
 }
 
@@ -197,6 +197,6 @@
 .review-main-evidence__title {
   margin: 0;
   font-size: var(--fs-base);
-  font-weight: var(--fw-semibold);
+  font-weight: var(--fw-heading);
   color: var(--theme-heading);
 }
