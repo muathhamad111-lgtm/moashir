@@ -12,6 +12,7 @@ import {
   contactHandlers,
   inboxList,
   inboxMessage,
+  inboxView,
   noteMessage,
   reopenMessage,
   replyMessage,
@@ -72,7 +73,7 @@ function write(perform, init = {}) {
   return route(async ({ params, request, user }) => {
     const body = await request.json().catch(() => ({}))
     requireReason(body)
-    return envelope({ ...perform(params.id, body, user) }, {}, init)
+    return envelope(inboxView(perform(params.id, body, user)), {}, init)
   })
 }
 
@@ -92,7 +93,7 @@ export const contactInboxHandlers = [
   ),
   http.get(
     '/api/v1/admin/contact-messages/:id',
-    route(({ params }) => envelope({ ...inboxMessage(params.id) })),
+    route(({ params }) => envelope(inboxView(inboxMessage(params.id)))),
   ),
   http.post(
     '/api/v1/admin/contact-messages/:id/assign',

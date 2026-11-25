@@ -27,6 +27,7 @@ final class ContactMessageResource extends JsonResource
             'id' => $message->public_id,
             'reference' => $message->reference,
             'status' => $message->status->value,
+            'inbox_status' => $message->inboxStatus()->value,
             'enquiry_type' => $message->enquiry_type->value,
             'sender' => [
                 'name' => $message->sender_name,
@@ -39,6 +40,7 @@ final class ContactMessageResource extends JsonResource
             'linked_user' => $this->userSummary($message->relationLoaded('sender') ? $message->sender : null),
             'entity' => $message->relationLoaded('entity') && $message->entity instanceof Entity ? EntityPresenter::summary($message->entity) : null,
             'assignee' => $this->userSummary($message->relationLoaded('assignee') ? $message->assignee : null),
+            'excerpt' => $message->getAttribute('excerpt'),
             'entry_count' => $message->getAttribute('entries_count') ?? ($message->relationLoaded('entries') ? $message->entries->count() : null),
             'created_at' => $message->created_at->toIso8601String(),
             'last_activity_at' => $message->last_activity_at->toIso8601String(),

@@ -4,11 +4,7 @@ import { useI18n } from 'vue-i18n'
 import AppSelect from '@/components/form/AppSelect.vue'
 import BaseDatePicker from '@/components/form/BaseDatePicker.vue'
 import ListToolbar from '@/components/data-list/ListToolbar.vue'
-import {
-  CONTACT_ASSIGNEE_FILTERS,
-  CONTACT_INBOX_STATUSES,
-  CONTACT_LINKED_FILTERS,
-} from '@/constants/contactInbox'
+import { CONTACT_ASSIGNEE_FILTERS, CONTACT_LINKED_FILTERS } from '@/constants/contactInbox'
 import { CONTACT_ENQUIRY_TYPES } from '@/constants/contact'
 
 const props = defineProps({
@@ -24,11 +20,6 @@ function withAll(options) {
   return [{ value: '', label: t('dataList.filter.all') }, ...options]
 }
 
-const statusOptions = computed(() =>
-  withAll(
-    CONTACT_INBOX_STATUSES.map((value) => ({ value, label: t(`portal.messages.status.${value}`) })),
-  ),
-)
 const typeOptions = computed(() =>
   withAll(
     CONTACT_ENQUIRY_TYPES.map((value) => ({
@@ -69,12 +60,6 @@ const filterState = { filters: props.filters, setFilter: update }
       @update:search="emit('update:search', $event)"
     >
       <template #filters="{ draft }">
-        <AppSelect
-          :label="t('contactInbox.columns.status')"
-          :model-value="draft.filters.status"
-          :options="statusOptions"
-          @update:model-value="draft.setFilter('status', $event)"
-        />
         <AppSelect
           :label="t('contactInbox.columns.enquiryType')"
           :model-value="draft.filters.enquiryType"

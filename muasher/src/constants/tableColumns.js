@@ -14,7 +14,7 @@ export const TABLE_COLUMNS = Object.freeze({
   'committee-assignments': { columns: ['status', 'dueAt', 'progress', 'percent'] },
   'committee-members': { columns: ['status', 'progress', 'appointedAt'] },
   'contact-inbox': {
-    columns: ['sender', 'enquiryType', 'status', 'assignee', 'lastActivityAt', 'entries'],
+    columns: ['reference', 'enquiryType', 'status', 'assignee', 'lastActivityAt'],
   },
   'criteria-versions': { columns: ['published', 'scope', 'affected'] },
   'entities-contact': { columns: ['level', 'authorizedPersonName', 'officialEmail', 'status'] },

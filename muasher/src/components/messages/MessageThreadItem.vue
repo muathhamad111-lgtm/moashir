@@ -31,7 +31,7 @@ const age = computed(() => formatRelativeTime(props.item.lastActivityAt, locale.
         }}</span>
         <span class="message-item__age">{{ age }}</span>
       </span>
-      <span v-if="item.preview" class="message-item__preview">{{ item.preview }}</span>
+      <span v-if="item.preview" class="message-item__preview" dir="auto">{{ item.preview }}</span>
       <span class="message-item__foot">
         <bdi class="message-item__reference" dir="ltr">{{ item.reference }}</bdi>
         <MessageStatusBadge :status="item.status" />

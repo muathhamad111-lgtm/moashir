@@ -1,4 +1,18 @@
-export const CONTACT_INBOX_STATUSES = Object.freeze(['new', 'in-progress', 'replied', 'closed'])
+// The staff inbox status, derived on the server from the assignee and the last reply vs the last
+// sender message (new → assigned → replied ⇄ awaiting-reply). Closing is a separate lifecycle flag.
+export const CONTACT_INBOX_STATUSES = Object.freeze([
+  'new',
+  'assigned',
+  'replied',
+  'awaiting-reply',
+])
+
+export const CONTACT_INBOX_STATUS_TONES = Object.freeze({
+  new: 'info',
+  assigned: 'warning',
+  replied: 'success',
+  'awaiting-reply': 'danger',
+})
 
 export const CONTACT_INBOX_OPEN_STATUSES = Object.freeze(['new', 'in-progress', 'replied'])
 

@@ -27,21 +27,21 @@ it('lists the inbox for the holders of the permission with filters, search and s
     $handler = contentOfficer();
     $owner = ownerOf(entityWithOwner());
     $linked = linkedContactMessage($owner);
-    contactMessage(['sender_name' => 'أحمد الدوسري', 'enquiry_type' => ContactEnquiryType::TechnicalSupport, 'status' => ContactMessageStatus::Replied]);
+    contactMessage(['sender_name' => 'أحمد الدوسري', 'enquiry_type' => ContactEnquiryType::TechnicalSupport, 'status' => ContactMessageStatus::Replied, 'replied_at' => Date::now()->addMinute()]);
     contactMessage(['sender_name' => 'نورة القحطاني', 'organization_name' => 'مؤسسة النماء الأهلية', 'assigned_to_user_id' => $handler->id, 'status' => ContactMessageStatus::InProgress]);
     contactMessage()->forceFill(['status' => ContactMessageStatus::Closed, 'closed_at' => Date::now()])->save();
 
     switchTo($handler)->getJson('/api/v1/admin/contact-messages')->assertOk()
         ->assertJsonCount(4, 'data')
         ->assertJsonPath('meta.pagination.total', 4)
-        ->assertJsonPath('meta.stats', ['new' => 1, 'in_progress' => 1, 'replied' => 1, 'closed' => 1]);
+        ->assertJsonPath('meta.stats', ['new' => 2, 'assigned' => 1, 'replied' => 1, 'awaiting_reply' => 0]);
 
     $query = static fn (string $filter): array => switchTo($handler)->getJson('/api/v1/admin/contact-messages?'.$filter)->assertOk()->json('data');
 
     expect(array_column($query('filter[linked]=true'), 'id'))->toBe([$linked->public_id])
         ->and($query('filter[linked]=false'))->toHaveCount(3)
         ->and(array_column($query('filter[enquiry_type]=technical_support'), 'enquiry_type'))->toBe(['technical_support'])
-        ->and(array_column($query('filter[status]=replied'), 'status'))->toBe(['replied'])
+        ->and(array_column($query('filter[inbox_status]=replied'), 'inbox_status'))->toBe(['replied'])
         ->and($query('filter[assignee]=me'))->toHaveCount(1)
         ->and($query('filter[assignee]=none'))->toHaveCount(3)
         ->and($query('search='.urlencode('احمد')))->toHaveCount(1)
@@ -71,7 +71,7 @@ it('refuses the inbox to users without the permission and to guests', function (
 it('validates the inbox filters', function (string $filter, string $field): void {
     switchTo(contentOfficer())->getJson('/api/v1/admin/contact-messages?'.$filter)->assertUnprocessable()->assertJsonValidationErrors($field);
 })->with([
-    ['filter[status]=archived', 'filter.status'],
+    ['filter[inbox_status]=archived', 'filter.inbox_status'],
     ['filter[enquiry_type]=invoices', 'filter.enquiry_type'],
     ['filter[from]=03-11-2026', 'filter.from'],
     ['filter[assignee]=someone', 'filter.assignee'],
@@ -232,7 +232,7 @@ it('requires a reason from the Super Admin and raises the security alert', funct
 
 it('adds the new messages to the action center of the handlers', function (): void {
     contactMessage();
-    contactMessage(['status' => ContactMessageStatus::Replied]);
+    contactMessage(['status' => ContactMessageStatus::Replied, 'replied_at' => Date::now()->addMinute()]);
 
     $items = collect(switchTo(contentOfficer())->getJson('/api/v1/dashboard/action-center')->assertOk()->json('data'))->keyBy('key');
 

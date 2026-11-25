@@ -41,6 +41,7 @@ export function toInboxMessage(raw = {}) {
     id: raw.id ?? null,
     reference: raw.reference ?? '',
     status: raw.status ?? 'new',
+    inboxStatus: raw.inboxStatus ?? 'new',
     enquiryType: raw.enquiryType ?? 'general',
     sender: toSender(raw.sender),
     isLinked: raw.isLinked === true,
@@ -48,6 +49,7 @@ export function toInboxMessage(raw = {}) {
     entity: toEntity(raw.entity),
     assignee: toPerson(raw.assignee),
     entryCount: raw.entryCount ?? null,
+    excerpt: raw.excerpt ?? '',
     createdAt: raw.createdAt ?? null,
     lastActivityAt: raw.lastActivityAt ?? null,
     repliedAt: raw.repliedAt ?? null,
@@ -60,8 +62,8 @@ export function toInboxMessage(raw = {}) {
 export function toInboxStats(raw = {}) {
   return {
     new: raw.new ?? 0,
-    inProgress: raw.inProgress ?? 0,
+    assigned: raw.assigned ?? 0,
     replied: raw.replied ?? 0,
-    closed: raw.closed ?? 0,
+    awaitingReply: raw.awaitingReply ?? 0,
   }
 }

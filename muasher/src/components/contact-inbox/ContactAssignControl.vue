@@ -38,19 +38,23 @@ function assign() {
 </script>
 
 <template>
-  <div class="contact-assign">
+  <div class="contact-assign" role="group" :aria-label="t('contactInbox.assign.label')">
     <AppSelect
       v-model="choice"
       name="assigneeId"
       :label="t('contactInbox.assign.label')"
+      hide-label
       :options="options"
       :error="error"
       :disabled="disabled"
     />
     <BaseButton
+      class="contact-assign__save"
       variant="secondary"
-      size="sm"
       icon="user-check"
+      icon-only
+      :aria-label="t('contactInbox.assign.save')"
+      :title="t('contactInbox.assign.save')"
       :loading="busy"
       :disabled="disabled || choice === current"
       @click="assign"

@@ -1118,13 +1118,13 @@ export const appRoutes = [
   {
     path: '/admin/contact-messages',
     name: ROUTE_NAMES.ADMIN_CONTACT_MESSAGES,
-    component: () => import('@/views/admin/contact/Index.vue'),
+    component: () => import('@/views/admin/contact/Inbox.vue'),
     meta: { layout: 'app', titleKey: 'routes.admin.contactMessages.title', requiresAuth: true },
   },
   {
     path: `/admin/contact-messages/:id(${UUID_PARAM})`,
     name: ROUTE_NAMES.ADMIN_CONTACT_MESSAGE,
-    component: () => import('@/views/admin/contact/Thread.vue'),
+    component: () => import('@/views/admin/contact/Inbox.vue'),
     meta: { layout: 'app', titleKey: 'routes.admin.contactMessage.title', requiresAuth: true },
   },
   {

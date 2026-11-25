@@ -34,6 +34,10 @@ const USERS = {
 const DEV_OVERLAYS =
   '#__vue-devtools-container__, #vue-inspector-container { display: none !important; }'
 const ROWS = '.table:not(.table--loading) tbody .table__row'
+// A message in the inbox: a table row link with no message open, a list item beside an open one.
+const INBOX_ITEMS = '[data-message-id]'
+// The whole row of a message, with its reference: a table row or a list item.
+const INBOX_ROWS = '.table__row, .contact-list__item'
 const NEW_MESSAGE = '7d0c3c1e-4a51-4f0e-9a51-1a2b3c4d5e01'
 const IGNORED_CONSOLE =
   /Failed to load resource|40\d|50\d|\[vite\]|\[MSW\]|Download the Vue Devtools/i
@@ -153,7 +157,7 @@ test.describe('staff dashboards on the board contract', () => {
     await expect(inbox.locator('.sidebar__count')).toHaveText('2')
     await inbox.click()
     await expect(page).toHaveURL(/\/admin\/contact-messages$/)
-    await expect(page.locator(ROWS).first()).toBeVisible()
+    await expect(page.locator(INBOX_ITEMS).first()).toBeVisible()
   })
 })
 
@@ -328,50 +332,107 @@ test.describe('notification texts', () => {
   })
 })
 
+// «dir=auto» gives each text the direction of its first strong letter, whatever the page's:
+// Arabic reads right to left and English left to right, and the matches include Arabic.
+async function expectOwnDirection(page, selector) {
+  const texts = await page.locator(selector).evaluateAll((nodes) =>
+    nodes.map((node) => ({
+      direction: getComputedStyle(node).direction,
+      isArabic: /^[^A-Za-z\u0600-\u06FF]*[\u0600-\u06FF]/.test(node.textContent),
+    })),
+  )
+  expect(texts.some((text) => text.isArabic)).toBe(true)
+  for (const text of texts) expect(text.direction).toBe(text.isArabic ? 'rtl' : 'ltr')
+}
+
+// The status dot is the badge's ::before, so the wider gap sits on the text's start side.
+async function expectDotAtStart(badge) {
+  const gaps = await badge.evaluate((node) => {
+    const range = document.createRange()
+    range.selectNodeContents(node)
+    const text = range.getBoundingClientRect()
+    const box = node.getBoundingClientRect()
+    const left = text.left - box.left
+    const right = box.right - text.right
+    const isRtl = getComputedStyle(node).direction === 'rtl'
+    return { start: isRtl ? right : left, end: isRtl ? left : right }
+  })
+  expect(gaps.start).toBeGreaterThan(gaps.end)
+}
+
 test.describe('contact inbox', () => {
   test('the handler assigns, replies, adds a note, closes and reopens a message', async ({
     page,
   }, testInfo) => {
     const errors = trackConsole(page)
     await signIn(page, testInfo, USERS.systemAdmin)
-    await open(page, '/admin/contact-messages', ROWS)
+    await open(page, '/admin/contact-messages', INBOX_ITEMS)
     await expect(
       page.locator('.sidebar__item', {
         hasText: text(testInfo, 'Inbox', 'صندوق الرسائل'),
       }),
     ).toBeVisible()
-    await page.locator(`${ROWS} .contact-inbox__reference`).first().click()
+    await page.locator(`${INBOX_ITEMS}[data-message-id="${NEW_MESSAGE}"]`).click()
     await expect(page).toHaveURL(new RegExp(`/admin/contact-messages/${NEW_MESSAGE}$`))
     await chooseNamed(page.locator('.contact-assign'), 'assigneeId', '31')
     await page.locator('.contact-assign .btn').click()
-    await expect(page.locator('.contact-thread__meta .badge')).toContainText(
-      text(testInfo, 'In progress', 'قيد المعالجة'),
+    await expect(page.locator('.contact-controls .contact-status')).toContainText(
+      text(testInfo, 'Assigned', 'مسندة'),
     )
     await page
       .locator('.contact-composer textarea')
       .fill('نرفق لكم دليل الشواهد المعتمد للمعيار الفرعي المذكور.')
     await page.locator('.contact-composer button[type="submit"]').click()
     await expect(page.locator('[data-entry-kind="reply"]')).toHaveCount(1)
-    await page.locator('.contact-composer input[value="note"]').check()
+    await expect(page.locator('.contact-controls .contact-status')).toContainText(
+      text(testInfo, 'Replied', 'تم الرد'),
+    )
+    await page.locator('.contact-composer__mode--note').click()
     await page.locator('.contact-composer textarea').fill('أُرسل الدليل؛ نتابع بعد أسبوع.')
     await page.locator('.contact-composer button[type="submit"]').click()
     await expect(page.locator('[data-entry-kind="note"]')).toHaveCount(1)
     await page
       .getByRole('button', { name: text(testInfo, 'Close the message', 'إغلاق الرسالة') })
       .click()
-    await expect(page.locator('.contact-thread__closed')).toBeVisible()
+    await expect(page.locator('.contact-panel__closed')).toBeVisible()
+    await expect(page.locator('.contact-composer')).toHaveCount(0)
     await page
       .getByRole('button', { name: text(testInfo, 'Reopen the message', 'إعادة فتح الرسالة') })
       .click()
-    await expect(page.locator('.contact-thread__closed')).toHaveCount(0)
+    await expect(page.locator('.contact-panel__closed')).toHaveCount(0)
+    await expect(page).toHaveURL(new RegExp(`/admin/contact-messages/${NEW_MESSAGE}$`))
+    await page.keyboard.press('Escape')
+    await expect(page).toHaveURL(/\/admin\/contact-messages$/)
+    await expect(page.locator('.contact-panel')).toHaveCount(0)
+    await expect(page.locator(`${INBOX_ITEMS}[data-message-id="${NEW_MESSAGE}"]`)).toBeVisible()
     expect(errors).toEqual([])
   })
+
+  for (const [size, viewport] of Object.entries(VIEWPORTS)) {
+    test(`text written by people keeps its own direction in either interface (${size})`, async ({
+      page,
+    }, testInfo) => {
+      await page.setViewportSize(viewport)
+      await signIn(page, testInfo, USERS.systemAdmin)
+      await open(page, '/admin/contact-messages', INBOX_ITEMS)
+      await expectOwnDirection(page, '.contact-table__name, .contact-list__sender')
+      await expectOwnDirection(page, '.contact-table__excerpt, .contact-list__excerpt')
+      await page.locator(`${INBOX_ITEMS}[data-message-id="${NEW_MESSAGE}"]`).click()
+      await expect(page.locator('.contact-entries__item').first()).toBeVisible()
+      await expectOwnDirection(page, '.contact-panel__title')
+      await expectOwnDirection(page, '.contact-panel__name')
+      await expectOwnDirection(page, '.contact-entries__body')
+      await expectOwnDirection(page, '.contact-entries__author')
+      await expectDotAtStart(page.locator('.contact-controls .contact-status'))
+      await noHorizontalOverflow(page)
+    })
+  }
 
   test('the Content Officer handles messages but a finance officer cannot open the inbox', async ({
     page,
   }, testInfo) => {
     await signIn(page, testInfo, USERS.content)
-    await open(page, '/admin/contact-messages', ROWS)
+    await open(page, '/admin/contact-messages', INBOX_ITEMS)
     await signIn(page, testInfo, USERS.finance)
     await page.goto('/admin/contact-messages')
     await expect(page).toHaveURL(/\/403/)
@@ -379,10 +440,10 @@ test.describe('contact inbox', () => {
 
   test('filters by linked senders and searches', async ({ page }, testInfo) => {
     await signIn(page, testInfo, USERS.systemAdmin)
-    await open(page, '/admin/contact-messages', ROWS)
+    await open(page, '/admin/contact-messages', INBOX_ITEMS)
     await searchList(page, 'البيان')
-    await expect(page.locator(ROWS)).toHaveCount(1)
-    await expect(page.locator(ROWS).first()).toContainText('CNT-2026-000051')
+    await expect(page.locator(INBOX_ROWS)).toHaveCount(1)
+    await expect(page.locator(INBOX_ROWS).first()).toContainText('CNT-2026-000051')
   })
 })
 
@@ -520,7 +581,7 @@ const CAPTURES = [
     '.notification-groups',
     USERS.systemAdmin,
   ],
-  ['contact-inbox', '/admin/contact-messages', ROWS, USERS.systemAdmin],
+  ['contact-inbox', '/admin/contact-messages', INBOX_ITEMS, USERS.systemAdmin],
   [
     'contact-thread',
     `/admin/contact-messages/7d0c3c1e-4a51-4f0e-9a51-1a2b3c4d5e02`,

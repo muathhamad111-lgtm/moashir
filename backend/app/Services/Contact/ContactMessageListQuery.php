@@ -7,15 +7,17 @@ namespace App\Services\Contact;
 use App\Data\Contact\ContactAssigneeFilter;
 use App\Data\Contact\ContactMessageFilters;
 use App\Enums\Contact\ContactEnquiryType;
-use App\Enums\Contact\ContactMessageStatus;
+use App\Enums\Contact\ContactInboxStatus;
 use App\Models\Contact\ContactMessage;
 use App\Support\ValueObjects\SearchTerm;
 use Carbon\CarbonInterface;
 use Illuminate\Database\Eloquent\Builder;
 
-final class ContactMessageListQuery
+final readonly class ContactMessageListQuery
 {
     private const array SEARCHABLE_COLUMNS = ['reference', 'sender_name', 'sender_email', 'organization_name'];
+
+    public function __construct(private ContactInboxStatusQuery $statuses) {}
 
     /**
      * @return Builder<ContactMessage>
@@ -24,8 +26,8 @@ final class ContactMessageListQuery
     {
         $query = ContactMessage::query();
 
-        if ($filters->status instanceof ContactMessageStatus) {
-            $query->where('status', $filters->status);
+        if ($filters->inboxStatus instanceof ContactInboxStatus) {
+            $this->statuses->constrain($query, $filters->inboxStatus);
         }
 
         if ($filters->enquiryType instanceof ContactEnquiryType) {

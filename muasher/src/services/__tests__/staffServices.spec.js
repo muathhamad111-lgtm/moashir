@@ -77,14 +77,17 @@ describe('staff services on the real contracts', () => {
   })
 
   it('drives the contact inbox endpoints', async () => {
-    respond('get', [{ id: 'm1', reference: 'CNT-1', status: 'new', sender: { name: 'S' } }], {
-      stats: { new: 1, inProgress: 2 },
-    })
-    const list = await contactInboxService.list({ 'filter[status]': 'new' })
+    respond(
+      'get',
+      [{ id: 'm1', reference: 'CNT-1', status: 'new', inboxStatus: 'new', sender: { name: 'S' } }],
+      { stats: { new: 1, awaitingReply: 2 } },
+    )
+    const list = await contactInboxService.list({ 'filter[inboxStatus]': 'new' })
     expect(apiClient.get).toHaveBeenCalledWith('/admin/contact-messages', {
-      params: { 'filter[status]': 'new' },
+      params: { 'filter[inboxStatus]': 'new' },
     })
-    expect(list.meta.stats).toEqual({ new: 1, inProgress: 2, replied: 0, closed: 0 })
+    expect(list.meta.stats).toEqual({ new: 1, assigned: 0, replied: 0, awaitingReply: 2 })
+    expect(list.data[0].inboxStatus).toBe('new')
     expect(list.data[0].sender).toMatchObject({ name: 'S', email: '' })
     respond('post', { id: 'm1', status: 'in-progress' })
     await contactInboxService.assign('m1', { assigneeId: 31 })

@@ -70,7 +70,11 @@ describe('contact inbox mock', () => {
     expect((await call('GET', '/admin/contact-messages')).status).toBe(403)
     seedMockSession(ADMIN)
     const all = await call('GET', '/admin/contact-messages')
-    expect(all.body.meta.stats).toEqual({ new: 1, inProgress: 1, replied: 1, closed: 1 })
+    expect(all.body.meta.stats).toEqual({ new: 3, assigned: 1, replied: 2, awaitingReply: 1 })
+    expect(all.body.data.find((row) => row.status === 'closed').inboxStatus).toBe('replied')
+    const waiting = await call('GET', '/admin/contact-messages?filter[inboxStatus]=awaiting-reply')
+    expect(waiting.body.data.map((row) => row.reference)).toEqual(['CNT-2026-000051'])
+    expect(all.body.data[0].excerpt).toContain('زر رفع الشواهد')
     const linked = await call('GET', '/admin/contact-messages?filter[linked]=true')
     expect(linked.body.data.map((row) => row.reference)).toEqual(['CNT-2026-000052'])
     const assignees = await call('GET', '/admin/contact-messages/assignees')
@@ -87,18 +91,22 @@ describe('contact inbox mock', () => {
     const assigned = await call('POST', `/admin/contact-messages/${NEW_MESSAGE}/assign`, {
       assigneeId: 31,
     })
-    expect(assigned.body.data.status).toBe('in-progress')
+    expect(assigned.body.data.inboxStatus).toBe('assigned')
     const replied = await call('POST', `/admin/contact-messages/${NEW_MESSAGE}/replies`, {
       body: 'رد الفريق',
     })
     expect(replied.status).toBe(201)
-    expect(replied.body.data.status).toBe('replied')
+    expect(replied.body.data.inboxStatus).toBe('replied')
     await call('POST', `/admin/contact-messages/${NEW_MESSAGE}/close`, {})
     const late = await call('POST', `/admin/contact-messages/${NEW_MESSAGE}/replies`, {
       body: 'رد متأخر',
     })
     expect(late.status).toBe(409)
     expect(late.body.code).toBe('contact.message_closed')
+    const lateNote = await call('POST', `/admin/contact-messages/${NEW_MESSAGE}/notes`, {
+      body: 'ملاحظة بعد الإغلاق',
+    })
+    expect(lateNote.status).toBe(409)
     const again = await call('POST', `/admin/contact-messages/${NEW_MESSAGE}/close`, {})
     expect(again.body.code).toBe('state.transition_illegal')
   })

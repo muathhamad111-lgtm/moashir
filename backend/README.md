@@ -2975,8 +2975,14 @@ are answered by e-mail; signed-in senders by e-mail AND in the portal, and their
   every inbox action and raises SEC-04 (`StaffActionReason`).
 - **States:** `new → in_progress` (assigned), `→ replied` (staff reply), `→ in_progress` (sender follow-up on a replied
   thread; a follow-up on a `new` thread keeps `new`), any open state `→ closed` (reason optional), `closed → in_progress`
-  (reopen). Replies, assignments and sender follow-ups on a closed thread answer 409 `contact.message_closed`; an illegal
-  close / reopen answers 409 `state.transition_illegal`. Internal notes are allowed in every state and change nothing.
+  (reopen). Replies, internal notes, assignments and sender follow-ups on a closed thread answer 409
+  `contact.message_closed`; an illegal close / reopen answers 409 `state.transition_illegal`. These stored states drive the
+  sender's own pages, closing and the retention purge.
+- **Inbox status (staff, derived, never stored — `ContactInboxStatus`):** before the team's first reply `new` (nobody
+  assigned) or `assigned`; after it `awaiting_reply` when `sender_last_message_at` is later than `replied_at`, otherwise
+  `replied`. Internal notes change nothing; closing keeps the status (a closed message only shows as closed inside the
+  panel). The list filter, `meta.stats` and the action-center item `answer_contact_messages` (open `new` messages) use it
+  (`ContactInboxStatusQuery`).
 - **Audit** (`contact_message.received | assigned | note_added | replied | follow_up_received | closed | reopened`): reference,
   status, enquiry type, entry id, assignee id and `is_linked` only — never a message body, name, e-mail or mobile number.
 
@@ -2988,7 +2994,7 @@ are answered by e-mail; signed-in senders by e-mail AND in the portal, and their
 | PATCH | `/me/contact-messages/{id}/seen` | signed in; another sender's message answers 404 for everyone, the Super Admin included | → `MyContactMessage` + `entries`; sets `sender_seen_at` (idempotent, not audited) |
 | GET | `/me/contact-messages/{id}` | signed in; another sender's message answers 404 for everyone, the Super Admin included | `MyContactMessage` + `entries` |
 | POST | `/me/contact-messages/{id}/replies` | signed in, `throttle:contact-follow-ups` (10 per 10 minutes per user) | `{ body (2..5000) }` → 201 `MyContactMessage`; 409 `contact.message_closed` |
-| GET | `/admin/contact-messages` (`filter[status|enquiry_type|from|to|linked|assignee]`, `search`, `page`, `per_page` ≤ 100) | `contact.messages.manage` | paginated `ContactMessage`, `meta.stats { new, in_progress, replied, closed }`; `from` / `to` are `Y-m-d` Riyadh days, `linked` `true | false`, `assignee` `me | none | <user id>`, `search` (≥ 2 characters, Arabic-normalised) on reference, name, e-mail and organisation |
+| GET | `/admin/contact-messages` (`filter[inbox_status|enquiry_type|from|to|linked|assignee]`, `search`, `page`, `per_page` ≤ 100) | `contact.messages.manage` | paginated `ContactMessage` (with `inbox_status` and `excerpt`), `meta.stats { new, assigned, replied, awaiting_reply }`; `from` / `to` are `Y-m-d` Riyadh days, `linked` `true | false`, `assignee` `me | none | <user id>`, `search` (≥ 2 characters, Arabic-normalised) on reference, name, e-mail and organisation |
 | GET | `/admin/contact-messages/assignees` | `contact.messages.manage` | `[{ id, name }]` |
 | GET | `/admin/contact-messages/{id}` | `contact.messages.manage` | `ContactMessage` + `entries` (notes included) |
 | POST | `/admin/contact-messages/{id}/assign` | `contact.messages.manage`, `throttle:sensitive` | `{ assignee_id: int | null, reason? }` → `ContactMessage`; 422 `contact.assignee_not_eligible` |

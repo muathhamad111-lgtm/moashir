@@ -7,7 +7,7 @@ namespace App\Http\Requests\Contact;
 use App\Data\Contact\ContactAssigneeFilter;
 use App\Data\Contact\ContactMessageFilters;
 use App\Enums\Contact\ContactEnquiryType;
-use App\Enums\Contact\ContactMessageStatus;
+use App\Enums\Contact\ContactInboxStatus;
 use App\Rules\SearchableTerm;
 use App\Support\ScalarValue;
 use App\Support\ValueObjects\SearchTerm;
@@ -28,8 +28,8 @@ final class IndexContactMessagesRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'filter' => ['nullable', 'array:status,enquiry_type,from,to,linked,assignee'],
-            'filter.status' => ['nullable', Rule::enum(ContactMessageStatus::class)],
+            'filter' => ['nullable', 'array:inbox_status,enquiry_type,from,to,linked,assignee'],
+            'filter.inbox_status' => ['nullable', Rule::enum(ContactInboxStatus::class)],
             'filter.enquiry_type' => ['nullable', Rule::enum(ContactEnquiryType::class)],
             'filter.from' => ['nullable', 'date_format:Y-m-d'],
             'filter.to' => ['nullable', 'date_format:Y-m-d', 'after_or_equal:filter.from'],
@@ -43,12 +43,12 @@ final class IndexContactMessagesRequest extends FormRequest
 
     public function filters(): ContactMessageFilters
     {
-        $status = $this->input('filter.status');
+        $status = $this->input('filter.inbox_status');
         $type = $this->input('filter.enquiry_type');
         $search = $this->input('search');
 
         return new ContactMessageFilters(
-            is_string($status) ? ContactMessageStatus::tryFrom($status) : null,
+            is_string($status) ? ContactInboxStatus::tryFrom($status) : null,
             is_string($type) ? ContactEnquiryType::tryFrom($type) : null,
             $this->dayBoundary('filter.from', startOfDay: true),
             $this->dayBoundary('filter.to', startOfDay: false),

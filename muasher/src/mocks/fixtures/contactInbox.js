@@ -66,7 +66,7 @@ export const contactInboxFixture = [
     entity: null,
     assignee: HANDLERS[1],
     createdAt: '2026-11-03T11:30:00+00:00',
-    lastActivityAt: '2026-11-03T13:05:00+00:00',
+    lastActivityAt: '2026-11-03T14:02:00+00:00',
     repliedAt: null,
     closedAt: null,
     closedBy: null,
@@ -84,6 +84,20 @@ export const contactInboxFixture = [
         'راجعت عمليات الدفع: لا توجد عملية مكتملة بهذا البريد، أتحقق من الفريق المالي.',
         STAFF(HANDLERS[1]),
         '2026-11-03T13:05:00+00:00',
+      ),
+      entry(
+        9008,
+        'reply',
+        'شكرًا لتواصلكم. نتحقق من عملية الدفع مع الفريق المالي، وسنرسل لكم الإيصال خلال يوم عمل.',
+        STAFF(HANDLERS[1]),
+        '2026-11-03T13:20:00+00:00',
+      ),
+      entry(
+        9009,
+        'message',
+        'شكرًا، رقم العملية في كشف البنك هو 448120، تمت يوم 2 نوفمبر.',
+        SENDER('عبدالعزيز بن ناصر الدوسري'),
+        '2026-11-03T14:02:00+00:00',
       ),
     ],
   },
@@ -164,3 +178,69 @@ export const contactInboxFixture = [
     ],
   },
 ]
+
+function simpleMessage({ suffix, reference, status, enquiryType, sender, assignee, at, body }) {
+  return {
+    id: `7d0c3c1e-4a51-4f0e-9a51-1a2b3c4d5e${suffix}`,
+    reference,
+    status,
+    enquiryType,
+    sender: { mobile: null, locale: 'ar', ...sender },
+    isLinked: false,
+    linkedUser: null,
+    entity: null,
+    assignee,
+    createdAt: at,
+    lastActivityAt: at,
+    repliedAt: null,
+    closedAt: null,
+    closedBy: null,
+    entries: [entry(Number(`95${suffix}`), 'message', body, SENDER(sender.name), at)],
+  }
+}
+
+contactInboxFixture.push(
+  simpleMessage({
+    suffix: '05',
+    reference: 'CNT-2026-000053',
+    status: 'new',
+    enquiryType: 'technical_support',
+    sender: {
+      name: 'خالد بن عبدالله الشهري',
+      email: 'k.alshehri@example.sa',
+      organization: 'جمعية رعاية الأيتام بأبها',
+    },
+    assignee: null,
+    at: '2026-11-04T10:42:00+00:00',
+    body: 'لا يظهر زر رفع الشواهد في نموذج التقييم بعد حفظ المسودة، جربنا متصفحين مختلفين.',
+  }),
+  simpleMessage({
+    suffix: '06',
+    reference: 'CNT-2026-000050',
+    status: 'in-progress',
+    enquiryType: 'self_assessment',
+    sender: {
+      name: 'منى بنت سعد القحطاني',
+      email: 'mona@alkhair.example.sa',
+      organization: 'وقف الخير التنموي',
+    },
+    assignee: HANDLERS[0],
+    at: '2026-11-02T12:15:00+00:00',
+    body: 'أكملنا التقييم الذاتي، كيف نطلع على النتيجة التفصيلية لكل معيار؟',
+  }),
+  simpleMessage({
+    suffix: '07',
+    reference: 'CNT-2026-000048',
+    status: 'new',
+    enquiryType: 'general',
+    sender: {
+      name: 'Omar Al-Mutairi',
+      email: 'omar@example.com',
+      organization: null,
+      locale: 'en',
+    },
+    assignee: null,
+    at: '2026-11-01T16:30:00+00:00',
+    body: 'Is there an English version of the self-assessment guide for our international partners?',
+  }),
+)

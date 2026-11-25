@@ -1,12 +1,11 @@
 <script setup>
 import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { RouterLink } from 'vue-router'
+import { RouterLink, useRoute } from 'vue-router'
 import DataTable from '@/components/data-list/DataTable.vue'
-import MessageStatusBadge from '@/components/messages/MessageStatusBadge.vue'
+import ContactInboxStatusBadge from './ContactInboxStatusBadge.vue'
 import { ROUTE_NAMES } from '@/constants/routeNames'
 import { formatRiyadhDateTime } from '@/utils/datetime'
-import { formatNumber } from '@/utils/formatNumber'
 
 defineProps({
   items: { type: Array, default: () => [] },
@@ -15,14 +14,23 @@ defineProps({
   filtered: { type: Boolean, default: false },
 })
 
+// Messages that wait on the team read in bold, like unread mail.
+const PENDING = ['new', 'awaiting-reply']
+
 const emit = defineEmits(['retry'])
-const { t, n, locale } = useI18n()
+const { t, locale } = useI18n()
+const route = useRoute()
 
 const columns = computed(() =>
-  ['reference', 'sender', 'enquiryType', 'status', 'assignee', 'lastActivityAt', 'entries'].map(
-    (key) => ({ key, label: t(`contactInbox.columns.${key}`) }),
-  ),
+  ['sender', 'reference', 'enquiryType', 'status', 'assignee', 'lastActivityAt'].map((key) => ({
+    key,
+    label: t(`contactInbox.columns.${key}`),
+  })),
 )
+
+function messageLink(item) {
+  return { name: ROUTE_NAMES.ADMIN_CONTACT_MESSAGE, params: { id: item.id }, query: route.query }
+}
 </script>
 
 <template>
@@ -32,43 +40,38 @@ const columns = computed(() =>
     :items="items"
     :status="status"
     :error-message="errorMessage"
+    stacked
     :empty-title="t(filtered ? 'contactInbox.empty.filteredTitle' : 'contactInbox.empty.title')"
     :empty-message="
       t(filtered ? 'contactInbox.empty.filteredMessage' : 'contactInbox.empty.message')
     "
     @retry="emit('retry')"
   >
-    <template #cell-reference="{ item }">
+    <template #cell-sender="{ item }">
       <RouterLink
-        class="contact-inbox__reference"
-        :to="{ name: ROUTE_NAMES.ADMIN_CONTACT_MESSAGE, params: { id: item.id } }"
+        class="contact-table__sender"
+        :class="{ 'contact-table__sender--pending': PENDING.includes(item.inboxStatus) }"
+        :data-message-id="item.id"
+        :to="messageLink(item)"
       >
-        <bdi dir="ltr">{{ item.reference }}</bdi>
+        <span class="contact-table__name" dir="auto">{{ item.sender.name }}</span>
+        <span class="contact-table__excerpt" dir="auto">{{ item.excerpt }}</span>
       </RouterLink>
     </template>
-    <template #cell-sender="{ item }">
-      <span class="contact-inbox__sender">
-        <span>{{ item.sender.name }}</span>
-        <span v-if="item.sender.organization" class="contact-inbox__muted">{{
-          item.sender.organization
-        }}</span>
-        <span class="contact-inbox__muted">{{
-          item.isLinked ? t('contactInbox.linked') : t('contactInbox.guest')
-        }}</span>
-      </span>
-    </template>
+    <template #cell-reference="{ item }"
+      ><bdi dir="ltr">{{ item.reference }}</bdi></template
+    >
     <template #cell-enquiryType="{ item }">
       {{ t(`public.home.contact.form.enquiryTypes.${item.enquiryType}`) }}
     </template>
-    <template #cell-status="{ item }"><MessageStatusBadge :status="item.status" /></template>
+    <template #cell-status="{ item }">
+      <ContactInboxStatusBadge :status="item.inboxStatus" />
+    </template>
     <template #cell-assignee="{ item }">
-      {{ item.assignee?.name || t('contactInbox.unassigned') }}
+      <bdi>{{ item.assignee?.name || t('contactInbox.unassigned') }}</bdi>
     </template>
     <template #cell-lastActivityAt="{ item }">
       <bdi>{{ formatRiyadhDateTime(item.lastActivityAt, locale) }}</bdi>
-    </template>
-    <template #cell-entries="{ item }">
-      <bdi dir="ltr">{{ formatNumber(n, item.entryCount ?? 0) }}</bdi>
     </template>
   </DataTable>
 </template>

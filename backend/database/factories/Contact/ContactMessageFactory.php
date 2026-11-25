@@ -37,6 +37,7 @@ final class ContactMessageFactory extends Factory
             'locale' => Locale::Arabic,
             'privacy_consent_at' => Date::now(),
             'last_activity_at' => Date::now(),
+            'sender_last_message_at' => Date::now(),
         ];
     }
 

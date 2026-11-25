@@ -60,6 +60,14 @@ describe('MessageThread', () => {
     expect(wrapper.find('.message-thread__meta').text()).toContain('2026-11-02')
   })
 
+  it('lets each message body and author keep its own direction', () => {
+    const wrapper = mountThread()
+    for (const bubble of wrapper.findAll('.message-bubble')) {
+      expect(bubble.find('.message-bubble__author').attributes('dir')).toBe('auto')
+      expect(bubble.find('.message-bubble__body').attributes('dir')).toBe('auto')
+    }
+  })
+
   it('sends a reply and emits the updated thread', async () => {
     contactMessagesService.reply.mockResolvedValue({ data: { ...OPEN, status: 'in-progress' } })
     const wrapper = mountThread()
@@ -94,5 +102,6 @@ describe('MessageThreadItem', () => {
     expect(wrapper.find('a').attributes('aria-current')).toBe('page')
     expect(wrapper.find('.message-item__dot').exists()).toBe(true)
     expect(wrapper.find('.message-item__reference').attributes('dir')).toBe('ltr')
+    expect(wrapper.find('.message-item__preview').attributes('dir')).toBe('auto')
   })
 })

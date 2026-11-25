@@ -2,7 +2,12 @@ import { CONTACT_INBOX_HANDLERS, contactInboxFixture } from '../fixtures/contact
 import { MockRejection } from '../contract/rejection'
 
 const OPEN = ['new', 'in-progress', 'replied']
-const STATS = ['new', 'in-progress', 'replied', 'closed']
+const STAT_KEYS = {
+  new: 'new',
+  assigned: 'assigned',
+  replied: 'replied',
+  'awaiting-reply': 'awaitingReply',
+}
 const BODY_MIN = 2
 const BODY_MAX = 5000
 const RIYADH_OFFSET = '+03:00'
@@ -59,31 +64,56 @@ function matches(message, query, viewerId) {
   return matchesSearch(message, query.get('search'))
 }
 
+const EXCERPT_LENGTH = 120
+
+// Prototype only: the list API has no message text yet (see the inbox split prototype notes).
+function excerptOf(message) {
+  const first = message.entries.find((item) => item.kind === 'message')
+  return first ? first.body.slice(0, EXCERPT_LENGTH) : ''
+}
+
+function lastAt(message, kind) {
+  return message.entries
+    .filter((item) => item.kind === kind)
+    .reduce((latest, item) => (item.createdAt > latest ? item.createdAt : latest), '')
+}
+
+// Mirrors the server rule: a reply decides replied/awaiting-reply; before any reply, the assignee
+// decides new/assigned.
+export function inboxStatusOf(message) {
+  const lastReply = lastAt(message, 'reply')
+  if (lastReply) return lastAt(message, 'message') > lastReply ? 'awaiting-reply' : 'replied'
+  return message.assignee ? 'assigned' : 'new'
+}
+
+export function inboxView(message) {
+  return { ...message, inboxStatus: inboxStatusOf(message) }
+}
+
 function rowOf(message) {
-  const row = { ...message, entryCount: message.entries.length }
+  const row = {
+    ...inboxView(message),
+    entryCount: message.entries.length,
+    excerpt: excerptOf(message),
+  }
   delete row.entries
   return row
 }
 
 export function inboxList(query, viewerId) {
-  const status = query.get('filter[status]')
+  const wanted = query.get('filter[inboxStatus]')
   const scoped = state.messages.filter((message) => matches(message, query, viewerId))
   const stats = Object.fromEntries(
-    STATS.map((key) => [key, scoped.filter((message) => message.status === key).length]),
+    Object.entries(STAT_KEYS).map(([status, key]) => [
+      key,
+      scoped.filter((message) => inboxStatusOf(message) === status).length,
+    ]),
   )
   const rows = scoped
-    .filter((message) => !status || message.status === status)
+    .filter((message) => !wanted || inboxStatusOf(message) === wanted)
     .sort((left, right) => (left.lastActivityAt < right.lastActivityAt ? 1 : -1))
     .map(rowOf)
-  return {
-    rows,
-    stats: {
-      new: stats.new,
-      inProgress: stats['in-progress'],
-      replied: stats.replied,
-      closed: stats.closed,
-    },
-  }
+  return { rows, stats }
 }
 
 export function inboxMessage(id) {
@@ -145,13 +175,13 @@ export function assignMessage(id, assigneeId) {
       },
     })
   message.assignee = { ...handler }
-  if (message.status === 'new') message.status = 'in-progress'
   touch(message)
   return message
 }
 
 export function noteMessage(id, body, author) {
   const message = inboxMessage(id)
+  if (message.status === 'closed') throw new MockRejection(409, 'contact.message_closed')
   addEntry(message, 'note', validBody(body), author)
   return message
 }

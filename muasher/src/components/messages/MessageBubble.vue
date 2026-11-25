@@ -29,9 +29,9 @@ const time = computed(() =>
   <li class="message-bubble" :class="isSender ? 'message-bubble--sender' : 'message-bubble--team'">
     <div class="message-bubble__head">
       <span class="message-bubble__avatar" aria-hidden="true">{{ initial }}</span>
-      <span class="message-bubble__author">{{ author }}</span>
+      <span class="message-bubble__author" dir="auto">{{ author }}</span>
       <time class="message-bubble__time" :datetime="entry.createdAt" dir="ltr">{{ time }}</time>
     </div>
-    <p class="message-bubble__body">{{ entry.body }}</p>
+    <p class="message-bubble__body" dir="auto">{{ entry.body }}</p>
   </li>
 </template>

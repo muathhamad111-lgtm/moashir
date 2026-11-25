@@ -1,3 +1,4 @@
+// The logo's chevron, apex up as in the mark; the hotspot is its tip (11 1).
 $cursor-ink: image-set(
   url('@/assets/landing/cursor/ink.png') 1x,
   url('@/assets/landing/cursor/ink@2x.png') 2x
@@ -15,21 +16,21 @@ $cursor-hot: image-set(
   &,
   *:not(input, textarea, select) {
     cursor:
-      $cursor-ink 1 1,
+      $cursor-ink 11 1,
       auto;
   }
 
   :is(.lp-deep, .lp-final, .lp-band__box, .auth-layout__brand),
   :is(.lp-deep, .lp-final, .lp-band__box, .auth-layout__brand) *:not(input, textarea, select) {
     cursor:
-      $cursor-light 1 1,
+      $cursor-light 11 1,
       auto;
   }
 
   :is(a, button, label, select, [role='switch'], .lp-lv__scale, .lp-lenses__arc),
   :is(a, button, label, select, [role='switch'], .lp-lv__scale, .lp-lenses__arc) * {
     cursor:
-      $cursor-hot 1 1,
+      $cursor-hot 11 1,
       pointer;
   }
 }
@@ -38,14 +39,14 @@ $cursor-hot: image-set(
   &,
   *:not(input, textarea, select) {
     cursor:
-      $cursor-light 1 1,
+      $cursor-light 11 1,
       auto;
   }
 
   :is(a, button, label, select, [role='switch'], .lp-lv__scale, .lp-lenses__arc),
   :is(a, button, label, select, [role='switch'], .lp-lv__scale, .lp-lenses__arc) * {
     cursor:
-      $cursor-hot 1 1,
+      $cursor-hot 11 1,
       pointer;
   }
 }

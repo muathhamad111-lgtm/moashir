@@ -6,6 +6,7 @@ namespace App\Models\Contact;
 
 use App\Enums\Contact\ContactEnquiryType;
 use App\Enums\Contact\ContactEntryKind;
+use App\Enums\Contact\ContactInboxStatus;
 use App\Enums\Contact\ContactMessageStatus;
 use App\Enums\Identity\Locale;
 use App\Models\Concerns\HasPublicId;
@@ -39,6 +40,7 @@ use Illuminate\Support\Carbon;
  * @property Carbon $privacy_consent_at
  * @property Carbon $last_activity_at
  * @property Carbon|null $replied_at
+ * @property Carbon|null $sender_last_message_at
  * @property Carbon|null $sender_seen_at
  * @property Carbon|null $closed_at
  * @property int|null $closed_by_user_id
@@ -59,12 +61,14 @@ final class ContactMessage extends Model
 
     private const int PREVIEW_LENGTH = 160;
 
+    private const int EXCERPT_LENGTH = 120;
+
     /**
      * @var list<string>
      */
     protected $fillable = [
         'reference', 'status', 'enquiry_type', 'sender_name', 'sender_email', 'sender_mobile', 'organization_name', 'locale',
-        'user_id', 'entity_id', 'privacy_terms_version_id', 'privacy_consent_at', 'last_activity_at',
+        'user_id', 'entity_id', 'privacy_terms_version_id', 'privacy_consent_at', 'last_activity_at', 'sender_last_message_at',
     ];
 
     /**
@@ -89,6 +93,7 @@ final class ContactMessage extends Model
             'privacy_consent_at' => 'datetime',
             'last_activity_at' => 'datetime',
             'replied_at' => 'datetime',
+            'sender_last_message_at' => 'datetime',
             'sender_seen_at' => 'datetime',
             'closed_at' => 'datetime',
             'closed_by_user_id' => 'integer',
@@ -171,6 +176,27 @@ final class ContactMessage extends Model
             'preview' => (clone $latestVisibleEntry)->selectRaw('left(body, ?)', [self::PREVIEW_LENGTH]),
             'last_entry_kind' => (clone $latestVisibleEntry)->select('kind'),
         ]);
+    }
+
+    /**
+     * The opening of the sender's first message, for the staff inbox list.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function withExcerpt(Builder $query): void
+    {
+        $query->addSelect(['excerpt' => ContactMessageEntry::query()
+            ->whereColumn('contact_message_id', 'contact_messages.id')
+            ->where('kind', ContactEntryKind::Message)
+            ->orderBy('id')
+            ->limit(1)
+            ->selectRaw('left(body, ?)', [self::EXCERPT_LENGTH])]);
+    }
+
+    public function inboxStatus(): ContactInboxStatus
+    {
+        return ContactInboxStatus::derive($this->assigned_to_user_id !== null, $this->replied_at, $this->sender_last_message_at);
     }
 
     public function hasUnreadReply(): bool

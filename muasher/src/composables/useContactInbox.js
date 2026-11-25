@@ -10,7 +10,14 @@ import {
   CONTACT_STATUS_QUERY,
 } from '@/constants/contactInbox'
 
-const EMPTY_FILTERS = { status: '', enquiryType: '', from: '', to: '', linked: '', assignee: '' }
+const EMPTY_FILTERS = {
+  inboxStatus: '',
+  enquiryType: '',
+  from: '',
+  to: '',
+  linked: '',
+  assignee: '',
+}
 
 function statusFromQuery(value) {
   return typeof value === 'string' && CONTACT_INBOX_STATUSES.includes(value) ? value : ''
@@ -20,7 +27,7 @@ export function useContactInbox() {
   const route = useRoute()
   const filters = useFilters({
     ...EMPTY_FILTERS,
-    status: statusFromQuery(route.query[CONTACT_STATUS_QUERY]),
+    inboxStatus: statusFromQuery(route.query[CONTACT_STATUS_QUERY]),
   })
   const paginator = usePagination({ perPage: CONTACT_INBOX_LIMITS.perPage })
   const stats = ref(null)
@@ -54,7 +61,7 @@ export function useContactInbox() {
 
   watch(
     () => route.query[CONTACT_STATUS_QUERY],
-    (value) => setFilter('status', statusFromQuery(value)),
+    (value) => setFilter('inboxStatus', statusFromQuery(value)),
   )
 
   return {

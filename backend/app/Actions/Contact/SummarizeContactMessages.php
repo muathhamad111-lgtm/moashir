@@ -4,17 +4,20 @@ declare(strict_types=1);
 
 namespace App\Actions\Contact;
 
-use App\Enums\Contact\ContactMessageStatus;
 use App\Models\Contact\ContactMessage;
-use App\Support\StatusCounts;
+use App\Services\Contact\ContactInboxStatusQuery;
 
-final class SummarizeContactMessages
+final readonly class SummarizeContactMessages
 {
+    public function __construct(private ContactInboxStatusQuery $statuses) {}
+
     /**
+     * The inbox count of every derived status, closed messages included (closing keeps the status).
+     *
      * @return array<string, int>
      */
     public function handle(): array
     {
-        return StatusCounts::of(ContactMessage::query(), ContactMessageStatus::cases());
+        return $this->statuses->counts(ContactMessage::query());
     }
 }

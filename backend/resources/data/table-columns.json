@@ -10,7 +10,7 @@
   "bag-requests": ["reference", "paidAt", "status", "evaluator"],
   "committee-assignments": ["status", "dueAt", "progress", "percent"],
   "committee-members": ["status", "progress", "appointedAt"],
-  "contact-inbox": ["sender", "enquiryType", "status", "assignee", "lastActivityAt", "entries"],
+  "contact-inbox": ["reference", "enquiryType", "status", "assignee", "lastActivityAt"],
   "criteria-versions": ["published", "scope", "affected"],
   "entities-contact": ["level", "authorizedPersonName", "officialEmail", "status"],
   "entities-deleted": ["region", "deletedAt", "status"],

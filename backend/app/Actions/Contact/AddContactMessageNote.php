@@ -8,6 +8,7 @@ use App\Data\Audit\AuditEntry;
 use App\Data\Contact\ContactAction;
 use App\Enums\Audit\AuditEvent;
 use App\Enums\Contact\ContactEntryKind;
+use App\Exceptions\Contact\ContactRejected;
 use App\Models\Contact\ContactMessage;
 use App\Models\Contact\ContactMessageEntry;
 use App\Models\Identity\User;
@@ -26,6 +27,11 @@ final readonly class AddContactMessageNote
 
         return DB::transaction(function () use ($actor, $message, $note): ContactMessageEntry {
             $locked = $this->thread->lock($message);
+
+            if (! $locked->isOpen()) {
+                throw ContactRejected::closed();
+            }
+
             $entry = $this->thread->append($locked, ContactEntryKind::Note, $note->body, $actor);
 
             $this->audit->record(new AuditEntry(AuditEvent::ContactMessageNoteAdded, $locked, [], [

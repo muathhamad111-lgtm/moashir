@@ -37,6 +37,7 @@ final readonly class AddSenderFollowUp
             $locked->forceFill([
                 'status' => $before === ContactMessageStatus::New ? ContactMessageStatus::New : ContactMessageStatus::InProgress,
                 'last_activity_at' => $now,
+                'sender_last_message_at' => $now,
                 'sender_seen_at' => $now,
             ])->save();
 

@@ -9651,20 +9651,13 @@
     "linked": "Registered sender",
     "guest": "Visitor",
     "unassigned": "Not assigned",
-    "stats": {
-      "new": "New",
-      "inProgress": "In progress",
-      "replied": "Replied",
-      "closed": "Closed"
-    },
     "columns": {
       "reference": "Reference",
       "sender": "Sender",
       "enquiryType": "Enquiry type",
       "status": "Status",
       "assignee": "Handler",
-      "lastActivityAt": "Last activity",
-      "entries": "Entries"
+      "lastActivityAt": "Last activity"
     },
     "filters": {
       "search": "Search by reference, name, e-mail or organisation",
@@ -9691,10 +9684,10 @@
       "handling": "Handling",
       "close": "Close the message",
       "reopen": "Reopen the message",
-      "closedBy": "Closed by {name}",
-      "closedNote": "The message is closed; you can add an internal note, or reopen it to reply.",
       "missingTitle": "Message not found",
-      "missingMessage": "It may have been deleted after its retention period, or the link is wrong."
+      "missingMessage": "It may have been deleted after its retention period, or the link is wrong.",
+      "closedTitle": "This message is closed; nothing can be written in it.",
+      "closedByAt": "Closed by {name} on {time}"
     },
     "sender": {
       "title": "Sender details",
@@ -9747,6 +9740,23 @@
       "noted": "The note was added.",
       "closed": "The message was closed.",
       "reopened": "The message was reopened."
+    },
+    "split": {
+      "all": "All",
+      "statusFilter": "Filter by status",
+      "listLabel": "Messages",
+      "closePanel": "Close the message panel",
+      "back": "Messages",
+      "type": "Type",
+      "status": "Status",
+      "keyboardHint": "↑ ↓ to move between messages · Esc to close",
+      "entries": "{count} entry | {count} entries"
+    },
+    "statuses": {
+      "new": "New",
+      "assigned": "Assigned",
+      "replied": "Replied",
+      "awaiting-reply": "Awaiting reply"
     }
   },
   "legalAdmin": {

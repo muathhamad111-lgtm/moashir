@@ -68,6 +68,7 @@ final readonly class SubmitContactMessage
             'privacy_terms_version_id' => $this->terms->of(TermsKind::Privacy)?->id,
             'privacy_consent_at' => $receivedAt,
             'last_activity_at' => $receivedAt,
+            'sender_last_message_at' => $receivedAt,
         ]);
 
         $this->thread->append($message, ContactEntryKind::Message, $submission->message, $sender);

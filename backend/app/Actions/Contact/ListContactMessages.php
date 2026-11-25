@@ -21,6 +21,7 @@ final readonly class ListContactMessages
         return $this->query->filtered($filters)
             ->with(['assignee', 'sender', 'entity', 'closedBy'])
             ->withCount('entries')
+            ->withExcerpt()
             ->orderByDesc('last_activity_at')
             ->orderByDesc('id')
             ->paginate($filters->perPage);

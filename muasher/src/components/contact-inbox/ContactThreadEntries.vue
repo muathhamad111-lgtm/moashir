@@ -1,5 +1,6 @@
 <script setup>
 import { useI18n } from 'vue-i18n'
+import AppIcon from '@/components/ui/AppIcon.vue'
 import { CONTACT_ENTRY_KINDS } from '@/constants/contactInbox'
 import { formatRiyadhDateTime } from '@/utils/datetime'
 
@@ -8,6 +9,12 @@ defineProps({
 })
 
 const { t, locale } = useI18n()
+
+// The sender writes on the inline-start side (right in Arabic, left in English); the team's replies
+// and internal notes sit on the end side, like a chat.
+function sideOf(entry) {
+  return entry.kind === CONTACT_ENTRY_KINDS.MESSAGE ? 'sender' : 'team'
+}
 
 function authorOf(entry) {
   return entry.author.name || t(`contactInbox.entries.authors.${entry.author.kind}`)
@@ -20,11 +27,11 @@ function authorOf(entry) {
       v-for="entry in entries"
       :key="entry.id"
       class="contact-entries__item"
-      :class="`contact-entries__item--${entry.kind}`"
+      :class="[`contact-entries__item--${entry.kind}`, `contact-entries__item--${sideOf(entry)}`]"
       :data-entry-kind="entry.kind"
     >
       <p class="contact-entries__head">
-        <span class="contact-entries__author">{{ authorOf(entry) }}</span>
+        <span class="contact-entries__author" dir="auto">{{ authorOf(entry) }}</span>
         <span class="contact-entries__kind">{{
           t(`contactInbox.entries.kinds.${entry.kind}`)
         }}</span>
@@ -32,8 +39,9 @@ function authorOf(entry) {
           formatRiyadhDateTime(entry.createdAt, locale)
         }}</time>
       </p>
-      <p class="contact-entries__body">{{ entry.body }}</p>
+      <p class="contact-entries__body" dir="auto">{{ entry.body }}</p>
       <p v-if="entry.kind === CONTACT_ENTRY_KINDS.NOTE" class="contact-entries__private">
+        <AppIcon name="lock" />
         {{ t('contactInbox.entries.noteHint') }}
       </p>
     </li>
