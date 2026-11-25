@@ -5,6 +5,8 @@ import DataTable from '@/components/data-list/DataTable.vue'
 import BaseButton from '@/components/ui/BaseButton.vue'
 import AuditActorCell from './AuditActorCell.vue'
 import { formatRiyadhDateTime } from '@/utils/datetime'
+import { COLUMN_KINDS } from '@/utils/tableColumns'
+import { actorRolesText } from '@/utils/audit/actorRoles'
 
 defineProps({
   items: { type: Array, default: () => [] },
@@ -17,9 +19,21 @@ const emit = defineEmits(['open', 'retry'])
 const { t, te, locale } = useI18n()
 
 const columns = computed(() =>
-  ['createdAt', 'event', 'actor', 'subject', 'ipAddress', 'reason', 'actions'].map((key) => ({
+  [
+    'createdAt',
+    'event',
+    'actor',
+    'subject',
+    'ipAddress',
+    'reason',
+    'actorRoles',
+    'tags',
+    'requestId',
+    'actions',
+  ].map((key) => ({
     key,
     label: t(`auditLog.columns.${key}`),
+    ...(key === 'requestId' ? { kind: COLUMN_KINDS.CODE } : {}),
   })),
 )
 
@@ -59,6 +73,15 @@ function groupOf(event) {
     <template #cell-reason="{ item }">
       <span class="audit-log__reason">{{ item.reason }}</span>
     </template>
+    <template #cell-actorRoles="{ item }">{{
+      actorRolesText(item.actor.roles, { t, te })
+    }}</template>
+    <template #cell-tags="{ item }"
+      ><bdi dir="ltr">{{ item.tags.join(t('common.listSeparator')) }}</bdi></template
+    >
+    <template #cell-requestId="{ item }"
+      ><code v-if="item.requestId" dir="ltr">{{ item.requestId }}</code></template
+    >
     <template #cell-actions="{ item }">
       <BaseButton variant="ghost" size="sm" icon="eye" @click="emit('open', item)">{{
         t('auditLog.details')

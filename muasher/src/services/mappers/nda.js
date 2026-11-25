@@ -45,6 +45,8 @@ export function toNdaAcceptance(raw = {}) {
     id: raw.id ?? null,
     termsVersionId: raw.termsVersionId ?? null,
     version: raw.version ?? '',
+    title: localized(raw.title),
+    effectiveFrom: raw.effectiveFrom ?? null,
     acceptedAt: raw.acceptedAt ?? null,
     acceptedRoles: [...(raw.acceptedRoles ?? [])],
     ipMasked: raw.ipMasked ?? null,
@@ -55,7 +57,6 @@ function toNdaRegisterUser(raw = {}) {
   return {
     id: raw.id ?? null,
     name: raw.name ?? '',
-    email: raw.email ?? '',
     roles: [...(raw.roles ?? [])],
   }
 }

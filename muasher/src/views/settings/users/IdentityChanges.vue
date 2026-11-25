@@ -8,11 +8,13 @@ import Pagination from '@/components/data-list/Pagination.vue'
 import AppSelect from '@/components/form/AppSelect.vue'
 import RowActions from '@/components/data-list/RowActions.vue'
 import StatusBadge from '@/components/ui/StatusBadge.vue'
+import Badge from '@/components/ui/Badge.vue'
 import ReasonDialog from '@/components/modal/ReasonDialog.vue'
 import IdentityChangeDetail from '@/components/identity/IdentityChangeDetail.vue'
 import { useIdentityChangeReviews } from '@/composables/useIdentityChangeReviews'
 import { useEntityDisplay } from '@/composables/useEntityDisplay'
 import { IDENTITY_CHANGE_STATUSES, IDENTITY_CHANGE_KINDS } from '@/constants/identityChanges'
+import { COLUMN_KINDS } from '@/utils/tableColumns'
 
 const { t, locale } = useI18n()
 const { dateTime } = useEntityDisplay()
@@ -68,9 +70,21 @@ function fieldsLabel(item) {
 }
 
 const columns = computed(() =>
-  ['user', 'fields', 'requestedAt', 'status', 'actions'].map((key) => ({
+  [
+    'user',
+    'fields',
+    'requestedAt',
+    'status',
+    'kind',
+    'onBehalf',
+    'submittedBy',
+    'reviewedBy',
+    'decidedAt',
+    'actions',
+  ].map((key) => ({
     key,
     label: t(`nationalIdentity.review.columns.${key}`),
+    ...(['kind', 'onBehalf'].includes(key) ? { kind: COLUMN_KINDS.STATUS } : {}),
   })),
 )
 
@@ -118,6 +132,19 @@ const decisionTitle = computed(() =>
         <template #cell-fields="{ item }">{{ fieldsLabel(item) }}</template>
         <template #cell-requestedAt="{ item }">{{ dateTime(item.createdAt) }}</template>
         <template #cell-status="{ item }"><StatusBadge :status="item.status" /></template>
+        <template #cell-kind="{ item }">{{
+          item.kind ? t(`nationalIdentity.review.kinds.${item.kind}`) : ''
+        }}</template>
+        <template #cell-onBehalf="{ item }"
+          ><Badge :variant="item.onBehalf ? 'info' : 'muted'">{{
+            t(item.onBehalf ? 'common.yes' : 'common.no')
+          }}</Badge></template
+        >
+        <template #cell-submittedBy="{ item }">{{ item.submittedBy?.name ?? '' }}</template>
+        <template #cell-reviewedBy="{ item }">{{ item.reviewedBy?.name ?? '' }}</template>
+        <template #cell-decidedAt="{ item }">{{
+          item.decidedAt ? dateTime(item.decidedAt) : ''
+        }}</template>
         <template #cell-actions="{ item }">
           <RowActions
             :actions="actionsFor(item)"

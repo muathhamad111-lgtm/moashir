@@ -3,6 +3,8 @@ import { findFile, findPayment, receiptOf, refundOf } from './financeState'
 import { entityNameOf, entityReferenceOf } from './receiptSnapshot'
 import { ownTransferResource, transferDetailsOf } from './bankTransferRecords'
 import { cycleRefOf } from '../award/cycleRef'
+import { findEntity } from '../entitiesStore'
+import { findRegion } from '../regionsStore'
 import { transactionTypeOf } from './financeQueries'
 
 function pricingOf(payment) {
@@ -166,7 +168,9 @@ export function paymentEventResource(event) {
   const payment = event.paymentId ? findPayment(event.paymentId) : null
   return {
     id: event.id,
-    payment: payment ? { id: payment.id, reference: payment.reference } : null,
+    payment: payment
+      ? { id: payment.id, reference: payment.reference, entityName: { ...entityNameOf(payment) } }
+      : null,
     source: event.source,
     eventType: event.eventType,
     mode: event.mode,
@@ -197,6 +201,11 @@ function maskedEmail(email) {
   return `${local.slice(0, 1)}***@${domain}`
 }
 
+function entityRegionOf(entityId) {
+  const region = findRegion(findEntity(entityId)?.regionId)
+  return region ? { id: region.id, code: region.code, name: { ...region.name } } : null
+}
+
 export function abandonedCartResource(cart) {
   return {
     id: cart.id,
@@ -205,6 +214,7 @@ export function abandonedCartResource(cart) {
       reference: entityReferenceOf(cart.entityId),
       name: { ...entityNameOf({ entityId: cart.entityId }) },
     },
+    region: entityRegionOf(cart.entityId),
     email: cart.email ? maskedEmail(cart.email) : null,
     marketingConsent: cart.marketingConsent,
     purpose: cart.purpose,

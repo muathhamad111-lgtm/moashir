@@ -11,10 +11,13 @@ const server = setupServer(...handlers)
 const SECRETARY_ROW_KEYS = [
   'average',
   'committee',
+  'completed_at',
+  'due_at',
   'entity',
   'id',
   'initial_percent',
   'is_frozen',
+  'is_overdue',
   'number',
   'region',
   'status',
@@ -45,6 +48,7 @@ const RESULT_ROW_KEYS = [
   'region',
   'regional_rank',
   'status',
+  'submitted_at',
 ]
 const RETURN_NOTE = 'يرجى مراجعة درجات معيار الحوكمة في ضوء الشواهد المرفقة وتوحيد أسس التقدير.'
 const UNAPPROVE = 'سحب اعتماد المنطقة لمراجعة ترتيب الفائزين بعد ملاحظات اللجنة العليا.'

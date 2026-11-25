@@ -23,7 +23,7 @@ final class ListUserNdaAcceptances
         return TermsAcceptance::query()
             ->where('user_id', $user->id)
             ->whereHas('termsVersion', static fn (Builder $version): Builder => $version->where('kind', TermsKind::Nda->value))
-            ->with('termsVersion:id,version')
+            ->with('termsVersion:id,version,title,effective_from')
             ->latest('created_at')
             ->latest('id')
             ->paginate($perPage);

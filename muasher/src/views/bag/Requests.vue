@@ -20,6 +20,10 @@ import { useBagRequests } from '@/composables/useBagRequests'
 import { bagRequestsService } from '@/services/bagRequestsService'
 import { formatDate } from '@/utils/datetime'
 import AppIcon from '@/components/ui/AppIcon.vue'
+import BagContextResults from '@/components/bag/BagContextResults.vue'
+
+// Optional dates the row already carries (hidden until the viewer adds them).
+const EXTRA_DATES = ['assignedAt', 'startedAt', 'completedAt']
 
 const { t, n, locale } = useI18n()
 const toast = useToast()
@@ -78,6 +82,8 @@ const columns = computed(() => [
   { key: 'paidAt', label: t('bagRequests.columns.paidAt') },
   { key: 'status', label: t('bagRequests.columns.status') },
   { key: 'evaluator', label: t('bagRequests.columns.evaluator') },
+  { key: 'context', label: t('bagRequests.columns.context') },
+  ...EXTRA_DATES.map((key) => ({ key, label: t(`bagRequests.columns.${key}`) })),
   { key: 'actions', label: t('components.actions.label') },
 ])
 
@@ -197,8 +203,8 @@ function onAction(key, row) {
             }}
           </span>
         </template>
-        <template #cell-paidAt="{ item }">
-          <span class="bag-requests__date">{{ dateLabel(item.paidAt) }}</span>
+        <template v-for="key in ['paidAt', ...EXTRA_DATES]" :key="key" #[`cell-${key}`]="{ item }">
+          <span class="bag-requests__date">{{ dateLabel(item[key]) }}</span>
         </template>
         <template #cell-status="{ item }">
           <StatusBadge :status="item.status" />
@@ -209,6 +215,12 @@ function onAction(key, row) {
             {{ localized(item.assignedEvaluatorName) }}
           </span>
           <span v-else class="bag-requests__unassigned">{{ t('bagRequests.unassigned') }}</span>
+        </template>
+        <template #cell-context="{ item }">
+          <BagContextResults
+            :self-score-percent="item.selfScorePercent"
+            :advanced-score-percent="item.advancedScorePercent"
+          />
         </template>
         <template #cell-actions="{ item }">
           <AppMenu

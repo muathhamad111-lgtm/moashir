@@ -12,6 +12,7 @@ import DateStamp from '@/components/accredited/DateStamp.vue'
 import OverdueBadge from '@/components/accredited/OverdueBadge.vue'
 import AssignedRequestProgress from '@/components/requests/AssignedRequestProgress.vue'
 import AssignedRequestActions from '@/components/requests/AssignedRequestActions.vue'
+import PathBadge from '@/components/ui/PathBadge.vue'
 import { useAssignedRequests } from '@/composables/useAssignedRequests'
 import { useAuthStore } from '@/stores/auth'
 import { useRequestPathCountsStore } from '@/stores/requestPathCounts'
@@ -20,6 +21,8 @@ import { ASSIGNED_TABS } from '@/constants/accredited'
 import { localizedText } from '@/utils/localizedText'
 
 const TAB_COUNT_KEYS = { new: 'new', in_progress: 'inProgress', completed: 'completed' }
+// Optional dates the row already carries (hidden until the viewer adds them).
+const EXTRA_DATES = ['submittedAt', 'startedAt', 'completedAt']
 
 const { t, locale } = useI18n()
 const auth = useAuthStore()
@@ -75,6 +78,12 @@ const columns = computed(() => [
   },
   { key: 'dueAt', label: t('requests.columns.dueAt'), sortKey: 'due_at' },
   { key: 'progress', label: t('requests.assigned.columns.progress') },
+  { key: 'path', label: t('requests.columns.path') },
+  { key: 'cycle', label: t('requests.columns.cycle') },
+  { key: 'submittedAt', label: t('requests.columns.submittedAt') },
+  { key: 'startedAt', label: t('requests.assigned.columns.startedAt') },
+  { key: 'completedAt', label: t('requests.columns.completedAt') },
+  { key: 'entityReference', label: t('requests.columns.entityReference') },
   { key: 'actions', label: t('requests.assigned.columns.actions') },
 ])
 </script>
@@ -134,6 +143,19 @@ const columns = computed(() => [
         </template>
         <template #cell-progress="{ item }">
           <AssignedRequestProgress :progress="item.reviewProgress" />
+        </template>
+        <template #cell-path="{ item }">
+          <PathBadge :path="item.path" :label="item.pathLabel" />
+        </template>
+        <template #cell-cycle="{ item }"
+          >{{ localizedText(item.awardCycle?.name, locale) }}
+          <bdi v-if="item.awardCycle?.year" class="u-ltr">{{ item.awardCycle.year }}</bdi></template
+        >
+        <template v-for="key in EXTRA_DATES" :key="key" #[`cell-${key}`]="{ item }">
+          <DateStamp :value="item[key]" :with-time="false" />
+        </template>
+        <template #cell-entityReference="{ item }">
+          <bdi class="u-ltr">{{ item.entity?.reference }}</bdi>
         </template>
         <template #cell-actions="{ item }">
           <AssignedRequestActions

@@ -6,6 +6,8 @@ import DataTable from '@/components/data-list/DataTable.vue'
 import ContactInboxStatusBadge from './ContactInboxStatusBadge.vue'
 import { ROUTE_NAMES } from '@/constants/routeNames'
 import { formatRiyadhDateTime } from '@/utils/datetime'
+import { localizedText } from '@/utils/localizedText'
+import { COLUMN_KINDS } from '@/utils/tableColumns'
 
 defineProps({
   items: { type: Array, default: () => [] },
@@ -21,10 +23,30 @@ const emit = defineEmits(['retry'])
 const { t, locale } = useI18n()
 const route = useRoute()
 
+const COLUMN_KEYS = [
+  'sender',
+  'reference',
+  'enquiryType',
+  'status',
+  'assignee',
+  'lastActivityAt',
+  'createdAt',
+  'repliedAt',
+  'closedAt',
+  'closedBy',
+  'entity',
+  'organization',
+  'language',
+  'entries',
+]
+const COLUMN_KINDS_BY_KEY = { language: COLUMN_KINDS.STATUS }
+const DATE_KEYS = ['createdAt', 'repliedAt', 'closedAt']
+
 const columns = computed(() =>
-  ['sender', 'reference', 'enquiryType', 'status', 'assignee', 'lastActivityAt'].map((key) => ({
+  COLUMN_KEYS.map((key) => ({
     key,
     label: t(`contactInbox.columns.${key}`),
+    kind: COLUMN_KINDS_BY_KEY[key],
   })),
 )
 
@@ -73,5 +95,22 @@ function messageLink(item) {
     <template #cell-lastActivityAt="{ item }">
       <bdi>{{ formatRiyadhDateTime(item.lastActivityAt, locale) }}</bdi>
     </template>
+    <template v-for="key in DATE_KEYS" :key="key" #[`cell-${key}`]="{ item }">
+      <bdi v-if="item[key]">{{ formatRiyadhDateTime(item[key], locale) }}</bdi>
+    </template>
+    <template #cell-closedBy="{ item }">{{ item.closedBy?.name }}</template>
+    <template #cell-entity="{ item }">
+      <span v-if="item.entity" class="contact-table__entity">
+        <span>{{ localizedText(item.entity.name, locale) }}</span>
+        <bdi dir="ltr">{{ item.entity.reference }}</bdi>
+      </span>
+    </template>
+    <template #cell-organization="{ item }"
+      ><span dir="auto">{{ item.sender.organization }}</span></template
+    >
+    <template #cell-language="{ item }">{{
+      item.sender.locale ? t(`contactInbox.languages.${item.sender.locale}`) : ''
+    }}</template>
+    <template #cell-entries="{ item }">{{ item.entryCount }}</template>
   </DataTable>
 </template>

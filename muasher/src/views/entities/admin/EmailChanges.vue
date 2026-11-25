@@ -14,6 +14,7 @@ import { useEmailChangeApprovals } from '@/composables/useEmailChangeApprovals'
 import { useEntityDisplay } from '@/composables/useEntityDisplay'
 import { EMAIL_CHANGE_STATUSES } from '@/constants/entityEnums'
 import { ROUTE_NAMES } from '@/constants/routeNames'
+import { COLUMN_KINDS } from '@/utils/tableColumns'
 
 const { t } = useI18n()
 const { dateTime } = useEntityDisplay()
@@ -46,10 +47,25 @@ function decide(key, item) {
   return startReject(item)
 }
 
+const COLUMN_KEYS = [
+  'entity',
+  'oldEmail',
+  'newEmail',
+  'requestedAt',
+  'status',
+  'entityReference',
+  'policy',
+  'otpVerifiedAt',
+  'appliedAt',
+  'actions',
+]
+const COLUMN_KINDS_BY_KEY = { entityReference: COLUMN_KINDS.CODE, policy: COLUMN_KINDS.STATUS }
+
 const columns = computed(() =>
-  ['entity', 'oldEmail', 'newEmail', 'requestedAt', 'status', 'actions'].map((key) => ({
+  COLUMN_KEYS.map((key) => ({
     key,
     label: t(`entities.emailChanges.columns.${key}`),
+    kind: COLUMN_KINDS_BY_KEY[key],
   })),
 )
 </script>
@@ -105,6 +121,14 @@ const columns = computed(() =>
         >
         <template #cell-requestedAt="{ item }">{{ dateTime(item.requestedAt) }}</template>
         <template #cell-status="{ item }"><StatusBadge :status="item.status" /></template>
+        <template #cell-entityReference="{ item }"
+          ><span class="u-ltr">{{ item.entity?.reference }}</span></template
+        >
+        <template #cell-policy="{ item }">{{
+          item.policy ? t(`entities.emailChanges.policies.${item.policy}`) : ''
+        }}</template>
+        <template #cell-otpVerifiedAt="{ item }">{{ dateTime(item.otpVerifiedAt) }}</template>
+        <template #cell-appliedAt="{ item }">{{ dateTime(item.appliedAt) }}</template>
         <template #cell-actions="{ item }">
           <RowActions
             v-if="item.status === EMAIL_CHANGE_STATUSES.AWAITING_APPROVAL"

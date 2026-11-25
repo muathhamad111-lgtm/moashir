@@ -54,3 +54,19 @@ it('publishes only active categories and types to the public filters', function 
     $this->getJson('/api/v1/kpi-categories')->assertOk()->assertJsonCount(1, 'data')->assertJsonPath('data.0.key', 'innovation');
     $this->getJson('/api/v1/kpi-types')->assertOk()->assertJsonCount(1, 'data')->assertJsonPath('data.0.key', 'input');
 });
+
+it('counts the indicators of each category and type on the admin lists only', function (): void {
+    $category = KpiCategory::factory()->create();
+    $type = KpiType::factory()->create();
+    $empty = KpiCategory::factory()->create();
+    Kpi::factory()->count(2)->create(['kpi_category_id' => $category->id, 'kpi_type_id' => $type->id]);
+    signIn(contentOfficer());
+
+    $categories = collect($this->getJson('/api/v1/admin/kpi-categories')->assertOk()->json('data'));
+    $types = collect($this->getJson('/api/v1/admin/kpi-types')->assertOk()->json('data'));
+
+    expect($categories->firstWhere('id', $category->id)['kpis_count'])->toBe(2)
+        ->and($categories->firstWhere('id', $empty->id)['kpis_count'])->toBe(0)
+        ->and($types->firstWhere('id', $type->id)['kpis_count'])->toBe(2);
+    $this->getJson('/api/v1/kpi-categories')->assertOk()->assertJsonMissingPath('data.0.kpis_count');
+});

@@ -18,7 +18,10 @@ final class LegalVersionSummaryResource extends JsonResource
      */
     public function toArray(Request $request): array
     {
-        return self::fieldsOf($this->resource);
+        return [
+            ...self::fieldsOf($this->resource),
+            'published_by' => $this->resource->relationLoaded('publishedBy') ? $this->resource->publishedBy?->name : null,
+        ];
     }
 
     /**

@@ -6,6 +6,8 @@ import { withLatinNumerals } from '@/utils/numerals'
 
 const LTR_FIELDS = new Set([
   'reference',
+  'levelCertificateNumber',
+  'vatNumber',
   'officialEmail',
   'phone',
   'nameEn',
@@ -45,6 +47,13 @@ export function useEntityDisplay() {
     foundingYear: (entity) => (entity.foundingYear ? String(entity.foundingYear) : ''),
     unifiedNumber: (entity) => entity.unifiedNumber,
     licenseNumber: (entity) => entity.licenseNumber,
+    levelCertificateNumber: (entity) => entity.levelCertificateNumber,
+    levelValidUntil: (entity) => date(entity.levelValidUntil),
+    vatNumber: (entity) => entity.vatNumber,
+    vatRegistered: (entity) => yesNo(entity.vatRegistered),
+    profileCompleted: (entity) => yesNo(entity.profileCompleted),
+    billingComplete: (entity) => yesNo(entity.billingComplete),
+    approvedAt: (entity) => date(entity.approvedAt),
     foundedOn: (entity) => entity.foundedOn,
     websiteUrl: (entity) => entity.websiteUrl,
     region: (entity) => localizedText(entity.region?.name, locale.value),
@@ -81,8 +90,15 @@ export function useEntityDisplay() {
       }))
   }
 
+  // One field of a list row: empty when the row does not carry it (a narrower resource).
+  function valueOf(entity, key) {
+    return entity[key] === null || entity[key] === undefined ? '' : FORMATTERS[key](entity)
+  }
+
   return {
     rowsOf,
+    valueOf,
+    isLtr: (key) => LTR_FIELDS.has(key),
     date,
     dateTime,
     enumLabel,

@@ -25,6 +25,8 @@ final class EntityContactResource extends JsonResource
             ...EntityLevelPresenter::of($this->resource),
             'last_level' => EntityLevelPresenter::lastLevelOf($this->resource),
             ...EntityPresenter::contact($this->resource),
+            'region' => EntityPresenter::place($this->resource->region),
+            'created_at' => $this->resource->created_at->toIso8601String(),
         ];
     }
 }

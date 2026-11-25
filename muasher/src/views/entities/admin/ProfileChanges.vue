@@ -13,6 +13,7 @@ import { useProfileChangeReviews } from '@/composables/useProfileChangeReviews'
 import { useEntityDisplay } from '@/composables/useEntityDisplay'
 import { PROFILE_CHANGE_STATUSES } from '@/constants/entityEnums'
 import { ROUTE_NAMES } from '@/constants/routeNames'
+import { COLUMN_KINDS } from '@/utils/tableColumns'
 
 const { t } = useI18n()
 const { dateTime } = useEntityDisplay()
@@ -32,10 +33,25 @@ const {
 } = useProfileChangeReviews()
 const { search } = filters
 
+const COLUMN_KEYS = [
+  'entity',
+  'items',
+  'submittedAt',
+  'status',
+  'entityReference',
+  'revision',
+  'reviewedBy',
+  'decidedAt',
+  'updatedAt',
+  'actions',
+]
+const COLUMN_KINDS_BY_KEY = { entityReference: COLUMN_KINDS.CODE, revision: COLUMN_KINDS.NUMBER }
+
 const columns = computed(() =>
-  ['entity', 'items', 'submittedAt', 'status', 'actions'].map((key) => ({
+  COLUMN_KEYS.map((key) => ({
     key,
     label: t(`entities.profileChanges.columns.${key}`),
+    kind: COLUMN_KINDS_BY_KEY[key],
   })),
 )
 </script>
@@ -93,6 +109,11 @@ const columns = computed(() =>
         <template #cell-items="{ item }">{{ itemLabels(item) }}</template>
         <template #cell-submittedAt="{ item }">{{ dateTime(item.submittedAt) }}</template>
         <template #cell-status="{ item }"><StatusBadge :status="item.status" /></template>
+        <template #cell-entityReference="{ item }"
+          ><span class="u-ltr">{{ item.entity?.reference }}</span></template
+        >
+        <template #cell-decidedAt="{ item }">{{ dateTime(item.decidedAt) }}</template>
+        <template #cell-updatedAt="{ item }">{{ dateTime(item.updatedAt) }}</template>
         <template #cell-actions="{ item }">
           <BaseButton
             :variant="item.status === PROFILE_CHANGE_STATUSES.PENDING ? 'primary' : 'secondary'"

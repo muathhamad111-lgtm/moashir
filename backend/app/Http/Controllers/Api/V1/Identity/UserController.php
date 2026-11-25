@@ -11,6 +11,7 @@ use App\Actions\Identity\UpdateStaffUser;
 use App\Http\Requests\Identity\IndexUsersRequest;
 use App\Http\Requests\Identity\StoreUserRequest;
 use App\Http\Requests\Identity\UpdateUserRequest;
+use App\Http\Resources\Identity\UserListResource;
 use App\Http\Resources\Identity\UserResource;
 use App\Http\Responses\ApiResponse;
 use App\Models\Identity\User;
@@ -27,7 +28,7 @@ final class UserController
         $users = $listUsers->handle($filters);
         $statuses = $nda->of(array_values($users->items()));
         $items = array_map(static fn (User $user): array => [
-            ...new UserResource($user)->resolve($request),
+            ...new UserListResource($user)->resolve($request),
             'nda_status' => $statuses[$user->id]->value,
         ], array_values($users->items()));
 

@@ -1,7 +1,9 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { flushPromises, mount } from '@vue/test-utils'
+import { setActivePinia } from 'pinia'
 import AbandonedCarts from '@/views/settings/AbandonedCarts.vue'
 import { messagingService } from '@/services/messagingService'
+import { useTableColumnsStore } from '@/stores/tableColumns'
 import { createTestGlobals } from '@/test-utils'
 
 const posture = vi.hoisted(() => ({ showsModulesAwaitingBackend: true }))
@@ -21,6 +23,7 @@ function cart(id, marketingConsent) {
   return {
     id,
     entity: { name: { ar: 'جهة الاختبار', en: 'Test organisation' }, reference: `ENT-${id}` },
+    region: { id: 1, code: 'RUH', name: { ar: 'منطقة الرياض', en: 'Riyadh Region' } },
     email: `cart${id}@example.sa`,
     marketingConsent,
     purpose: 'accredited',
@@ -31,8 +34,10 @@ function cart(id, marketingConsent) {
 }
 
 async function mountView(locale = 'ar') {
+  const globals = createTestGlobals({ locale })
+  setActivePinia(globals.pinia)
   const wrapper = mount(AbandonedCarts, {
-    global: createTestGlobals({ locale }),
+    global: globals,
     attachTo: document.body,
   })
   await flushPromises()
@@ -70,4 +75,14 @@ describe('Abandoned carts', () => {
       expect(messagingService.sendCartCampaign).not.toHaveBeenCalled()
     },
   )
+
+  it('shows the entity region once the viewer chooses it', async () => {
+    const wrapper = await mountView('en')
+    useTableColumnsStore().choices = {
+      'settings-abandoned-carts': ['contact', 'purpose', 'region'],
+    }
+    await flushPromises()
+    expect(wrapper.findAll('tbody tr')[0].findAll('td')[3].text()).toBe('Riyadh Region')
+    wrapper.unmount()
+  })
 })

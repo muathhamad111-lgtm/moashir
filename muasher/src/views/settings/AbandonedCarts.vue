@@ -17,6 +17,7 @@ import { messagingService } from '@/services/messagingService'
 import { CART_PURPOSE_VALUES } from '@/constants/payments'
 import { ABANDONED_CART_CONTACTED } from '@/constants/finance'
 import { formatDate } from '@/utils/datetime'
+import { localizedText } from '@/utils/localizedText'
 import { SHOWS_MODULES_AWAITING_BACKEND } from '@/constants/buildPosture'
 
 const CHANNELS = ['email', 'sms']
@@ -50,6 +51,7 @@ const columns = computed(() => [
   { key: 'startedAt', label: t('settings.carts.columns.startedAt') },
   { key: 'lastSeenAt', label: t('settings.carts.columns.lastSeenAt') },
   { key: 'contactedAt', label: t('settings.carts.columns.contactedAt') },
+  { key: 'region', label: t('settings.carts.columns.region') },
   { key: 'actions', label: t('components.actions.label') },
 ])
 
@@ -167,6 +169,7 @@ const filterState = { filters: filters.filters, setFilter }
         <template #cell-contactedAt="{ item }"
           ><span class="settings-form__nowrap">{{ dateOf(item.contactedAt) }}</span></template
         >
+        <template #cell-region="{ item }">{{ localizedText(item.region?.name, locale) }}</template>
         <template #cell-actions="{ item }">
           <span v-if="!item.marketingConsent" class="settings-form__muted">{{
             t('settings.carts.noConsent')

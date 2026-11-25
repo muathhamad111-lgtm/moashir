@@ -1,7 +1,9 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { flushPromises, mount } from '@vue/test-utils'
+import { setActivePinia } from 'pinia'
 import ProfileChanges from '@/views/entities/admin/ProfileChanges.vue'
 import { profileChangeRequestsService } from '@/services/profileChangeRequestsService'
+import { useTableColumnsStore } from '@/stores/tableColumns'
 import { createTestGlobals } from '@/test-utils'
 
 vi.mock('@/services/profileChangeRequestsService', () => ({
@@ -19,6 +21,7 @@ const ROW = {
 
 async function mountQueue(locale = 'ar') {
   const globals = createTestGlobals({ locale })
+  setActivePinia(globals.pinia)
   await globals.router.push('/admin/entities/profile-changes')
   const wrapper = mount(ProfileChanges, {
     global: { ...globals, stubs: { teleport: true } },
@@ -64,6 +67,29 @@ describe('ProfileChanges', () => {
     await flushPromises()
     expect(profileChangeRequestsService.show).toHaveBeenCalledWith(ROW.id)
     expect(wrapper.find('[data-testid="profile-change-review"]').exists()).toBe(true)
+    wrapper.unmount()
+  })
+
+  it('shows the reviewer, the revision and the decision date once chosen', async () => {
+    profileChangeRequestsService.list.mockResolvedValue({
+      data: [
+        {
+          ...ROW,
+          status: 'approved',
+          revision: 2,
+          reviewedBy: 'سعود الدواسر',
+          decidedAt: '2026-11-23T10:00:00Z',
+        },
+      ],
+      meta: { pagination: { page: 1, perPage: 10, total: 1, lastPage: 1 } },
+    })
+    const wrapper = await mountQueue('en')
+    useTableColumnsStore().choices = {
+      'entities-profile-changes': ['items', 'revision', 'reviewedBy', 'decidedAt'],
+    }
+    await flushPromises()
+    const cells = wrapper.findAll('tbody td').map((cell) => cell.text())
+    expect(cells.slice(2, 5)).toEqual(['2', 'سعود الدواسر', expect.stringContaining('2026-11-23')])
     wrapper.unmount()
   })
 })

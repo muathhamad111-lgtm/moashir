@@ -107,6 +107,7 @@ const HANDLERS = {
         :status="status"
         :error-message="errorMessage"
         :categories="categories"
+        :types="types"
         :localized="localized"
         :can-reorder="!isFiltered"
         :total="stats?.total ?? 0"

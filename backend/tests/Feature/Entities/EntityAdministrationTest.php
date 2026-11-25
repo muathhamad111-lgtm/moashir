@@ -94,6 +94,17 @@ it('limits the finance officer to name and contact fields', function (): void {
     $this->getJson("/api/v1/entities/{$entity->id}")->assertOk()->assertJsonMissingPath('data.employees_count');
 });
 
+it('lists the region and the registration date of each entity to the contact viewer', function (): void {
+    $entity = entityWithOwner();
+    signIn(staffUser(RoleKey::FinanceOfficer));
+
+    $this->getJson('/api/v1/entities')
+        ->assertOk()
+        ->assertJsonPath('data.0.region', ['id' => $entity->region->id, 'code' => $entity->region->code, 'name' => $entity->region->name->toArray()])
+        ->assertJsonPath('data.0.created_at', $entity->created_at->toIso8601String())
+        ->assertJsonMissingPath('data.0.city');
+});
+
 it('shows no entity to roles whose scope is limited to their own assignments', function (RoleKey $role): void {
     $entity = entityWithOwner();
     signIn(staffUser($role));

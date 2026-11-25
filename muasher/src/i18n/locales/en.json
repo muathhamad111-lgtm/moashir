@@ -280,10 +280,24 @@
       "next": "Next"
     },
     "columns": {
-      "title": "Visible columns",
+      "title": "Manage columns",
       "open": "Columns",
-      "reset": "Restore the default columns",
-      "locked": "Always shown: {columns}"
+      "reset": "Reset",
+      "searchHint": "Clear the search to reorder columns.",
+      "listLabel": "Table columns in display order",
+      "minimum": "Minimum reached: {count} visible columns.",
+      "resetHint": "Apply changes this view only, until you leave the page. Reset restores the table's original columns here; your saved default changes only when you press Save as default.",
+      "apply": "Apply",
+      "saveDefault": "Save as default",
+      "alwaysShown": "Always shown",
+      "help": "Drag and select to manage which columns are shown. At least {count} columns stay visible.",
+      "unsaved": "Unsaved changes",
+      "close": "Close",
+      "search": "Search columns",
+      "selectAll": "Select ({count})",
+      "noMatch": "No column matches this name.",
+      "actions": "Actions",
+      "saved": "Columns saved as your default for this table."
     }
   },
   "status": {
@@ -960,7 +974,16 @@
         "published": "Published",
         "scope": "Applies to",
         "affected": "Open requests affected",
-        "actions": "Actions"
+        "actions": "Actions",
+        "linked": "Linked requests",
+        "linkedOpen": "Open linked requests",
+        "changes": "Changes",
+        "scoreAffecting": "Score-affecting changes",
+        "scaleKind": "Scale",
+        "consistent": "Consistent",
+        "archivedAt": "Archived on",
+        "createdAt": "Created on",
+        "updatedAt": "Last edited"
       },
       "reason": "Reason:",
       "affected": "No open request affected | 1 open request | {count} open requests",
@@ -1579,7 +1602,19 @@
         "value": "Value",
         "target": "Target",
         "status": "Status",
-        "published": "Publication"
+        "published": "Publication",
+        "baseline": "Baseline",
+        "unit": "Unit",
+        "type": "Type",
+        "measurementYear": "Measurement year",
+        "valueUpdatedAt": "Value updated",
+        "owner": "Owner",
+        "dataSource": "Data source",
+        "onHomepage": "On homepage",
+        "publishedAt": "Published on",
+        "updatedBy": "Last edited by",
+        "updatedAt": "Last edited",
+        "slug": "Slug"
       },
       "featuredBadge": "Homepage",
       "actions": {
@@ -1691,7 +1726,8 @@
           "description": "Description",
           "order": "Display order",
           "active": "Active",
-          "activeHint": "Inactive entries stay on their indicators but are hidden from new choices and public filters."
+          "activeHint": "Inactive entries stay on their indicators but are hidden from new choices and public filters.",
+          "kpisCount": "Indicators"
         },
         "categories": {
           "add": "Add category",
@@ -1781,7 +1817,11 @@
       "name": "Permission",
       "key": "Key",
       "group": "Module",
-      "roles": "Linked roles"
+      "roles": "Linked roles",
+      "confidential": "Confidential",
+      "grantable": "Grantable",
+      "system": "System",
+      "lockedToRoles": "Locked to roles"
     },
     "filters": {
       "group": "Module"
@@ -1848,7 +1888,14 @@
       "user": "User",
       "role": "Roles",
       "status": "Status",
-      "paths": "Paths"
+      "paths": "Paths",
+      "mfa": "MFA",
+      "mfaOn": "Enabled",
+      "mfaOff": "Not enabled",
+      "nda": "NDA",
+      "lastLoginAt": "Last sign-in",
+      "createdAt": "Created",
+      "qualifications": "Assessor qualifications"
     },
     "filters": {
       "role": "Role",
@@ -2377,7 +2424,29 @@
       "level": "Level",
       "lastAssessment": "Last accredited",
       "typeRegion": "Type and region",
-      "statusRegistered": "Status"
+      "statusRegistered": "Status",
+      "city": "City",
+      "developmentSector": "Development sector",
+      "orgSize": "Organization size",
+      "foundingYear": "Founding year",
+      "governanceGrade": "Governance grade",
+      "employeesCount": "Employees",
+      "annualBeneficiariesCount": "Annual beneficiaries",
+      "unifiedNumber": "Unified number",
+      "licenseNumber": "Licence number",
+      "levelCertificateNumber": "Level certificate no.",
+      "levelValidUntil": "Certificate valid until",
+      "verifiedAt": "Verified on",
+      "approvedAt": "Approved on",
+      "deactivatedAt": "Deactivated on",
+      "profileCompleted": "Profile complete",
+      "billingComplete": "Billing complete",
+      "vatRegistered": "VAT registered",
+      "vatNumber": "VAT number",
+      "marketingConsent": "Marketing consent",
+      "websiteUrl": "Website",
+      "createdAt": "Registered on",
+      "entityType": "Entity type"
     },
     "filters": {
       "status": "Status",
@@ -2560,7 +2629,16 @@
           "path": "Path",
           "createdAt": "Requested on",
           "status": "Status",
-          "result": "Result"
+          "result": "Result",
+          "submittedAt": "Submitted",
+          "completedAt": "Completed",
+          "cycle": "Award cycle",
+          "period": "Period",
+          "level": "Level",
+          "certificateNumber": "Certificate no.",
+          "certificateValidUntil": "Valid until",
+          "payment": "Payment status",
+          "updatedAt": "Last updated"
         },
         "noResult": "No result yet"
       }
@@ -2580,7 +2658,11 @@
         "newEmail": "New e-mail",
         "requestedAt": "Requested on",
         "status": "Status",
-        "actions": "Decision"
+        "actions": "Decision",
+        "entityReference": "Entity reference",
+        "policy": "Approval policy",
+        "otpVerifiedAt": "Verified on",
+        "appliedAt": "Applied on"
       },
       "approve": "Approve",
       "reject": "Reject",
@@ -2591,7 +2673,11 @@
       "approved": "The e-mail change was approved.",
       "rejected": "The e-mail change was rejected.",
       "emptyTitle": "No e-mail changes in this list",
-      "emptyMessage": "Verified requests that need approval appear here."
+      "emptyMessage": "Verified requests that need approval appear here.",
+      "policies": {
+        "requires_approval": "Requires approval",
+        "immediate_notify": "Applied at once, with a notice"
+      }
     },
     "history": {
       "actors": {
@@ -2624,7 +2710,12 @@
         "items": "Changed items",
         "submittedAt": "Submitted on",
         "status": "Status",
-        "actions": "Decision"
+        "actions": "Decision",
+        "entityReference": "Entity reference",
+        "revision": "Revision",
+        "reviewedBy": "Reviewer",
+        "decidedAt": "Decided on",
+        "updatedAt": "Last updated"
       },
       "itemCount": "{count} item | {count} items",
       "reviewAction": "Review",
@@ -3506,7 +3597,8 @@
         "purpose": "Service",
         "startedAt": "Started",
         "lastSeenAt": "Last seen",
-        "contactedAt": "Contacted"
+        "contactedAt": "Contacted",
+        "region": "Region"
       },
       "actions": {
         "email": "Marketing email",
@@ -4679,7 +4771,17 @@
       "cycle": "Award cycle",
       "region": "Region",
       "path": "Path",
-      "level": "Level"
+      "level": "Level",
+      "openedAt": "Opened",
+      "completedAt": "Completed",
+      "assignedAt": "Assigned on",
+      "completionDeadline": "Completion deadline",
+      "payment": "Payment status",
+      "entityReference": "Entity reference",
+      "lastActivityAt": "Last entity activity",
+      "period": "Period",
+      "lastRemindedAt": "Last reminded",
+      "submissionProgress": "Submission progress"
     },
     "filters": {
       "status": "Status",
@@ -4756,7 +4858,8 @@
         "state": "Status",
         "progress": "Scoring progress",
         "actions": "Actions",
-        "assignedAt": "Assigned on"
+        "assignedAt": "Assigned on",
+        "startedAt": "Review started"
       },
       "progress": {
         "remaining": "{count} left",
@@ -5137,7 +5240,9 @@
       "paidAt": "Payment date",
       "assignedAt": "Assigned on",
       "status": "Status",
-      "evaluator": "Evaluator"
+      "evaluator": "Evaluator",
+      "startedAt": "Started",
+      "completedAt": "Completed"
     },
     "filters": {
       "status": "Status"
@@ -6380,7 +6485,16 @@
         "payment": "Payment",
         "amount": "Amount",
         "date": "Date",
-        "receipt": "Receipt no."
+        "receipt": "Receipt no.",
+        "type": "Transaction type",
+        "awardCycle": "Award cycle",
+        "paidAt": "Paid on",
+        "vatAmount": "VAT amount",
+        "vatRate": "VAT rate",
+        "vatRateValue": "{rate}%",
+        "refundAmount": "Refunded amount",
+        "refundedAt": "Refunded on",
+        "updatedAt": "Last updated"
       },
       "view": "View details",
       "viewReceipt": "View receipt"
@@ -6527,7 +6641,14 @@
         "manual_settle": "Manual settlement",
         "order_cancelled": "Order cancelled to change the payment method"
       },
-      "pageSubtitle": "What the payment gateway and the verification jobs reported, for support."
+      "pageSubtitle": "What the payment gateway and the verification jobs reported, for support.",
+      "columns": {
+        "entity": "Entity",
+        "processedAt": "Processed at",
+        "errorCode": "Error code",
+        "signature": "Signature",
+        "unsigned": "Not verified"
+      }
     },
     "settings": {
       "saved": "The finance settings were saved.",
@@ -7171,7 +7292,19 @@
       "status": "Status",
       "submission": "Submission period",
       "regions": "Regions",
-      "requests": "Requests"
+      "requests": "Requests",
+      "announcementAt": "Announcement",
+      "committee": "Committee assessment period",
+      "entryFee": "Entry fee",
+      "scaleKind": "Scale",
+      "initialReviewSlaDays": "Initial assessment deadline (days)",
+      "minEntityAge": "Minimum entity age (years)",
+      "disqualificationScore": "Qualification threshold",
+      "participationCertificate": "Participation certificate",
+      "openedAt": "Opened on",
+      "closedAt": "Closed on",
+      "createdAt": "Created on",
+      "updatedAt": "Last edited"
     },
     "filters": {
       "status": "Status",
@@ -7460,7 +7593,13 @@
       "region": "Region",
       "percent": "Initial result",
       "threshold": "Threshold",
-      "status": "Status"
+      "status": "Status",
+      "submittedAt": "Submitted on",
+      "initialAssessedAt": "Initially assessed on",
+      "dueAt": "Due",
+      "score": "Score",
+      "entityReference": "Entity number",
+      "decision": "Filtering decision"
     },
     "percent": "{value}%",
     "override": {
@@ -7526,7 +7665,8 @@
       "confirm": "Qualify the requests",
       "done": "{count} requests were qualified.",
       "ownNote": "The action leaves out {count} requests you assessed yourself; another filtering officer decides them."
-    }
+    },
+    "scoreOf": "{total} of {maxTotal}"
   },
   "award": {
     "common": {
@@ -7561,7 +7701,8 @@
         "title": "Results and announcement",
         "subtitle": "Choose a cycle to rank the winners per region and nationally, approve the results and announce them.",
         "open": "Open the results"
-      }
+      },
+      "committeeStart": "Committee start"
     },
     "states": {
       "seat": {
@@ -7599,7 +7740,9 @@
         "name": "Committee assessor",
         "status": "Status",
         "progress": "Evaluations",
-        "appointedAt": "Appointed on"
+        "appointedAt": "Appointed on",
+        "disabledAt": "Disabled on",
+        "removedAt": "Removed on"
       },
       "progress": "{completed} of {total} submitted",
       "replaces": "Substitute for {name}",
@@ -7656,7 +7799,10 @@
         "entity": "Entity",
         "status": "Status",
         "dueAt": "Due",
-        "percent": "My total"
+        "percent": "My total",
+        "startedAt": "Started on",
+        "submittedAt": "Submitted on",
+        "returnedAt": "Returned on"
       },
       "emptyTitle": "Nothing to assess",
       "emptyMessage": "No entities with this status in this tab.",
@@ -7762,7 +7908,14 @@
         "status": "State",
         "committee": "Committee",
         "average": "Committee average",
-        "open": "Review"
+        "open": "Review",
+        "initialPercent": "Initial result",
+        "submittedAt": "Submitted on",
+        "dueAt": "Due",
+        "averageComputedAt": "Average computed on",
+        "assessorsCounted": "Assessors counted",
+        "manualAverage": "Manual average",
+        "entityReference": "Entity number"
       },
       "progress": "{completed} of {total} submitted",
       "pendingSubstitutions": "One substitute pending | {count} substitutes pending",
@@ -7793,7 +7946,11 @@
           "replaced": "Voided: replaced",
           "removed": "Voided: assessor removed",
           "withdrawn": "Voided: request withdrawn"
-        }
+        },
+        "startedAt": "Started on",
+        "returnedAt": "Returned on",
+        "substituteApprovedAt": "Substitute approved on",
+        "voidedAt": "Voided on"
       },
       "evaluation": {
         "title": "Evaluation of {name}",
@@ -7900,7 +8057,10 @@
         "status": "State",
         "average": "Committee average",
         "regionalRank": "Regional rank",
-        "rank": "Rank"
+        "rank": "Rank",
+        "entityReference": "Entity number",
+        "submittedAt": "Submitted on",
+        "approvedAt": "Average approved on"
       },
       "rank": {
         "label": "Rank",
@@ -9657,7 +9817,15 @@
       "enquiryType": "Enquiry type",
       "status": "Status",
       "assignee": "Handler",
-      "lastActivityAt": "Last activity"
+      "lastActivityAt": "Last activity",
+      "createdAt": "Received",
+      "repliedAt": "Last reply",
+      "closedAt": "Closed on",
+      "closedBy": "Closed by",
+      "entity": "Linked entity",
+      "organization": "Stated organisation",
+      "language": "Language",
+      "entries": "Entries"
     },
     "filters": {
       "search": "Search by reference, name, e-mail or organisation",
@@ -9757,6 +9925,10 @@
       "assigned": "Assigned",
       "replied": "Replied",
       "awaiting-reply": "Awaiting reply"
+    },
+    "languages": {
+      "ar": "Arabic",
+      "en": "English"
     }
   },
   "legalAdmin": {
@@ -9792,7 +9964,10 @@
       "title": "Title",
       "effectiveFrom": "Effective from",
       "updatedAt": "Last edited",
-      "actions": "Actions"
+      "actions": "Actions",
+      "publishedAt": "Published on",
+      "publishedBy": "Published by",
+      "createdAt": "Created"
     },
     "empty": {
       "title": "No versions",
@@ -9847,7 +10022,10 @@
       "subject": "Record",
       "ipAddress": "IP address",
       "reason": "Reason",
-      "actions": "Actions"
+      "actions": "Actions",
+      "actorRoles": "Actor roles",
+      "tags": "Tags",
+      "requestId": "Request ID"
     },
     "actors": {
       "user": "User",
@@ -10678,7 +10856,12 @@
         "fields": "Changes",
         "requestedAt": "Requested on",
         "status": "Status",
-        "actions": "Actions"
+        "actions": "Actions",
+        "kind": "Request type",
+        "onBehalf": "On behalf",
+        "submittedBy": "Submitted by",
+        "reviewedBy": "Reviewer",
+        "decidedAt": "Decided on"
       },
       "view": "View request",
       "approve": "Approve",
@@ -10695,7 +10878,11 @@
       "currentNationalId": "Current national ID",
       "requestedNationalId": "Requested national ID",
       "viewAudited": "Opening this request is recorded in the audit log.",
-      "loadFailed": "The request could not be loaded."
+      "loadFailed": "The request could not be loaded.",
+      "kinds": {
+        "first_entry": "First national ID entry",
+        "correction": "Correction"
+      }
     }
   },
   "nda": {
@@ -10744,7 +10931,12 @@
         "publishedAt": "Published on",
         "publishedBy": "Published by",
         "acceptances": "Acceptances",
-        "actions": "Actions"
+        "actions": "Actions",
+        "title": "Title",
+        "effectiveFrom": "Effective from",
+        "changeSummary": "Change summary",
+        "updatedAt": "Last edited",
+        "createdAt": "Created"
       },
       "empty": {
         "title": "No versions yet",
@@ -10801,7 +10993,9 @@
         "version": "Version",
         "status": "Status",
         "acceptedAt": "Accepted at",
-        "ip": "IP"
+        "ip": "IP",
+        "acceptedRoles": "Roles at acceptance",
+        "lastAcceptedVersion": "Last accepted version"
       },
       "pendingFor": "Pending {version}",
       "empty": {
@@ -10817,7 +11011,9 @@
         "acceptedAt": "Accepted at",
         "ip": "IP",
         "roles": "Roles at the time",
-        "actions": "Actions"
+        "actions": "Actions",
+        "title": "Title",
+        "effectiveFrom": "Effective from"
       },
       "status": {
         "accepted": "Accepted the current version.",

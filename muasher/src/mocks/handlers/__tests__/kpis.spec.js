@@ -168,6 +168,15 @@ describe('KPI mock — editor writes (Task-33 §3 #33-#42)', () => {
     expect(inUse.body.meta.kpiCount).toBeGreaterThan(0)
   })
 
+  it('counts the indicators of each category and type on the admin lists only', async () => {
+    const categories = await call('GET', '/admin/kpi-categories')
+    const types = await call('GET', '/admin/kpi-types')
+    expect(categories.body.data.find((entry) => entry.id === 1).kpisCount).toBeGreaterThan(0)
+    expect(types.body.data.every((entry) => Number.isInteger(entry.kpisCount))).toBe(true)
+    const publicList = await call('GET', '/kpi-categories')
+    expect(publicList.body.data[0]).not.toHaveProperty('kpisCount')
+  })
+
   it('denies the editor endpoints to roles without content.kpis.manage', async () => {
     seedMockSession({ id: 7002, roles: ['finance_officer'] })
     expect((await call('GET', '/admin/kpis')).status).toBe(403)

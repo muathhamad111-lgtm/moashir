@@ -34,7 +34,7 @@ final class NdaRegisterPresenter
     private function row(User $user, ?TermsAcceptance $acceptance, ?string $lastAccepted): array
     {
         return [
-            'user' => ['id' => $user->id, 'name' => $user->name, 'email' => $user->email, 'roles' => NdaRoleNames::of($user)],
+            'user' => ['id' => $user->id, 'name' => $user->name, 'roles' => NdaRoleNames::of($user)],
             'status' => ($acceptance instanceof TermsAcceptance ? NdaUserStatus::Accepted : NdaUserStatus::Pending)->value,
             'last_accepted_version' => $lastAccepted,
             'accepted_at' => $acceptance?->created_at->toIso8601String(),

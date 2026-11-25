@@ -3,6 +3,7 @@ import { http } from '../contract/http'
 import { envelope, noContent } from '../contract/responses'
 import { MockRejection, rejectionResponse } from '../contract/rejection'
 import { currentSessionUser } from '../stores/sessionStore'
+import { actorDisplayName } from '../stores/actorName'
 import { sessionCan, sessionIsSuperAdmin } from '../stores/sessionPermissions'
 import {
   createDraft,
@@ -100,7 +101,9 @@ export const legalVersionsHandlers = [
     route(async ({ params, request }) => {
       const body = await request.json().catch(() => ({}))
       if (sessionIsSuperAdmin() && !body.reason) throw new MockRejection(422, 'reason_required')
-      return envelope({ ...publishDraft(params.id) })
+      const published = publishDraft(params.id)
+      published.publishedBy = actorDisplayName(currentSessionUser(), '')
+      return envelope({ ...published })
     }),
   ),
 ]

@@ -67,6 +67,7 @@ export function resultRowResource(ranking) {
     averagePercent: ranking.averagePercent,
     regionalRank: ranking.regionalRank,
     nationalRank: ranking.nationalRank,
+    submittedAt: record.submittedAt,
     approvedAt: ranking.createdAt,
   }
 }

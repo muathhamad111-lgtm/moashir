@@ -51,6 +51,7 @@ import { placeOfRegion } from './committeeEntity'
 import { discussionResource } from './committeeDiscussions'
 import { requireReason } from './committeeAccess'
 import { announceAverageApproved, announceReturnedToCommittee } from './committeeNotices'
+import { reviewClockOf } from '../award/reviewClock'
 
 const DESK_STATES = [...COMMITTEE_STATES, ...RESULT_STATES]
 const SORTS = {
@@ -80,7 +81,7 @@ export function secretaryRow(record) {
       completed: live.filter((row) => row.status === 'completed').length,
       pendingSubstitutions: pendingSubstitutes(record).length,
     },
-    submittedAt: record.submittedAt,
+    ...reviewClockOf(record),
   }
 }
 

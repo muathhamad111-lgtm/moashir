@@ -5,6 +5,7 @@ import RefundEvidenceField from '@/components/finance/RefundEvidenceField.vue'
 import RefundRecord from '@/components/finance/RefundRecord.vue'
 import TransactionFilters from '@/components/finance/TransactionFilters.vue'
 import TransactionsTable from '@/components/finance/TransactionsTable.vue'
+import PaymentEventsTable from '@/components/finance/PaymentEventsTable.vue'
 import TransactionEventsCard from '@/components/finance/TransactionEventsCard.vue'
 import TransactionParties from '@/components/finance/TransactionParties.vue'
 import TransactionFacts from '@/components/finance/TransactionFacts.vue'
@@ -211,6 +212,27 @@ describe('TransactionsTable', () => {
     expect(payment[1].text()).toBe('mada')
   })
 
+  it('shows the award cycle and the refunded amount once the viewer chooses those columns', async () => {
+    const wrapper = mountWith(TransactionsTable, {
+      actionsFor: viewOnly,
+      items: [
+        {
+          ...ROW,
+          awardCycle: { id: 4, name: { ar: 'دورة 2026', en: 'Cycle 2026' } },
+          refund: { id: 'f-1', amount: '1150.00', currency: 'SAR' },
+          refundedAt: '2026-11-12T09:00:00Z',
+        },
+      ],
+      status: 'success',
+    })
+    await flushPromises()
+    useTableColumnsStore().choices = { 'finance-transactions': ['awardCycle', 'refundAmount'] }
+    await flushPromises()
+    const cells = wrapper.findAll('tbody td')
+    expect(cells[1].text()).toBe('Cycle 2026')
+    expect(cells[2].text()).toContain('1,150.00')
+  })
+
   it('identifies the entity by its initials and number, never by an e-mail', () => {
     const wrapper = mountWith(TransactionsTable, {
       actionsFor: viewOnly,
@@ -337,5 +359,35 @@ describe('transaction receipt sections', () => {
     expect(terms.slice(0, 2)).toEqual(['Payment channel', 'Payment method'])
     expect(terms).not.toContain('Entity')
     expect(terms).not.toContain('Service')
+  })
+})
+
+describe('PaymentEventsTable', () => {
+  const EVENT = {
+    id: 'ev-1',
+    payment: {
+      id: 'p-9',
+      reference: 'PAY-2026-000009',
+      entityName: { ar: 'جمعية النماء الخيرية', en: 'Namaa Charity' },
+    },
+    source: 'webhook',
+    eventType: 'payment_paid',
+    mode: 'live',
+    signatureValid: true,
+    result: 'applied',
+    errorCode: 'card_declined',
+    providerRef: '…a1b2c3',
+    createdAt: '2026-11-10T09:00:00Z',
+    processedAt: '2026-11-10T09:00:02Z',
+  }
+
+  it('shows the entity of the payment and the error code once the viewer chooses them', async () => {
+    const wrapper = mountWith(PaymentEventsTable, { items: [EVENT], status: 'success' })
+    await flushPromises()
+    useTableColumnsStore().choices = { 'finance-payment-events': ['entity', 'errorCode'] }
+    await flushPromises()
+    const cells = wrapper.findAll('tbody td')
+    expect(cells[1].text()).toBe('Namaa Charity')
+    expect(cells[2].text()).toBe('card_declined')
   })
 })

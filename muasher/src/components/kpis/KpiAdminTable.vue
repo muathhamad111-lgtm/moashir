@@ -6,7 +6,8 @@ import AppMenu from '@/components/ui/AppMenu.vue'
 import Badge from '@/components/ui/Badge.vue'
 import StatusBadge from '@/components/ui/StatusBadge.vue'
 import BaseButton from '@/components/ui/BaseButton.vue'
-import { KPI_REORDER, KPI_STATUS_VARIANTS } from '@/constants/kpis'
+import KpiAdminDetailCell from './KpiAdminDetailCell.vue'
+import { KPI_DETAIL_COLUMNS, KPI_REORDER, KPI_STATUS_VARIANTS } from '@/constants/kpis'
 import { formatKpiValue } from '@/utils/kpiNumber'
 import AppIcon from '@/components/ui/AppIcon.vue'
 
@@ -15,6 +16,7 @@ const props = defineProps({
   status: { type: String, required: true },
   errorMessage: { type: String, default: '' },
   categories: { type: Array, default: () => [] },
+  types: { type: Array, default: () => [] },
   localized: { type: Function, required: true },
   canReorder: { type: Boolean, default: false },
   total: { type: Number, default: 0 },
@@ -24,12 +26,17 @@ const props = defineProps({
 const emit = defineEmits(['retry', 'action', 'move', 'create'])
 const { t, n } = useI18n()
 
-const columns = computed(() =>
-  ['order', 'name', 'category', 'value', 'target', 'status', 'published', 'actions'].map((key) => ({
+const columns = computed(() => [
+  ...['order', 'name', 'category', 'value', 'target', 'status', 'published'].map((key) => ({
     key,
-    label: key === 'actions' ? t('components.actions.label') : t(`kpis.admin.columns.${key}`),
+    label: t(`kpis.admin.columns.${key}`),
   })),
-)
+  ...KPI_DETAIL_COLUMNS.map((column) => ({
+    ...column,
+    label: t(`kpis.admin.columns.${column.key}`),
+  })),
+  { key: 'actions', label: t('components.actions.label') },
+])
 
 function categoryName(id) {
   return props.localized(props.categories.find((category) => category.id === id)?.name) || '—'
@@ -137,6 +144,13 @@ function moveDisabled(kpi, direction) {
     <template #cell-published="{ item }"
       ><StatusBadge :status="item.published ? 'published' : 'unpublished'"
     /></template>
+    <template
+      v-for="column in KPI_DETAIL_COLUMNS"
+      :key="column.key"
+      #[`cell-${column.key}`]="{ item }"
+    >
+      <KpiAdminDetailCell :field="column.key" :kpi="item" :types="types" :localized="localized" />
+    </template>
     <template #cell-actions="{ item }">
       <AppMenu
         :actions="actionsOf(item)"

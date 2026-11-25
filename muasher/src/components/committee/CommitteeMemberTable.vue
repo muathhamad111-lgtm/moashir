@@ -15,6 +15,7 @@ const props = defineProps({
 
 const emit = defineEmits(['action', 'retry'])
 const { t } = useI18n()
+const SEAT_DATES = ['disabledAt', 'removedAt']
 const names = computed(() => new Map(props.members.map((member) => [member.id, member.user.name])))
 
 const columns = computed(() => [
@@ -22,6 +23,7 @@ const columns = computed(() => [
   { key: 'status', label: t('award.roster.columns.status') },
   { key: 'progress', label: t('award.roster.columns.progress') },
   { key: 'appointedAt', label: t('award.roster.columns.appointedAt') },
+  ...SEAT_DATES.map((key) => ({ key, label: t(`award.roster.columns.${key}`) })),
   ...(props.actionsFor ? [{ key: 'actions', label: t('components.actions.label') }] : []),
 ])
 </script>
@@ -63,6 +65,9 @@ const columns = computed(() => [
     </template>
     <template #cell-appointedAt="{ item }"
       ><DateStamp :value="item.appointedAt" :with-time="false"
+    /></template>
+    <template v-for="key in SEAT_DATES" :key="key" #[`cell-${key}`]="{ item }"
+      ><DateStamp v-if="item[key]" :value="item[key]" :with-time="false"
     /></template>
     <template #cell-actions="{ item }">
       <AppMenu

@@ -56,6 +56,7 @@ import { staffNameOf } from '../stores/accredited/staffDirectory'
 import { runAccreditedSchedule } from '../stores/accredited/scheduler'
 import { isAssignedSort, sortAssigned } from '../stores/accredited/assignedSort'
 import { assignmentReasonRules } from '../stores/accredited/assignmentReasons'
+import { requestPeriodOf } from '../stores/periodic/requestPeriods'
 
 const REQUEST = '/api/v1/requests/:assessment'
 const NUMERIC_ID = /^\d+$/
@@ -140,6 +141,8 @@ function listRow(record) {
     lastActivityAt: lastActivityOf(record),
     progress: record.status === 'draft' ? progressSummaryOf(record) : null,
     payment: staffPaymentOf(record),
+    periodLabel: requestPeriodOf(record).periodLabel,
+    lastRemindedAt: record.paidDraftRemindedAt ?? null,
   }
 }
 

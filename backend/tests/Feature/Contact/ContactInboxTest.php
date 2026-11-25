@@ -58,6 +58,32 @@ it('lists the inbox for the holders of the permission with filters, search and s
         ->and($row)->not->toHaveKey('entries');
 });
 
+it('keeps the sender e-mail and mobile out of the inbox list and on the message page only', function (): void {
+    $handler = contentOfficer();
+    $message = contactMessage(['sender_email' => 'visitor@example.sa', 'sender_mobile' => '+966551234567', 'organization_name' => 'مؤسسة النماء الأهلية']);
+
+    $row = collect(switchTo($handler)->getJson('/api/v1/admin/contact-messages')->assertOk()->json('data'))->sole();
+    expect($row['sender'])->toBe(['name' => $message->sender_name, 'organization' => 'مؤسسة النماء الأهلية', 'locale' => $message->locale->value])
+        ->and(json_encode($row, JSON_UNESCAPED_UNICODE))->not->toContain('visitor@example.sa')->not->toContain('+966551234567');
+
+    switchTo($handler)->getJson('/api/v1/admin/contact-messages/'.$message->public_id)->assertOk()
+        ->assertJsonPath('data.sender.email', 'visitor@example.sa')
+        ->assertJsonPath('data.sender.mobile', '+966551234567');
+});
+
+it('lists the received, reply and closing dates with the closing handler and the linked entity', function (): void {
+    $handler = contentOfficer();
+    $entity = entityWithOwner();
+    linkedContactMessage(ownerOf($entity))->forceFill(['status' => ContactMessageStatus::Closed, 'replied_at' => Date::now(), 'closed_at' => Date::now(), 'closed_by_user_id' => $handler->id])->save();
+
+    $row = collect(switchTo($handler)->getJson('/api/v1/admin/contact-messages')->assertOk()->json('data'))->sole();
+    expect($row['created_at'])->toBeString()
+        ->and($row['replied_at'])->toBeString()
+        ->and($row['closed_at'])->toBeString()
+        ->and($row['closed_by'])->toBe(['id' => $handler->id, 'name' => $handler->name])
+        ->and($row['entity']['reference'])->toBe($entity->reference());
+});
+
 it('refuses the inbox to users without the permission and to guests', function (): void {
     $message = contactMessage();
 

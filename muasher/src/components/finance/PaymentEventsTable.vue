@@ -6,6 +6,7 @@ import Badge from '@/components/ui/Badge.vue'
 import { ROUTE_NAMES } from '@/constants/routeNames'
 import { EVENT_RESULT_VARIANTS } from '@/constants/finance'
 import { formatDate } from '@/utils/datetime'
+import { COLUMN_KINDS } from '@/utils/tableColumns'
 
 defineProps({
   items: { type: Array, required: true },
@@ -24,6 +25,10 @@ const columns = computed(() => [
   { key: 'mode', label: t('finance.events.mode') },
   { key: 'result', label: t('finance.events.result') },
   { key: 'providerRef', label: t('finance.events.providerRef') },
+  { key: 'entity', label: t('finance.events.columns.entity') },
+  { key: 'processedAt', label: t('finance.events.columns.processedAt') },
+  { key: 'errorCode', label: t('finance.events.columns.errorCode'), kind: COLUMN_KINDS.CODE },
+  { key: 'signature', label: t('finance.events.columns.signature'), kind: COLUMN_KINDS.STATUS },
 ])
 
 function dateOf(value) {
@@ -32,6 +37,10 @@ function dateOf(value) {
     timeStyle: 'short',
     timeZone: 'Asia/Riyadh',
   })
+}
+
+function entityOf(payment) {
+  return payment?.entityName?.[locale.value] || payment?.entityName?.ar || ''
 }
 
 function typeOf(value) {
@@ -87,5 +96,22 @@ function typeOf(value) {
         item.providerRef ?? t('finance.common.none')
       }}</code></template
     >
+    <template #cell-entity="{ item }">{{ entityOf(item.payment) }}</template>
+    <template #cell-processedAt="{ item }"
+      ><span v-if="item.processedAt" class="transactions-table__date">{{
+        dateOf(item.processedAt)
+      }}</span></template
+    >
+    <template #cell-errorCode="{ item }"
+      ><bdi v-if="item.errorCode" dir="ltr">{{ item.errorCode }}</bdi></template
+    >
+    <template #cell-signature="{ item }">
+      <Badge v-if="item.signatureValid === true" variant="success">{{
+        t('finance.events.signed')
+      }}</Badge>
+      <Badge v-else-if="item.signatureValid === false" variant="danger">{{
+        t('finance.events.columns.unsigned')
+      }}</Badge>
+    </template>
   </DataTable>
 </template>

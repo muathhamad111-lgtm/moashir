@@ -3,6 +3,7 @@ import { flushPromises, mount } from '@vue/test-utils'
 import Permissions from '@/views/settings/Permissions.vue'
 import { permissionsService } from '@/services/permissionsService'
 import { useAuthStore } from '@/stores/auth'
+import { useTableColumnsStore } from '@/stores/tableColumns'
 import { createTestGlobals } from '@/test-utils'
 import { sessionUserFor } from '@/test-utils/session'
 
@@ -127,6 +128,15 @@ describe('Permissions screen — matrix and labels only (C-05)', () => {
     })
     await flushPromises()
     expect(toastError).toHaveBeenCalled()
+  })
+
+  it('shows the roles a permission is locked to once the viewer chooses that column', async () => {
+    const wrapper = await mountPage()
+    useTableColumnsStore().choices = { 'settings-permissions': ['lockedToRoles'] }
+    await flushPromises()
+    const rows = wrapper.findAll('tbody tr')
+    expect(rows[1].findAll('td')[1].text()).toBe('System Administrator')
+    expect(rows[0].findAll('td')[1].text()).toBe('')
   })
 
   it('shows the error state when the matrix cannot load', async () => {

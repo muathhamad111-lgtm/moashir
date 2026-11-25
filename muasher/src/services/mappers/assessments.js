@@ -1,5 +1,6 @@
 import { fromCanonicalStatus } from '@/utils/canonicalStatus'
 import { toRequestStatus } from './accreditedStatus'
+import { toCertificateSummary } from './paths'
 
 export function toEntitySummary(entity) {
   if (!entity) return null
@@ -39,6 +40,23 @@ export function toAssessment(raw = {}) {
     updatedAt: raw.updatedAt ?? null,
     submittedAt: raw.submittedAt ?? null,
     completedAt: raw.completedAt ?? null,
+  }
+}
+
+// A list row adds what the staff tables may show: the cycle, period, level, certificate and the
+// payment (the server sends the payment only to a viewer allowed to see it).
+export function toAssessmentListRow(raw = {}) {
+  return {
+    ...toAssessment(raw),
+    awardCycle: raw.awardCycle
+      ? { id: raw.awardCycle.id ?? null, name: raw.awardCycle.name }
+      : null,
+    periodLabel: raw.periodLabel ?? null,
+    level: raw.level ?? null,
+    certificate: toCertificateSummary(raw.certificate),
+    payment: raw.payment?.status
+      ? { status: raw.payment.status, reference: raw.payment.reference ?? null }
+      : null,
   }
 }
 

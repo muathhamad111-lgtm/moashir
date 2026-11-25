@@ -3,6 +3,7 @@ import { flushPromises, mount } from '@vue/test-utils'
 import Versions from '@/views/settings/criteria/Versions.vue'
 import { criteriaService } from '@/services/criteriaService'
 import { createTestGlobals } from '@/test-utils'
+import { useTableColumnsStore } from '@/stores/tableColumns'
 import {
   CORRECTION_2,
   DRAFT_3,
@@ -55,6 +56,22 @@ describe('criteria Versions tab', () => {
       '/admin/settings/criteria?version=3',
     ])
     expect(linksOf(rows(wrapper)[2])).toEqual(['/admin/settings/criteria?version=1'])
+  })
+
+  it('shows the linked requests and the score-affecting changes once the viewer chooses them', async () => {
+    criteriaService.listVersions.mockResolvedValue({
+      data: [VERSION_1, { ...VERSION_2, boundAssessments: 14, boundOpenAssessments: 4 }, DRAFT_3],
+    })
+    const { wrapper } = await mountVersions()
+    useTableColumnsStore().choices = {
+      'criteria-versions': ['published', 'linked', 'scoreAffecting'],
+    }
+    await flushPromises()
+
+    const headers = wrapper.findAll('thead th').map((header) => header.text())
+    const cell = (label) => rows(wrapper)[1].findAll('td')[headers.indexOf(label)].text()
+    expect(cell('Linked requests')).toBe('14')
+    expect(cell('Score-affecting changes')).toBe('2')
   })
 
   it('marks the versions tab as the current page', async () => {

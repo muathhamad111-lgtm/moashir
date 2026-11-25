@@ -30,12 +30,15 @@ const OVERRIDE = 'أظهرت الشواهد أثرًا مجتمعيًا واضح
 
 const CURRENT_KEYS = ['cycle', 'eligibility', 'open_cycles', 'previous', 'request']
 const FILTERING_ROW_KEYS = [
+  'completed_at',
   'decision',
+  'due_at',
   'entity',
   'id',
   'initial_assessed_at',
   'initial_result',
   'is_frozen',
+  'is_overdue',
   'meets_threshold',
   'number',
   'region',

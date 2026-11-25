@@ -1,6 +1,8 @@
 import { describe, expect, it } from 'vitest'
-import { mount } from '@vue/test-utils'
+import { flushPromises, mount } from '@vue/test-utils'
+import { setActivePinia } from 'pinia'
 import { createTestGlobals } from '@/test-utils'
+import { useTableColumnsStore } from '@/stores/tableColumns'
 import EntityTable from '@/components/entities/admin/EntityTable.vue'
 
 const ROW = {
@@ -170,5 +172,76 @@ describe('entity row buttons by status', () => {
       'view',
       'restore',
     ])
+  })
+})
+
+describe('EntityTable optional columns', () => {
+  async function renderWithColumns(props, tableKey, keys) {
+    const globals = createTestGlobals({ locale: 'en' })
+    setActivePinia(globals.pinia)
+    const wrapper = mount(EntityTable, {
+      props: { status: 'success', emptyTitle: 'empty', ...props },
+      global: globals,
+    })
+    await flushPromises()
+    useTableColumnsStore().choices = { [tableKey]: keys }
+    await flushPromises()
+    return wrapper
+  }
+
+  const cellTexts = (wrapper) => wrapper.findAll('tbody td').map((cell) => cell.text())
+
+  it('shows the chosen registry, profile and billing fields in the full variant', async () => {
+    const wrapper = await renderWithColumns(
+      {
+        items: [
+          {
+            ...ROW,
+            city: { name: { ar: 'جدة', en: 'Jeddah' } },
+            employeesCount: 1250,
+            vatRegistered: true,
+            vatNumber: '310123456700003',
+          },
+        ],
+      },
+      'entities-full',
+      ['level', 'city', 'employeesCount', 'vatRegistered', 'vatNumber', 'levelCertificateNumber'],
+    )
+    expect(cellTexts(wrapper).slice(2, 7)).toEqual([
+      'Jeddah',
+      '1,250',
+      'Yes',
+      '310123456700003',
+      'CRT-2026-000010',
+    ])
+    expect(wrapper.findAll('th').map((th) => th.text())).not.toContain('Authorized person')
+  })
+
+  it('leaves a field the row does not carry empty', async () => {
+    const wrapper = await renderWithColumns({ items: [ROW] }, 'entities-full', [
+      'level',
+      'marketingConsent',
+      'websiteUrl',
+    ])
+    expect(cellTexts(wrapper).slice(2, 4)).toEqual(['', ''])
+  })
+
+  it('shows the region and the registration date in the contact variant', async () => {
+    const wrapper = await renderWithColumns(
+      { items: [{ ...ROW, region: { name: { ar: 'منطقة الرياض', en: 'Riyadh' } } }], full: false },
+      'entities-contact',
+      ['level', 'region', 'createdAt'],
+    )
+    const cells = cellTexts(wrapper)
+    expect(cells[2]).toBe('Riyadh')
+    expect(cells[3]).toContain('2026')
+  })
+
+  it('shows the entity type in the deleted variant', async () => {
+    const wrapper = await renderWithColumns({ items: [ROW], deleted: true }, 'entities-deleted', [
+      'region',
+      'entityType',
+    ])
+    expect(cellTexts(wrapper)[2]).toBe('Civil association')
   })
 })

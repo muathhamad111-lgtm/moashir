@@ -5,6 +5,7 @@ import StaffRecord from '@/views/assessment/admin/Record.vue'
 import EntityAssessmentsTable from '@/components/entities/admin/EntityAssessmentsTable.vue'
 import { assessmentsService } from '@/services/assessmentsService'
 import { useAuthStore } from '@/stores/auth'
+import { useTableColumnsStore } from '@/stores/tableColumns'
 import { createTestGlobals } from '@/test-utils'
 import { sessionUserFor } from '@/test-utils/session'
 
@@ -111,6 +112,34 @@ describe('entity assessments table', () => {
     })
     expect(wrapper.find('a[href="/admin/assessments/9004"]').text()).toBe('SLF-2026-000004')
     expect(wrapper.find('.frozen-badge').exists()).toBe(true)
+  })
+
+  it('shows the cycle, period, certificate and payment once the viewer adds them', async () => {
+    assessmentsService.list.mockResolvedValueOnce({
+      data: [
+        {
+          ...FROZEN,
+          path: 'accredited',
+          awardCycle: { id: 3, name: { ar: 'دورة 2026', en: '2026 cycle' } },
+          periodLabel: { ar: 'النصف الثاني 2026', en: 'H2 2026' },
+          level: 'gold',
+          certificate: { number: 'CRT-2026-000001', validUntil: '2027-12-31' },
+          payment: { status: 'paid', reference: 'PAY-2026-000012' },
+        },
+      ],
+      meta: { pagination: { total: 1 } },
+    })
+    const wrapper = await mountAs(EntityAssessmentsTable, ['system_admin'], { entityId: 7002 })
+    useTableColumnsStore().choices = {
+      'entity-assessments': ['cycle', 'period', 'level', 'certificateNumber', 'payment'],
+    }
+    await flushPromises()
+    const cells = wrapper.findAll('tbody td')
+    expect(cells[1].text()).toBe('2026 cycle')
+    expect(cells[2].text()).toBe('H2 2026')
+    expect(cells[3].find('.level-badge').attributes('data-tier')).toBe('gold')
+    expect(cells[4].text()).toBe('CRT-2026-000001')
+    expect(cells[5].find('.badge').exists()).toBe(true)
   })
 
   it('shows the empty and error states', async () => {

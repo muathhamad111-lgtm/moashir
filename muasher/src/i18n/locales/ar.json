@@ -280,10 +280,24 @@
       "next": "التالي"
     },
     "columns": {
-      "title": "الأعمدة الظاهرة",
+      "title": "إدارة الأعمدة",
       "open": "الأعمدة",
-      "reset": "استعادة الأعمدة الافتراضية",
-      "locked": "دائمة الظهور: {columns}"
+      "reset": "إعادة تعيين",
+      "searchHint": "امسح البحث لإعادة ترتيب الأعمدة.",
+      "listLabel": "أعمدة الجدول بترتيب ظهورها",
+      "minimum": "بلغت الحد الأدنى: {count} أعمدة ظاهرة.",
+      "resetHint": "«تطبيق» يغيّر العرض الحالي فقط حتى تغادر الصفحة. «إعادة تعيين» يعيد أعمدة الجدول الأصلية هنا، ولا يغيّر افتراضك المحفوظ إلا بعد «حفظ كافتراضي».",
+      "apply": "تطبيق",
+      "saveDefault": "حفظ كافتراضي",
+      "alwaysShown": "ظاهر دائمًا",
+      "help": "اسحب وحدد لإدارة الأعمدة المراد ظهورها. الحد الأدنى {count} أعمدة ظاهرة.",
+      "unsaved": "تعديلات غير محفوظة",
+      "close": "إغلاق",
+      "search": "ابحث عن عمود",
+      "selectAll": "تحديد ({count})",
+      "noMatch": "لا يوجد عمود بهذا الاسم.",
+      "actions": "الإجراءات",
+      "saved": "حُفظت الأعمدة كافتراضي لهذا الجدول."
     }
   },
   "status": {
@@ -960,7 +974,16 @@
         "published": "النشر",
         "scope": "نطاق التطبيق",
         "affected": "الطلبات المفتوحة المتأثرة",
-        "actions": "الإجراءات"
+        "actions": "الإجراءات",
+        "linked": "الطلبات المرتبطة",
+        "linkedOpen": "الطلبات المفتوحة المرتبطة",
+        "changes": "عدد التغييرات",
+        "scoreAffecting": "تغييرات مؤثرة في الدرجة",
+        "scaleKind": "نوع المقياس",
+        "consistent": "مكتمل الاتساق",
+        "archivedAt": "تاريخ الأرشفة",
+        "createdAt": "تاريخ الإنشاء",
+        "updatedAt": "آخر تعديل"
       },
       "reason": "السبب:",
       "affected": "لم يتأثر أي طلب مفتوح | طلب مفتوح واحد | {count} طلبات مفتوحة",
@@ -1579,7 +1602,19 @@
         "value": "القيمة",
         "target": "المستهدف",
         "status": "الحالة",
-        "published": "النشر"
+        "published": "النشر",
+        "baseline": "خط الأساس",
+        "unit": "الوحدة",
+        "type": "النوع",
+        "measurementYear": "سنة القياس",
+        "valueUpdatedAt": "آخر تحديث للقيمة",
+        "owner": "الجهة المالكة",
+        "dataSource": "مصدر البيانات",
+        "onHomepage": "في الصفحة الرئيسية",
+        "publishedAt": "تاريخ النشر",
+        "updatedBy": "آخر من عدّل",
+        "updatedAt": "آخر تعديل",
+        "slug": "المعرّف"
       },
       "featuredBadge": "الصفحة الرئيسية",
       "actions": {
@@ -1691,7 +1726,8 @@
           "description": "الوصف",
           "order": "ترتيب العرض",
           "active": "مفعّل",
-          "activeHint": "يبقى العنصر المعطّل على مؤشراته، لكنه يُخفى من الخيارات الجديدة ومن عوامل الفلترة العامة."
+          "activeHint": "يبقى العنصر المعطّل على مؤشراته، لكنه يُخفى من الخيارات الجديدة ومن عوامل الفلترة العامة.",
+          "kpisCount": "عدد المؤشرات"
         },
         "categories": {
           "add": "إضافة تصنيف",
@@ -1781,7 +1817,11 @@
       "name": "الصلاحية",
       "key": "الرمز",
       "group": "الوحدة",
-      "roles": "الأدوار المرتبطة"
+      "roles": "الأدوار المرتبطة",
+      "confidential": "سرّية",
+      "grantable": "قابلة للمنح",
+      "system": "صلاحية نظام",
+      "lockedToRoles": "مقفلة على أدوار"
     },
     "filters": {
       "group": "الوحدة"
@@ -1848,7 +1888,14 @@
       "user": "المستخدم",
       "role": "الأدوار",
       "status": "الحالة",
-      "paths": "المسارات"
+      "paths": "المسارات",
+      "mfa": "التحقق الثنائي",
+      "mfaOn": "مفعّل",
+      "mfaOff": "غير مفعّل",
+      "nda": "اتفاقية عدم الإفصاح",
+      "lastLoginAt": "آخر دخول",
+      "createdAt": "تاريخ الإنشاء",
+      "qualifications": "مؤهلات المقيّم"
     },
     "filters": {
       "role": "الدور",
@@ -2377,7 +2424,29 @@
       "level": "المستوى",
       "lastAssessment": "آخر تقييم معتمد",
       "typeRegion": "النوع والمنطقة",
-      "statusRegistered": "الحالة"
+      "statusRegistered": "الحالة",
+      "city": "المدينة",
+      "developmentSector": "القطاع التنموي",
+      "orgSize": "حجم الجهة",
+      "foundingYear": "سنة التأسيس",
+      "governanceGrade": "درجة الحوكمة",
+      "employeesCount": "عدد الموظفين",
+      "annualBeneficiariesCount": "المستفيدون سنويًا",
+      "unifiedNumber": "الرقم الوطني الموحد",
+      "licenseNumber": "رقم الترخيص",
+      "levelCertificateNumber": "رقم شهادة المستوى",
+      "levelValidUntil": "صلاحية الشهادة",
+      "verifiedAt": "تاريخ التحقق",
+      "approvedAt": "تاريخ الاعتماد",
+      "deactivatedAt": "تاريخ الإيقاف",
+      "profileCompleted": "اكتمال الملف",
+      "billingComplete": "اكتمال بيانات الفوترة",
+      "vatRegistered": "مسجّلة في ضريبة القيمة المضافة",
+      "vatNumber": "الرقم الضريبي",
+      "marketingConsent": "الموافقة على الرسائل التسويقية",
+      "websiteUrl": "الموقع الإلكتروني",
+      "createdAt": "تاريخ التسجيل",
+      "entityType": "نوع الجهة"
     },
     "filters": {
       "status": "الحالة",
@@ -2560,7 +2629,16 @@
           "path": "المسار",
           "createdAt": "تاريخ الطلب",
           "status": "الحالة",
-          "result": "النتيجة"
+          "result": "النتيجة",
+          "submittedAt": "تاريخ الإرسال",
+          "completedAt": "تاريخ الإكمال",
+          "cycle": "دورة الجائزة",
+          "period": "الفترة",
+          "level": "المستوى",
+          "certificateNumber": "رقم الشهادة",
+          "certificateValidUntil": "صلاحية الشهادة",
+          "payment": "حالة الدفع",
+          "updatedAt": "آخر تحديث"
         },
         "noResult": "لا نتيجة بعد"
       }
@@ -2580,7 +2658,11 @@
         "newEmail": "البريد الجديد",
         "requestedAt": "تاريخ الطلب",
         "status": "الحالة",
-        "actions": "القرار"
+        "actions": "القرار",
+        "entityReference": "رقم الجهة",
+        "policy": "سياسة الاعتماد",
+        "otpVerifiedAt": "تاريخ التحقق",
+        "appliedAt": "تاريخ التطبيق"
       },
       "approve": "اعتماد",
       "reject": "رفض",
@@ -2591,7 +2673,11 @@
       "approved": "اعتُمد تغيير البريد.",
       "rejected": "رُفض تغيير البريد.",
       "emptyTitle": "لا توجد طلبات في هذه القائمة",
-      "emptyMessage": "تظهر هنا الطلبات المتحقق منها التي تحتاج إلى اعتماد."
+      "emptyMessage": "تظهر هنا الطلبات المتحقق منها التي تحتاج إلى اعتماد.",
+      "policies": {
+        "requires_approval": "يتطلب الاعتماد",
+        "immediate_notify": "يُطبّق فورًا مع إشعار"
+      }
     },
     "history": {
       "actors": {
@@ -2624,7 +2710,12 @@
         "items": "البنود المعدّلة",
         "submittedAt": "تاريخ التقديم",
         "status": "الحالة",
-        "actions": "القرار"
+        "actions": "القرار",
+        "entityReference": "رقم الجهة",
+        "revision": "رقم المراجعة",
+        "reviewedBy": "المراجع",
+        "decidedAt": "تاريخ القرار",
+        "updatedAt": "آخر تحديث"
       },
       "itemCount": "بند واحد | بندان | {count} بنود | {count} بندًا | {count} بند",
       "reviewAction": "مراجعة",
@@ -3506,7 +3597,8 @@
         "purpose": "الخدمة",
         "startedAt": "تاريخ البدء",
         "lastSeenAt": "آخر ظهور",
-        "contactedAt": "تاريخ التواصل"
+        "contactedAt": "تاريخ التواصل",
+        "region": "المنطقة"
       },
       "actions": {
         "email": "بريد تسويقي",
@@ -4679,7 +4771,17 @@
       "cycle": "دورة الجائزة",
       "region": "المنطقة",
       "path": "المسار",
-      "level": "المستوى"
+      "level": "المستوى",
+      "openedAt": "تاريخ فتح الطلب",
+      "completedAt": "تاريخ الإكمال",
+      "assignedAt": "تاريخ الإسناد",
+      "completionDeadline": "مهلة الاستكمال",
+      "payment": "حالة الدفع",
+      "entityReference": "رقم الجهة",
+      "lastActivityAt": "آخر نشاط للجهة",
+      "period": "الفترة",
+      "lastRemindedAt": "آخر تذكير",
+      "submissionProgress": "تقدّم التعبئة"
     },
     "filters": {
       "status": "الحالة",
@@ -4756,7 +4858,8 @@
         "state": "الحالة",
         "progress": "تقدّم التقييم",
         "actions": "الإجراءات",
-        "assignedAt": "تاريخ الإسناد"
+        "assignedAt": "تاريخ الإسناد",
+        "startedAt": "تاريخ بدء التقييم"
       },
       "progress": {
         "remaining": "المتبقي {count}",
@@ -5137,7 +5240,9 @@
       "paidAt": "تاريخ الدفع",
       "assignedAt": "تاريخ الإسناد",
       "status": "الحالة",
-      "evaluator": "المقيّم"
+      "evaluator": "المقيّم",
+      "startedAt": "تاريخ البدء",
+      "completedAt": "تاريخ الإكمال"
     },
     "filters": {
       "status": "الحالة"
@@ -6380,7 +6485,16 @@
         "payment": "الدفع",
         "amount": "المبلغ",
         "date": "التاريخ",
-        "receipt": "رقم الإيصال"
+        "receipt": "رقم الإيصال",
+        "type": "نوع العملية",
+        "awardCycle": "دورة الجائزة",
+        "paidAt": "تاريخ الدفع",
+        "vatAmount": "مبلغ الضريبة",
+        "vatRate": "نسبة الضريبة",
+        "vatRateValue": "{rate}%",
+        "refundAmount": "مبلغ الاسترداد",
+        "refundedAt": "تاريخ الاسترداد",
+        "updatedAt": "آخر تحديث"
       },
       "view": "عرض التفاصيل",
       "viewReceipt": "عرض الإيصال"
@@ -6527,7 +6641,14 @@
         "manual_settle": "تسوية يدوية",
         "order_cancelled": "أُلغي الطلب لتغيير طريقة الدفع"
       },
-      "pageSubtitle": "ما أبلغت به بوابة الدفع ومهام التحقق، للدعم الفني."
+      "pageSubtitle": "ما أبلغت به بوابة الدفع ومهام التحقق، للدعم الفني.",
+      "columns": {
+        "entity": "الجهة",
+        "processedAt": "وقت المعالجة",
+        "errorCode": "رمز الخطأ",
+        "signature": "صحة التوقيع",
+        "unsigned": "غير موثّق"
+      }
     },
     "settings": {
       "saved": "حُفظت الإعدادات المالية.",
@@ -7171,7 +7292,19 @@
       "status": "الحالة",
       "submission": "فترة التقديم",
       "regions": "المناطق",
-      "requests": "الطلبات"
+      "requests": "الطلبات",
+      "announcementAt": "موعد الإعلان",
+      "committee": "فترة تقييم اللجنة",
+      "entryFee": "رسوم المشاركة",
+      "scaleKind": "نوع المقياس",
+      "initialReviewSlaDays": "مهلة التقييم الأولي (أيام)",
+      "minEntityAge": "الحد الأدنى لعمر الجهة (سنوات)",
+      "disqualificationScore": "حد التأهل",
+      "participationCertificate": "شهادة المشاركة",
+      "openedAt": "تاريخ الفتح",
+      "closedAt": "تاريخ الإغلاق",
+      "createdAt": "تاريخ الإنشاء",
+      "updatedAt": "آخر تعديل"
     },
     "filters": {
       "status": "الحالة",
@@ -7460,7 +7593,13 @@
       "region": "المنطقة",
       "percent": "النتيجة الأولية",
       "threshold": "حد التأهل",
-      "status": "الحالة"
+      "status": "الحالة",
+      "submittedAt": "تاريخ الإرسال",
+      "initialAssessedAt": "تاريخ التقييم الأولي",
+      "dueAt": "الاستحقاق",
+      "score": "الدرجة",
+      "entityReference": "رقم الجهة",
+      "decision": "قرار الفرز"
     },
     "percent": "{value}%",
     "override": {
@@ -7526,7 +7665,8 @@
       "confirm": "تأهيل الطلبات",
       "done": "أُهِّل {count} طلبًا.",
       "ownNote": "لا يشمل الإجراء {count} طلبًا قيّمتها بنفسك؛ يقرر فيها مسؤول تصفية آخر."
-    }
+    },
+    "scoreOf": "{total} من {maxTotal}"
   },
   "award": {
     "common": {
@@ -7561,7 +7701,8 @@
         "title": "النتائج والإعلان",
         "subtitle": "اختر دورة لترتيب الفائزين على مستوى المناطق والمملكة واعتماد النتائج وإعلانها.",
         "open": "فتح النتائج"
-      }
+      },
+      "committeeStart": "بداية تقييم اللجنة"
     },
     "states": {
       "seat": {
@@ -7599,7 +7740,9 @@
         "name": "مقيّم اللجنة",
         "status": "الحالة",
         "progress": "التقييمات",
-        "appointedAt": "تاريخ التعيين"
+        "appointedAt": "تاريخ التعيين",
+        "disabledAt": "تاريخ الإيقاف",
+        "removedAt": "تاريخ الإزالة"
       },
       "progress": "أُرسل {completed} من {total}",
       "replaces": "بديل عن {name}",
@@ -7656,7 +7799,10 @@
         "entity": "الجهة",
         "status": "الحالة",
         "dueAt": "الموعد النهائي",
-        "percent": "مجموعي"
+        "percent": "مجموعي",
+        "startedAt": "تاريخ البدء",
+        "submittedAt": "تاريخ الإرسال",
+        "returnedAt": "تاريخ الإعادة"
       },
       "emptyTitle": "لا يوجد ما يُقيَّم",
       "emptyMessage": "لا توجد جهات بهذه الحالة في هذا التبويب.",
@@ -7762,7 +7908,14 @@
         "status": "الحالة",
         "committee": "اللجنة",
         "average": "متوسط اللجنة",
-        "open": "المراجعة"
+        "open": "المراجعة",
+        "initialPercent": "النتيجة الأولية",
+        "submittedAt": "تاريخ الإرسال",
+        "dueAt": "الاستحقاق",
+        "averageComputedAt": "تاريخ احتساب المتوسط",
+        "assessorsCounted": "عدد المقيّمين المحتسبين",
+        "manualAverage": "متوسط يدوي",
+        "entityReference": "رقم الجهة"
       },
       "progress": "أُرسل {completed} من {total}",
       "pendingSubstitutions": "بديل واحد بانتظار الاعتماد | {count} بدلاء بانتظار الاعتماد",
@@ -7793,7 +7946,11 @@
           "replaced": "ملغى: استُبدل",
           "removed": "ملغى: أُزيل المقيّم",
           "withdrawn": "ملغى: سُحب الطلب"
-        }
+        },
+        "startedAt": "تاريخ البدء",
+        "returnedAt": "تاريخ الإعادة",
+        "substituteApprovedAt": "تاريخ اعتماد البديل",
+        "voidedAt": "تاريخ الإلغاء"
       },
       "evaluation": {
         "title": "تقييم {name}",
@@ -7900,7 +8057,10 @@
         "status": "الحالة",
         "average": "متوسط اللجنة",
         "regionalRank": "ترتيب المنطقة",
-        "rank": "الترتيب"
+        "rank": "الترتيب",
+        "entityReference": "رقم الجهة",
+        "submittedAt": "تاريخ الإرسال",
+        "approvedAt": "تاريخ اعتماد المتوسط"
       },
       "rank": {
         "label": "الترتيب",
@@ -9657,7 +9817,15 @@
       "enquiryType": "نوع الاستفسار",
       "status": "الحالة",
       "assignee": "المسؤول",
-      "lastActivityAt": "آخر نشاط"
+      "lastActivityAt": "آخر نشاط",
+      "createdAt": "تاريخ الاستلام",
+      "repliedAt": "آخر رد",
+      "closedAt": "تاريخ الإغلاق",
+      "closedBy": "أغلقها",
+      "entity": "الجهة المرتبطة",
+      "organization": "الجهة المذكورة",
+      "language": "لغة المراسلة",
+      "entries": "المداخلات"
     },
     "filters": {
       "search": "ابحث بالمرجع أو الاسم أو البريد أو الجهة",
@@ -9757,6 +9925,10 @@
       "assigned": "مسندة",
       "replied": "تم الرد",
       "awaiting-reply": "بانتظار الرد"
+    },
+    "languages": {
+      "ar": "العربية",
+      "en": "الإنجليزية"
     }
   },
   "legalAdmin": {
@@ -9792,7 +9964,10 @@
       "title": "العنوان",
       "effectiveFrom": "تاريخ السريان",
       "updatedAt": "آخر تعديل",
-      "actions": "الإجراءات"
+      "actions": "الإجراءات",
+      "publishedAt": "تاريخ النشر",
+      "publishedBy": "نشرها",
+      "createdAt": "تاريخ الإنشاء"
     },
     "empty": {
       "title": "لا توجد إصدارات",
@@ -9847,7 +10022,10 @@
       "subject": "السجل المعني",
       "ipAddress": "عنوان IP",
       "reason": "السبب",
-      "actions": "الإجراءات"
+      "actions": "الإجراءات",
+      "actorRoles": "أدوار المنفّذ",
+      "tags": "الوسوم",
+      "requestId": "معرّف الطلب التقني"
     },
     "actors": {
       "user": "مستخدم",
@@ -10678,7 +10856,12 @@
         "fields": "التعديلات",
         "requestedAt": "تاريخ الطلب",
         "status": "الحالة",
-        "actions": "الإجراءات"
+        "actions": "الإجراءات",
+        "kind": "نوع الطلب",
+        "onBehalf": "نيابةً عن المستخدم",
+        "submittedBy": "مقدّم الطلب",
+        "reviewedBy": "المراجع",
+        "decidedAt": "تاريخ القرار"
       },
       "view": "عرض الطلب",
       "approve": "اعتماد",
@@ -10695,7 +10878,11 @@
       "currentNationalId": "رقم الهوية الحالي",
       "requestedNationalId": "رقم الهوية المطلوب",
       "viewAudited": "يُسجَّل فتح هذا الطلب في سجل التدقيق.",
-      "loadFailed": "تعذّر تحميل الطلب."
+      "loadFailed": "تعذّر تحميل الطلب.",
+      "kinds": {
+        "first_entry": "إدخال أول لرقم الهوية",
+        "correction": "تصحيح بيانات"
+      }
     }
   },
   "nda": {
@@ -10744,7 +10931,12 @@
         "publishedAt": "تاريخ النشر",
         "publishedBy": "نشرها",
         "acceptances": "الموافقات",
-        "actions": "الإجراءات"
+        "actions": "الإجراءات",
+        "title": "العنوان",
+        "effectiveFrom": "تاريخ السريان",
+        "changeSummary": "ملخص التغيير",
+        "updatedAt": "آخر تعديل",
+        "createdAt": "تاريخ الإنشاء"
       },
       "empty": {
         "title": "لا توجد نسخ بعد",
@@ -10801,7 +10993,9 @@
         "version": "النسخة",
         "status": "الحالة",
         "acceptedAt": "وقت الموافقة",
-        "ip": "IP"
+        "ip": "IP",
+        "acceptedRoles": "الأدوار عند الموافقة",
+        "lastAcceptedVersion": "آخر نسخة موافق عليها"
       },
       "pendingFor": "بانتظار {version}",
       "empty": {
@@ -10817,7 +11011,9 @@
         "acceptedAt": "وقت الموافقة",
         "ip": "IP",
         "roles": "الأدوار وقتها",
-        "actions": "الإجراءات"
+        "actions": "الإجراءات",
+        "title": "العنوان",
+        "effectiveFrom": "تاريخ السريان"
       },
       "status": {
         "accepted": "وافق على النسخة السارية.",

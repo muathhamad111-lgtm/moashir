@@ -9,6 +9,7 @@ import { useConfirm } from '@/composables/useConfirm'
 import { useToast } from '@/composables/useToast'
 import AppIcon from '@/components/ui/AppIcon.vue'
 import { KPI_ADMIN_ACTIONS_ID } from '@/constants/kpis'
+import { COLUMN_KINDS } from '@/utils/tableColumns'
 
 const props = defineProps({
   kind: { type: String, required: true },
@@ -27,6 +28,10 @@ const columns = computed(() => [
   { key: 'key', label: t('kpis.admin.catalog.fields.key') },
   { key: 'order', label: t('kpis.admin.catalog.fields.order') },
   { key: 'active', label: t('kpis.admin.catalog.fields.active') },
+  { key: 'kpisCount', label: t('kpis.admin.catalog.fields.kpisCount'), kind: COLUMN_KINDS.NUMBER },
+  ...(props.kind === 'categories'
+    ? [{ key: 'description', label: t('kpis.admin.catalog.fields.description') }]
+    : []),
   { key: 'actions', label: t('components.actions.label') },
 ])
 
@@ -91,6 +96,7 @@ async function remove(entry) {
       <template #cell-active="{ item }"
         ><StatusBadge :status="item.active ? 'active' : 'inactive'"
       /></template>
+      <template #cell-description="{ item }">{{ localized(item.description) }}</template>
       <template #cell-actions="{ item }">
         <div class="kpi-catalog__actions">
           <BaseButton variant="secondary" size="sm" icon="pen" @click="open(item)">{{

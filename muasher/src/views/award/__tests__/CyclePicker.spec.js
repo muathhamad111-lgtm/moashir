@@ -4,6 +4,7 @@ import { setActivePinia } from 'pinia'
 import CyclePicker from '@/views/award/CyclePicker.vue'
 import { awardCycleService } from '@/services/awardCycleService'
 import { useAuthStore } from '@/stores/auth'
+import { useTableColumnsStore } from '@/stores/tableColumns'
 import { createTestGlobals } from '@/test-utils'
 import { sessionUserFor } from '@/test-utils/session'
 
@@ -52,6 +53,24 @@ describe('award cycle picker with concurrent cycles', () => {
     expect(wrapper.findAll('.cycle-table__link')).toHaveLength(3)
     expect(wrapper.text()).toContain('Cycle 41')
     expect(wrapper.text()).toContain('Cycle 40')
+  })
+
+  it('shows the committee start and the request counts once the viewer chooses them', async () => {
+    const cycle = {
+      ...cycleOf(41, 'committee-assessment'),
+      committeeStart: '2026-12-20T06:00:00Z',
+      counts: { requests: 12, qualified: 4 },
+    }
+    awardCycleService.list.mockResolvedValue({ data: [cycle, cycleOf(30, 'closed')] })
+    const { wrapper } = await mountPicker()
+    useTableColumnsStore().choices = {
+      'award-cycle-picker': ['status', 'committeeStart', 'counts'],
+    }
+    await flushPromises()
+
+    const cell = (label) => wrapper.find(`tbody td[data-label="${label}"]`)
+    expect(cell('Committee start').find('time').attributes('datetime')).toBe(cycle.committeeStart)
+    expect(cell('Requests').text()).toBe('12 requests, 4 qualified')
   })
 
   it('still opens the only cycle in progress directly', async () => {

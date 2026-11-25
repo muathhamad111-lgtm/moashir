@@ -4,12 +4,14 @@ import { useI18n } from 'vue-i18n'
 import DataTable from '@/components/data-list/DataTable.vue'
 import RowActions from '@/components/data-list/RowActions.vue'
 import Badge from '@/components/ui/Badge.vue'
+import DateStamp from '@/components/accredited/DateStamp.vue'
 import MoneyAmount from '@/components/payments/MoneyAmount.vue'
 import PaymentStatusBadge from '@/components/payments/PaymentStatusBadge.vue'
 import PaymentChannelCell from '@/components/payments/portal/PaymentChannelCell.vue'
 import Tooltip from '@/components/ui/Tooltip.vue'
 import { STATUS_DEFINITION_KEY } from '@/constants/finance'
 import { formatRiyadhDate, formatRiyadhTime } from '@/utils/datetime'
+import { formatRate } from '@/utils/payments/amountFormat'
 import { entityInitials } from '@/utils/finance/entityInitials'
 import { transactionColumns } from '@/utils/finance/transactionColumns'
 import { TRANSACTION_INLINE_ACTIONS } from '@/utils/finance/transactionRowActions'
@@ -35,8 +37,12 @@ function statusDefinition(status) {
   return t(`finance.operations.statuses.${key}.definition`)
 }
 
+function localized(name) {
+  return name?.[locale.value] || name?.ar || ''
+}
+
 function nameOf(entity) {
-  return entity.name?.[locale.value] || entity.name?.ar || ''
+  return localized(entity.name)
 }
 </script>
 
@@ -127,6 +133,32 @@ function nameOf(entity) {
     </template>
     <template #cell-beforeVat="{ item }"
       ><MoneyAmount :value="item.pricing.priceBeforeVat" :currency="item.pricing.currency"
+    /></template>
+    <template #cell-type="{ item }">{{
+      item.type ? t(`finance.operations.types.${item.type}.label`) : ''
+    }}</template>
+    <template #cell-awardCycle="{ item }">{{ localized(item.awardCycle?.name) }}</template>
+    <template #cell-paidAt="{ item }"
+      ><DateStamp v-if="item.paidAt" :value="item.paidAt" :with-time="false"
+    /></template>
+    <template #cell-vatAmount="{ item }"
+      ><MoneyAmount :value="item.pricing.vatAmount" :currency="item.pricing.currency"
+    /></template>
+    <template #cell-vatRate="{ item }">{{
+      item.pricing.vatRate
+        ? t('finance.transactions.columns.vatRateValue', {
+            rate: formatRate(item.pricing.vatRate, locale),
+          })
+        : ''
+    }}</template>
+    <template #cell-refundAmount="{ item }"
+      ><MoneyAmount v-if="item.refund" :value="item.refund.amount" :currency="item.refund.currency"
+    /></template>
+    <template #cell-refundedAt="{ item }"
+      ><DateStamp v-if="item.refundedAt" :value="item.refundedAt" :with-time="false"
+    /></template>
+    <template #cell-updatedAt="{ item }"
+      ><DateStamp :value="item.updatedAt" :with-time="false"
     /></template>
     <template #cell-actions="{ item }">
       <RowActions

@@ -99,3 +99,11 @@ export function listedCatalog(kind, { activeOnly = false } = {}) {
     .sort((a, b) => a.order - b.order || a.id - b.id)
     .map((entry) => catalogResource(kind, entry))
 }
+
+// The admin lists also count the indicators of each entry (archived ones excluded, as withCount does).
+export function adminCatalog(kind) {
+  return listedCatalog(kind).map((entry) => ({
+    ...entry,
+    kpisCount: kpiState.kpis.filter((kpi) => kpi[REFERENCE[kind]] === entry.id).length,
+  }))
+}

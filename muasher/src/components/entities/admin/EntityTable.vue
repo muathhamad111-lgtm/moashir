@@ -11,6 +11,7 @@ import { displayTierOf, reassessmentOf } from '@/utils/levelTier'
 import { entityInlineActionsFor, useEntityActions } from '@/composables/useEntityActions'
 import { useEntityDisplay } from '@/composables/useEntityDisplay'
 import { ROUTE_NAMES } from '@/constants/routeNames'
+import { ENTITY_COLUMN_SETS, ENTITY_FACT_FIELDS, entityColumnKindOf } from './entityTableColumns'
 
 const props = defineProps({
   items: { type: Array, required: true },
@@ -26,13 +27,7 @@ const emit = defineEmits(['retry', 'action'])
 
 const { t } = useI18n()
 const { rowActionsFor } = useEntityActions()
-const { localized, enumLabel, date, dateTime } = useEntityDisplay()
-
-const COLUMN_SETS = {
-  full: ['name', 'level', 'lastAssessment', 'typeRegion', 'statusRegistered', 'actions'],
-  contact: ['name', 'level', 'authorizedPersonName', 'officialEmail', 'status', 'actions'],
-  deleted: ['name', 'region', 'deletedAt', 'status', 'actions'],
-}
+const { localized, enumLabel, date, dateTime, valueOf, isLtr } = useEntityDisplay()
 
 function tierOf(item) {
   return displayTierOf(item, item.hasOpenAccreditedRequest === true)
@@ -40,7 +35,11 @@ function tierOf(item) {
 
 const columnSet = computed(() => (props.deleted ? 'deleted' : props.full ? 'full' : 'contact'))
 const columns = computed(() =>
-  COLUMN_SETS[columnSet.value].map((key) => ({ key, label: t(`entities.columns.${key}`) })),
+  ENTITY_COLUMN_SETS[columnSet.value].map((key) => ({
+    key,
+    label: t(`entities.columns.${key}`),
+    kind: entityColumnKindOf(key),
+  })),
 )
 </script>
 
@@ -106,6 +105,9 @@ const columns = computed(() =>
         <StatusBadge :status="item.status" />
         <FrozenBadge v-if="item.isFrozen" />
       </span>
+    </template>
+    <template v-for="field in ENTITY_FACT_FIELDS" :key="field" #[`cell-${field}`]="{ item }">
+      <span :class="{ 'u-ltr': isLtr(field) }">{{ valueOf(item, field) }}</span>
     </template>
     <template #cell-actions="{ item }">
       <RowActions

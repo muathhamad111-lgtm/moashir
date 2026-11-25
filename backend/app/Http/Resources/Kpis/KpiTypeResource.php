@@ -26,6 +26,7 @@ final class KpiTypeResource extends JsonResource
             'name' => $type->name->toArray(),
             'order' => $type->sort_order,
             'active' => $type->is_active,
+            'kpis_count' => $this->whenCounted('kpis'),
         ];
     }
 }

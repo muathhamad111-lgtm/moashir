@@ -25,6 +25,8 @@ final class NdaAcceptanceResource extends JsonResource
             'id' => $this->resource->id,
             'terms_version_id' => $this->resource->terms_version_id,
             'version' => $this->resource->termsVersion?->version,
+            'title' => $this->resource->termsVersion?->title?->toArray(),
+            'effective_from' => $this->resource->termsVersion?->effective_from?->toDateString(),
             'accepted_at' => $this->resource->created_at->toIso8601String(),
             'accepted_roles' => $this->resource->accepted_roles ?? [],
             'ip_masked' => MaskedIpAddress::of($this->resource->ip_address),

@@ -9,6 +9,7 @@ use App\Models\Assessments\AssessmentResultSnapshot;
 use App\Models\Award\AwardCycle;
 use App\Models\Award\FilteringDecision;
 use App\Models\Entities\Region;
+use App\Support\Assessments\ReviewClockPresenter;
 use App\Support\Award\FilteringDecisionPresenter;
 use App\Support\Entities\EntityPresenter;
 use Illuminate\Http\Request;
@@ -42,7 +43,7 @@ final class FilteringRowResource extends JsonResource
             ] : null,
             'meets_threshold' => $this->meetsThreshold($snapshot, $assessment->awardCycle),
             'initial_assessed_at' => $snapshot?->created_at->toIso8601String(),
-            'submitted_at' => $assessment->submitted_at?->toIso8601String(),
+            ...ReviewClockPresenter::of($assessment),
             'decision' => $decision instanceof FilteringDecision ? FilteringDecisionPresenter::present($decision) : null,
         ];
     }

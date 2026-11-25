@@ -16,7 +16,16 @@ const emit = defineEmits(['retry'])
 const { t, locale } = useI18n()
 
 const columns = computed(() =>
-  ['user', 'roles', 'version', 'status', 'acceptedAt', 'ip'].map((key) => ({
+  [
+    'user',
+    'roles',
+    'version',
+    'status',
+    'acceptedAt',
+    'ip',
+    'acceptedRoles',
+    'lastAcceptedVersion',
+  ].map((key) => ({
     key,
     label: t(`nda.register.columns.${key}`),
   })),
@@ -63,6 +72,12 @@ function statusLabel(row) {
     </template>
     <template #cell-ip="{ item }"
       ><bdi dir="ltr">{{ item.ipMasked || '—' }}</bdi></template
+    >
+    <template #cell-acceptedRoles="{ item }">{{
+      item.acceptedRoles.map(roleLabel).join('، ')
+    }}</template>
+    <template #cell-lastAcceptedVersion="{ item }"
+      ><bdi v-if="item.lastAcceptedVersion" dir="ltr">{{ item.lastAcceptedVersion }}</bdi></template
     >
   </DataTable>
 </template>

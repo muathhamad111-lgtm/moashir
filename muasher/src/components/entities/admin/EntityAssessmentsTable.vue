@@ -7,12 +7,39 @@ import Pagination from '@/components/data-list/Pagination.vue'
 import StatusBadge from '@/components/ui/StatusBadge.vue'
 import PathBadge from '@/components/ui/PathBadge.vue'
 import FrozenBadge from '@/components/entities/FrozenBadge.vue'
+import LevelBadge from '@/components/level/LevelBadge.vue'
+import PaymentStatusBadge from '@/components/payments/PaymentStatusBadge.vue'
 import { useEntityAssessments } from '@/composables/useEntityAssessments'
 import { formatDate } from '@/utils/datetime'
 import { percentText } from '@/utils/percentText'
 import { ROUTE_NAMES } from '@/constants/routeNames'
+import { localizedText } from '@/utils/localizedText'
+import { COLUMN_KINDS } from '@/utils/tableColumns'
 
-const COLUMNS = ['number', 'path', 'createdAt', 'status', 'result']
+// The optional columns after the result start hidden («الأعمدة»).
+const COLUMNS = [
+  'number',
+  'path',
+  'createdAt',
+  'status',
+  'result',
+  'submittedAt',
+  'completedAt',
+  'cycle',
+  'period',
+  'level',
+  'certificateNumber',
+  'certificateValidUntil',
+  'payment',
+  'updatedAt',
+]
+// Dates the row carries besides the request date, each shown the same way.
+const DATE_VALUES = {
+  submittedAt: (item) => item.submittedAt,
+  completedAt: (item) => item.completedAt,
+  certificateValidUntil: (item) => item.certificate?.validUntil,
+  updatedAt: (item) => item.updatedAt,
+}
 
 const props = defineProps({
   entityId: { type: [Number, String], required: true },
@@ -23,15 +50,22 @@ const { status, items, pagination, load, goTo } = useEntityAssessments(toRef(pro
 // Wide enough for the longest request number and path label; with the table rule no value is cut,
 // and a narrower screen scrolls the table sideways.
 const WIDTHS = { number: 'lg', path: 'xl' }
+const KINDS = {
+  certificateNumber: COLUMN_KINDS.CODE,
+  certificateValidUntil: COLUMN_KINDS.DATE,
+  payment: COLUMN_KINDS.STATUS,
+}
 const columns = computed(() =>
   COLUMNS.map((key) => ({
     key,
     width: WIDTHS[key],
+    kind: KINDS[key],
     label: t(`entities.record.assessments.columns.${key}`),
   })),
 )
 
 function dateOf(value) {
+  if (!value) return ''
   return formatDate(value, locale.value, { dateStyle: 'medium', timeZone: 'Asia/Riyadh' })
 }
 
@@ -76,6 +110,20 @@ onMounted(load)
         <span v-else class="entity-assessments-table__none">{{
           t('entities.record.assessments.noResult')
         }}</span>
+      </template>
+      <template v-for="(valueOf, key) in DATE_VALUES" :key="key" #[`cell-${key}`]="{ item }">{{
+        dateOf(valueOf(item))
+      }}</template>
+      <template #cell-cycle="{ item }">{{ localizedText(item.awardCycle?.name, locale) }}</template>
+      <template #cell-period="{ item }">{{ localizedText(item.periodLabel, locale) }}</template>
+      <template #cell-level="{ item }">
+        <LevelBadge v-if="item.level" :tier="item.level" size="s" />
+      </template>
+      <template #cell-certificateNumber="{ item }">
+        <bdi dir="ltr">{{ item.certificate?.number }}</bdi>
+      </template>
+      <template #cell-payment="{ item }">
+        <PaymentStatusBadge v-if="item.payment" :status="item.payment.status" />
       </template>
     </DataTable>
     <template v-if="pagination.lastPage > 1" #footer>

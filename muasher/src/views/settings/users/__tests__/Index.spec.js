@@ -3,11 +3,12 @@ import { flushPromises, mount } from '@vue/test-utils'
 import UsersIndex from '@/views/settings/users/Index.vue'
 import { usersService } from '@/services/usersService'
 import { useAuthStore } from '@/stores/auth'
+import { useTableColumnsStore } from '@/stores/tableColumns'
 import { createTestGlobals } from '@/test-utils'
 import { sessionUserFor } from '@/test-utils/session'
 
 vi.mock('@/services/usersService', () => ({
-  usersService: { list: vi.fn(), create: vi.fn(), update: vi.fn() },
+  usersService: { list: vi.fn(), get: vi.fn(), create: vi.fn(), update: vi.fn() },
 }))
 
 const USER = {
@@ -75,6 +76,35 @@ describe('users page actions', () => {
   it('shows no header action to a user who may only view the list', async () => {
     const wrapper = await mountPage(sessionUserFor([], { permissions: ['users.view'] }))
     expect(headerActions(wrapper).element.children).toHaveLength(0)
+    wrapper.unmount()
+  })
+})
+
+describe('users list rows and the full record', () => {
+  it('opens the details with the full record, since the list leaves out the personal fields', async () => {
+    usersService.get.mockResolvedValue({
+      data: { ...USER, gender: 'female', nationalIdMasked: '••••••0505' },
+    })
+    const wrapper = await mountPage(sessionUserFor(['system_admin']))
+    await wrapper.find('[data-action="details"]').trigger('click')
+    await flushPromises()
+    expect(usersService.get).toHaveBeenCalledWith(41)
+    const details = document.body.querySelector('[data-testid="user-details"]')
+    expect(details.querySelector('[data-testid="user-national-id"]').textContent).toContain(
+      '••••••0505',
+    )
+    wrapper.unmount()
+  })
+
+  it('shows the assessor qualifications once the viewer chooses that column', async () => {
+    usersService.list.mockResolvedValue({
+      data: [{ ...USER, assessorQualifications: ['accredited'] }],
+      meta: { pagination: { page: 1, perPage: 10, total: 1, lastPage: 1 } },
+    })
+    const wrapper = await mountPage(sessionUserFor(['system_admin']))
+    useTableColumnsStore().choices = { 'users-list': ['qualifications'] }
+    await flushPromises()
+    expect(wrapper.findAll('tbody td')[1].text()).toBe('Accredited assessment')
     wrapper.unmount()
   })
 })

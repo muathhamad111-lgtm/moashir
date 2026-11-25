@@ -341,6 +341,7 @@ describe('entities mock — staff list and record scope', () => {
     expect(Object.keys(contact.body.data).sort()).toEqual(
       [
         'authorized_person_name',
+        'created_at',
         'id',
         'last_level',
         'level',
@@ -351,6 +352,7 @@ describe('entities mock — staff list and record scope', () => {
         'phone',
         'phone_verified',
         'reference',
+        'region',
         'status',
       ].sort(),
     )

@@ -185,6 +185,8 @@ export const kpisFixture = [
     order: 1,
     createdAt: '2026-01-10T09:00:00Z',
     updatedAt: '2026-01-10T09:00:00Z',
+    updatedById: 31,
+    updatedByName: 'ريم بنت سعد القحطاني',
     history: [
       {
         value: '320',

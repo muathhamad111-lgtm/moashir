@@ -9,6 +9,8 @@ import { publicationPreview } from '../stores/criteriaPreview'
 import { correctTexts, publishVersion } from '../stores/criteriaPublishing'
 import { interpolate, reject, requestLocale } from '../stores/criteriaRejection'
 import { cycleBindingsSummary, moveDraftCycles } from '../stores/award/cycleBindings'
+import { allAssessments } from '../stores/assessments/assessmentsStore'
+import { openAssessmentsBoundTo } from '../stores/criteriaEditHooks'
 import {
   CRITERIA_PERMISSIONS as CAN,
   actorWith,
@@ -33,6 +35,16 @@ function withMessage(entry, locale) {
       expected: entry.expectedWeight ?? '',
       actual: entry.actualWeight ?? '',
     }),
+  }
+}
+
+// The list row: the version and how many requests it scores (`CriteriaVersionSummaryResource`).
+function versionSummaryResource(version) {
+  return {
+    ...versionResource(version),
+    boundAssessments: allAssessments().filter((record) => record.criteriaVersionId === version.id)
+      .length,
+    boundOpenAssessments: openAssessmentsBoundTo(version.id),
   }
 }
 
@@ -79,7 +91,7 @@ export const criteriaVersionHandlers = [
       const status = query.get('filter[status]')
       const versions = liveVersions().filter((version) => !status || version.status === status)
       const page = paginate(versions, query)
-      return envelope(page.items.map(versionResource), { pagination: page.pagination })
+      return envelope(page.items.map(versionSummaryResource), { pagination: page.pagination })
     }),
   ),
 

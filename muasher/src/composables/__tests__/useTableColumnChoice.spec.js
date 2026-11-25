@@ -45,27 +45,55 @@ describe('a viewer column choice', () => {
       'dueAt',
       'actions',
     ])
-    expect(keysOf(choice.locked.value)).toEqual(['number', 'actions'])
+    expect(keysOf(choice.leading.value)).toEqual(['number'])
+    expect(keysOf(choice.trailing.value)).toEqual(['actions'])
+    expect(choice.lockedDataCount.value).toBe(1)
   })
 
-  it('reads the choice the account keeps', async () => {
-    signedIn({ 'requests-queue': ['status'] })
+  it('reads the choice the account keeps, in its order', async () => {
+    signedIn({ 'requests-queue': ['dueAt', 'status'] })
     const choice = useTableColumnChoice(ref('requests-queue'), COLUMNS)
     await flushPromises()
-    expect(keysOf(choice.shown.value)).toEqual(['number', 'status', 'actions'])
+    expect(keysOf(choice.shown.value)).toEqual(['number', 'dueAt', 'status', 'actions'])
+    expect(keysOf(choice.ordered.value)).toEqual([
+      'dueAt',
+      'status',
+      'level',
+      'assessor',
+      'submittedAt',
+    ])
   })
 
-  it('saves a hidden column to the account and restores the defaults with null', async () => {
+  it('applies a choice to this view only, without saving it', async () => {
     signedIn()
     const choice = useTableColumnChoice(ref('requests-queue'), COLUMNS)
     await flushPromises()
-    choice.toggle('level', false)
-    expect(keysOf(choice.shown.value)).not.toContain('level')
+    choice.applyToView(['assessor', 'level'])
+    expect(keysOf(choice.shown.value)).toEqual(['number', 'assessor', 'level', 'actions'])
+    expect(choice.differsFromSaved.value).toBe(true)
+    expect(profileService.updatePreferences).not.toHaveBeenCalled()
+  })
+
+  it('saves the order to the account, keeping the columns other views of the table have', async () => {
+    signedIn()
+    const choice = useTableColumnChoice(ref('requests-queue'), COLUMNS)
+    await flushPromises()
+    choice.applyToView(['status'])
+    choice.saveAsDefault(['dueAt', 'level'])
     expect(profileService.updatePreferences).toHaveBeenLastCalledWith({
-      // The advanced path's own columns (cycle, region) stay as they were.
-      tableColumns: { 'requests-queue': ['cycle', 'region', 'status', 'assessor', 'dueAt'] },
+      // The advanced path's own columns (cycle, region) stay in the choice.
+      tableColumns: { 'requests-queue': ['dueAt', 'level', 'cycle', 'region'] },
     })
-    choice.reset()
+    expect(keysOf(choice.shown.value)).toEqual(['number', 'dueAt', 'level', 'actions'])
+    expect(choice.differsFromSaved.value).toBe(false)
+  })
+
+  it('keeps the table defaults as no choice, so later default changes still reach the viewer', async () => {
+    signedIn()
+    const choice = useTableColumnChoice(ref('requests-queue'), COLUMNS)
+    await flushPromises()
+    choice.saveAsDefault(['status'])
+    choice.saveAsDefault(choice.defaults.value)
     expect(profileService.updatePreferences).toHaveBeenLastCalledWith({
       tableColumns: { 'requests-queue': null },
     })

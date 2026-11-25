@@ -18,7 +18,17 @@ const emit = defineEmits(['open', 'retry'])
 const { t, locale } = useI18n()
 
 const columns = computed(() =>
-  ['version', 'status', 'title', 'effectiveFrom', 'updatedAt', 'actions'].map((key) => ({
+  [
+    'version',
+    'status',
+    'title',
+    'effectiveFrom',
+    'updatedAt',
+    'publishedAt',
+    'publishedBy',
+    'createdAt',
+    'actions',
+  ].map((key) => ({
     key,
     label: t(`legalAdmin.columns.${key}`),
   })),
@@ -46,6 +56,13 @@ const columns = computed(() =>
     </template>
     <template #cell-updatedAt="{ item }">
       <bdi>{{ formatRiyadhDateTime(item.updatedAt, locale) }}</bdi>
+    </template>
+    <template #cell-publishedAt="{ item }">
+      <bdi v-if="item.publishedAt">{{ formatRiyadhDate(item.publishedAt, locale) }}</bdi>
+    </template>
+    <template #cell-publishedBy="{ item }">{{ item.publishedBy ?? '' }}</template>
+    <template #cell-createdAt="{ item }">
+      <bdi>{{ formatRiyadhDate(item.createdAt, locale) }}</bdi>
     </template>
     <template #cell-actions="{ item }">
       <BaseButton

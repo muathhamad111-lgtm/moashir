@@ -15,6 +15,7 @@ import UserDetailsDialog from '@/components/users/UserDetailsDialog.vue'
 import UserStatusBadge from '@/components/users/UserStatusBadge.vue'
 import RowActions from '@/components/data-list/RowActions.vue'
 import UserPathAccessCell from '@/components/users/UserPathAccessCell.vue'
+import UserListDetailCell from '@/components/users/UserListDetailCell.vue'
 import AssessorQualificationsDialog from '@/components/users/AssessorQualificationsDialog.vue'
 import RequestScopeDialog from '@/components/users/RequestScopeDialog.vue'
 import NameCorrectionDialog from '@/components/users/NameCorrectionDialog.vue'
@@ -28,6 +29,7 @@ import { useToast } from '@/composables/useToast'
 import { useUsers } from '@/composables/useUsers'
 import { useUserActions } from '@/composables/useUserActions'
 import { useUserPathAccess } from '@/composables/useUserPathAccess'
+import { useUserRecord } from '@/composables/useUserRecord'
 import { useUserStatCards } from '@/composables/useUserStatCards'
 import { useUsersExport } from '@/composables/useUsersExport'
 import { usePermissions } from '@/composables/usePermissions'
@@ -40,6 +42,7 @@ import {
   IDENTITY_ACTIONS,
   PATH_ACCESS_ACTIONS,
   USER_ACTIONS,
+  USER_DETAIL_COLUMNS,
   USER_INLINE_ACTIONS,
 } from '@/constants/users'
 
@@ -85,6 +88,7 @@ const columns = computed(() => [
   { key: 'role', label: t('users.columns.role'), width: 'lg' },
   { key: 'paths', label: t('users.columns.paths'), width: 'md' },
   { key: 'status', label: t('users.columns.status'), width: 'lg' },
+  ...USER_DETAIL_COLUMNS.map((column) => ({ ...column, label: t(`users.columns.${column.key}`) })),
   ...(canManage.value
     ? [{ key: 'actions', label: t('components.actions.label'), width: 'sm' }]
     : []),
@@ -109,6 +113,7 @@ const editing = ref(null)
 const details = ref(null)
 const detailsOpen = ref(false)
 const pathAccess = useUserPathAccess({ onSaved: () => load() })
+const userRecord = useUserRecord()
 
 function openCreate() {
   editing.value = null
@@ -125,17 +130,17 @@ function onSaved({ id }) {
   load()
 }
 
+// The list row lacks the personal fields; the dialog gets the full record (the row keeps ndaStatus).
+async function openWithRecord(row, target, open) {
+  const record = await userRecord.recordOf(row)
+  if (!record) return
+  target.value = { ...row, ...record }
+  open.value = true
+}
+
 function onAction(key, row) {
-  if (key === USER_ACTIONS.DETAILS) {
-    details.value = row
-    detailsOpen.value = true
-    return
-  }
-  if (key === USER_ACTIONS.EDIT) {
-    editing.value = row
-    formOpen.value = true
-    return
-  }
+  if (key === USER_ACTIONS.DETAILS) return openWithRecord(row, details, detailsOpen)
+  if (key === USER_ACTIONS.EDIT) return openWithRecord(row, editing, formOpen)
   if (key === USER_ACTIONS.ACTIVITY)
     return router.push({ name: ROUTE_NAMES.ADMIN_AUDIT_LOG, query: { actorId: row.id } })
   if (PATH_ACCESS_ACTIONS.includes(key)) return pathAccess.open(key, row)
@@ -248,6 +253,15 @@ function onAction(key, row) {
             }}</span>
           </span>
         </template>
+        <template
+          v-for="column in USER_DETAIL_COLUMNS"
+          :key="column.key"
+          #[`cell-${column.key}`]="{ item }"
+          ><UserListDetailCell
+            :field="column.key"
+            :user="item"
+            :nda-version="ndaMeta.currentVersion"
+        /></template>
         <template #cell-actions="{ item }">
           <RowActions
             :actions="actions.actionsFor(item)"

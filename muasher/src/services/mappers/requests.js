@@ -68,6 +68,8 @@ export function toQueueListRow(raw = {}) {
     lastActivityAt: raw.lastActivityAt ?? null,
     progress: toProgressSummary(raw.progress),
     payment: toRequestPayment(raw.payment),
+    periodLabel: raw.periodLabel ?? null,
+    lastRemindedAt: raw.lastRemindedAt ?? null,
   }
 }
 

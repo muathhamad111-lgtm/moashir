@@ -20,6 +20,17 @@ it('keeps the columns a user shows per table and returns them with the preferenc
         ->assertJsonPath('data.table_columns.finance-transactions', ['total']);
 });
 
+it('keeps the order a user gives the columns of a table', function (): void {
+    signIn(staffUser(RoleKey::RequestFollower));
+
+    $this->patchJson('/api/v1/me/preferences', ['table_columns' => ['requests-queue' => ['dueAt', 'assessor', 'level']]])
+        ->assertOk();
+
+    $this->getJson('/api/v1/me/preferences')
+        ->assertOk()
+        ->assertJsonPath('data.table_columns.requests-queue', ['dueAt', 'assessor', 'level']);
+});
+
 it('restores a table to its default columns when its choice is null', function (): void {
     $user = staffUser(RoleKey::RequestFollower);
     signIn($user);
@@ -51,7 +62,7 @@ it('rejects tables and columns the platform does not list', function (array $pay
     'unknown column' => [['requests-queue' => ['password']], 'table_columns.requests-queue.0'],
     'not a list' => [['requests-queue' => 'status'], 'table_columns.requests-queue'],
     'repeated column' => [['requests-queue' => ['status', 'status']], 'table_columns.requests-queue.0'],
-    'more columns than the table has' => [['users-list' => ['role', 'paths', 'status', 'role']], 'table_columns.users-list'],
+    'more columns than the table has' => [['nda-history' => ['acceptedAt', 'ip', 'roles', 'title', 'effectiveFrom', 'ip']], 'table_columns.nda-history'],
 ]);
 
 it('keeps one user choices away from another', function (): void {

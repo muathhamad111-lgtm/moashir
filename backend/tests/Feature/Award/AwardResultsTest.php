@@ -102,6 +102,16 @@ it('ranks the regional winners uniquely, locks the approved region and qualifies
     switchTo(ownerOf($results['low']->entity))->getJson("/api/v1/assessments/{$results['low']->id}")->assertOk()->assertJsonPath('data.status', 'under_review');
 });
 
+it('dates each result row by the submission of its request', function (): void {
+    $results = resultsScenario();
+    $submittedAt = $results['top']->submitted_at?->toIso8601String();
+
+    expect($submittedAt)->not->toBeNull();
+    switchTo($results['secretary'])->getJson(resultsPath($results['cycle'], 'results'))->assertOk()
+        ->assertJsonPath('data.0.assessment_id', $results['top']->id)
+        ->assertJsonPath('data.0.submitted_at', $submittedAt);
+});
+
 it('refuses a region approval while a request of the region has no approved result', function (): void {
     $scenario = committeeScenario(1, 1);
     $cycle = $scenario['cycle'];

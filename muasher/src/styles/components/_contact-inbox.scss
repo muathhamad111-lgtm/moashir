@@ -105,6 +105,15 @@
   font-weight: var(--fw-emphasis);
 }
 
+.contact-table__entity {
+  @include flex(column, flex-start, flex-start, var(--space-1));
+
+  bdi {
+    font-size: var(--fs-xs);
+    color: var(--theme-text-muted);
+  }
+}
+
 .contact-table__excerpt {
   overflow: hidden;
   font-size: var(--fs-xs);

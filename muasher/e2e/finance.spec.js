@@ -158,16 +158,20 @@ test('a status in the filter panel filters the operations, and the columns are t
   await expect(page.locator('.table__row')).toHaveCount(failedCount)
   await expect(page.locator('.filter-dialog__count')).toHaveText('1')
 
-  await page.locator('.column-chooser > button').click()
-  // The account keeps the choice: wait for it to be saved before reloading.
+  await page.locator('.column-manager__trigger').click()
+  await page.getByRole('checkbox', { name: isEn(testInfo) ? 'Receipt no.' : 'رقم الإيصال' }).check()
+  await page
+    .getByRole('checkbox', { name: isEn(testInfo) ? 'Payment' : 'الدفع', exact: true })
+    .uncheck()
+  // «حفظ كافتراضي» keeps the choice on the account: wait for it to be saved before reloading.
   const saved = page.waitForResponse(
     (response) =>
       response.url().includes('/me/preferences') && response.request().method() === 'PATCH',
   )
-  await page.getByRole('checkbox', { name: isEn(testInfo) ? 'Receipt no.' : 'رقم الإيصال' }).check()
+  await page
+    .getByRole('button', { name: isEn(testInfo) ? 'Save as default' : 'حفظ كافتراضي' })
+    .click()
   await saved
-  await page.getByRole('checkbox', { name: isEn(testInfo) ? 'Payment' : 'الدفع' }).uncheck()
-  await page.keyboard.press('Escape')
   const headers = page.locator('thead th')
   await expect(headers).toHaveCount(7)
   await expect(

@@ -19,6 +19,10 @@ import { bagRequestsService } from '@/services/bagRequestsService'
 import { useAuthStore } from '@/stores/auth'
 import { ROUTE_NAMES } from '@/constants/routeNames'
 import { formatDate } from '@/utils/datetime'
+import BagContextResults from '@/components/bag/BagContextResults.vue'
+
+// Optional dates the row already carries (hidden until the viewer adds them).
+const EXTRA_DATES = ['paidAt', 'startedAt', 'completedAt']
 
 const { t, n, locale } = useI18n()
 const router = useRouter()
@@ -46,6 +50,7 @@ const columns = computed(() => [
   { key: 'context', label: t('bagRequests.columns.context') },
   { key: 'status', label: t('bagRequests.columns.status') },
   { key: 'assignedAt', label: t('bagRequests.columns.assignedAt') },
+  ...EXTRA_DATES.map((key) => ({ key, label: t(`bagRequests.columns.${key}`) })),
   { key: 'actions', label: t('components.actions.label') },
 ])
 
@@ -121,23 +126,20 @@ function openManage(row) {
           </span>
         </template>
         <template #cell-context="{ item }">
-          <span class="bag-requests__context">
-            <span v-if="item.selfScorePercent != null" class="bag-requests__context-chip">
-              {{ t('bagRequests.contextSelf', { score: n(item.selfScorePercent, 'default') }) }}
-            </span>
-            <span v-if="item.advancedScorePercent != null" class="bag-requests__context-chip">
-              {{
-                t('bagRequests.contextAdvanced', { score: n(item.advancedScorePercent, 'default') })
-              }}
-            </span>
-            <span v-if="item.selfScorePercent == null && item.advancedScorePercent == null">—</span>
-          </span>
+          <BagContextResults
+            :self-score-percent="item.selfScorePercent"
+            :advanced-score-percent="item.advancedScorePercent"
+          />
         </template>
         <template #cell-status="{ item }">
           <StatusBadge :status="item.status" />
         </template>
-        <template #cell-assignedAt="{ item }">
-          <span class="bag-requests__date">{{ dateLabel(item.assignedAt) }}</span>
+        <template
+          v-for="key in ['assignedAt', ...EXTRA_DATES]"
+          :key="key"
+          #[`cell-${key}`]="{ item }"
+        >
+          <span class="bag-requests__date">{{ dateLabel(item[key]) }}</span>
         </template>
         <template #cell-actions="{ item }">
           <AppMenu

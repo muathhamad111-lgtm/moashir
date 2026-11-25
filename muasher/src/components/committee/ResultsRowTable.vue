@@ -4,9 +4,11 @@ import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 import DataTable from '@/components/data-list/DataTable.vue'
 import StatusBadge from '@/components/ui/StatusBadge.vue'
+import DateStamp from '@/components/accredited/DateStamp.vue'
 import RankSelect from './RankSelect.vue'
 import { RANK_KEYS } from '@/constants/committee'
 import { localizedText } from '@/utils/localizedText'
+import { COLUMN_KINDS } from '@/utils/tableColumns'
 
 const props = defineProps({
   rows: { type: Array, required: true },
@@ -18,6 +20,7 @@ const props = defineProps({
 
 const emit = defineEmits(['rank'])
 const { t, locale, n } = useI18n()
+const DATES = ['submittedAt', 'approvedAt']
 
 const columns = computed(() => [
   { key: 'entity', label: t('award.results.columns.entity') },
@@ -28,6 +31,12 @@ const columns = computed(() => [
     ? [{ key: 'regionalRank', label: t('award.results.columns.regionalRank') }]
     : []),
   { key: 'rank', label: t('award.results.columns.rank') },
+  {
+    key: 'entityReference',
+    label: t('award.results.columns.entityReference'),
+    kind: COLUMN_KINDS.CODE,
+  },
+  ...DATES.map((key) => ({ key, label: t(`award.results.columns.${key}`) })),
 ])
 </script>
 
@@ -63,5 +72,11 @@ const columns = computed(() => [
         @change="emit('rank', item, $event)"
       />
     </template>
+    <template #cell-entityReference="{ item }"
+      ><bdi class="u-ltr">{{ item.entity?.reference }}</bdi></template
+    >
+    <template v-for="key in DATES" :key="key" #[`cell-${key}`]="{ item }"
+      ><DateStamp v-if="item[key]" :value="item[key]" :with-time="false"
+    /></template>
   </DataTable>
 </template>

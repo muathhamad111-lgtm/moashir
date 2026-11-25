@@ -14,6 +14,6 @@ final class ListKpiCategories
      */
     public function handle(): Collection
     {
-        return KpiCategory::query()->listed()->get();
+        return KpiCategory::query()->withCount('kpis')->listed()->get();
     }
 }

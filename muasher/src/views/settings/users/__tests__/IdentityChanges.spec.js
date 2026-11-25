@@ -3,6 +3,7 @@ import { flushPromises, mount } from '@vue/test-utils'
 import IdentityChanges from '@/views/settings/users/IdentityChanges.vue'
 import { identityService } from '@/services/identityService'
 import { useAuthStore } from '@/stores/auth'
+import { useTableColumnsStore } from '@/stores/tableColumns'
 import { createTestGlobals } from '@/test-utils'
 import { sessionUserFor } from '@/test-utils/session'
 
@@ -68,6 +69,14 @@ describe('identity change review queue', () => {
     expect(
       document.body.querySelector('[data-testid="requested-national-id"]').textContent,
     ).toContain('2000000006')
+    wrapper.unmount()
+  })
+
+  it('names the staff member who submitted the request once the viewer chooses that column', async () => {
+    const wrapper = await mountQueue()
+    useTableColumnsStore().choices = { 'users-identity-changes': ['submittedBy'] }
+    await flushPromises()
+    expect(wrapper.findAll('tbody td')[1].text()).toBe('سلمان المطيري')
     wrapper.unmount()
   })
 })

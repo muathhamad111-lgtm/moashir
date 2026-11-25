@@ -223,6 +223,7 @@ function accreditedRecord(fixture, version) {
     submittedAt: fixture.submittedAt,
     completedAt: fixture.completedAt,
     refundedAt: fixture.refundedAt,
+    paidDraftRemindedAt: fixture.paidDraftRemindedAt ?? null,
     dueAt: fixture.submittedAt ? addDays(fixture.submittedAt, slaDays) : null,
     reviewSlaDays: fixture.submittedAt ? slaDays : null,
     overdueNotifiedAt: null,

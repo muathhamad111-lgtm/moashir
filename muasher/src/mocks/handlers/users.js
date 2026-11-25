@@ -25,6 +25,7 @@ import {
   suspendStaffUser,
   unlockStaffUser,
   updateStaffUser,
+  userListResource,
   userResource,
 } from '../stores/staffUsers'
 import { currentNda } from '../stores/ndaCurrent'
@@ -84,7 +85,7 @@ export const usersHandlers = [
           : rows
       const { items, pagination } = paginate(visible, query)
       return envelope(
-        items.map((user) => ({ ...userResource(user), ndaStatus: ndaStatusOf(user, current) })),
+        items.map((user) => ({ ...userListResource(user), ndaStatus: ndaStatusOf(user, current) })),
         {
           pagination,
           stats,

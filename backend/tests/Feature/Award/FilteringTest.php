@@ -73,6 +73,18 @@ it('lists the initial assessments of the cycle for its filtering officers and se
     switchTo(ownerOf($high->entity))->getJson("/api/v1/award/cycles/{$cycle->id}/filtering")->assertForbidden();
 });
 
+it('dates each filtering row by the review clock of its request', function (): void {
+    [$cycle, $version, $officer] = filteringCycle();
+    $assessment = initiallyAssessedRequest($cycle, $version, assessorUser());
+    $assessment->forceFill(['due_at' => Date::parse('2026-10-25 08:00:00')])->saveQuietly();
+
+    switchTo($officer)->getJson("/api/v1/award/cycles/{$cycle->id}/filtering")->assertOk()
+        ->assertJsonPath('data.0.id', $assessment->id)
+        ->assertJsonPath('data.0.due_at', '2026-10-25T08:00:00+00:00')
+        ->assertJsonPath('data.0.is_overdue', false)
+        ->assertJsonPath('data.0.submitted_at', $assessment->submitted_at?->toIso8601String());
+});
+
 it('shows the full initial assessment read only with the report data', function (): void {
     [$cycle, $version, $officer] = filteringCycle();
     $assessor = assessorUser();

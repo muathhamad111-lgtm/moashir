@@ -20,6 +20,7 @@ export function toLegalVersion(raw = {}) {
     body: raw.body ? localized(raw.body) : null,
     effectiveFrom: raw.effectiveFrom ?? null,
     publishedAt: raw.publishedAt ?? null,
+    publishedBy: raw.publishedBy ?? null,
     createdAt: raw.createdAt ?? null,
     updatedAt: raw.updatedAt ?? null,
   }

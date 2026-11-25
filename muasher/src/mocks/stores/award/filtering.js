@@ -26,6 +26,7 @@ import {
 import { awardReject } from './awardRejection'
 import { announceFilteringDecision } from './awardNotices'
 import { distributeQualified } from '../committee/committeeRelease'
+import { reviewClockOf } from './reviewClock'
 
 const FILTER_KEYS = ['filter[status]', 'filter[regionId]']
 const SORTABLE = {
@@ -148,7 +149,7 @@ export function filteringRow(record, cycle) {
     initialResult: initialResultOf(record),
     meetsThreshold: meetsThreshold(record, cycle),
     initialAssessedAt: record.initialAssessedAt,
-    submittedAt: record.submittedAt,
+    ...reviewClockOf(record),
     decision: decision ? decisionResource(decision) : null,
   }
 }

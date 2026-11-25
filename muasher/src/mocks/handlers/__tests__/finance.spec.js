@@ -580,6 +580,9 @@ describe('finance staff mock contract', () => {
       'signature_valid',
       'source',
     ])
+    const matched = events.body.data.find((event) => event.payment !== null)
+    expect(keys(matched.payment)).toEqual(['entity_name', 'id', 'reference'])
+    expect(matched.payment.entity_name.ar).not.toBe('')
     expect(
       events.body.data.every(
         (event) => event.provider_ref === null || event.provider_ref.startsWith('…'),
@@ -847,8 +850,10 @@ describe('finance staff mock contract', () => {
       'last_seen_at',
       'marketing_consent',
       'purpose',
+      'region',
       'started_at',
     ])
+    expect(carts.body.data[0].region.name.ar).toBeTruthy()
     expect(
       carts.body.data.every((cart) => /^.\*\*\*@/.test(cart.email) && cart.contacted_at === null),
     ).toBe(true)

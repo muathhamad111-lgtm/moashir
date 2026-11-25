@@ -2,7 +2,8 @@
 import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 import DataTable from '@/components/data-list/DataTable.vue'
-import { formatRiyadhDateTime } from '@/utils/datetime'
+import { formatRiyadhDate, formatRiyadhDateTime } from '@/utils/datetime'
+import { localizedText } from '@/utils/localizedText'
 
 const props = defineProps({
   acceptances: { type: Array, default: () => [] },
@@ -15,7 +16,15 @@ const emit = defineEmits(['retry', 'view'])
 const { t, locale } = useI18n()
 
 const columns = computed(() =>
-  ['version', 'acceptedAt', 'ip', ...(props.showRoles ? ['roles'] : ['actions'])].map((key) => ({
+  [
+    'version',
+    'acceptedAt',
+    'ip',
+    ...(props.showRoles ? ['roles'] : []),
+    'title',
+    'effectiveFrom',
+    ...(props.showRoles ? [] : ['actions']),
+  ].map((key) => ({
     key,
     label: t(`nda.history.columns.${key}`),
   })),
@@ -49,6 +58,10 @@ function roleLabel(role) {
     <template #cell-roles="{ item }">{{
       item.acceptedRoles.map(roleLabel).join('، ') || '—'
     }}</template>
+    <template #cell-title="{ item }">{{ localizedText(item.title, locale) }}</template>
+    <template #cell-effectiveFrom="{ item }">
+      <bdi v-if="item.effectiveFrom">{{ formatRiyadhDate(item.effectiveFrom, locale) }}</bdi>
+    </template>
     <template #cell-actions="{ item }">
       <button type="button" class="btn btn--ghost btn--sm" @click="emit('view', item)">
         {{ t('legalAdmin.view') }}

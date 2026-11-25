@@ -10,11 +10,13 @@ import BaseButton from '@/components/ui/BaseButton.vue'
 import Badge from '@/components/ui/Badge.vue'
 import AppSelect from '@/components/form/AppSelect.vue'
 import PermissionForm from '@/components/permissions/PermissionForm.vue'
+import PermissionDetailCell from '@/components/permissions/PermissionDetailCell.vue'
 import { useToast } from '@/composables/useToast'
 import { usePermissions } from '@/composables/usePermissions'
 import { usePermissionMatrix } from '@/composables/usePermissionMatrix'
 import { usePermissionsCatalog } from '@/composables/usePermissionsCatalog'
 import { PERMISSIONS } from '@/constants/permissionKeys'
+import { PERMISSION_DETAIL_COLUMNS, permissionDetailColumns } from '@/constants/permissionColumns'
 import { ROUTE_NAMES } from '@/constants/routeNames'
 
 const { t } = useI18n()
@@ -80,6 +82,7 @@ const columns = computed(() => [
   { key: 'key', label: t('permissions.columns.key') },
   { key: 'group', label: t('permissions.columns.group') },
   { key: 'roles', label: t('permissions.columns.roles') },
+  ...permissionDetailColumns(t),
   ...(canManage.value ? [{ key: 'actions', label: t('components.actions.label') }] : []),
 ])
 
@@ -171,6 +174,12 @@ async function onSaved(changes) {
             }}</span>
           </div>
         </template>
+        <template
+          v-for="column in PERMISSION_DETAIL_COLUMNS"
+          :key="column.key"
+          #[`cell-${column.key}`]="{ item }"
+          ><PermissionDetailCell :field="column.key" :permission="item" :role-label="roleLabel"
+        /></template>
         <template #cell-actions="{ item }">
           <RowActions
             :actions="rowActions"

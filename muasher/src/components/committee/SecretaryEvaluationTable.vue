@@ -16,6 +16,7 @@ const props = defineProps({
 
 const emit = defineEmits(['view', 'approveSubstitution'])
 const { t, n } = useI18n()
+const EVENT_DATES = ['startedAt', 'returnedAt', 'substituteApprovedAt', 'voidedAt']
 const names = computed(
   () => new Map(props.evaluations.map((row) => [row.id, row.member.user?.name])),
 )
@@ -25,6 +26,7 @@ const columns = computed(() => [
   { key: 'status', label: t('award.secretary.evaluations.status') },
   { key: 'percent', label: t('award.secretary.evaluations.percent') },
   { key: 'submittedAt', label: t('award.secretary.evaluations.submittedAt') },
+  ...EVENT_DATES.map((key) => ({ key, label: t(`award.secretary.evaluations.${key}`) })),
   { key: 'actions', label: t('components.actions.label') },
 ])
 </script>
@@ -69,6 +71,9 @@ const columns = computed(() => [
       ><bdi v-if="item.percent" class="u-ltr">{{ percentText(n, t, item.percent) }}</bdi></template
     >
     <template #cell-submittedAt="{ item }"><DateStamp :value="item.submittedAt" /></template>
+    <template v-for="key in EVENT_DATES" :key="key" #[`cell-${key}`]="{ item }"
+      ><DateStamp v-if="item[key]" :value="item[key]"
+    /></template>
     <template #cell-actions="{ item }">
       <span class="committee-work__badges">
         <BaseButton

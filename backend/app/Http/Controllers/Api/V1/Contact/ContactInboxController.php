@@ -9,6 +9,7 @@ use App\Actions\Contact\ListContactMessages;
 use App\Actions\Contact\SummarizeContactMessages;
 use App\Http\Requests\Contact\IndexContactMessagesRequest;
 use App\Http\Resources\Contact\ContactHandlerResource;
+use App\Http\Resources\Contact\ContactInboxRowResource;
 use App\Http\Resources\Contact\ContactMessageResource;
 use App\Http\Responses\ApiResponse;
 use App\Models\Contact\ContactMessage;
@@ -20,7 +21,7 @@ final class ContactInboxController
 
     public function index(IndexContactMessagesRequest $request, ListContactMessages $list, SummarizeContactMessages $summary): JsonResponse
     {
-        return ApiResponse::paginated($list->handle($request->filters()), ContactMessageResource::class, ['stats' => $summary->handle()]);
+        return ApiResponse::paginated($list->handle($request->filters()), ContactInboxRowResource::class, ['stats' => $summary->handle()]);
     }
 
     public function show(ContactMessage $contactMessage): JsonResponse

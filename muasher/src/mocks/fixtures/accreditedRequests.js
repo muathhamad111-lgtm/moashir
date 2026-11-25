@@ -344,6 +344,7 @@ export const accreditedRequestsFixture = [
     submittedAt: null,
     completedAt: null,
     refundedAt: null,
+    paidDraftRemindedAt: '2026-09-17T06:00:00Z',
   },
   {
     id: ACCREDITED_FIXTURE_IDS.submitted,

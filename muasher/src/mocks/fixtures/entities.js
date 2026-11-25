@@ -173,6 +173,7 @@ export const entitiesFixture = [
     hasStrategicPlan: true,
     createdAt: '2026-04-22T10:00:00Z',
     verifiedAt: '2026-04-22T10:04:00Z',
+    approvedAt: '2026-04-22T10:04:00Z',
     owner: owner(6004, 'سارة بنت محمد الحربي', 'info@ataa-madinah.example.sa'),
     openRequests: [
       { id: 19, number: 'ACC-2026-000019', path: 'accredited', status: 'awaiting-assignment' },
@@ -193,6 +194,7 @@ export const entitiesFixture = [
     hasStrategicPlan: true,
     createdAt: '2026-03-15T07:20:00Z',
     verifiedAt: '2026-03-15T07:26:00Z',
+    approvedAt: '2026-03-15T07:26:00Z',
     marketingConsentAt: '2026-03-15T07:20:00Z',
     owner: owner(6005, 'فيصل بن ناصر المطيري', 'admin@ruwad.example.sa'),
   }),

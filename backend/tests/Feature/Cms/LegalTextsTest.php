@@ -96,6 +96,18 @@ it('lets the Content Officer create, edit and publish a draft that replaces the 
         ->and($published->new_values['body_sha256']['en'])->toBe(hash('sha256', LEGAL_BODY_EN));
 });
 
+it('names the staff member who published each version on the version list', function (): void {
+    $editor = contentOfficer();
+    $published = signIn($editor)->postJson(LEGAL_ADMIN.'/terms/versions', legalPayload())->assertCreated()->json('data.id');
+    $this->postJson(LEGAL_ADMIN.'/versions/'.$published.'/publish')->assertOk();
+    $draft = $this->postJson(LEGAL_ADMIN.'/terms/versions', legalPayload(['version' => '2027-01']))->assertCreated()->json('data.id');
+
+    $rows = collect($this->getJson(LEGAL_ADMIN.'/terms/versions')->assertOk()->json('data'));
+
+    expect($rows->firstWhere('id', $published)['published_by'])->toBe($editor->name)
+        ->and($rows->firstWhere('id', $draft)['published_by'])->toBeNull();
+});
+
 it('keeps a published version immutable through the API and in the database', function (): void {
     $draft = legalDraft();
     publishLegalDraft($draft);

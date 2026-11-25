@@ -43,7 +43,15 @@ const ROW_KEYS = [
   'submitted_at',
 ]
 // A list row adds the entity's progress while it prepares the request (admin review 2026-11-20).
-const LIST_ROW_KEYS = [...ROW_KEYS, 'last_activity_at', 'opened_at', 'payment', 'progress'].sort()
+const LIST_ROW_KEYS = [
+  ...ROW_KEYS,
+  'last_activity_at',
+  'last_reminded_at',
+  'opened_at',
+  'payment',
+  'period_label',
+  'progress',
+].sort()
 const REVIEW_KEYS = [
   'assessment',
   'can_write_review_notes',

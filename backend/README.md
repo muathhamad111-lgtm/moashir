@@ -2370,6 +2370,16 @@ deletion of an entity deletes the owner's notifications and notification prefere
 - `PATCH /notifications/{id}/read` and `PATCH /notifications/{id}/archive` → the item (idempotent: the first time is kept).
 - `POST /notifications/read-all { category? }` → `{ updated }` (inbox only).
 
+### List table columns (per user)
+
+- `resources/data/table-columns.json` lists every list table and the optional columns it offers; the SPA mirrors it
+  in `muasher/src/constants/tableColumns.js` and a Vitest spec keeps the two equal.
+- `PATCH /me/preferences` takes `table_columns: { "<table>": ["<column>", ...] | null }`. The list is the viewer's
+  saved default: the visible optional columns **in display order** (only the table's columns, no repeats);
+  `null` returns the table to its defaults. `GET /me/preferences` returns the lists as stored.
+- `user_table_columns` keeps one row per user and table (a display preference: not audited, removed with the account).
+- The SPA's «تطبيق» changes the current page view only; only «حفظ كافتراضي» writes here.
+
 ### Notification types and preferences
 The catalogue of every `NotificationCode` is code-defined in `Support\Notifications\NotificationTypeDefinitions` (one row per
 code: channels `in_app | email | sms` as built, audiences, mandatory flag), read through `Services\Notifications\

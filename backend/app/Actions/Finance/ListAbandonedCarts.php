@@ -28,7 +28,7 @@ final readonly class ListAbandonedCarts
     public function handle(AbandonedCartFilters $filters): LengthAwarePaginator
     {
         return CheckoutIntent::query()
-            ->with('entity.owner')
+            ->with(['entity.owner', 'entity.region'])
             ->whereNull('converted_payment_id')
             ->where('last_seen_at', '<=', Date::now()->subHours($this->settings->abandonedCartAfterHours()))
             ->whereHas('entity', static fn (Builder $entity): Builder => $entity->notErased())

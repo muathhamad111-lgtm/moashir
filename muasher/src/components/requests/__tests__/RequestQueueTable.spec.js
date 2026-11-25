@@ -1,7 +1,8 @@
 import { describe, expect, it } from 'vitest'
-import { mount } from '@vue/test-utils'
+import { flushPromises, mount } from '@vue/test-utils'
 import { createTestGlobals } from '@/test-utils'
 import RequestQueueTable from '@/components/requests/RequestQueueTable.vue'
+import { useTableColumnsStore } from '@/stores/tableColumns'
 
 const ROW = {
   id: 9101,
@@ -158,5 +159,31 @@ describe('RequestQueueTable merged request column, draft progress and assessor',
     expect(cells[0].text()).toBe('د. سلطان القرني')
     expect(cells[1].text()).toContain('أ. هند الزهراني')
     expect(cells[1].text()).toContain('أُعيد الإسناد')
+  })
+})
+
+// Columns v2: the reminder, period and submission progress the row carries, once chosen.
+describe('RequestQueueTable optional columns', () => {
+  it('shows the last reminder, the period and the submission progress once the viewer adds them', async () => {
+    const draft = {
+      ...ROW,
+      status: 'draft',
+      progress: { complete: 3, total: 19 },
+      periodLabel: { ar: 'النصف الثاني 2026', en: 'H2 2026' },
+      lastRemindedAt: '2026-09-17T06:00:00Z',
+    }
+    const wrapper = mount(RequestQueueTable, {
+      props: { items: [draft], status: 'success' },
+      global: createTestGlobals({ locale: 'en' }),
+    })
+    await flushPromises()
+    useTableColumnsStore().choices = {
+      'requests-queue': ['lastRemindedAt', 'period', 'submissionProgress'],
+    }
+    await flushPromises()
+    const cells = wrapper.findAll('tbody td')
+    expect(cells[1].find('time').attributes('datetime')).toBe('2026-09-17T06:00:00Z')
+    expect(cells[2].text()).toBe('H2 2026')
+    expect(cells[3].text()).toBe('3 / 19')
   })
 })

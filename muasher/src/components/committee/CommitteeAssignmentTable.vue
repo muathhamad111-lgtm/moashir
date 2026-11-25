@@ -23,6 +23,7 @@ defineProps({
 
 const emit = defineEmits(['retry', 'sort'])
 const { t, locale, n } = useI18n()
+const EVENT_DATES = ['startedAt', 'submittedAt', 'returnedAt']
 
 const columns = computed(() => [
   { key: 'entity', label: t('award.work.columns.entity') },
@@ -30,6 +31,7 @@ const columns = computed(() => [
   { key: 'dueAt', label: t('award.work.columns.dueAt'), sortKey: 'due_at' },
   { key: 'progress', label: t('requests.assigned.columns.progress') },
   { key: 'percent', label: t('award.work.columns.percent') },
+  ...EVENT_DATES.map((key) => ({ key, label: t(`award.work.columns.${key}`) })),
   { key: 'open', label: t('requests.assigned.columns.actions'), action: true },
 ])
 
@@ -102,6 +104,9 @@ function openLabel(row) {
     <template #cell-progress="{ item }">
       <AssignedRequestProgress :progress="item.reviewProgress" />
     </template>
+    <template v-for="key in EVENT_DATES" :key="key" #[`cell-${key}`]="{ item }"
+      ><DateStamp v-if="item[key]" :value="item[key]" :with-time="false"
+    /></template>
     <template #cell-open="{ item }">
       <BaseButton
         :variant="isClosed(item) ? 'secondary' : 'primary'"

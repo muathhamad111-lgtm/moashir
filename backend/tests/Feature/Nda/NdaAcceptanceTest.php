@@ -94,6 +94,19 @@ it('lets a user list and read again the versions they accepted', function (): vo
     signIn($user)->getJson("/api/v1/me/nda/versions/{$version->id}")->assertOk()->assertJsonPath('data.version', '1.0');
 });
 
+it('shows the title and the effective date of each accepted version in the history', function (): void {
+    $version = publishedNda();
+    $user = staffUser(RoleKey::Assessor);
+    acceptNdaAs($user, $version);
+    $version->refresh();
+
+    signIn($user)->getJson('/api/v1/me/nda/acceptances')
+        ->assertOk()
+        ->assertJsonPath('data.0.title.en', 'Non-disclosure agreement')
+        ->assertJsonPath('data.0.effective_from', $version->effective_from?->toDateString());
+    expect($version->effective_from)->not->toBeNull();
+});
+
 it('does not show a version the user never accepted', function (): void {
     $version = publishedNda();
     $accepted = publishedNda('1.1');

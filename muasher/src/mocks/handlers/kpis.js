@@ -25,6 +25,7 @@ import {
 import { listKpiValues, recordKpiValue } from '../stores/kpis/kpiValues'
 import { KPI_IMAGE_PURPOSE } from '../stores/kpis/kpiInput'
 import {
+  adminCatalog,
   createCatalogEntry,
   listedCatalog,
   removeCatalogEntry,
@@ -161,7 +162,7 @@ function catalogHandlers(kind, path) {
       `/api/v1/admin/${path}`,
       contentRoute(() => {
         canManage()
-        return envelope(listedCatalog(kind))
+        return envelope(adminCatalog(kind))
       }),
     ),
     http.post(

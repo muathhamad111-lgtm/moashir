@@ -7,24 +7,22 @@ import { MOCK_API_BASE, clearMockSession, seedMockSession, wireFetch } from '@/t
 const server = setupServer(...usersHandlers)
 const ADMIN = { id: 1, roles: ['system_admin'] }
 const SECRETARY_ONLY = { id: 19, roles: ['award_secretary'] }
-const USER_KEYS = [
+const LIST_KEYS = [
   'assessor_qualifications',
   'created_at',
   'email',
   'entity_id',
-  'gender',
   'id',
   'last_login_at',
   'mfa_enabled',
   'name',
   'national_id_changed_at_acceptance_at',
-  'national_id_masked',
   'nda_status',
-  'phone',
   'request_scope',
   'roles',
   'status',
 ]
+const PERSONAL_KEYS = ['gender', 'national_id_masked', 'phone']
 const REASON = 'إيقاف الحساب بقرار إداري لحين استكمال الإجراءات.'
 
 async function call(method, path, body) {
@@ -53,7 +51,7 @@ describe('users mock — real contract', () => {
   it('lists staff users only with the exact keys, stats and pagination', async () => {
     const { status, body } = await call('GET', '/users?per_page=50')
     expect(status).toBe(200)
-    expect(Object.keys(body.data[0]).sort()).toEqual(USER_KEYS)
+    expect(Object.keys(body.data[0]).sort()).toEqual(LIST_KEYS)
     expect(body.data.some((user) => user.roles.includes('entity'))).toBe(false)
     expect(Object.keys(body.meta.stats).sort()).toEqual([
       'active',
@@ -64,6 +62,13 @@ describe('users mock — real contract', () => {
       'total',
     ])
     expect(body.meta.pagination).toMatchObject({ page: 1, per_page: 50 })
+  })
+
+  it('keeps the personal fields off the list and on the single-user record', async () => {
+    const { body } = await call('GET', '/users?per_page=50')
+    const record = await call('GET', `/users/${body.data[0].id}`)
+    expect(PERSONAL_KEYS.filter((key) => key in body.data[0])).toEqual([])
+    expect(PERSONAL_KEYS.every((key) => key in record.body.data)).toBe(true)
   })
 
   it('filters by role and status and refuses unknown filters', async () => {

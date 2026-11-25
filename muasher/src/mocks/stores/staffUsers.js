@@ -93,6 +93,15 @@ export function userResource(user) {
   }
 }
 
+// The list row: the personal fields (phone, gender, national id) stay on the single-user record.
+export function userListResource(user) {
+  const row = userResource(user)
+  delete row.phone
+  delete row.gender
+  delete row.nationalIdMasked
+  return row
+}
+
 function filtersOf(query) {
   const errors = {}
   const role = query.get('filter[role]')

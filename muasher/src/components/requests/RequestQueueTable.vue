@@ -9,12 +9,26 @@ import OverdueBadge from '@/components/accredited/OverdueBadge.vue'
 import RequestQueueRequestCell from './RequestQueueRequestCell.vue'
 import RequestQueueStatusCell from './RequestQueueStatusCell.vue'
 import RequestQueueAssessorCell from './RequestQueueAssessorCell.vue'
+import PaymentStatusBadge from '@/components/payments/PaymentStatusBadge.vue'
+import PathBadge from '@/components/ui/PathBadge.vue'
 import LevelBadge from '@/components/level/LevelBadge.vue'
 import { ROUTE_NAMES } from '@/constants/routeNames'
 import { localizedText } from '@/utils/localizedText'
 import { displayTierOf } from '@/utils/levelTier'
 import { assignmentModeOf } from '@/utils/assessments/reviewStages'
 import { ASSIGNMENT_MODES } from '@/constants/accredited'
+import { COLUMN_KINDS } from '@/utils/tableColumns'
+import { formatNumber } from '@/utils/formatNumber'
+
+// Optional dates the list row already carries (hidden until the viewer adds them).
+const EXTRA_DATES = [
+  'openedAt',
+  'lastActivityAt',
+  'assignedAt',
+  'completionDeadline',
+  'completedAt',
+  'lastRemindedAt',
+]
 
 const props = defineProps({
   items: { type: Array, required: true },
@@ -26,7 +40,7 @@ const props = defineProps({
 })
 
 const emit = defineEmits(['retry', 'assign'])
-const { t, locale } = useI18n()
+const { t, n, locale } = useI18n()
 
 // The viewer picks the optional columns («الأعمدة»); the request and actions always show.
 const columns = computed(() => [
@@ -38,6 +52,16 @@ const columns = computed(() => [
   { key: 'assessor', label: t('requests.columns.assessor') },
   { key: 'submittedAt', label: t('requests.columns.submittedAt') },
   { key: 'dueAt', label: t('requests.columns.dueAt') },
+  { key: 'path', label: t('requests.columns.path') },
+  { key: 'entityReference', label: t('requests.columns.entityReference') },
+  { key: 'payment', label: t('requests.columns.payment') },
+  ...EXTRA_DATES.map((key) => ({ key, label: t(`requests.columns.${key}`) })),
+  { key: 'period', label: t('requests.columns.period') },
+  {
+    key: 'submissionProgress',
+    label: t('requests.columns.submissionProgress'),
+    kind: COLUMN_KINDS.NUMBER,
+  },
   { key: 'actions', label: t('components.actions.label') },
 ])
 
@@ -90,6 +114,25 @@ function detailRouteOf(item) {
         <OverdueBadge v-if="item.dueAt" :overdue="item.isOverdue" />
       </span>
     </template>
+    <template #cell-path="{ item }"
+      ><PathBadge :path="item.path" :label="item.pathLabel"
+    /></template>
+    <template #cell-entityReference="{ item }"
+      ><bdi class="u-ltr">{{ item.entity?.reference }}</bdi></template
+    >
+    <template #cell-payment="{ item }"
+      ><PaymentStatusBadge v-if="item.payment?.status" :status="item.payment.status"
+    /></template>
+    <template v-for="key in EXTRA_DATES" :key="key" #[`cell-${key}`]="{ item }"
+      ><DateStamp :value="item[key]" :with-time="false"
+    /></template>
+    <template #cell-period="{ item }">{{ localizedText(item.periodLabel, locale) }}</template>
+    <template #cell-submissionProgress="{ item }"
+      ><bdi v-if="item.progress" class="u-ltr"
+        >{{ formatNumber(n, item.progress.complete) }} /
+        {{ formatNumber(n, item.progress.total) }}</bdi
+      ></template
+    >
     <template #cell-actions="{ item }">
       <span class="request-queue__actions">
         <BaseButton

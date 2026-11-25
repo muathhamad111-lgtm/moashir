@@ -90,9 +90,15 @@ export function inboxView(message) {
   return { ...message, inboxStatus: inboxStatusOf(message) }
 }
 
+// The list leaves out the sender's e-mail and mobile; only the message page shows them.
+function listedSender({ name, organization, locale }) {
+  return { name, organization, locale }
+}
+
 function rowOf(message) {
   const row = {
     ...inboxView(message),
+    sender: listedSender(message.sender),
     entryCount: message.entries.length,
     excerpt: excerptOf(message),
   }

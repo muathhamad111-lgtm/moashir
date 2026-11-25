@@ -80,7 +80,7 @@
   }
 }
 
-.filter-toolbar :is(.btn, .filter-dialog__toggle, .column-chooser .btn) {
+.filter-toolbar :is(.btn, .filter-dialog__toggle, .column-manager .column-manager__trigger) {
   @include in-tts-shell {
     gap: var(--space-2);
     min-block-size: var(--size-toolbar-field);

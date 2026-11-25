@@ -59,6 +59,8 @@ const PRIVACY_SOURCE = {
   ].join('\n'),
 }
 
+const PUBLISHER = 'منيرة بنت خالد العتيبي'
+
 function version(id, kind, label, status, title, body, publishedAt) {
   return {
     id,
@@ -69,6 +71,7 @@ function version(id, kind, label, status, title, body, publishedAt) {
     body,
     effectiveFrom: publishedAt ? publishedAt.slice(0, 10) : null,
     publishedAt,
+    publishedBy: publishedAt ? PUBLISHER : null,
     createdAt: publishedAt ?? '2026-11-04T12:00:00+00:00',
     updatedAt: publishedAt ?? '2026-11-04T12:00:00+00:00',
   }

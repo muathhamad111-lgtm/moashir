@@ -1,7 +1,7 @@
 <script setup>
 import ExpandableSearch from './ExpandableSearch.vue'
 import FilterDialog from './FilterDialog.vue'
-import ColumnChooser from './ColumnChooser.vue'
+import ColumnManager from './ColumnManager.vue'
 import { useFilterDraft } from '@/composables/useFilterDraft'
 import { useListCard } from '@/composables/useListCard'
 
@@ -41,14 +41,7 @@ if (card) card.hasToolbar = true
       >
         <slot name="filters" :draft="filterDraft.draft" />
       </FilterDialog>
-      <ColumnChooser
-        v-if="card?.columnChoice?.optional.length"
-        :columns="card.columnChoice.optional"
-        :locked="card.columnChoice.locked"
-        :visible="card.columnChoice.visible"
-        @toggle="card.columnChoice.toggle"
-        @reset="card.columnChoice.reset"
-      />
+      <ColumnManager v-if="card?.columnChoice?.ordered.value.length" :choice="card.columnChoice" />
       <slot name="export" />
     </div>
   </div>

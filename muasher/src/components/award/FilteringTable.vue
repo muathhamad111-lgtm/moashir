@@ -5,10 +5,14 @@ import { RouterLink } from 'vue-router'
 import DataTable from '@/components/data-list/DataTable.vue'
 import StatusBadge from '@/components/ui/StatusBadge.vue'
 import Badge from '@/components/ui/Badge.vue'
+import DateStamp from '@/components/accredited/DateStamp.vue'
+import OverdueBadge from '@/components/accredited/OverdueBadge.vue'
 import ThresholdBadge from './ThresholdBadge.vue'
 import { ROUTE_NAMES } from '@/constants/routeNames'
+import { FILTERING_OUTCOMES } from '@/constants/advanced'
+import { COLUMN_KINDS } from '@/utils/tableColumns'
 import { localizedText } from '@/utils/localizedText'
-import { twoDecimals } from '@/utils/percentText'
+import { pointsText, twoDecimals } from '@/utils/percentText'
 
 const props = defineProps({
   cycleId: { type: Number, required: true },
@@ -19,6 +23,7 @@ const props = defineProps({
 
 const emit = defineEmits(['retry'])
 const { t, locale } = useI18n()
+const EVENT_DATES = ['submittedAt', 'initialAssessedAt']
 
 const columns = computed(() => [
   { key: 'number', label: t('filtering.columns.number') },
@@ -27,6 +32,15 @@ const columns = computed(() => [
   { key: 'percent', label: t('filtering.columns.percent') },
   { key: 'threshold', label: t('filtering.columns.threshold') },
   { key: 'status', label: t('filtering.columns.status') },
+  ...EVENT_DATES.map((key) => ({ key, label: t(`filtering.columns.${key}`) })),
+  { key: 'dueAt', label: t('filtering.columns.dueAt') },
+  { key: 'score', label: t('filtering.columns.score'), kind: COLUMN_KINDS.NUMBER },
+  {
+    key: 'entityReference',
+    label: t('filtering.columns.entityReference'),
+    kind: COLUMN_KINDS.CODE,
+  },
+  { key: 'decision', label: t('filtering.columns.decision'), kind: COLUMN_KINDS.STATUS },
 ])
 
 function detailRoute(item) {
@@ -70,6 +84,35 @@ function detailRoute(item) {
         <Badge v-if="item.decision?.isOverride" variant="warning">{{
           t('filtering.override.badge')
         }}</Badge>
+      </span>
+    </template>
+    <template v-for="key in EVENT_DATES" :key="key" #[`cell-${key}`]="{ item }"
+      ><DateStamp v-if="item[key]" :value="item[key]" :with-time="false"
+    /></template>
+    <template #cell-dueAt="{ item }">
+      <span v-if="item.dueAt" class="committee-work__badges">
+        <DateStamp :value="item.dueAt" :with-time="false" />
+        <OverdueBadge v-if="item.isOverdue" :overdue="true" />
+      </span>
+    </template>
+    <template #cell-score="{ item }"
+      ><bdi v-if="item.initialResult" class="u-ltr">{{
+        t('filtering.scoreOf', {
+          total: pointsText(item.initialResult.total),
+          maxTotal: pointsText(item.initialResult.maxTotal),
+        })
+      }}</bdi></template
+    >
+    <template #cell-entityReference="{ item }"
+      ><bdi class="u-ltr">{{ item.entity?.reference }}</bdi></template
+    >
+    <template #cell-decision="{ item }">
+      <span v-if="item.decision" class="committee-work__badges">
+        <Badge
+          :variant="item.decision.outcome === FILTERING_OUTCOMES.QUALIFIED ? 'success' : 'danger'"
+          >{{ t(`filtering.outcomes.${item.decision.outcome}`) }}</Badge
+        >
+        <DateStamp :value="item.decision.decidedAt" :with-time="false" />
       </span>
     </template>
   </DataTable>

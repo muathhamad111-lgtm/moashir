@@ -1,11 +1,11 @@
 <script setup>
-import { computed, onBeforeUnmount, ref, toRef } from 'vue'
+import { computed, markRaw, onBeforeUnmount, ref, toRef } from 'vue'
 import { useI18n } from 'vue-i18n'
 import Skeleton from '@/components/feedback/Skeleton.vue'
 import EmptyState from '@/components/feedback/EmptyState.vue'
 import ErrorState from '@/components/feedback/ErrorState.vue'
 import DataTableHeader from './DataTableHeader.vue'
-import ColumnChooser from './ColumnChooser.vue'
+import ColumnManager from './ColumnManager.vue'
 import { columnKindOf } from '@/utils/tableColumns'
 import { useScrollEdges } from '@/composables/useScrollEdges'
 import { useTableColumnChoice } from '@/composables/useTableColumnChoice'
@@ -49,22 +49,15 @@ const kinds = computed(() => shownColumns.value.map((column, index) => columnKin
 const wrapRef = ref(null)
 const edges = useScrollEdges(wrapRef)
 
-// The «الأعمدة» menu goes to the list's toolbar when there is one, else to a bar above the table.
+// The «إدارة الأعمدة» button goes to the list's toolbar when there is one, else to a bar above the table.
 const card = useListCard()
-const menu = choice
-  ? {
-      optional: choice.optional,
-      locked: choice.locked,
-      visible: choice.visible,
-      toggle: choice.toggle,
-      reset: choice.reset,
-    }
-  : null
+// Kept raw so the list card hands it over as is (its refs not unwrapped).
+const menu = choice ? markRaw(choice) : null
 if (card && menu) card.columnChoice = menu
 onBeforeUnmount(() => {
   if (card?.columnChoice === menu) card.columnChoice = null
 })
-const ownsMenu = computed(() => Boolean(menu?.optional.value.length) && !card?.hasToolbar)
+const ownsMenu = computed(() => Boolean(menu?.ordered.value.length) && !card?.hasToolbar)
 
 function cellClass(index) {
   return `table__cell--${kinds.value[index]}`
@@ -85,88 +78,89 @@ function keyOf(item, index) {
 
 <template>
   <div v-if="ownsMenu" class="table-columns-bar">
-    <ColumnChooser
-      :columns="menu.optional.value"
-      :locked="menu.locked.value"
-      :visible="menu.visible.value"
-      @toggle="menu.toggle"
-      @reset="menu.reset"
-    />
+    <ColumnManager :choice="menu" />
   </div>
-  <div
-    ref="wrapRef"
-    v-bind="$attrs"
-    class="table-wrap"
-    :class="{
-      'table-wrap--stacked': stacked,
-      'has-more-start': edges.moreAtStart.value,
-      'has-more-end': edges.moreAtEnd.value,
-    }"
-    :tabindex="edges.scrollable.value ? 0 : undefined"
-    :role="edges.scrollable.value ? 'region' : undefined"
-    :aria-label="edges.scrollable.value ? t('components.table.scrollRegion') : undefined"
-    @scroll.passive="edges.measure"
-  >
-    <table
-      v-if="status === 'loading' || status === 'success'"
-      class="table"
-      :class="{ 'table--loading': status === 'loading' }"
-      :aria-busy="status === 'loading' || undefined"
+  <div class="table-frame">
+    <div
+      ref="wrapRef"
+      v-bind="$attrs"
+      class="table-wrap"
+      :class="{
+        'table-wrap--stacked': stacked,
+        'has-more-start': edges.moreAtStart.value,
+        'has-more-end': edges.moreAtEnd.value,
+      }"
+      :tabindex="edges.scrollable.value ? 0 : undefined"
+      :role="edges.scrollable.value ? 'region' : undefined"
+      :aria-label="edges.scrollable.value ? t('components.table.scrollRegion') : undefined"
+      @scroll.passive="edges.measure"
     >
-      <thead class="table__head">
-        <tr>
-          <DataTableHeader
-            v-for="(column, index) in shownColumns"
-            :key="column.key"
-            :class="cellClass(index)"
-            :column="column"
-            :sort="sort"
-            @sort="emit('sort', $event)"
-          />
-        </tr>
-      </thead>
-      <tbody @mouseover="revealFullText" @focusin="revealFullText">
-        <template v-if="status === 'loading'">
-          <tr v-for="row in skeletonRows" :key="`skeleton-${row}`" class="table__row">
-            <td
+      <table
+        v-if="status === 'loading' || status === 'success'"
+        class="table"
+        :class="{ 'table--loading': status === 'loading' }"
+        :aria-busy="status === 'loading' || undefined"
+      >
+        <thead class="table__head">
+          <tr>
+            <DataTableHeader
               v-for="(column, index) in shownColumns"
               :key="column.key"
-              class="table__cell"
               :class="cellClass(index)"
-              :data-label="stacked ? column.label : undefined"
-            >
-              <Skeleton variant="text" />
-            </td>
+              :column="column"
+              :sort="sort"
+              @sort="emit('sort', $event)"
+            />
           </tr>
+        </thead>
+        <tbody @mouseover="revealFullText" @focusin="revealFullText">
+          <template v-if="status === 'loading'">
+            <tr v-for="row in skeletonRows" :key="`skeleton-${row}`" class="table__row">
+              <td
+                v-for="(column, index) in shownColumns"
+                :key="column.key"
+                class="table__cell"
+                :class="cellClass(index)"
+                :data-label="stacked ? column.label : undefined"
+              >
+                <Skeleton variant="text" />
+              </td>
+            </tr>
+          </template>
+          <template v-else>
+            <tr v-for="(item, index) in items" :key="keyOf(item, index)" class="table__row">
+              <td
+                v-for="(column, index) in shownColumns"
+                :key="column.key"
+                class="table__cell"
+                :class="cellClass(index)"
+                :data-label="stacked ? column.label : undefined"
+              >
+                <div class="table__value">
+                  <slot :name="`cell-${column.key}`" :item="item">
+                    {{ item[column.key] }}
+                  </slot>
+                </div>
+              </td>
+            </tr>
+          </template>
+        </tbody>
+      </table>
+      <EmptyState
+        v-else-if="status === 'empty'"
+        :title="emptyTitle || t('common.empty')"
+        :message="emptyMessage"
+      >
+        <template v-if="$slots['empty-action']" #action>
+          <slot name="empty-action" />
         </template>
-        <template v-else>
-          <tr v-for="(item, index) in items" :key="keyOf(item, index)" class="table__row">
-            <td
-              v-for="(column, index) in shownColumns"
-              :key="column.key"
-              class="table__cell"
-              :class="cellClass(index)"
-              :data-label="stacked ? column.label : undefined"
-            >
-              <div class="table__value">
-                <slot :name="`cell-${column.key}`" :item="item">
-                  {{ item[column.key] }}
-                </slot>
-              </div>
-            </td>
-          </tr>
-        </template>
-      </tbody>
-    </table>
-    <EmptyState
-      v-else-if="status === 'empty'"
-      :title="emptyTitle || t('common.empty')"
-      :message="emptyMessage"
-    >
-      <template v-if="$slots['empty-action']" #action>
-        <slot name="empty-action" />
-      </template>
-    </EmptyState>
-    <ErrorState v-else :message="errorMessage" @retry="emit('retry')" />
+      </EmptyState>
+      <ErrorState v-else :message="errorMessage" @retry="emit('retry')" />
+    </div>
+    <span
+      class="table-frame__edge"
+      :class="{ 'is-visible': edges.moreAtEnd.value }"
+      aria-hidden="true"
+    />
   </div>
 </template>

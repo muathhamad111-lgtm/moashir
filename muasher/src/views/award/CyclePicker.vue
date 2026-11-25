@@ -7,6 +7,8 @@ import Card from '@/components/ui/Card.vue'
 import DataTable from '@/components/data-list/DataTable.vue'
 import DateStamp from '@/components/accredited/DateStamp.vue'
 import CycleStatusBadge from '@/components/award/CycleStatusBadge.vue'
+import CycleWindow from '@/components/award/CycleWindow.vue'
+import { COLUMN_KINDS } from '@/utils/tableColumns'
 import { useAwardCyclePicker } from '@/composables/useAwardCyclePicker'
 import { localizedText } from '@/utils/localizedText'
 
@@ -48,6 +50,11 @@ const columns = computed(() => [
   { key: 'name', label: t('cycles.columns.name') },
   { key: 'status', label: t('cycles.columns.status') },
   { key: 'committeeEnd', label: t('award.picker.committeeEnd') },
+  { key: 'committeeStart', label: t('award.picker.committeeStart'), kind: COLUMN_KINDS.DATE },
+  { key: 'submission', label: t('cycles.columns.submission') },
+  { key: 'announcementAt', label: t('cycles.columns.announcementAt') },
+  { key: 'regions', label: t('cycles.columns.regions') },
+  { key: 'counts', label: t('cycles.columns.requests') },
   { key: 'open', label: t('award.picker.open'), action: true },
 ])
 </script>
@@ -80,6 +87,28 @@ const columns = computed(() => [
         <template #cell-committeeEnd="{ item }"
           ><DateStamp :value="item.committeeEnd" :with-time="false"
         /></template>
+        <template #cell-committeeStart="{ item }"
+          ><DateStamp :value="item.committeeStart" :with-time="false"
+        /></template>
+        <template #cell-submission="{ item }"
+          ><CycleWindow :start="item.submissionStart" :end="item.submissionEnd"
+        /></template>
+        <template #cell-announcementAt="{ item }"
+          ><DateStamp :value="item.announcementAt" :with-time="false"
+        /></template>
+        <template #cell-regions="{ item }"
+          ><span v-if="item.regions">{{
+            t('cycles.list.regionCount', { count: item.regions.length }, item.regions.length)
+          }}</span></template
+        >
+        <template #cell-counts="{ item }"
+          ><span v-if="item.counts" class="cycle-table__counts">{{
+            t('cycles.list.counts', {
+              requests: item.counts.requests,
+              qualified: item.counts.qualified,
+            })
+          }}</span></template
+        >
         <template #cell-open="{ item }">
           <RouterLink
             class="cycle-table__link"

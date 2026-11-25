@@ -56,6 +56,39 @@ function rejection(status, code, meta = {}) {
 }
 
 describe('assessmentsService (self assessment contract)', () => {
+  it('keeps the cycle, period, level, certificate and payment of a list row', async () => {
+    const certificate = {
+      id: 'c-1',
+      number: 'CRT-2026-000001',
+      level: 'gold',
+      validUntil: '2027-12-31',
+    }
+    apiClient.get.mockResolvedValue({
+      data: {
+        data: [
+          {
+            ...assessmentWire,
+            awardCycle: { id: 3, name: { ar: 'دورة 2026', en: '2026 cycle' } },
+            periodLabel: { ar: 'النصف الثاني 2026', en: 'H2 2026' },
+            level: 'gold',
+            certificate,
+            payment: { status: 'paid', reference: 'PAY-2026-000012', channel: 'mada' },
+          },
+        ],
+        meta: {},
+        errors: null,
+      },
+    })
+    const { data } = await assessmentsService.list()
+    expect(data[0]).toMatchObject({
+      awardCycle: { id: 3, name: { en: '2026 cycle' } },
+      periodLabel: { en: 'H2 2026' },
+      level: 'gold',
+      certificate: { number: 'CRT-2026-000001', validUntil: '2027-12-31' },
+      payment: { status: 'paid', reference: 'PAY-2026-000012' },
+    })
+  })
+
   it('reads the published criteria and treats 404 as an expected answer', async () => {
     apiClient.get.mockResolvedValue({ data: envelope })
     await assessmentsService.getPublishedCriteria()
@@ -73,7 +106,14 @@ describe('assessmentsService (self assessment contract)', () => {
     const params = { 'filter[path]': 'self', 'filter[status]': 'draft', perPage: 1 }
     const { data, meta } = await assessmentsService.list(params)
     expect(apiClient.get).toHaveBeenCalledWith('/assessments', { params })
-    expect(data[0]).toEqual(assessmentWire)
+    expect(data[0]).toEqual({
+      ...assessmentWire,
+      awardCycle: null,
+      periodLabel: null,
+      level: null,
+      certificate: null,
+      payment: null,
+    })
     expect(meta.pagination.page).toBe(1)
     expect(logger.breadcrumb).toHaveBeenCalledWith(
       'service',

@@ -28,6 +28,7 @@ final class KpiCategoryResource extends JsonResource
             'icon' => $category->icon,
             'order' => $category->sort_order,
             'active' => $category->is_active,
+            'kpis_count' => $this->whenCounted('kpis'),
         ];
     }
 }

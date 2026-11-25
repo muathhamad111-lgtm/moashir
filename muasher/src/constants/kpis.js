@@ -1,3 +1,5 @@
+import { COLUMN_KINDS } from '@/utils/tableColumns'
+
 export const KPI_STATUSES = Object.freeze([
   { key: 'excellent', variant: 'success' },
   { key: 'good', variant: 'info' },
@@ -54,6 +56,22 @@ export const KPI_SLUG_PATTERN = /^[a-z0-9]+(-[a-z0-9]+)*$/
 export const KPI_CATALOG_KEY_PATTERN = /^[a-z0-9]+([_-][a-z0-9]+)*$/
 
 export const KPI_REORDER = Object.freeze({ UP: 'up', DOWN: 'down' })
+
+// The indicators table's optional detail columns, in display order (all start hidden).
+export const KPI_DETAIL_COLUMNS = Object.freeze([
+  { key: 'baseline', kind: COLUMN_KINDS.NUMBER },
+  { key: 'unit' },
+  { key: 'type' },
+  { key: 'measurementYear', kind: COLUMN_KINDS.NUMBER },
+  { key: 'valueUpdatedAt' },
+  { key: 'owner' },
+  { key: 'dataSource' },
+  { key: 'onHomepage', kind: COLUMN_KINDS.STATUS },
+  { key: 'publishedAt' },
+  { key: 'updatedBy' },
+  { key: 'updatedAt' },
+  { key: 'slug', kind: COLUMN_KINDS.CODE },
+])
 
 export const HOME_STATS_MAXIMUM = 4
 

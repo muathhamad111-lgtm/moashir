@@ -38,6 +38,15 @@ it('counts the in-scope staff against the current version and masks the IP addre
         ->and($row['accepted_roles'])->toBe(['assessor']);
 });
 
+it('leaves the staff e-mail out of the register rows', function (): void {
+    ['admin' => $admin, 'accepted' => $accepted] = ndaRegisterPeople();
+
+    $response = signIn($admin)->getJson('/api/v1/settings/nda/acceptances')->assertOk();
+
+    expect(collect($response->json('data'))->firstWhere('user.id', $accepted->id)['user'])->toHaveKeys(['id', 'name', 'roles'])->not->toHaveKey('email')
+        ->and((string) $response->getContent())->not->toContain($accepted->email);
+});
+
 it('filters the register by pending and accepted', function (string $filter, string $person): void {
     $people = ndaRegisterPeople();
 
@@ -80,6 +89,8 @@ it('lists a staff member agreement history on the staff page', function (): void
     signIn($admin)->getJson("/api/v1/users/{$accepted->id}/nda-acceptances")
         ->assertOk()
         ->assertJsonCount(1, 'data')
-        ->assertJsonPath('data.0.version', '1.0');
+        ->assertJsonPath('data.0.version', '1.0')
+        ->assertJsonPath('data.0.title.en', 'Non-disclosure agreement')
+        ->assertJsonPath('data.0.effective_from', now()->toDateString());
     switchTo(staffUser(RoleKey::FinanceOfficer))->getJson("/api/v1/users/{$accepted->id}/nda-acceptances")->assertForbidden();
 });

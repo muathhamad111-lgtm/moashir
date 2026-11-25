@@ -46,6 +46,23 @@ it('lists staff users with pagination meta and statistics', function (): void {
         ->assertJsonStructure(['data' => [['id', 'name', 'email', 'roles', 'status', 'mfa_enabled', 'last_login_at', 'created_at']]]);
 });
 
+it('leaves the phone, gender and national ID off the list and keeps them on the single-user record', function (): void {
+    $member = staffUser(RoleKey::Assessor);
+    $member->forceFill(['phone' => '+966500000000', 'gender' => 'female'])->save();
+    signIn(systemAdmin());
+
+    $row = collect($this->getJson('/api/v1/users')->assertOk()->json('data'))->firstWhere('id', $member->id);
+
+    expect($row)->toHaveKeys(['id', 'name', 'email', 'roles', 'status', 'nda_status'])
+        ->not->toHaveKey('phone')
+        ->not->toHaveKey('gender')
+        ->not->toHaveKey('national_id_masked');
+    $this->getJson("/api/v1/users/{$member->id}")->assertOk()
+        ->assertJsonPath('data.phone', '+966500000000')
+        ->assertJsonPath('data.gender', 'female')
+        ->assertJsonStructure(['data' => ['national_id_masked']]);
+});
+
 it('filters staff users by role, status and search', function (): void {
     signIn(systemAdmin());
     staffUser(RoleKey::FinanceOfficer)->forceFill(['name' => 'ماجد السبيعي'])->save();

@@ -30,11 +30,9 @@ final class ContactMessageResource extends JsonResource
             'inbox_status' => $message->inboxStatus()->value,
             'enquiry_type' => $message->enquiry_type->value,
             'sender' => [
-                'name' => $message->sender_name,
+                ...self::listedSender($message),
                 'email' => $message->sender_email,
                 'mobile' => $message->sender_mobile,
-                'organization' => $message->organization_name,
-                'locale' => $message->locale->value,
             ],
             'is_linked' => $message->isLinked(),
             'linked_user' => $this->userSummary($message->relationLoaded('sender') ? $message->sender : null),
@@ -54,6 +52,20 @@ final class ContactMessageResource extends JsonResource
         }
 
         return [...$card, 'entries' => array_values($message->entries->map(fn (ContactMessageEntry $entry): array => $this->entry($message, $entry))->all())];
+    }
+
+    /**
+     * The sender as the inbox list shows it: no e-mail or mobile (those stay on the message page).
+     *
+     * @return array{name: string, organization: string|null, locale: string}
+     */
+    public static function listedSender(ContactMessage $message): array
+    {
+        return [
+            'name' => $message->sender_name,
+            'organization' => $message->organization_name,
+            'locale' => $message->locale->value,
+        ];
     }
 
     /**

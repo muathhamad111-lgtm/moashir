@@ -6,7 +6,7 @@ const MOCK_IP = '10.0.12.•'
 function rowOf(user, current) {
   const accepted = current ? hasAcceptedNda(user.id, current.id) : false
   return {
-    user: { id: user.id, name: user.name, email: user.email, roles: [...user.roles] },
+    user: { id: user.id, name: user.name, roles: [...user.roles] },
     status: accepted ? 'accepted' : 'pending',
     lastAcceptedVersion: accepted ? current.version : null,
     acceptedAt: accepted ? current.publishedAt : null,

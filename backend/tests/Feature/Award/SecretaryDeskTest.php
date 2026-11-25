@@ -80,6 +80,18 @@ it('lists the committee requests with the initial result, every evaluation and t
     switchTo(ownerOf($assessment->entity))->getJson(secretaryPath($cycle))->assertForbidden();
 });
 
+it('dates each desk row by the review clock of its request', function (): void {
+    $scenario = submittedCommitteeScenario();
+    $assessment = $scenario['requests'][0];
+    $assessment->forceFill(['due_at' => Date::parse('2026-10-25 08:00:00')])->saveQuietly();
+
+    switchTo($scenario['secretary'])->getJson(secretaryPath($scenario['cycle']))->assertOk()
+        ->assertJsonPath('data.0.id', $assessment->id)
+        ->assertJsonPath('data.0.due_at', '2026-10-25T08:00:00+00:00')
+        ->assertJsonPath('data.0.is_overdue', false)
+        ->assertJsonPath('data.0.submitted_at', $assessment->submitted_at?->toIso8601String());
+});
+
 it('recomputes the committee average idempotently', function (): void {
     $scenario = submittedCommitteeScenario();
     $assessment = $scenario['requests'][0];

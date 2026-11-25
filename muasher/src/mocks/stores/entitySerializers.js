@@ -160,6 +160,8 @@ const VARIANTS = {
     ...entitySummary(entity),
     ...entityLevelFields(entity),
     ...entityContact(entity),
+    region: place(findRegion(entity.regionId)),
+    createdAt: entity.createdAt,
   }),
   [ENTITY_ACCESS.NONE]: (entity) => ({
     ...entitySummary(entity),

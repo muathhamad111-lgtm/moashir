@@ -1,4 +1,5 @@
 import { SORT_DIRECTIONS } from '@/utils/listSort'
+import { COLUMN_KINDS } from '@/utils/tableColumns'
 
 // The operations table's columns, in order.
 export function transactionColumns(t) {
@@ -25,6 +26,22 @@ export function transactionColumns(t) {
     },
     { key: 'receipt', label: t('finance.transactions.columns.receipt') },
     { key: 'beforeVat', label: t('finance.pricing.beforeVatShort') },
+    { key: 'type', label: t('finance.transactions.columns.type'), kind: COLUMN_KINDS.STATUS },
+    { key: 'awardCycle', label: t('finance.transactions.columns.awardCycle') },
+    { key: 'paidAt', label: t('finance.transactions.columns.paidAt') },
+    {
+      key: 'vatAmount',
+      label: t('finance.transactions.columns.vatAmount'),
+      kind: COLUMN_KINDS.NUMBER,
+    },
+    { key: 'vatRate', label: t('finance.transactions.columns.vatRate'), kind: COLUMN_KINDS.NUMBER },
+    {
+      key: 'refundAmount',
+      label: t('finance.transactions.columns.refundAmount'),
+      kind: COLUMN_KINDS.NUMBER,
+    },
+    { key: 'refundedAt', label: t('finance.transactions.columns.refundedAt') },
+    { key: 'updatedAt', label: t('finance.transactions.columns.updatedAt') },
     { key: 'actions', label: t('components.actions.label') },
   ]
 }

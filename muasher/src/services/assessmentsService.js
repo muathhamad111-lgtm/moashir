@@ -5,6 +5,7 @@ import { serviceRequest } from './serviceRequest'
 import { toAdvancedResult } from './mappers/committee'
 import {
   toAssessment,
+  toAssessmentListRow,
   toAssessmentForm,
   toAssessmentRecord,
   toAssessmentResult,
@@ -32,7 +33,7 @@ export const assessmentsService = {
 
   list(params = {}) {
     const request = read('list', () => apiClient.get('/assessments', { params }), params)
-    return mapData(request, (items) => (items ?? []).map(toAssessment))
+    return mapData(request, (items) => (items ?? []).map(toAssessmentListRow))
   },
 
   get(assessmentId) {

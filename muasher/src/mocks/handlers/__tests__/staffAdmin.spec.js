@@ -75,6 +75,11 @@ describe('contact inbox mock', () => {
     const waiting = await call('GET', '/admin/contact-messages?filter[inboxStatus]=awaiting-reply')
     expect(waiting.body.data.map((row) => row.reference)).toEqual(['CNT-2026-000051'])
     expect(all.body.data[0].excerpt).toContain('زر رفع الشواهد')
+    expect(
+      all.body.data.every((row) => !('email' in row.sender) && !('mobile' in row.sender)),
+    ).toBe(true)
+    const detail = await call('GET', `/admin/contact-messages/${all.body.data[0].id}`)
+    expect(detail.body.data.sender).toHaveProperty('email')
     const linked = await call('GET', '/admin/contact-messages?filter[linked]=true')
     expect(linked.body.data.map((row) => row.reference)).toEqual(['CNT-2026-000052'])
     const assignees = await call('GET', '/admin/contact-messages/assignees')

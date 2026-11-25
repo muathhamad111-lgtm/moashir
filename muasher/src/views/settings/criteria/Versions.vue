@@ -9,6 +9,7 @@ import { useCriteriaVersionHistory } from '@/composables/useCriteriaVersionHisto
 import { useCriteriaVersionText } from '@/composables/useCriteriaVersionText'
 import { ROUTE_NAMES } from '@/constants/routeNames'
 import { CRITERIA_VERSION_STATUSES as STATUS } from '@/constants/criteria'
+import { COLUMN_KINDS } from '@/utils/tableColumns'
 
 // The versions tab (UX-A3, CR-8): every version with when, how and by whom it was published.
 const { t } = useI18n()
@@ -16,12 +17,25 @@ const history = useCriteriaVersionHistory()
 const { versionName, dateOf } = useCriteriaVersionText()
 
 const STATUS_VARIANTS = { [STATUS.DRAFT]: 'warning', [STATUS.PUBLISHED]: 'success' }
+// The optional counts: the column key and where its number sits on the row.
+const COUNTS = {
+  linked: (row) => row.version.boundAssessments,
+  linkedOpen: (row) => row.version.boundOpenAssessments,
+  changes: (row) => row.publication?.changeCount,
+  scoreAffecting: (row) => row.publication?.scoreAffectingCount,
+}
+const VERSION_DATES = ['archivedAt', 'createdAt', 'updatedAt']
+const label = (key) => t(`criteria.versions.columns.${key}`)
 
 const columns = computed(() => [
   { key: 'version', label: t('criteria.versions.columns.version') },
   { key: 'published', label: t('criteria.versions.columns.published'), date: true },
   { key: 'scope', label: t('criteria.versions.columns.scope') },
   { key: 'affected', label: t('criteria.versions.columns.affected') },
+  ...Object.keys(COUNTS).map((key) => ({ key, label: label(key), kind: COLUMN_KINDS.NUMBER })),
+  { key: 'scaleKind', label: label('scaleKind'), kind: COLUMN_KINDS.STATUS },
+  { key: 'consistent', label: label('consistent'), kind: COLUMN_KINDS.STATUS },
+  ...VERSION_DATES.map((key) => ({ key, label: label(key) })),
   { key: 'actions', label: t('criteria.versions.columns.actions') },
 ])
 
@@ -103,6 +117,22 @@ onMounted(history.load)
         </template>
         <template v-else>—</template>
       </template>
+      <template v-for="(countOf, key) in COUNTS" :key="key" #[`cell-${key}`]="{ item }">{{
+        countOf(item) ?? ''
+      }}</template>
+      <template #cell-scaleKind="{ item }">{{
+        item.version.scaleKind ? t(`assessment.self.scaleNames.${item.version.scaleKind}`) : ''
+      }}</template>
+      <template #cell-consistent="{ item }"
+        ><Badge
+          v-if="typeof item.version.consistent === 'boolean'"
+          :variant="item.version.consistent ? 'success' : 'warning'"
+          >{{ item.version.consistent ? t('common.yes') : t('common.no') }}</Badge
+        ></template
+      >
+      <template v-for="key in VERSION_DATES" :key="key" #[`cell-${key}`]="{ item }">{{
+        item.version[key] ? dateOf(item.version[key]) : ''
+      }}</template>
       <template #cell-actions="{ item }">
         <div class="criteria-versions__actions">
           <BaseButton v-if="item.hasChanges" variant="secondary" size="sm" :to="changesLink(item)">

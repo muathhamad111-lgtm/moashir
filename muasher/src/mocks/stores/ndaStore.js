@@ -73,10 +73,13 @@ export function acceptancesOf(userId, versions) {
           ]
         : [],
     )
-    .map((item) => ({
+    .map((item) => ({ item, terms: versions.find((version) => version.id === item.versionId) }))
+    .map(({ item, terms }) => ({
       id: `${item.userId}-${item.versionId}`,
       termsVersionId: item.versionId,
-      version: versions.find((version) => version.id === item.versionId)?.version ?? '',
+      version: terms?.version ?? '',
+      title: terms?.title ? { ...terms.title } : null,
+      effectiveFrom: terms?.effectiveFrom ?? null,
       acceptedAt: item.acceptedAt,
       acceptedRoles: item.roles,
       ipMasked: MOCK_IP,

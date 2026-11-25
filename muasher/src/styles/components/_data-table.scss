@@ -2,9 +2,9 @@
 
 // Every list shows its data in full: identifiers, names, statuses, dates and amounts never end in an
 // ellipsis. Each column takes its content's width; when the shown columns are wider than the card,
-// the table scrolls sideways inside it, with the first column (what the row is) and the actions
-// held in place and a soft shadow on the side that has more. Only free text (a message, a note) is
-// clamped to two lines, with the full text on hover. The viewer picks the columns (ColumnChooser).
+// the table scrolls sideways inside it, with only the first column (what the row is) held in place;
+// the actions scroll with their row. A soft shadow marks each side that has more. Only free text (a message, a note) is
+// clamped to two lines, with the full text on hover. The viewer picks and orders the columns (ColumnManager).
 $table-note-max: 24rem;
 $table-sticky-below: 30rem;
 $table-edge-shadow-offset: 0.5rem;
@@ -20,8 +20,6 @@ $table-edge-shadow-offset: 0.5rem;
   --table-edge-shade: color-mix(in srgb, var(--theme-heading) 16%, transparent);
   --table-edge-shadow-start: #{$table-edge-shadow-offset} 0 #{$table-edge-shadow-offset}
     calc(#{$table-edge-shadow-offset} * -1) var(--table-edge-shade);
-  --table-edge-shadow-end: calc(#{$table-edge-shadow-offset} * -1) 0 #{$table-edge-shadow-offset}
-    calc(#{$table-edge-shadow-offset} * -1) var(--table-edge-shade);
 
   &:focus-visible {
     @include focus-ring;
@@ -31,8 +29,6 @@ $table-edge-shadow-offset: 0.5rem;
 // The shadows fall toward the scrolled content: rightwards from the start in English, leftwards in Arabic.
 .table-wrap:dir(rtl) {
   --table-edge-shadow-start: calc(#{$table-edge-shadow-offset} * -1) 0 #{$table-edge-shadow-offset}
-    calc(#{$table-edge-shadow-offset} * -1) var(--table-edge-shade);
-  --table-edge-shadow-end: #{$table-edge-shadow-offset} 0 #{$table-edge-shadow-offset}
     calc(#{$table-edge-shadow-offset} * -1) var(--table-edge-shade);
 }
 
@@ -109,42 +105,53 @@ $table-edge-shadow-offset: 0.5rem;
   white-space: nowrap;
 }
 
-// The first column and the actions stay in view while the rest scrolls; each carries the row's
-// background so the scrolled cells pass under it.
-.table {
-  .table__cell:first-child,
-  .table__cell--actions {
-    position: sticky;
-    z-index: 1;
-    background-color: var(--theme-surface);
-    transition: box-shadow var(--t-fast) var(--ease);
-  }
+// The first column stays in view while the rest, actions included, scrolls under it; it carries the
+// row's background so the scrolled cells pass beneath.
+.table .table__cell:first-child {
+  position: sticky;
+  inset-inline-start: 0;
+  z-index: 1;
+  background-color: var(--theme-surface);
+  transition: box-shadow var(--t-fast) var(--ease);
+}
 
-  .table__cell:first-child {
-    inset-inline-start: 0;
-  }
-
-  .table__cell--actions {
-    inset-inline-end: 0;
-  }
-
-  .table__head .table__cell:first-child,
-  .table__head .table__cell--actions,
-  .table__row:hover .table__cell:first-child,
-  .table__row:hover .table__cell--actions {
-    background-color: var(--theme-surface-raised);
-  }
+.table .table__head .table__cell:first-child,
+.table .table__row:hover .table__cell:first-child {
+  background-color: var(--theme-surface-raised);
 }
 
 .table-wrap.has-more-start .table__cell:first-child {
   box-shadow: var(--table-edge-shadow-start);
 }
 
-.table-wrap.has-more-end .table__cell--actions {
-  box-shadow: var(--table-edge-shadow-end);
+// The table's frame holds the shade at the end edge, which no pinned cell carries any more.
+.table-frame {
+  position: relative;
 }
 
-// A list narrower than a phone column keeps only the actions in place.
+.table-frame__edge {
+  position: absolute;
+  inset-block: var(--border-width);
+  inset-inline-end: var(--border-width);
+  inline-size: var(--space-6);
+  border-start-end-radius: var(--radius-lg);
+  border-end-end-radius: var(--radius-lg);
+  background-image: linear-gradient(to left, var(--table-edge-shade), transparent);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity var(--t-fast) var(--ease);
+  --table-edge-shade: color-mix(in srgb, var(--theme-heading) 12%, transparent);
+
+  &:dir(rtl) {
+    background-image: linear-gradient(to right, var(--table-edge-shade), transparent);
+  }
+
+  &.is-visible {
+    opacity: 1;
+  }
+}
+
+// A list narrower than a phone column pins nothing.
 @container data-table (max-width: #{$table-sticky-below}) {
   .table .table__cell:first-child {
     position: static;

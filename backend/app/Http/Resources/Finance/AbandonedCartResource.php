@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Http\Resources\Finance;
 
 use App\Models\Finance\CheckoutIntent;
+use App\Support\Entities\EntityPresenter;
 use App\Support\ValueObjects\EmailAddress;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
@@ -26,6 +27,7 @@ final class AbandonedCartResource extends JsonResource
         return [
             'id' => $intent->id,
             'entity' => ['id' => $entity->id, 'reference' => $entity->reference(), 'name' => $entity->name->toArray()],
+            'region' => EntityPresenter::place($entity->region),
             'email' => $email === null ? null : new EmailAddress($email)->masked(),
             'marketing_consent' => $entity->marketing_consent_at !== null && $entity->marketing_unsubscribed_at === null,
             'purpose' => $intent->purpose->value,
