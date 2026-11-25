@@ -32,9 +32,9 @@ beforeEach(() => {
   dashboardService.getActionCenter.mockResolvedValue({ data: [], generatedAt: null })
 })
 
-function factory({ roles = [], locale = 'ar', extra = {} } = {}) {
+function factory({ roles = [], locale = 'ar', extra = {}, props = {} } = {}) {
   const globals = createTestGlobals({ locale })
-  const wrapper = mount(Sidebar, { global: globals })
+  const wrapper = mount(Sidebar, { global: globals, props })
   const auth = useAuthStore(globals.pinia)
   auth.setUser(sessionUserFor(roles, extra))
   return { wrapper, globals }
@@ -240,6 +240,22 @@ describe('Sidebar', () => {
     expect(wrapper.classes()).toContain('sidebar--collapsed')
     expect(wrapper.find('.sidebar__item').attributes('aria-label')).toBeTruthy()
     expect(wrapper.find('.identity-card').classes()).toContain('identity-card--collapsed')
+  })
+
+  it('drops the platform card in the phone drawer, never collapses there and shows every group open', async () => {
+    const { wrapper, globals } = factory({
+      roles: [ROLES.SYSTEM_ADMIN],
+      props: { variant: 'drawer' },
+    })
+    useUiStore(globals.pinia).toggleSidebar()
+    await flushPromises()
+    expect(wrapper.classes()).toContain('sidebar--drawer')
+    expect(wrapper.classes()).not.toContain('sidebar--collapsed')
+    expect(wrapper.find('.identity-card').exists()).toBe(false)
+    expect(wrapper.find('[data-testid="sidebar-preview-platform"]').exists()).toBe(false)
+    expect(wrapper.find('#nav-drawer-group-award').exists()).toBe(true)
+    expect(wrapper.find('#sidebar-group-award').exists()).toBe(false)
+    expect(wrapper.findAll('.sidebar__menu--closed')).toHaveLength(0)
   })
 
   it('is a nav landmark with an accessible label', () => {

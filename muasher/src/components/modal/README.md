@@ -11,3 +11,10 @@ Shared dialog family (`references/06-architecture.md`, Task-76). Styling lives i
 | `FormModal`                     | Form dialog: title + subtitle (the object), fields, action first then Cancel. Prop `submitVariant` (`primary` / `danger`).                                                                                                                                                                                                         |
 | `ReasonDialog`                  | FormModal with one reason field. Props `title` (the action), `subtitle` (the object), `submitLabel`, `destructive`, `optional`, `minLength`, `reasonLabel`, `reasonHint`, `action`, `actionName`.                                                                                                                                  |
 | `SuccessModal` + `useSuccess()` | Global success dialog in `App.vue`. `success.show({ title, message })` after major state changes only; closes on OK, Esc, ×, or by itself after `SUCCESS_AUTO_CLOSE_MS` unless the user points at it or uses the keyboard. Toasts stay for minor saves.                                                                            |
+
+**Layouts (`BaseModal` `layout`).** `dialog` (centred, default); `drawer` (a side panel at the inline end:
+the filter panel from md up); `drawer-start` (a side panel at the inline start: the phone navigation
+drawer, `layout/PhoneNavDrawer.vue`); `sheet` (a bottom sheet for phones: full width, rounded top, a drag
+handle that closes it when pulled down past `SHEET_DISMISS_DISTANCE` (`composables/useSheetDrag.js`), the
+body scrolling between a fixed header and footer, room for the home indicator). Every layout keeps the
+focus trap, Esc, the × button and the backdrop.

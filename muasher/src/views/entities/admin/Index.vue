@@ -7,6 +7,7 @@ import DataListCard from '@/components/data-list/DataListCard.vue'
 import StatsCards from '@/components/data-list/StatsCards.vue'
 import Pagination from '@/components/data-list/Pagination.vue'
 import BaseButton from '@/components/ui/BaseButton.vue'
+import PageActions from '@/components/ui/PageActions.vue'
 import EntityListFilters from '@/components/entities/admin/EntityListFilters.vue'
 import EntityTable from '@/components/entities/admin/EntityTable.vue'
 import EntityActionsHost from '@/components/entities/admin/EntityActionsHost.vue'
@@ -78,7 +79,7 @@ onMounted(regions.load)
   <section class="entities-admin">
     <header class="entities-admin__header">
       <h1 class="entities-admin__title">{{ t('entities.admin.title') }}</h1>
-      <div class="entities-admin__links">
+      <PageActions class="entities-admin__links">
         <BaseButton
           v-if="canOpen(ROUTE_NAMES.ADMIN_ENTITY_PROFILE_CHANGES)"
           variant="secondary"
@@ -103,7 +104,7 @@ onMounted(regions.load)
         >
           {{ t('nav.deletedEntities') }}
         </BaseButton>
-      </div>
+      </PageActions>
     </header>
 
     <StatsCards :stats="statCards" :loading="status === 'loading' && !stats" />

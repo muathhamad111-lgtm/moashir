@@ -13,6 +13,11 @@
     --tts-page-gutter: #{$tts-page-gutter};
     --tts-page-top: #{$tts-page-top};
   }
+
+  // Phones: the bottom tab bar replaces the sidebar, so the page ends above it.
+  @include respond-below('md') {
+    padding-block-end: calc(var(--app-tab-bar-offset) + var(--space-4));
+  }
 }
 
 .app-layout__body {
@@ -26,6 +31,13 @@
 
   @include respond-to('lg') {
     gap: #{$tts-body-gap-lg};
+  }
+}
+
+// Phones navigate with the tab bar and «المزيد»; the sidebar (kept mounted for its counts) hides.
+.app-layout__body > .sidebar {
+  @include respond-below('md') {
+    display: none;
   }
 }
 

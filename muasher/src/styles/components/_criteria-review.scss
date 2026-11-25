@@ -29,7 +29,7 @@
 .criteria-review-page__bar {
   @include flex(row, center, space-between, var(--space-3));
   position: sticky;
-  inset-block-end: var(--space-4);
+  inset-block-end: calc(var(--space-4) + var(--app-tab-bar-offset));
   z-index: var(--z-sticky);
   padding: var(--space-3);
   border: var(--border-width) solid var(--theme-border);

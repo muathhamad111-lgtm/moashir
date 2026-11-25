@@ -2,25 +2,22 @@
 @use '../tokens' as *;
 
 .sidebar {
+  // The full menu at every width: below md it shows only inside the phone navigation drawer
+  // (AppNavDrawer); the layout hides the in-page sidebar there. Collapsing is a md-up choice.
   @include flex(column, stretch, flex-start, var(--space-2));
   position: sticky;
   inset-block-start: var(--tts-sidebar-offset);
   align-self: flex-start;
   max-block-size: calc(100dvh - var(--tts-sidebar-offset) - var(--tts-page-top));
-  inline-size: var(--size-sidebar-collapsed);
+  inline-size: var(--tts-sidebar-width);
   flex-shrink: 0;
-  padding: var(--space-3) var(--space-2);
+  padding: var(--space-5) var(--space-4);
   border: var(--border-width) solid var(--sidebar-border);
   border-radius: var(--sidebar-radius, var(--card-radius));
   background-color: var(--sidebar-bg);
   color: var(--sidebar-text);
   transition: inline-size var(--t-base) var(--ease);
   @include sidebar-rail;
-
-  @include respond-to('md') {
-    inline-size: var(--tts-sidebar-width);
-    padding: var(--space-5) var(--space-4);
-  }
 }
 
 .sidebar__scroll {
@@ -47,7 +44,7 @@
 }
 
 .sidebar__caption {
-  display: none;
+  @include flex(row, center, space-between, var(--space-2));
   inline-size: 100%;
   min-block-size: var(--space-8);
   margin: 0;
@@ -62,10 +59,6 @@
   color: var(--sidebar-caption);
   text-align: start;
   cursor: pointer;
-
-  @include respond-to('md') {
-    @include flex(row, center, space-between, var(--space-2));
-  }
 
   &:hover {
     color: var(--sidebar-hover-text);
@@ -108,13 +101,11 @@
 }
 
 .sidebar__menu--closed {
-  @include respond-to('md') {
-    display: none;
-  }
+  display: none;
 }
 
 .sidebar__item {
-  @include flex(row, center, center, var(--space-3));
+  @include flex(row, center, flex-start, var(--space-3));
   min-block-size: var(--size-touch-target);
   padding-block: var(--space-2);
   padding-inline: var(--space-3);
@@ -126,10 +117,6 @@
   transition:
     background-color var(--t-fast) var(--ease),
     color var(--t-fast) var(--ease);
-
-  @include respond-to('md') {
-    justify-content: flex-start;
-  }
 
   &:hover {
     background-color: var(--sidebar-hover-bg);
@@ -163,16 +150,12 @@
 }
 
 .sidebar__label {
-  display: none;
-
-  @include respond-to('md') {
-    display: block;
-    @include truncate;
-  }
+  display: block;
+  @include truncate;
 }
 
 .sidebar__count {
-  display: none;
+  display: inline-block;
   margin-inline-start: auto;
   min-inline-size: var(--space-6);
   padding-block: var(--space-0);
@@ -183,10 +166,6 @@
   font-size: var(--fs-xs);
   font-weight: var(--fw-figure);
   text-align: center;
-
-  @include respond-to('md') {
-    display: inline-block;
-  }
 
   .is-active > & {
     background-color: var(--sidebar-active-text);

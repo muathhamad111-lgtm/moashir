@@ -1,4 +1,5 @@
 @use '../mixins' as *;
+@use '../tokens' as *;
 
 .mobile-tab-bar {
   position: fixed;
@@ -52,4 +53,57 @@
     background-color: var(--nav-active);
     color: var(--data-on-band);
   }
+}
+
+// The bar's height above the safe area, so the offset grows with a real home-indicator inset.
+$tab-bar-offset: calc(
+  var(--size-mobile-tab-bar) - #{$size-safe-area-bottom} + var(--size-safe-area-bottom)
+);
+
+// Floating and sticky bottom layers (the update banner, sticky step bars) read this to clear the
+// bar: the back office shows it below md, the portal below lg (its task screens render no bar).
+@include respond-below('md') {
+  :root:has(.mobile-tab-bar--app) {
+    --app-tab-bar-offset: #{$tab-bar-offset};
+  }
+}
+
+@include respond-below('lg') {
+  :root:has(.mobile-tab-bar:not(.mobile-tab-bar--app)) {
+    --app-tab-bar-offset: #{$tab-bar-offset};
+  }
+}
+
+// The back office's phone tab bar (AppTabBar, rendered below md): the portal bar's look.
+.mobile-tab-bar--app {
+  padding-inline: max(var(--space-2), env(safe-area-inset-left, 0px))
+    max(var(--space-2), env(safe-area-inset-right, 0px));
+
+  .mobile-tab-bar__pill {
+    position: relative;
+  }
+
+  .mobile-tab-bar__label {
+    @include truncate;
+    max-inline-size: 100%;
+  }
+}
+
+.mobile-tab-bar__count {
+  position: absolute;
+  inset-block-start: calc(var(--space-1) * -1);
+  inset-inline-end: calc(var(--space-1) * -1);
+  min-inline-size: var(--space-5);
+  padding-inline: var(--space-1);
+  border-radius: var(--radius-pill);
+  background-color: var(--color-danger);
+  color: var(--color-white);
+  font-size: var(--fs-xs);
+  font-weight: var(--fw-figure);
+  line-height: var(--space-5);
+  text-align: center;
+}
+
+.mobile-tab-bar__sr {
+  @include visually-hidden;
 }

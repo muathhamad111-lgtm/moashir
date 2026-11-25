@@ -141,7 +141,27 @@
     "auditLog": "Audit log",
     "finance": "Finance",
     "pendingCount": "{count} awaiting action",
-    "entityProfileChanges": "Profile change requests"
+    "entityProfileChanges": "Profile change requests",
+    "tabs": {
+      "home": "Home",
+      "entities": "Entities",
+      "finance": "Finance",
+      "requests": "Requests",
+      "assigned": "Assigned",
+      "filtering": "Filtering",
+      "secretary": "Desk",
+      "committee": "Committee",
+      "results": "Results",
+      "kit": "Kit",
+      "users": "Users",
+      "inbox": "Inbox",
+      "cycles": "Cycles",
+      "discussions": "Discussions",
+      "roster": "Roster",
+      "more": "More",
+      "settings": "Settings"
+    },
+    "superAdminRole": "Super Admin"
   },
   "footer": {
     "copyright": "All rights reserved © {year} — Moashir platform",
@@ -5258,6 +5278,19 @@
       "message": "A new version of the platform is available.",
       "reload": "Reload the page",
       "later": "Later"
+    },
+    "tabBarLabel": "Main navigation (phone)",
+    "back": "Back",
+    "more": {
+      "title": "Your menu",
+      "groups": {
+        "overview": "Pages",
+        "administration": "Administration"
+      }
+    },
+    "navDrawer": {
+      "open": "Open the menu",
+      "title": "Menu"
     }
   },
   "account": {
@@ -10799,5 +10832,9 @@
       "named": "{name} will be asked to accept the non-disclosure agreement at their next sign-in.",
       "invite": "The user will be asked to accept the non-disclosure agreement when accepting the invitation."
     }
+  },
+  "pageActions": {
+    "button": "Actions",
+    "title": "Page actions"
   }
 }

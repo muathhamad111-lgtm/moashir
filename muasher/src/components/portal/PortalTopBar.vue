@@ -12,6 +12,9 @@ import LocaleSwitcher from '@/components/ui/LocaleSwitcher.vue'
 import AppIcon from '@/components/ui/AppIcon.vue'
 import PortalBell from './PortalBell.vue'
 import AccountMenu from './AccountMenu.vue'
+import PortalSideNav from './PortalSideNav.vue'
+import PhoneNavDrawer from '@/components/layout/PhoneNavDrawer.vue'
+import { useCompactViewport } from '@/composables/useCompactViewport'
 
 const { t, locale } = useI18n()
 const route = useRoute()
@@ -21,6 +24,8 @@ const props = defineProps({
 
 const emit = defineEmits(['toggle-nav'])
 const { topBarLogo } = useBackOfficeLogo()
+// Phones: every portal section in a drawer opened from the bar's start (the side nav shows from lg).
+const isPhone = useCompactViewport()
 const toggleLabel = computed(() =>
   props.navCollapsed ? t('portal.sideNav.expand') : t('portal.sideNav.collapse'),
 )
@@ -34,6 +39,9 @@ const updatedText = computed(() =>
 <template>
   <header class="portal-top-bar">
     <div class="portal-top-bar__inner">
+      <PhoneNavDrawer v-if="isPhone">
+        <PortalSideNav variant="drawer" />
+      </PhoneNavDrawer>
       <router-link class="portal-top-bar__brand" :to="{ name: ROUTE_NAMES.APP_DASHBOARD }">
         <img class="portal-top-bar__logo" :src="topBarLogo" :alt="t('portal.brandHome')" />
       </router-link>

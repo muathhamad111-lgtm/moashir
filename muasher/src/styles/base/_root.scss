@@ -281,7 +281,12 @@
   --size-progress-bar: #{$size-progress-bar};
   --size-unread-dot: #{$size-unread-dot};
   --size-tab-indicator: #{$size-tab-indicator};
-  --size-safe-area-bottom: #{$size-safe-area-bottom};
+  // The home-indicator inset where the device reports one (viewport-fit=cover), never less than
+  // the old fixed allowance.
+  --size-safe-area-bottom: max(#{$size-safe-area-bottom}, env(safe-area-inset-bottom, 0px));
+  // How far a phone's bottom tab bar reaches up: floating and sticky bottom layers add it so they
+  // clear the bar. 0 wherever no tab bar shows (set in _mobile-tab-bar.scss).
+  --app-tab-bar-offset: 0px;
   --size-glance-seal: #{$size-glance-seal};
   --size-glance-seal-sm: #{$size-glance-seal-sm};
   --size-portal-aside: #{$size-portal-aside};

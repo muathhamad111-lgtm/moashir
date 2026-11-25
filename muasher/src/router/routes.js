@@ -3,6 +3,7 @@ import { PORTAL_TOOLS } from '@/constants/portal'
 import { accreditedEntryGuard } from './accreditedEntry'
 import { awardEntryGuard } from './awardEntry'
 import { accountProfileEntryGuard } from './accountProfileEntry'
+import { appMenuEntryGuard } from './appMenuEntry'
 import { excellenceToolsSettingsGuard } from './excellenceToolsSettings'
 import { withComingSoonScreens } from './comingSoon'
 
@@ -119,6 +120,14 @@ export const appRoutes = [
       titleKey: 'routes.app.dashboard.title',
       requiresAuth: true,
     },
+  },
+  // «المزيد» of the back office on phones: every destination the bottom tab bar does not hold.
+  {
+    path: '/menu',
+    name: ROUTE_NAMES.APP_MORE,
+    component: () => import('@/views/app/AppMore.vue'),
+    beforeEnter: appMenuEntryGuard,
+    meta: { layout: 'app', titleKey: 'shell.more.title', requiresAuth: true },
   },
   // The executive dashboard is the overview at the top of /dashboard now; old links still land.
   { path: '/dashboard/executive', redirect: { name: ROUTE_NAMES.APP_DASHBOARD } },

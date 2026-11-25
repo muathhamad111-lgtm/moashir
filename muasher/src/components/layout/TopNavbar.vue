@@ -6,6 +6,7 @@ import { useAuthStore } from '@/stores/auth'
 import { useUiStore } from '@/stores/ui'
 import { usePermissions } from '@/composables/usePermissions'
 import { useElementWidth } from '@/composables/useElementWidth'
+import { useCompactViewport } from '@/composables/useCompactViewport'
 import { useNavbarUserMenu } from '@/composables/useNavbarUserMenu'
 import { ROUTE_NAMES } from '@/constants/routeNames'
 import { NAVBAR_TOOLS_INLINE_MIN_WIDTH } from '@/constants/navigation'
@@ -17,12 +18,15 @@ import Badge from '@/components/ui/Badge.vue'
 import GlobalSearch from '@/components/search/GlobalSearch.vue'
 import AppIcon from '@/components/ui/AppIcon.vue'
 import AccountAvatar from '@/components/account/AccountAvatar.vue'
+import AppTopBarPhone from './AppTopBarPhone.vue'
 
 const { t, locale } = useI18n()
 const auth = useAuthStore()
 const ui = useUiStore()
 const { sidebarCollapsed } = storeToRefs(ui)
 const { can } = usePermissions()
+// Phones (below md) have no sidebar: the bar starts with the logo, or back and the screen title.
+const isPhone = useCompactViewport()
 
 const canSearch = computed(() => canUseGlobalSearch(can))
 const navbarWidth = useElementWidth(useTemplateRef('navbar'), Number.POSITIVE_INFINITY)
@@ -46,7 +50,9 @@ const roleLabels = computed(() => auth.roles.map((role) => t(`users.roleLabels.$
 <template>
   <header ref="navbar" class="navbar navbar--app">
     <div class="navbar__start">
+      <AppTopBarPhone v-if="isPhone" />
       <button
+        v-else
         type="button"
         class="btn btn--ghost btn--icon navbar__toggle"
         :aria-label="t('nav.toggleSidebar')"

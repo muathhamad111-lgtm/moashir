@@ -137,3 +137,13 @@
   color: var(--theme-text);
   font-size: var(--fs-sm);
 }
+
+// The back office's «المزيد» (views/app/AppMore.vue) shares this screen's look.
+.app-more__roles {
+  @include flex(row, center, flex-start, var(--space-1));
+  flex-wrap: wrap;
+}
+
+.app-more__hint {
+  @include visually-hidden;
+}

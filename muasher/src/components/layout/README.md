@@ -16,9 +16,28 @@ route keeps its path for both audiences:
   `App.vue` forces `data-theme="light"` (the back office has no dark mode), sets `data-shell="tts"` and injects the
   saved brand scheme as `--brand-*` custom properties (`composables/useBrandSchemeStyle.js`) through a
   constructable stylesheet (`composables/useAdoptedStyleSheet.js`), since the production CSP refuses inline `<style>`.
+- Phones (below `md`, 768 px): the back office behaves as an app. `AppTabBar` (the portal tab bar's look,
+  `.mobile-tab-bar--app`) shows the dashboard, up to three destinations from the role's
+  `ROLE_TAB_PRIORITY` list in `constants/navigation.js` (only items the account may open, through the
+  sidebar's own `filterNavByAccess`; Settings is a candidate too) and «المزيد», which opens `/menu`
+  (`views/app/AppMore.vue`: the remaining destinations grouped as in the sidebar, the account entries,
+  the language switch, the platform preview and sign out). Entity-only accounts keep the portal's
+  `/more`; `/menu` sends them there. A tab stays lit on the screens below its path. The `Sidebar` stays
+  mounted (its pending counts feed the tabs) but is hidden, and `TopNavbar` swaps its toggle for
+  `AppTopBarPhone`: the logo on a tab's own screen, else a back button (the in-app previous screen, or
+  the owning tab after a deep link; it never leaves the platform) and the screen title (visual only;
+  the page's `h1` names it). Bottom layers (the update banner, sticky step bars) add
+  `--app-tab-bar-offset`, which the tab bar sets while it shows (`_mobile-tab-bar.scss`).
+- Phones also get `PhoneNavDrawer` at the start of the top bar (staff: `AppTopBarPhone`; portal:
+  `PortalTopBar`): a menu button that opens a start-side drawer (`BaseModal layout="drawer-start"`)
+  holding the shell's own side menu (`<Sidebar variant="drawer">`, or `<PortalSideNav variant="drawer">`: no
+  logo or preview card, never collapsed, every group open, the panel in the menu's gradient), so its
+  sections and access are exactly the desktop ones; it closes on Esc, the backdrop, × and navigation.
+  Page header actions use `ui/PageActions.vue`: a row from md up, one «الإجراءات» button and a
+  bottom sheet on a phone when there are two or more (a single action stays a button).
 - `Sidebar` — white panel, items from `src/constants/navigation.js` filtered by role and grouped by module
   (`NAV_GROUPS`), one caption per group, dividers between groups. The active item (route name or a child route name)
-  gets `aria-current="page"` and the primary brand fill. Icons-only rail below `md`; collapsible from `md` up through
+  gets `aria-current="page"` and the primary brand fill. Hidden below `md` (the phone tab bar takes over); collapsible from `md` up through
   the ui store. It opens with `SidebarIdentityCard`.
 - `SidebarIdentityCard` — the platform card at the top of `Sidebar` and of the portal `PortalSideNav` (TTS model):
   the site logo (made for a light background) linking to the dashboard, then «معاينة المنصة», which opens the public
@@ -56,7 +75,7 @@ way; the shell alone sets the gutters (`--tts-page-gutter`, `--tts-body-gap`). A
 `portal-gutter`. Only the public layout centres content at `--size-container`
 (`src/styles/__tests__/pageWidth.spec.js` checks this).
 
-Styling: `_sidebar.scss`, `_identity-card.scss`, `_navbar.scss`,
+Styling: `_sidebar.scss` (hidden below `md`), `_identity-card.scss`, `_navbar.scss`,
 `_app-layout.scss`, `_portal-layout.scss`, `_portal-top-bar.scss`, `_profile-banner.scss`, `_mobile-tab-bar.scss`, `_public-layout.scss`, `_auth-layout.scss`, `_footer.scss`. No style block or
 inline style in any `.vue`.
 The TTS look of the shared components inside the back office (buttons, fields, tables, menus, tabs, pagination,

@@ -10,3 +10,9 @@ column beside a side panel), each row reads as one block: the first column as it
 label/value lines (the label comes from `column.label`), and the actions last at full width. A column is an
 actions column when its key is `actions` or it sets `action: true`. Sortable headings stay as a row of chips.
 The award staff tables use it (AJ-05, AJ-22); other tables are unchanged until they opt in.
+
+**Filters on phones.** Below md a filter control is never inline: `FilterDialog` (inside `ListToolbar`)
+opens its fields in a bottom sheet (`BaseModal layout="sheet"`) instead of the side drawer, and a page's
+own filter form (one not built on `ListToolbar`, such as the audit log's) goes inside `PhoneFilters`, which
+keeps it inline from md up and puts it behind one «فلترة» button with the active-filter count on a phone,
+the same form in a bottom sheet (submitting it closes the sheet).

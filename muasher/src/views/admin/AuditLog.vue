@@ -1,5 +1,5 @@
 <script setup>
-import { ref } from 'vue'
+import { computed, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useHead } from '@unhead/vue'
 import Pagination from '@/components/data-list/Pagination.vue'
@@ -7,6 +7,7 @@ import EmptyState from '@/components/feedback/EmptyState.vue'
 import BaseButton from '@/components/ui/BaseButton.vue'
 import ReasonDialog from '@/components/modal/ReasonDialog.vue'
 import AuditLogFilters from '@/components/audit/AuditLogFilters.vue'
+import PhoneFilters from '@/components/data-list/PhoneFilters.vue'
 import AuditLogTable from '@/components/audit/AuditLogTable.vue'
 import AuditEntryDialog from '@/components/audit/AuditEntryDialog.vue'
 import { useAuditLog } from '@/composables/useAuditLog'
@@ -25,6 +26,13 @@ const selected = ref(null)
 const detailOpen = ref(false)
 
 useHead({ title: () => t('auditLog.title') })
+
+// How many filters are applied, for the phone «فلترة» button.
+const activeFilterCount = computed(() =>
+  isFiltered.value
+    ? Object.values(draft).filter((value) => value !== '' && value != null).length
+    : 0,
+)
 
 function open(entry) {
   selected.value = entry
@@ -64,14 +72,16 @@ function exportWith(reason) {
         <AppIcon name="shield-info" />
         {{ t('auditLog.appendOnly') }}
       </p>
-      <AuditLogFilters
-        :filters="draft"
-        :error-of="audit.filterError"
-        :filtered="isFiltered"
-        @update="draft[$event.key] = $event.value"
-        @apply="audit.apply"
-        @reset="audit.reset"
-      />
+      <PhoneFilters :active-count="activeFilterCount">
+        <AuditLogFilters
+          :filters="draft"
+          :error-of="audit.filterError"
+          :filtered="isFiltered"
+          @update="draft[$event.key] = $event.value"
+          @apply="audit.apply"
+          @reset="audit.reset"
+        />
+      </PhoneFilters>
       <AuditLogTable
         :items="items"
         :status="status"

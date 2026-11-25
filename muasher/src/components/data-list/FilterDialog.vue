@@ -4,6 +4,7 @@ import { useI18n } from 'vue-i18n'
 import BaseModal from '@/components/modal/BaseModal.vue'
 import BaseButton from '@/components/ui/BaseButton.vue'
 import AppIcon from '@/components/ui/AppIcon.vue'
+import { useCompactViewport } from '@/composables/useCompactViewport'
 
 const props = defineProps({
   activeCount: { type: Number, default: 0 },
@@ -12,6 +13,8 @@ const props = defineProps({
 const emit = defineEmits(['open', 'apply', 'reset', 'clear'])
 const { t } = useI18n()
 const isOpen = ref(false)
+// Phones get the filter fields in a bottom sheet; wider screens keep the side drawer.
+const isPhone = useCompactViewport()
 
 const buttonLabel = computed(() =>
   props.activeCount
@@ -50,7 +53,12 @@ function apply() {
       {{ t('dataList.filter.clear') }}
     </BaseButton>
 
-    <BaseModal v-model="isOpen" :title="t('dataList.filter.title')" size="md" layout="drawer">
+    <BaseModal
+      v-model="isOpen"
+      :title="t('dataList.filter.title')"
+      size="md"
+      :layout="isPhone ? 'sheet' : 'drawer'"
+    >
       <div class="filter-dialog__fields">
         <slot />
       </div>

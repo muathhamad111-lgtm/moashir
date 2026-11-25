@@ -26,6 +26,8 @@ const SETTINGS_HUB_PERMISSIONS = [
 
 export const ROUTE_ACCESS = {
   [R.APP_DASHBOARD]: { anyOf: [P.DASHBOARD_VIEW] },
+  // Same audience as the dashboard: every signed-in account (entity-only accounts are redirected).
+  [R.APP_MORE]: { anyOf: [P.DASHBOARD_VIEW] },
   [R.NOTIFICATIONS_INDEX]: { anyOf: [P.NOTIFICATIONS_VIEW] },
   [R.ENTITY_PROFILE]: { anyOf: [P.ENTITY_PROFILE_VIEW] },
   [R.ASSESSMENT_HISTORY]: { anyOf: [P.ASSESSMENT_HISTORY_VIEW], entityScope: true },

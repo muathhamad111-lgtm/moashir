@@ -2,6 +2,7 @@
 import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 import BaseButton from '@/components/ui/BaseButton.vue'
+import PageActions from '@/components/ui/PageActions.vue'
 import { useEntityActions } from '@/composables/useEntityActions'
 
 const props = defineProps({
@@ -16,10 +17,11 @@ const actions = computed(() => actionsFor(props.entity))
 </script>
 
 <template>
-  <div
+  <PageActions
     v-if="actions.length"
     class="entity-record__actions"
     role="group"
+    :label="t('entities.record.actionsLabel')"
     :aria-label="t('entities.record.actionsLabel')"
   >
     <BaseButton
@@ -32,5 +34,5 @@ const actions = computed(() => actionsFor(props.entity))
     >
       {{ action.label }}
     </BaseButton>
-  </div>
+  </PageActions>
 </template>

@@ -4,6 +4,7 @@ import { useI18n } from 'vue-i18n'
 import AppIcon from '@/components/ui/AppIcon.vue'
 import { MODAL_ROLES, MODAL_TONES } from '@/constants/modal'
 import { useFocusTrap } from '@/composables/useFocusTrap'
+import { useSheetDrag } from '@/composables/useSheetDrag'
 
 const props = defineProps({
   modelValue: { type: Boolean, required: true },
@@ -29,10 +30,12 @@ const props = defineProps({
     validator: (value) => Object.values(MODAL_TONES).includes(value),
   },
   describedBy: { type: String, default: '' },
+  // dialog: centred. drawer: a side panel at the inline end. drawer-start: a side panel at the
+  // inline start (the phone navigation). sheet: a bottom sheet with a drag handle (phones).
   layout: {
     type: String,
     default: 'dialog',
-    validator: (value) => ['dialog', 'drawer'].includes(value),
+    validator: (value) => ['dialog', 'drawer', 'drawer-start', 'sheet'].includes(value),
   },
 })
 
@@ -51,6 +54,9 @@ function close() {
   emit('update:modelValue', false)
   emit('close')
 }
+
+const isSideDrawer = computed(() => props.layout === 'drawer' || props.layout === 'drawer-start')
+const sheetDrag = useSheetDrag(panelRef, { onDismiss: close })
 
 const { onKeydown: trapKeydown } = useFocusTrap(panelRef, {
   isActive: () => props.modelValue,
@@ -74,7 +80,12 @@ function onBackdropClick() {
       class="modal is-open"
       :class="[
         `modal--${size}`,
-        { 'modal--centered': isCentered, 'modal--drawer': layout === 'drawer' },
+        {
+          'modal--centered': isCentered,
+          'modal--drawer': isSideDrawer,
+          'modal--drawer-start': layout === 'drawer-start',
+          'modal--sheet': layout === 'sheet',
+        },
       ]"
       @keydown="onKeydown"
     >
@@ -89,6 +100,12 @@ function onBackdropClick() {
         tabindex="-1"
         @pointerenter="emit('interact')"
       >
+        <div
+          v-if="layout === 'sheet' && dismissible"
+          class="modal__handle"
+          aria-hidden="true"
+          @pointerdown="sheetDrag.start"
+        ></div>
         <header class="modal__header">
           <span v-if="icon" class="modal__icon" :class="`modal__icon--${tone}`" aria-hidden="true">
             <AppIcon :name="icon" size="lg" />

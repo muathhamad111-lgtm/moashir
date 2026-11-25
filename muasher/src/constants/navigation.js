@@ -2,6 +2,7 @@ import { accessFor } from './routeAccess'
 import { PERMISSIONS } from './permissionKeys'
 import { ROUTE_NAMES } from './routeNames'
 import { PATH_NAV_KINDS } from './paths'
+import { ROLES } from './roles'
 
 // Below this navbar width the settings link, theme toggle and language switch move into the user menu.
 export const NAVBAR_TOOLS_INLINE_MIN_WIDTH = 480
@@ -9,11 +10,33 @@ export const NAVBAR_TOOLS_INLINE_MIN_WIDTH = 480
 // A menu this short shows every group open under a plain heading; longer menus fold their groups.
 export const SHORT_MENU_MAX_ITEMS = 10
 
+// Phones (below md) show a bottom tab bar instead of the sidebar: the dashboard, then up to this
+// many of the role's priority items (ROLE_TAB_PRIORITY) it is allowed to open, then «المزيد».
+export const APP_TAB_SLOTS = 3
+export const DASHBOARD_NAV_ID = 'dashboard'
+export const SETTINGS_NAV_ID = 'settings'
+
+// The places each role works in most, best first (nav item ids). Only allowed items become tabs;
+// an account with several roles takes its roles' lists in order. The Super Admin has no role and
+// takes the system administrator's list.
+export const ROLE_TAB_PRIORITY = Object.freeze({
+  [ROLES.SYSTEM_ADMIN]: ['admin-entities', 'admin-users', SETTINGS_NAV_ID],
+  [ROLES.CRITERIA_OFFICER]: [SETTINGS_NAV_ID],
+  [ROLES.REQUEST_FOLLOWER]: ['requests', 'bag-requests', 'admin-entities'],
+  [ROLES.ASSESSOR]: ['requests-assigned', 'award-committee', 'bag-evaluator'],
+  [ROLES.FILTERING_OFFICER]: ['award-filtering', 'award-cycles', 'admin-entities'],
+  [ROLES.AWARD_SECRETARY]: ['award-secretary', 'award-results', 'award-cycles'],
+  [ROLES.CONTENT_OFFICER]: ['admin-contact-messages', SETTINGS_NAV_ID],
+  [ROLES.FINANCE_OFFICER]: ['finance', 'bag-requests', 'admin-entities'],
+})
+export const SUPER_ADMIN_TAB_ROLE = ROLES.SYSTEM_ADMIN
+
 export const APP_NAV_ITEMS = [
   {
     id: 'dashboard',
     group: 'overview',
     labelKey: 'nav.dashboard',
+    tabLabelKey: 'nav.tabs.home',
     icon: 'gauge',
     routeName: ROUTE_NAMES.APP_DASHBOARD,
   },
@@ -21,6 +44,7 @@ export const APP_NAV_ITEMS = [
     id: 'admin-entities',
     group: 'overview',
     labelKey: 'nav.adminEntities',
+    tabLabelKey: 'nav.tabs.entities',
     icon: 'building',
     routeName: ROUTE_NAMES.ADMIN_ENTITIES,
     // Deleted entities and e-mail change requests open from buttons on the entities page.
@@ -34,6 +58,7 @@ export const APP_NAV_ITEMS = [
     id: 'finance',
     group: 'overview',
     labelKey: 'nav.finance',
+    tabLabelKey: 'nav.tabs.finance',
     icon: 'sar',
     routeName: ROUTE_NAMES.FINANCE_TRANSACTIONS,
     // Transfer review, operation details, exports and payment events open from the finance pages.
@@ -86,6 +111,7 @@ export const APP_NAV_ITEMS = [
     id: 'requests',
     group: 'assessment',
     labelKey: 'nav.requests',
+    tabLabelKey: 'nav.tabs.requests',
     icon: 'inbox',
     routeName: ROUTE_NAMES.REQUESTS_INDEX,
     pathEntries: PATH_NAV_KINDS.QUEUE,
@@ -94,6 +120,7 @@ export const APP_NAV_ITEMS = [
     id: 'requests-assigned',
     group: 'assessment',
     labelKey: 'nav.requestsAssigned',
+    tabLabelKey: 'nav.tabs.assigned',
     icon: 'user',
     routeName: ROUTE_NAMES.REQUESTS_ASSIGNED,
     pathEntries: PATH_NAV_KINDS.ASSIGNED,
@@ -102,6 +129,7 @@ export const APP_NAV_ITEMS = [
     id: 'award-cycles',
     group: 'award',
     labelKey: 'nav.awardCycles',
+    tabLabelKey: 'nav.tabs.cycles',
     icon: 'calendar',
     routeName: ROUTE_NAMES.AWARD_CYCLES,
   },
@@ -109,6 +137,7 @@ export const APP_NAV_ITEMS = [
     id: 'award-committee-management',
     group: 'award',
     labelKey: 'nav.awardCommitteeManagement',
+    tabLabelKey: 'nav.tabs.roster',
     icon: 'users-two',
     routeName: ROUTE_NAMES.AWARD_COMMITTEE_MANAGEMENT,
   },
@@ -116,6 +145,7 @@ export const APP_NAV_ITEMS = [
     id: 'award-filtering',
     group: 'award',
     labelKey: 'nav.awardFiltering',
+    tabLabelKey: 'nav.tabs.filtering',
     icon: 'filter',
     routeName: ROUTE_NAMES.AWARD_FILTERING,
   },
@@ -123,6 +153,7 @@ export const APP_NAV_ITEMS = [
     id: 'award-committee',
     group: 'award',
     labelKey: 'nav.awardCommittee',
+    tabLabelKey: 'nav.tabs.committee',
     icon: 'scale',
     routeName: ROUTE_NAMES.AWARD_COMMITTEE,
   },
@@ -130,6 +161,7 @@ export const APP_NAV_ITEMS = [
     id: 'award-committee-discussions',
     group: 'award',
     labelKey: 'nav.awardCommitteeDiscussions',
+    tabLabelKey: 'nav.tabs.discussions',
     icon: 'chat',
     routeName: ROUTE_NAMES.AWARD_COMMITTEE_DISCUSSIONS,
   },
@@ -137,6 +169,7 @@ export const APP_NAV_ITEMS = [
     id: 'award-secretary',
     group: 'award',
     labelKey: 'nav.awardSecretary',
+    tabLabelKey: 'nav.tabs.secretary',
     icon: 'stamp',
     routeName: ROUTE_NAMES.AWARD_SECRETARY,
   },
@@ -144,6 +177,7 @@ export const APP_NAV_ITEMS = [
     id: 'award-results',
     group: 'award',
     labelKey: 'nav.awardResults',
+    tabLabelKey: 'nav.tabs.results',
     icon: 'trophy',
     routeName: ROUTE_NAMES.AWARD_RESULTS,
   },
@@ -172,6 +206,7 @@ export const APP_NAV_ITEMS = [
     id: 'bag-requests',
     group: 'assessment',
     labelKey: 'nav.bagRequests',
+    tabLabelKey: 'nav.tabs.kit',
     icon: 'folder',
     routeName: ROUTE_NAMES.BAG_REQUESTS,
   },
@@ -179,6 +214,7 @@ export const APP_NAV_ITEMS = [
     id: 'bag-evaluator',
     group: 'assessment',
     labelKey: 'nav.bagEvaluator',
+    tabLabelKey: 'nav.tabs.kit',
     icon: 'briefcase',
     routeName: ROUTE_NAMES.BAG_EVALUATOR_REQUESTS,
     // A Kit plan opens from its row in the list.
@@ -188,6 +224,7 @@ export const APP_NAV_ITEMS = [
     id: 'admin-users',
     group: 'administration',
     labelKey: 'nav.adminUsers',
+    tabLabelKey: 'nav.tabs.users',
     icon: 'users-two',
     routeName: ROUTE_NAMES.ADMIN_USERS,
     activeOn: [ROUTE_NAMES.ADMIN_PERMISSIONS, ROUTE_NAMES.ADMIN_IDENTITY_CHANGES],
@@ -196,10 +233,21 @@ export const APP_NAV_ITEMS = [
     id: 'admin-contact-messages',
     group: 'administration',
     labelKey: 'nav.contactMessages',
+    tabLabelKey: 'nav.tabs.inbox',
     icon: 'envelope',
     routeName: ROUTE_NAMES.ADMIN_CONTACT_MESSAGES,
   },
 ]
+
+// Settings is reached from the navbar on desktop; on phones it is a tab or an entry in «المزيد».
+export const SETTINGS_NAV_ITEM = Object.freeze({
+  id: SETTINGS_NAV_ID,
+  group: 'administration',
+  labelKey: 'nav.adminSettings',
+  tabLabelKey: 'nav.tabs.settings',
+  icon: 'gear',
+  routeName: ROUTE_NAMES.ADMIN_SETTINGS,
+})
 
 export const NAV_GROUPS = [
   { id: 'overview', headless: true },

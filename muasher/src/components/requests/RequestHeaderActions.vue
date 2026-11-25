@@ -3,6 +3,7 @@ import { toRef } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useRouter } from 'vue-router'
 import BaseButton from '@/components/ui/BaseButton.vue'
+import PageActions from '@/components/ui/PageActions.vue'
 import AppMenu from '@/components/ui/AppMenu.vue'
 import RequestAssignButton from './RequestAssignButton.vue'
 import { REQUEST_MENU_ACTIONS, useRequestActions } from '@/composables/useRequestActions'
@@ -36,7 +37,12 @@ function onMenu(key) {
 </script>
 
 <template>
-  <div class="request-actions" role="group" :aria-label="t('requests.detail.actions')">
+  <PageActions
+    class="request-actions"
+    role="group"
+    :label="t('requests.detail.actions')"
+    :aria-label="t('requests.detail.actions')"
+  >
     <RequestAssignButton
       v-if="assignsFirst"
       :mode="assignmentMode"
@@ -73,5 +79,5 @@ function onMenu(key) {
       :label="t('requests.detail.moreActions', { number: detail.number })"
       @select="onMenu"
     />
-  </div>
+  </PageActions>
 </template>

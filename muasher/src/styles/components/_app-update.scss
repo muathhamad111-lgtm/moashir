@@ -5,7 +5,9 @@
 .app-update {
   @include flex(row, center, space-between, var(--space-3));
   position: fixed;
-  inset-block-end: calc(var(--space-4) + env(safe-area-inset-bottom, 0px));
+  inset-block-end: calc(
+    var(--space-4) + var(--app-tab-bar-offset) + env(safe-area-inset-bottom, 0px)
+  );
   inset-inline: var(--space-4);
   z-index: var(--z-toast);
   flex-wrap: wrap;

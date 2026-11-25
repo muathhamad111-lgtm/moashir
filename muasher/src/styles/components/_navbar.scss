@@ -55,6 +55,7 @@
   }
 
   .navbar__start > .btn,
+  .navbar__phone > .btn,
   .navbar__actions > .btn,
   .navbar__actions > .notification-bell > .btn,
   .global-search__toggle {
@@ -131,6 +132,43 @@
 .navbar__start {
   @include flex(row, center, flex-start, var(--space-3));
   min-inline-size: 0;
+
+  // Phones: the start holds the logo, or back and the screen title, and takes the free room.
+  @include respond-below('md') {
+    flex: 1;
+  }
+}
+
+// Phones only (TopNavbar renders it below md in place of the sidebar toggle).
+.navbar__phone {
+  @include flex(row, center, flex-start, var(--space-2));
+  min-inline-size: 0;
+}
+
+.navbar__phone-brand {
+  @include flex(row, center, flex-start);
+  min-block-size: var(--size-touch-target);
+  border-radius: var(--btn-radius, var(--radius-md));
+
+  &:focus-visible {
+    @include focus-ring;
+  }
+}
+
+.navbar__phone-logo {
+  // As tall as the bar's buttons, so the bar reads as one even row.
+  block-size: var(--size-touch-target);
+  inline-size: auto;
+  object-fit: contain;
+}
+
+.navbar__phone-title {
+  @include truncate;
+  min-inline-size: 0;
+  color: var(--brand-on-secondary);
+  font-family: var(--font-heading);
+  font-size: var(--fs-base);
+  font-weight: var(--fw-emphasis);
 }
 
 .navbar__actions {

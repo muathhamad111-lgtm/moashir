@@ -1,0 +1,32 @@
+@use '../mixins' as *;
+
+// PageActions on a phone: one «الإجراءات» button, and the actions stacked in a bottom sheet.
+// The TTS shell's button heights load later; the extra parent class keeps the thumb height.
+.page-actions > .page-actions__toggle {
+  min-block-size: var(--size-touch-target);
+
+  @include in-tts-shell {
+    min-block-size: var(--size-touch-target);
+  }
+}
+
+.page-actions__sheet {
+  @include flex(column, stretch, flex-start, var(--space-2));
+  padding: var(--space-4);
+
+  // Every action at full width and thumb height, its own variant kept (danger stays red).
+  > *,
+  > * > .btn,
+  .btn {
+    inline-size: 100%;
+    min-block-size: var(--size-touch-target);
+    justify-content: center;
+  }
+
+  @include in-tts-shell {
+    > .btn,
+    .btn {
+      min-block-size: var(--size-touch-target);
+    }
+  }
+}

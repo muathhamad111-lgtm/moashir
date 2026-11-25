@@ -14,9 +14,17 @@ import LevelMiniCard from '@/components/level/LevelMiniCard.vue'
 import SidebarIdentityCard from '@/components/layout/SidebarIdentityCard.vue'
 import PortalSideNavItem from './PortalSideNavItem.vue'
 
-defineProps({
+// rail: the portal's side nav from lg up. drawer: the same menu in the phone navigation drawer,
+// without the platform card (logo, preview).
+const props = defineProps({
   collapsed: { type: Boolean, default: false },
+  variant: {
+    type: String,
+    default: 'rail',
+    validator: (value) => ['rail', 'drawer'].includes(value),
+  },
 })
+const isDrawer = computed(() => props.variant === 'drawer')
 
 const { t } = useI18n()
 const route = useRoute()
@@ -49,12 +57,16 @@ function isActive(item) {
 <template>
   <nav
     class="side-nav"
-    :class="{ 'side-nav--collapsed': collapsed }"
+    :class="{ 'side-nav--collapsed': collapsed, 'side-nav--drawer': isDrawer }"
     :aria-label="t('portal.nav.label')"
     data-testid="portal-side-nav"
   >
-    <span class="rail-glow" aria-hidden="true" />
-    <SidebarIdentityCard :home-label="t('portal.brandHome')" :collapsed="collapsed" />
+    <span v-if="!isDrawer" class="rail-glow" aria-hidden="true" />
+    <SidebarIdentityCard
+      v-if="!isDrawer"
+      :home-label="t('portal.brandHome')"
+      :collapsed="collapsed"
+    />
 
     <ul class="side-nav__list">
       <li v-for="item in items" :key="item.key">
