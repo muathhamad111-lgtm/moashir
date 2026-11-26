@@ -1,7 +1,12 @@
 @use '../mixins' as *;
 
+// The card's body reads top to bottom with one gap: the current certificate, a note, the earlier certificates and
+// the feedback link. Its actions live in the card header (v4.1).
+.request-certificate > .card__body {
+  @include flex(column, stretch, flex-start, var(--space-5));
+}
+
 .request-certificate__current,
-.request-certificate__issue,
 .request-certificate__history {
   @include flex(column, stretch, flex-start, var(--space-3));
 }
@@ -26,11 +31,6 @@
     font-weight: var(--fw-body);
     overflow-wrap: anywhere;
   }
-}
-
-.request-certificate__actions {
-  @include flex(row, center, flex-start, var(--space-2));
-  flex-wrap: wrap;
 }
 
 .request-certificate__note {

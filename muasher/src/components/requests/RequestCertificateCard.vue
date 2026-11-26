@@ -3,12 +3,14 @@ import { computed, onMounted, ref, toRef } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { RouterLink } from 'vue-router'
 import Card from '@/components/ui/Card.vue'
+import RecordCardHeader from '@/components/records/RecordCardHeader.vue'
 import BaseButton from '@/components/ui/BaseButton.vue'
 import Skeleton from '@/components/feedback/Skeleton.vue'
 import ErrorState from '@/components/feedback/ErrorState.vue'
 import ReasonDialog from '@/components/modal/ReasonDialog.vue'
 import CertificateStatusBadge from '@/components/certificates/portal/CertificateStatusBadge.vue'
 import RequestCertificateFacts from './RequestCertificateFacts.vue'
+import RequestCertificateActions from './RequestCertificateActions.vue'
 import { useRequestCertificates } from '@/composables/useRequestCertificates'
 import { useSignedDownload } from '@/composables/useSignedDownload'
 import { usePermissions } from '@/composables/usePermissions'
@@ -47,6 +49,19 @@ const hasContent = computed(
     history.value.length > 0,
 )
 const issueStep = computed(() => certificates.issueStepOf(props.completed))
+// The header actions this viewer has on the current certificate, or the issue step when there is none yet.
+const headerActions = computed(() => {
+  const certificate = current.value
+  return {
+    canDownload: Boolean(canManage.value && certificate?.status === 'issued' && certificate.hasPdf),
+    canReissue: Boolean(certificate) && certificates.canReissue(certificate),
+    canRevoke: Boolean(certificate) && certificates.canRevoke(certificate),
+    canIssue: !certificate && issueStep.value === 'issue',
+  }
+})
+const showsActions = computed(
+  () => status.value === 'success' && Object.values(headerActions.value).some(Boolean),
+)
 const showsFeedback = computed(() => props.completed && can(PERMISSIONS.REPORTS_FEEDBACK_VIEW))
 
 function download(certificate) {
@@ -74,7 +89,22 @@ onMounted(certificates.load)
 <template>
   <Card v-if="hasContent" class="request-certificate">
     <template #header>
-      <h2 class="card__title-text">{{ t('requests.certificate.title') }}</h2>
+      <RecordCardHeader
+        :title="t('requests.certificate.title')"
+        :actions-label="t('requests.certificate.actions')"
+      >
+        <template v-if="showsActions" #actions>
+          <RequestCertificateActions
+            v-bind="headerActions"
+            :downloading="Boolean(current && downloads.busy[current.id])"
+            :issuing="issuing"
+            @download="download(current)"
+            @reissue="ask('reissue', current)"
+            @revoke="ask('revoke', current)"
+            @issue="certificates.issue"
+          />
+        </template>
+      </RecordCardHeader>
     </template>
 
     <Skeleton v-if="status === 'loading'" variant="text" :count="4" />
@@ -82,33 +112,6 @@ onMounted(certificates.load)
     <template v-else>
       <div v-if="current" class="request-certificate__current" data-certificate="current">
         <RequestCertificateFacts :certificate="current" />
-        <div class="request-certificate__actions">
-          <BaseButton
-            v-if="canManage && current.status === 'issued' && current.hasPdf"
-            variant="primary"
-            size="sm"
-            icon="download"
-            :loading="downloads.busy[current.id]"
-            @click="download(current)"
-            >{{ t('requests.certificate.download') }}</BaseButton
-          >
-          <BaseButton
-            v-if="certificates.canReissue(current)"
-            variant="secondary"
-            size="sm"
-            icon="refresh"
-            @click="ask('reissue', current)"
-            >{{ t('requests.certificate.reissue') }}</BaseButton
-          >
-          <BaseButton
-            v-if="certificates.canRevoke(current)"
-            variant="danger"
-            size="sm"
-            icon="ban"
-            @click="ask('revoke', current)"
-            >{{ t('requests.certificate.revoke') }}</BaseButton
-          >
-        </div>
       </div>
       <p v-else-if="!completed" class="request-certificate__note">
         {{ t('requests.certificate.afterCompletion') }}
@@ -120,17 +123,9 @@ onMounted(certificates.load)
         {{ t('requests.certificate.none') }}
       </p>
 
-      <div v-if="issueStep === 'issue'" class="request-certificate__issue">
-        <p class="request-certificate__note">{{ t('requests.certificate.issueNote') }}</p>
-        <BaseButton
-          variant="primary"
-          size="sm"
-          icon="award"
-          :loading="issuing"
-          @click="certificates.issue"
-          >{{ t('requests.certificate.issue') }}</BaseButton
-        >
-      </div>
+      <p v-if="issueStep === 'issue'" class="request-certificate__note">
+        {{ t('requests.certificate.issueNote') }}
+      </p>
 
       <section
         v-if="history.length"

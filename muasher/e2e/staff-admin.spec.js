@@ -462,7 +462,7 @@ test.describe('staff certificate and review completion', () => {
     page,
   }, testInfo) => {
     await signIn(page, testInfo, USERS.systemAdmin)
-    await open(page, '/admin/requests/9104', '[data-certificate="current"]')
+    await open(page, '/admin/requests/9104?tab=certificate', '[data-certificate="current"]')
     await expect(page.locator('.request-certificate__history-item')).toHaveCount(1)
     await page
       .getByRole('button', { name: text(testInfo, 'Re-issue', 'إعادة الإصدار') })
@@ -596,7 +596,7 @@ const CAPTURES = [
   ],
   [
     'request-certificate',
-    '/admin/requests/9104',
+    '/admin/requests/9104?tab=certificate',
     '[data-certificate="current"]',
     USERS.systemAdmin,
   ],

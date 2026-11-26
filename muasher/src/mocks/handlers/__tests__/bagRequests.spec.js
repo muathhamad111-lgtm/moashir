@@ -134,3 +134,13 @@ describe('bag requests — assignment', () => {
     expect(res.status).toBe(422)
   })
 })
+
+// Request page v4.1: a Kit request carries its own number (KIT-YYYY-NNNNNN), found by search like any request number.
+describe('bag requests — number', () => {
+  it('numbers each Kit request and finds it by its number', async () => {
+    const { body } = await retryGet('/bag/requests/bag-req-7003')
+    expect(body.data.number).toBe('KIT-2026-000004')
+    const found = await retryGet('/bag/requests?search=kit-2026-000004')
+    expect(found.body.data.map((row) => row.id)).toEqual(['bag-req-7003'])
+  })
+})

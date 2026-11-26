@@ -1,0 +1,269 @@
+@use '../mixins' as *;
+
+// The fixed top of a staff record page (operator choice 2026-11-26, layout A): one reading order — the way back and
+// the actions, then one summary card (identity, the status once at its end, then titled groups of facts in aligned
+// columns). Spacing from the tokens only; the page keeps a max content width.
+.record-summary {
+  @include flex(column, stretch, flex-start, var(--space-3));
+}
+
+.record-summary__bar {
+  @include flex(row, center, space-between, var(--space-3));
+  flex-wrap: wrap;
+}
+
+.record-summary__back {
+  @include flex(row, center, flex-start, var(--space-2));
+  min-block-size: var(--size-touch-target);
+  font-size: var(--fs-sm);
+  color: var(--theme-accent-text);
+
+  &:focus-visible {
+    @include focus-ring;
+  }
+}
+
+.record-summary__actions {
+  margin-inline-start: auto;
+}
+
+.record-summary__card {
+  @include flex(column, stretch, flex-start, var(--space-6));
+  padding: var(--space-6);
+  border: var(--border-width) solid var(--theme-border);
+  border-radius: var(--radius-lg);
+  background-color: var(--theme-surface-solid);
+
+  @media (max-width: 767.98px) {
+    gap: var(--space-5);
+    padding: var(--space-4);
+  }
+}
+
+.record-summary__top {
+  @include flex(row, center, space-between, var(--space-4));
+  flex-wrap: wrap;
+}
+
+// The groups: side by side from md up with a divider between them, stacked on a phone.
+.record-summary__groups {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--space-5);
+  padding-block-start: var(--space-6);
+  border-block-start: var(--border-width) solid var(--theme-border);
+
+  @include respond-to('md') {
+    grid-auto-columns: minmax(0, 1fr);
+    grid-auto-flow: column;
+    gap: var(--space-6);
+
+    > .record-group + .record-group {
+      padding-inline-start: var(--space-6);
+      border-inline-start: var(--border-width) solid var(--theme-border);
+    }
+  }
+
+  @media (max-width: 767.98px) {
+    padding-block-start: var(--space-5);
+
+    > .record-group + .record-group {
+      padding-block-start: var(--space-5);
+      border-block-start: var(--border-width) solid var(--theme-border);
+    }
+  }
+}
+
+// Identity: the kind as a small line, the number as the page title, what it belongs to under it.
+.record-identity {
+  @include flex(row, center, flex-start, var(--space-4));
+  min-inline-size: 0;
+}
+
+.record-identity__mark {
+  @include flex(row, center, center, 0);
+  flex: none;
+  inline-size: 3.5rem;
+  block-size: 3.5rem;
+  border: var(--border-width) solid var(--theme-border);
+  border-radius: var(--radius-md);
+  background-color: var(--theme-bg);
+  font-size: var(--fs-xl);
+  color: var(--theme-text-muted);
+
+  .entity-head-logo {
+    inline-size: 100%;
+    block-size: 100%;
+    border: 0;
+  }
+}
+
+.record-identity__text {
+  @include flex(column, flex-start, flex-start, var(--space-1));
+  min-inline-size: 0;
+
+  p {
+    margin: 0;
+  }
+}
+
+.record-identity__kind {
+  font-size: var(--fs-sm);
+  color: var(--theme-text-muted);
+}
+
+.record-identity__title {
+  margin: 0;
+  font-family: var(--font-latin);
+  font-size: var(--fs-2xl);
+  font-weight: var(--fw-heading);
+  line-height: var(--lh-tight);
+  color: var(--theme-heading);
+}
+
+.record-identity__subject {
+  @include flex(row, center, flex-start, var(--space-2));
+  flex-wrap: wrap;
+  font-size: var(--fs-sm);
+  color: var(--theme-text-muted);
+}
+
+.record-identity__link {
+  font-weight: var(--fw-emphasis);
+  color: var(--theme-accent-text);
+
+  &:focus-visible {
+    @include focus-ring;
+  }
+}
+
+.record-identity__code {
+  font-family: var(--font-latin);
+  white-space: nowrap;
+}
+
+// The status, once and large; the selector outranks the shell's badge rules (:root[data-shell] .badge).
+.record-status {
+  @include flex(column, flex-start, flex-start, var(--space-2));
+}
+
+.record-summary .record-status .record-status__badge.badge {
+  padding-block: var(--space-1);
+  padding-inline: var(--space-4);
+  font-size: var(--fs-base);
+}
+
+.record-status__label,
+.record-status__since {
+  font-size: var(--fs-xs);
+  color: var(--theme-text-muted);
+}
+
+// A titled group.
+.record-group {
+  @include flex(column, stretch, flex-start, var(--space-4));
+  min-inline-size: 0;
+}
+
+.record-group__title {
+  margin: 0;
+  font-size: var(--fs-sm);
+  font-weight: var(--fw-heading);
+  color: var(--theme-heading);
+}
+
+// The one fact list: label above value, aligned columns (one column on a phone when a group has many).
+.record-facts {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-4) var(--space-6);
+  margin: 0;
+
+  @include respond-to('md') {
+    grid-template-columns: repeat(var(--record-fact-columns, 2), minmax(0, 1fr));
+  }
+}
+
+.record-facts__row {
+  @include flex(column, flex-start, flex-start, var(--space-1));
+  min-inline-size: 0;
+}
+
+.record-facts__term {
+  font-size: var(--fs-sm);
+  color: var(--theme-text-muted);
+}
+
+.record-facts__value {
+  @include flex(column, flex-start, flex-start, var(--space-1));
+  margin: 0;
+  font-weight: var(--fw-emphasis);
+  color: var(--theme-heading);
+  overflow-wrap: anywhere;
+
+  .date-stamp {
+    @include flex(column, flex-start, flex-start, 0);
+  }
+
+  .date-stamp__hijri {
+    font-size: var(--fs-xs);
+    font-weight: var(--fw-body);
+    color: var(--theme-text-muted);
+  }
+}
+
+// A flag on a value or on the record (reassigned, overdue, frozen): a short text line, never a floating badge.
+.record-fact__note {
+  font-size: var(--fs-xs);
+  font-weight: var(--fw-body);
+  color: var(--theme-text-muted);
+}
+
+.record-fact__note--danger {
+  font-weight: var(--fw-emphasis);
+  color: var(--theme-danger-text);
+}
+
+.record-fact__note--success {
+  color: var(--theme-success-text);
+}
+
+// A record tab card's header: title at the start, the card's actions at the end; they wrap under the title on a
+// narrow card, so nothing overflows sideways.
+.record-card-header {
+  @include flex(row, center, space-between, var(--space-3));
+  flex-wrap: wrap;
+}
+
+.record-card-header__actions {
+  @include flex(row, center, flex-start, var(--space-2));
+  flex-wrap: wrap;
+  margin-inline-start: auto;
+
+  @media (max-width: 767.98px) {
+    margin-inline-start: 0;
+  }
+}
+
+// The whole request in titled groups (the review page's «الطلب» tab): one gap and a rule between the groups.
+.record-fact-groups {
+  @include flex(column, stretch, flex-start, var(--space-5));
+
+  > .record-group + .record-group {
+    padding-block-start: var(--space-5);
+    border-block-start: var(--border-width) solid var(--theme-border);
+  }
+}
+
+.request-fact-entity {
+  @include flex(row, center, flex-start, var(--space-2));
+  flex-wrap: wrap;
+
+  a {
+    color: var(--theme-accent-text);
+
+    &:focus-visible {
+      @include focus-ring;
+    }
+  }
+}

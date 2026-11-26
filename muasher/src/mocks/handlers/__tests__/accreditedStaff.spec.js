@@ -178,9 +178,20 @@ describe('accredited mock — requests queue and assignment', () => {
     seedMockSession(FOLLOWER)
     const detail = await call('GET', '/requests/9108')
     expect(keys(detail.body.data)).toEqual(
-      [...ROW_KEYS, 'assignment_history', 'completion_requests', 'payment', 'record'].sort(),
+      [
+        ...ROW_KEYS,
+        'assignment_history',
+        'completion_requests',
+        'has_certificates',
+        'payment',
+        'record',
+      ].sort(),
     )
     expect(detail.body.data.payment).toEqual({ paid: true })
+    // Request page v4.1: the record header's logo (none for this entity) and whether the request has certificates.
+    expect(detail.body.data.entity.logo).toBeNull()
+    expect(detail.body.data.has_certificates).toBe(false)
+    expect((await call('GET', '/requests/9104')).body.data.has_certificates).toBe(true)
     expect(keys(detail.body.data.assignment_history[0])).toEqual([
       'assessor',
       'assigned_at',

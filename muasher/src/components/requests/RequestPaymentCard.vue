@@ -2,7 +2,7 @@
 import { useI18n } from 'vue-i18n'
 import { RouterLink } from 'vue-router'
 import Card from '@/components/ui/Card.vue'
-import AppIcon from '@/components/ui/AppIcon.vue'
+import RecordCardHeader from '@/components/records/RecordCardHeader.vue'
 import BaseButton from '@/components/ui/BaseButton.vue'
 import DateStamp from '@/components/accredited/DateStamp.vue'
 import PaymentStatusBadge from '@/components/payments/PaymentStatusBadge.vue'
@@ -19,7 +19,32 @@ const { t } = useI18n()
 </script>
 
 <template>
-  <Card :title="t('requests.detail.paymentCard.title')" data-testid="request-payment-card">
+  <Card data-testid="request-payment-card">
+    <template #header>
+      <RecordCardHeader
+        :title="t('requests.detail.paymentCard.title')"
+        :actions-label="t('requests.detail.paymentCard.actions')"
+      >
+        <template v-if="payment.id" #actions>
+          <BaseButton
+            v-if="payment.receipt?.id"
+            variant="primary"
+            size="sm"
+            icon="download"
+            :loading="downloading"
+            @click="emit('download', payment.receipt.id)"
+            >{{ t('requests.detail.paymentCard.downloadReceipt') }}</BaseButton
+          >
+          <BaseButton
+            variant="secondary"
+            size="sm"
+            icon="sar"
+            :to="{ name: ROUTE_NAMES.FINANCE_TRANSACTION, params: { id: payment.id } }"
+            >{{ t('requests.detail.paymentCard.openRecord') }}</BaseButton
+          >
+        </template>
+      </RecordCardHeader>
+    </template>
     <dl class="request-payment-card__facts">
       <div class="request-payment-card__row">
         <dt>{{ t('requests.detail.paymentCard.status') }}</dt>
@@ -56,25 +81,5 @@ const { t } = useI18n()
         <dd><DateStamp :value="payment.paidAt" /></dd>
       </div>
     </dl>
-    <template v-if="payment.id" #footer>
-      <div class="request-payment-card__actions">
-        <RouterLink
-          class="request-payment-card__record"
-          :to="{ name: ROUTE_NAMES.FINANCE_TRANSACTION, params: { id: payment.id } }"
-        >
-          <AppIcon name="sar" />
-          {{ t('requests.detail.paymentCard.openRecord') }}
-        </RouterLink>
-        <BaseButton
-          v-if="payment.receipt?.id"
-          variant="ghost"
-          icon="download"
-          :loading="downloading"
-          @click="emit('download', payment.receipt.id)"
-        >
-          {{ t('requests.detail.paymentCard.downloadReceipt') }}
-        </BaseButton>
-      </div>
-    </template>
   </Card>
 </template>

@@ -131,6 +131,17 @@ describe('LevelRibbon', () => {
     expect(wrapper.find('.level-ribbon__name').text()).toBe('المستوى الذهبي')
     expect(wrapper.find('.level-ribbon__meta bdi').text()).toBe('CRT-2026-000031')
     expect(wrapper.find('.level-ribbon__percent').text()).toBe('82.00%')
+    expect(wrapper.find('.level-ribbon__eyebrow').text()).toBe('مستوى الجهة')
+  })
+
+  it('names a request result by the given eyebrow on the request record (request page v4.1)', () => {
+    const wrapper = render(LevelRibbon, {
+      tier: 'gold',
+      certificate: current,
+      eyebrow: 'نتيجة الطلب',
+    })
+    expect(wrapper.find('.level-ribbon__eyebrow').text()).toBe('نتيجة الطلب')
+    expect(wrapper.find('.level-ribbon').attributes('aria-label')).toBe('نتيجة الطلب')
   })
 })
 

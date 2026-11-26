@@ -12,6 +12,8 @@ const props = defineProps({
   tier: { type: String, required: true, validator: (value) => TIER_ORDER.includes(value) },
   certificate: { type: Object, default: null },
   reassessment: { type: Boolean, default: false },
+  // The line above the level's name; the entity record's «مستوى الجهة» unless the page names it otherwise.
+  eyebrow: { type: String, default: '' },
 })
 
 const { t, n } = useI18n()
@@ -27,12 +29,12 @@ const issuedOn = computed(() =>
     class="level-ribbon"
     :class="[`level-tone--${tierPalette(tier)}`, { 'level-ribbon--expired': isExpired }]"
     :data-tier="tier"
-    :aria-label="t('level.staff.entityLevel')"
+    :aria-label="eyebrow || t('level.staff.entityLevel')"
     data-testid="level-ribbon"
   >
     <LevelEmblem :tier="tier" size="m" />
     <div class="level-ribbon__copy">
-      <p class="level-ribbon__eyebrow">{{ t('level.staff.entityLevel') }}</p>
+      <p class="level-ribbon__eyebrow">{{ eyebrow || t('level.staff.entityLevel') }}</p>
       <p class="level-ribbon__name">
         {{ t(`level.names.${tier}`) }}
         <LevelValidityChip

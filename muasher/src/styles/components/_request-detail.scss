@@ -209,3 +209,19 @@
     margin: 0;
   }
 }
+
+// The request record (layout A): one max content width for the page; the overview's facts card spans it, and every
+// tab keeps the same top spacing.
+.request-detail {
+  max-inline-size: 72rem;
+}
+
+.request-overview__data {
+  grid-column: 1 / -1;
+}
+
+.request-detail__panel {
+  display: grid;
+  gap: var(--space-4);
+  padding-block-start: var(--space-4);
+}

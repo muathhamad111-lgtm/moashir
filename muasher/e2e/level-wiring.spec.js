@@ -147,8 +147,8 @@ test.describe('Task-68 — staff', () => {
     expect(tiers).toContain('gold')
     expect(tiers).toContain('none')
     await capture(page, 'request-queue-levels', testInfo)
-    await open(page, `/admin/requests/${EHSAN_REQUEST}`, '[data-testid="request-entity"]')
-    await expect(page.locator('[data-testid="request-entity"] .level-badge')).toHaveAttribute(
+    await open(page, `/admin/requests/${EHSAN_REQUEST}`, '.request-overview__data .level-badge')
+    await expect(page.locator('.request-overview__data .level-badge')).toHaveAttribute(
       'data-tier',
       'gold',
     )

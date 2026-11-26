@@ -69,3 +69,30 @@ describe('request mappers — payment by audience', () => {
     })
   })
 })
+
+// Request page v4.1: the record header's entity logo and whether the request has certificates (for its tab).
+describe('request mappers — record header', () => {
+  it('keeps the entity logo link and the certificates flag', () => {
+    const detail = toRequestDetail({
+      id: 9104,
+      entity: {
+        ...ENTITY,
+        logo: { id: 'f1', url: 'https://files.test/l.png', uploadedAt: '2026-11-01' },
+      },
+      hasCertificates: true,
+    })
+    expect(detail.entity.logo).toEqual({
+      id: 'f1',
+      url: 'https://files.test/l.png',
+      uploadedAt: '2026-11-01',
+    })
+    expect(detail.hasCertificates).toBe(true)
+  })
+
+  it('has no logo and no certificates when the API sends none', () => {
+    const detail = toRequestDetail({ id: 9105, entity: ENTITY })
+    expect(detail.entity.logo).toBeNull()
+    expect(detail.hasCertificates).toBe(false)
+    expect(toRequestDetail({ id: 1 }).entity).toBeNull()
+  })
+})

@@ -46,7 +46,13 @@ describe('RequestPaymentCard', () => {
       '/finance/transactions/pay-12',
       '/finance/transactions/pay-12',
     ])
-    await wrapper.find('button').trigger('click')
+    // Request page v4.1: the receipt download (primary) and the payment record sit in the card header.
+    const actions = wrapper.find('.record-card-header__actions')
+    expect(actions.findAll('.btn').map((action) => action.text())).toEqual([
+      'Download the payment receipt',
+      'Open the payment record',
+    ])
+    await actions.find('button').trigger('click')
     expect(wrapper.emitted('download')).toEqual([['rcp-4']])
   })
 
@@ -55,6 +61,7 @@ describe('RequestPaymentCard', () => {
     expect(wrapper.text()).toContain('PAY-2026-000012')
     expect(wrapper.findAll('a')).toHaveLength(0)
     expect(wrapper.find('button').exists()).toBe(false)
+    expect(wrapper.find('.record-card-header__actions').exists()).toBe(false)
   })
 
   it('names an unnumbered receipt «دون رقم» in Arabic without a proof disclaimer', () => {
@@ -74,6 +81,8 @@ describe('RequestFacts payment flag', () => {
       status: 'assigned',
       entity: { name: { en: 'Namaa' }, reference: 'ENT-006001' },
       assessor: null,
+      assignmentHistory: [],
+      completionRequests: [],
     }
     const assessorView = render(RequestFacts, {
       detail: { ...base, payment: { paid: true, details: null } },
@@ -83,39 +92,6 @@ describe('RequestFacts payment flag', () => {
     })
     expect(assessorView.text()).toContain('Fee')
     expect(staffView.text()).not.toContain('Fee')
-  })
-})
-
-// Admin review 2026-11-20 (R2): the entity belongs to the request data; the assessor stays with a reassigned mark.
-describe('RequestFacts entity and assessor', () => {
-  const DETAIL = {
-    path: 'accredited',
-    status: 'completed',
-    entity: {
-      id: 6004,
-      name: { ar: 'جمعية عطاء للأيتام' },
-      reference: 'ENT-006004',
-      level: 'participation',
-    },
-    assessor: { id: 11, name: 'أ. هند الزهراني' },
-    isReassigned: true,
-    payment: { paid: true, details: null },
-  }
-
-  it('opens the entity record from the request data for staff who view entities', () => {
-    const wrapper = render(RequestFacts, { detail: DETAIL }, ['system_admin'], 'ar')
-    const entity = wrapper.find('[data-testid="request-entity"]')
-    expect(entity.find('a').attributes('href')).toBe('/admin/entities/6004')
-    expect(entity.text()).toContain('ENT-006004')
-    expect(entity.find('.level-badge').exists()).toBe(true)
-    expect(wrapper.find('[data-testid="request-assessor"]').text()).toContain('أ. هند الزهراني')
-    expect(wrapper.find('[data-testid="request-assessor"]').text()).toContain('أُعيد الإسناد')
-  })
-
-  it('names the entity without a link for staff who cannot view entities', () => {
-    const wrapper = render(RequestFacts, { detail: { ...DETAIL, isReassigned: false } }, [])
-    expect(wrapper.find('[data-testid="request-entity"] a').exists()).toBe(false)
-    expect(wrapper.find('[data-testid="request-assessor"]').text()).not.toContain('Reassigned')
   })
 })
 

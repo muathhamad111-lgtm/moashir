@@ -304,18 +304,11 @@ test.describe('Task-84 — S3 request queue and S4 request detail', () => {
         await expectLevel(cell, { tier: EHSAN.tier, chip: state.chip }, testInfo)
         await capture(page, page, `s3-request-queue-${state.key}-${theme}`, testInfo)
 
-        await open(
-          page,
-          `/admin/requests/${EHSAN.request}`,
-          '[data-testid="request-entity"] .level-badge',
-        )
-        const header = page.locator('.request-detail__facts')
+        await open(page, `/admin/requests/${EHSAN.request}`, '.request-overview__data .level-badge')
+        // Request page v4.1: the entity's level is in the overview's request data.
+        const header = page.locator('.request-overview__data')
         await expect(header).toBeVisible()
-        await expectLevel(
-          page.locator('[data-testid="request-entity"]'),
-          { tier: EHSAN.tier, chip: state.chip },
-          testInfo,
-        )
+        await expectLevel(header, { tier: EHSAN.tier, chip: state.chip }, testInfo)
         await capture(header, page, `s4-request-detail-${state.key}-${theme}`, testInfo)
       })
     }

@@ -19,6 +19,7 @@ export function seedBagRequests() {
   return [
     {
       id: 'bag-req-7001',
+      number: 'KIT-2026-000005',
       entityId: 6001,
       status: 'awaiting-assignment',
       paymentId: 'bag-pay-7001',
@@ -39,6 +40,7 @@ export function seedBagRequests() {
     },
     {
       id: 'bag-req-7002',
+      number: 'KIT-2026-000006',
       entityId: 6002,
       status: 'awaiting-assignment',
       paymentId: 'bag-pay-7002',
@@ -59,6 +61,7 @@ export function seedBagRequests() {
     },
     {
       id: 'bag-req-7003',
+      number: 'KIT-2026-000004',
       entityId: 6003,
       status: 'assigned',
       paymentId: 'bag-pay-7003',
@@ -87,6 +90,7 @@ export function seedBagRequests() {
     },
     {
       id: 'bag-req-7004',
+      number: 'KIT-2026-000003',
       entityId: 6004,
       status: 'in-analysis',
       paymentId: 'bag-pay-7004',
@@ -115,6 +119,7 @@ export function seedBagRequests() {
     },
     {
       id: 'bag-req-5001',
+      number: 'KIT-2026-000002',
       entityId: 5001,
       status: 'active',
       paymentId: 'bag-pay-5001',
@@ -143,6 +148,7 @@ export function seedBagRequests() {
     },
     {
       id: 'bag-req-6600',
+      number: 'KIT-2026-000001',
       entityId: 6001,
       status: 'completed',
       paymentId: 'bag-pay-6600',

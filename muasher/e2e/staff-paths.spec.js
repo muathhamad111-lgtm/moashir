@@ -127,8 +127,11 @@ test.describe('qualified assignment', () => {
   }, testInfo) => {
     await signIn(page, testInfo, USERS.follower)
     await open(page, '/admin/requests/9105', '.request-actions')
-    await expect(page.locator('.request-detail__number .path-badge--accredited')).toBeVisible()
-    await page.locator('.request-detail__heading [data-testid="request-assign"]').click()
+    // Request page v4.1: the path is the small line above the request number.
+    await expect(page.locator('.record-identity__kind')).toHaveText(
+      text(testInfo, 'Accredited assessment', 'التقييم المعتمد'),
+    )
+    await page.locator('.record-summary__bar [data-testid="request-assign"]').click()
     const dialog = page.locator('.modal')
     await expect(dialog.locator('.assign-dialog__path .path-badge--accredited')).toBeVisible()
     await openAssessorList(page, dialog)
@@ -504,7 +507,7 @@ test.describe('staff paths screenshots', () => {
     await page.setViewportSize(VIEWPORTS.desktop)
     await signIn(page, testInfo, USERS.follower, 'dark')
     await open(page, '/admin/requests/9105', '.request-actions')
-    await page.locator('.request-detail__heading [data-testid="request-assign"]').click()
+    await page.locator('.record-summary__bar [data-testid="request-assign"]').click()
     await openAssessorList(page, page.locator('.modal'))
     await expect(assessorOptions(page).first()).toBeVisible()
     await capture(page, `assign-dialog-dark-desktop-${suffixOf(testInfo)}`)

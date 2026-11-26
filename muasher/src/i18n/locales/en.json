@@ -5081,18 +5081,32 @@
         "paidAt": "Paid on",
         "openRecord": "Open the payment record",
         "downloadReceipt": "Download the payment receipt",
-        "noReceipt": "No receipt issued yet"
+        "noReceipt": "No receipt issued yet",
+        "actions": "Payment actions"
       },
       "moreActions": "More actions for request {number}",
       "tabs": {
         "overview": "Overview",
         "completion": "Completion",
-        "log": "History"
+        "log": "History",
+        "assessment": "Assessment",
+        "certificate": "Certificate",
+        "payment": "Payment"
       },
       "result": {
         "title": "Result",
         "percent": "{value}%",
         "total": "{total} of {max}"
+      },
+      "openedAt": "Opened on",
+      "entityLevel": "Entity's current level",
+      "assignedAt": "Assigned on",
+      "resultEyebrow": "Request result",
+      "facts": {
+        "updatedAt": "Last updated",
+        "assignments": "Assignments",
+        "completions": "Completion requests",
+        "completionsValue": "{total} · {open} open"
       }
     },
     "bundle": {
@@ -5171,7 +5185,8 @@
         "revoked": "The certificate was revoked",
         "reissued": "A new certificate was issued"
       },
-      "revokeHint": "The entity sees the reason; it is never public · at least {min} characters"
+      "revokeHint": "The entity sees the reason; it is never public · at least {min} characters",
+      "actions": "Certificate actions"
     },
     "stages": {
       "label": "Request stage",
@@ -5284,7 +5299,6 @@
       }
     },
     "manage": {
-      "eyebrow": "Assessor workspace",
       "title": "Manage the Quick Excellence Kit",
       "intro": "Review every gap from the source result, open a focused subset for the active stage, and attach helper files to guide the organization.",
       "noActiveStage": "No active stage",
@@ -5344,7 +5358,10 @@
           "advanced": "Advanced assessment"
         }
       },
-      "back": "Back to the Kit requests"
+      "back": "Back to the Kit requests",
+      "kitBadge": "Excellence Kit",
+      "completedAt": "Completed on",
+      "referenceLine": "Reference accredited result: {value}"
     },
     "comparison": {
       "eyebrow": "Impact measurement",
@@ -11192,5 +11209,15 @@
   "pageActions": {
     "button": "Actions",
     "title": "Page actions"
+  },
+  "records": {
+    "status": "Status",
+    "since": "Since",
+    "groups": {
+      "request": "Request",
+      "assignment": "Assignment",
+      "timeline": "Dates",
+      "details": "Other details"
+    }
   }
 }

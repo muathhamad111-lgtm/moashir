@@ -9,6 +9,10 @@ vi.mock('@/services/bagRequestsService', () => ({ bagRequestsService: { get: vi.
 
 const REQUEST = {
   id: 'bag-req-7003',
+  number: 'KIT-2026-000004',
+  paidAt: '2026-07-06T12:00:00+03:00',
+  assignedAt: '2026-07-07T10:00:00+03:00',
+  assignedEvaluatorName: 'د. سلطان',
   entityName: { ar: 'وقف الخير للرعاية الصحية', en: 'Al-Khair Waqf for Healthcare' },
   status: 'assigned',
   referenceSnapshot: { assessmentId: 9212, version: 1, scorePercent: 58 },
@@ -26,9 +30,19 @@ describe('BagManageHeader', () => {
     expect(bagRequestsService.get).toHaveBeenCalledWith('bag-req-7003')
     const request = wrapper.find('[data-testid="bag-manage-request"]')
     expect(request.text()).toContain('وقف الخير للرعاية الصحية')
-    expect(request.text()).toContain('معتمد')
-    expect(request.find('.badge').exists()).toBe(true)
-    expect(wrapper.find('.bag-manage__back').attributes('href')).toBe(
+    // Request page v4.1: the Kit is titled by its number, its reference result is a line under it, the status sits
+    // once at the end, and the evaluator and the dates are two titled groups.
+    expect(wrapper.find('h1').text()).toBe('KIT-2026-000004')
+    expect(wrapper.find('.record-identity__kind').text()).toBe('حقيبة التميّز')
+    expect(wrapper.find('.record-identity__subject').text()).toContain('معتمد')
+    expect(wrapper.findAll('.record-status__badge')).toHaveLength(1)
+    expect(wrapper.find('.record-status__since').exists()).toBe(true)
+    expect(wrapper.findAll('.record-group h2').map((title) => title.text())).toEqual([
+      'الإسناد',
+      'المواعيد',
+    ])
+    expect(wrapper.find('.record-facts__value').text()).toBe('د. سلطان')
+    expect(wrapper.find('.record-summary__back').attributes('href')).toBe(
       globals.router.resolve({ name: ROUTE_NAMES.BAG_EVALUATOR_REQUESTS }).href,
     )
   })
@@ -40,8 +54,9 @@ describe('BagManageHeader', () => {
       global: createTestGlobals({ locale: 'en' }),
     })
     await flushPromises()
-    expect(wrapper.find('.bag-manage__title').exists()).toBe(true)
+    expect(wrapper.find('h1').text()).toBe('Manage the Quick Excellence Kit')
     expect(wrapper.find('[data-testid="bag-manage-request"]').exists()).toBe(false)
+    expect(wrapper.find('.record-status').exists()).toBe(false)
   })
 
   it('sends a Kit plan without a request to the assessor Kit requests', async () => {

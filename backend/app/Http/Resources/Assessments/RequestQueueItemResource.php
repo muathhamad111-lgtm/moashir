@@ -36,11 +36,7 @@ final class RequestQueueItemResource extends JsonResource
             ...PathPresenter::of($assessment->path),
             'status' => StatusMask::statusFor($assessment, $request->user()),
             'is_frozen' => $assessment->isFrozen(),
-            'entity' => [
-                ...EntityPresenter::summary($assessment->entity),
-                'level' => EntityLevelPresenter::levelOf($assessment->entity)?->value,
-                'last_level' => EntityLevelPresenter::lastLevelOf($assessment->entity),
-            ],
+            'entity' => self::entityOf($assessment),
             'assessor' => $assignment instanceof AssessmentAssignment ? ['id' => $assignment->assessor_user_id, 'name' => $assignment->assessor->name] : null,
             'is_reassigned' => (bool) $assessment->was_reassigned,
             'assigned_at' => $assignment?->created_at->toIso8601String(),
@@ -49,6 +45,20 @@ final class RequestQueueItemResource extends JsonResource
             'region' => $assessment->region instanceof Region ? EntityPresenter::place($assessment->region) : null,
             ...ReviewClockPresenter::of($assessment),
             ...PeriodPresenter::attribution($assessment),
+        ];
+    }
+
+    /**
+     * The entity a request belongs to, with its level, as the queue row and the request record show it.
+     *
+     * @return array<string, mixed>
+     */
+    public static function entityOf(Assessment $assessment): array
+    {
+        return [
+            ...EntityPresenter::summary($assessment->entity),
+            'level' => EntityLevelPresenter::levelOf($assessment->entity)?->value,
+            'last_level' => EntityLevelPresenter::lastLevelOf($assessment->entity),
         ];
     }
 }

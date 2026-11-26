@@ -134,9 +134,19 @@ export function toProgressSummary(raw) {
   return { complete: raw.subsComplete ?? 0, total: raw.subsTotal ?? 0 }
 }
 
+// The entity's logo on the request record header: a short-lived link, or null when the viewer may not open it.
+function toEntityLogo(raw) {
+  return raw
+    ? { id: raw.id ?? null, url: raw.url ?? null, uploadedAt: raw.uploadedAt ?? null }
+    : null
+}
+
 export function toRequestDetail(raw = {}) {
+  const row = toQueueRow(raw)
   return {
-    ...toQueueRow(raw),
+    ...row,
+    entity: row.entity ? { ...row.entity, logo: toEntityLogo(raw.entity?.logo) } : null,
+    hasCertificates: raw.hasCertificates === true,
     payment: {
       paid: raw.payment?.paid === true,
       details: raw.payment?.reference ? toRequestPayment(raw.payment) : null,

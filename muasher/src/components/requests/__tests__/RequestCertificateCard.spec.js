@@ -49,7 +49,9 @@ describe('RequestCertificateCard issuance mode', () => {
     })
     const wrapper = await mountAs(['assessor'])
     expect(certificatesService.requestState).toHaveBeenCalledWith(9101)
-    expect(wrapper.find('.request-certificate__issue').exists()).toBe(true)
+    // Request page v4.1: the card's actions sit in its header row, beside the title.
+    const actions = wrapper.find('.record-card-header__actions')
+    expect(actions.findAll('button').map((button) => button.text())).toEqual(['إصدار الشهادة'])
     expect(wrapper.text()).toContain('أصدر الشهادة لتظهر للجهة')
   })
 
@@ -58,7 +60,7 @@ describe('RequestCertificateCard issuance mode', () => {
       data: { certificate: null, issuanceMode: 'automatic' },
     })
     const wrapper = await mountAs(['assessor'])
-    expect(wrapper.find('.request-certificate__issue').exists()).toBe(false)
+    expect(wrapper.find('.record-card-header__actions').exists()).toBe(false)
     expect(wrapper.text()).toContain('تصدر الشهادة تلقائيًا')
   })
 
@@ -68,7 +70,7 @@ describe('RequestCertificateCard issuance mode', () => {
     })
     const wrapper = await mountAs(['assessor'])
     expect(wrapper.find('[data-certificate="current"]').text()).toContain('CRT-2026-000041')
-    expect(wrapper.find('.request-certificate__issue').exists()).toBe(false)
+    expect(wrapper.text()).not.toContain('إصدار الشهادة')
   })
 })
 
@@ -114,8 +116,16 @@ describe('staff certificate card on the request detail', () => {
     expect(current.text()).toContain('CRT-2026-000003')
     expect(current.text()).toContain('المستوى الذهبي')
     expect(current.text()).toContain('د. خالد بن سعد القحطاني')
-    const labels = current.findAll('button').map((button) => button.text())
+    // The actions sit in the card header, primary first and the destructive one last, not between the facts and
+    // the history (operator note on v4).
+    expect(current.findAll('button')).toHaveLength(0)
+    const header = wrapper.find('.record-card-header')
+    expect(header.find('h2').text()).toBe('الشهادة')
+    const labels = header.findAll('button').map((button) => button.text())
     expect(labels).toEqual(['تنزيل الشهادة PDF', 'إعادة الإصدار', 'إلغاء الشهادة'])
+    expect(header.find('.record-card-header__actions').attributes('aria-label')).toBe(
+      'إجراءات الشهادة',
+    )
     expect(wrapper.find('.request-certificate__history').text()).toContain('CRT-2026-000002')
     expect(wrapper.text()).toContain('التقرير التعقيبي للطلب')
   })

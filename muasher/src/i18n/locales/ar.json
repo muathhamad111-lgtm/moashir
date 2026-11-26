@@ -5081,18 +5081,32 @@
         "paidAt": "تاريخ الدفع",
         "openRecord": "فتح سجل الدفعة",
         "downloadReceipt": "تنزيل إيصال الدفع",
-        "noReceipt": "لم يصدر إيصال بعد"
+        "noReceipt": "لم يصدر إيصال بعد",
+        "actions": "إجراءات الدفع"
       },
       "moreActions": "إجراءات أخرى للطلب {number}",
       "tabs": {
         "overview": "نظرة عامة",
         "completion": "الاستكمال",
-        "log": "السجل"
+        "log": "السجل",
+        "assessment": "التقييم",
+        "certificate": "الشهادة",
+        "payment": "الدفع"
       },
       "result": {
         "title": "النتيجة",
         "percent": "{value}%",
         "total": "{total} من {max}"
+      },
+      "openedAt": "تاريخ الفتح",
+      "entityLevel": "مستوى الجهة الحالي",
+      "assignedAt": "تاريخ الإسناد",
+      "resultEyebrow": "نتيجة الطلب",
+      "facts": {
+        "updatedAt": "آخر تحديث",
+        "assignments": "مرات الإسناد",
+        "completions": "طلبات الاستكمال",
+        "completionsValue": "{total} · المفتوح {open}"
       }
     },
     "bundle": {
@@ -5171,7 +5185,8 @@
         "revoked": "أُلغيت الشهادة",
         "reissued": "صدرت شهادة جديدة"
       },
-      "revokeHint": "يصل السبب إلى الجهة ولا يظهر للعموم · {min} أحرف على الأقل"
+      "revokeHint": "يصل السبب إلى الجهة ولا يظهر للعموم · {min} أحرف على الأقل",
+      "actions": "إجراءات الشهادة"
     },
     "stages": {
       "label": "مرحلة الطلب",
@@ -5284,7 +5299,6 @@
       }
     },
     "manage": {
-      "eyebrow": "مساحة عمل المقيّم",
       "title": "إدارة حقيبة التميز السريع",
       "intro": "راجع كل فجوة من النتيجة المصدر، وافتح مجموعة مركّزة منها للمرحلة النشطة، وأرفق ملفات مساعدة لإرشاد الجهة.",
       "noActiveStage": "لا توجد مرحلة نشطة",
@@ -5344,7 +5358,10 @@
           "advanced": "التقييم المتقدم"
         }
       },
-      "back": "العودة إلى طلبات الحقيبة"
+      "back": "العودة إلى طلبات الحقيبة",
+      "kitBadge": "حقيبة التميّز",
+      "completedAt": "تاريخ الاكتمال",
+      "referenceLine": "التقييم المعتمد المرجعي: {value}"
     },
     "comparison": {
       "eyebrow": "قياس الأثر",
@@ -11192,5 +11209,15 @@
   "pageActions": {
     "button": "الإجراءات",
     "title": "إجراءات الصفحة"
+  },
+  "records": {
+    "status": "الحالة",
+    "since": "منذ",
+    "groups": {
+      "request": "الطلب",
+      "assignment": "الإسناد",
+      "timeline": "المواعيد",
+      "details": "تفاصيل أخرى"
+    }
   }
 }

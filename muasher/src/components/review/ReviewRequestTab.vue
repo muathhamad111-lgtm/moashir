@@ -6,7 +6,7 @@ import Skeleton from '@/components/feedback/Skeleton.vue'
 import ErrorState from '@/components/feedback/ErrorState.vue'
 import AssessmentTimeline from '@/components/assessment/AssessmentTimeline.vue'
 import CompletionRequestCard from '@/components/accredited/CompletionRequestCard.vue'
-import RequestFacts from '@/components/requests/RequestFacts.vue'
+import RequestFactGroups from '@/components/requests/RequestFactGroups.vue'
 import AssignmentHistoryList from '@/components/requests/AssignmentHistoryList.vue'
 import { useRequestDetail } from '@/composables/useRequestDetail'
 
@@ -31,7 +31,7 @@ onMounted(load)
         <template #header>
           <h2 class="card__title-text">{{ t('requests.detail.requestInfo') }}</h2>
         </template>
-        <RequestFacts :detail="detail" />
+        <RequestFactGroups :detail="detail" />
       </Card>
       <Card v-for="completion in detail.completionRequests" :key="completion.id">
         <CompletionRequestCard :request="completion" show-status />

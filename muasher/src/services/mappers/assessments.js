@@ -82,7 +82,12 @@ function toStatusChange(raw) {
 }
 
 export function toAssessmentRecord(raw = {}) {
-  return { ...toAssessment(raw), statusHistory: (raw.statusHistory ?? []).map(toStatusChange) }
+  return {
+    ...toAssessment(raw),
+    level: raw.level ?? null,
+    certificate: toCertificateSummary(raw.certificate),
+    statusHistory: (raw.statusHistory ?? []).map(toStatusChange),
+  }
 }
 
 function toUpdateItem(raw) {

@@ -8,7 +8,10 @@ import {
   readJson,
 } from '../stores/assessments/assessmentRejection'
 import { readsEveryAssessment, signedInActor } from '../stores/assessments/assessmentAccess'
-import { findAssessment, isFrozen } from '../stores/assessments/assessmentsStore'
+import { entityOf, findAssessment, isFrozen } from '../stores/assessments/assessmentsStore'
+import { ENTITY_PERMISSIONS } from '../stores/entityAccess'
+import { staffLogoOf } from '../stores/entitySerializers'
+import { forRequest } from '../stores/requestCertificates'
 import { recordResource } from '../stores/assessments/selfSerializers'
 import { normalizeSearchText } from '../stores/searchIndex'
 import { findPayment } from '../stores/finance/financeState'
@@ -119,8 +122,16 @@ function detailResource(record, viewer) {
   const assignments = reveals
     ? record.assignments
     : record.assignments.filter((assignment) => assignment.assessorId === viewer.id)
+  const row = queueRow(record, staffNameOf)
+  const entity = entityOf(record)
   return {
-    ...queueRow(record, staffNameOf),
+    ...row,
+    // The record header's logo, only for a viewer who may open the entity (as the API's viewLogo rule).
+    entity: {
+      ...row.entity,
+      logo: entity && sessionCan(ENTITY_PERMISSIONS.VIEW) ? staffLogoOf(entity, viewer) : null,
+    },
+    hasCertificates: record.path === 'accredited' && forRequest(record.id).length > 0,
     payment: {
       paid: findPayment(record.paymentId)?.status === 'paid',
       ...(reveals && revealsPaymentDetails() ? (requestPaymentOf(record) ?? {}) : {}),

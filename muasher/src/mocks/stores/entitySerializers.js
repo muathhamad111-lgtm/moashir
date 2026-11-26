@@ -125,7 +125,7 @@ export function ownEntityResource(
   }
 }
 
-function staffLogoOf(entity, viewer) {
+export function staffLogoOf(entity, viewer) {
   const file = entity.logo ? findFile(entity.logo.id) : null
   if (!file || !viewer) return null
   return {

@@ -166,10 +166,13 @@ test.describe('Requests follower', () => {
     await expect(page.locator('.request-actions [data-testid="request-assign"]')).toBeVisible()
     await expect(page.locator('[data-testid="request-assign"]')).toHaveCount(1)
     await expect(page.locator('.request-payment-card__facts')).toHaveCount(0)
-    await expect(page.locator('.request-facts')).toContainText(isEn(testInfo) ? 'Paid' : 'مدفوعة')
-    await expect(page.locator('[data-testid="request-entity"]')).toContainText('ENT-')
+    // Request page v4.1: the fee is in the overview's request data when the payment tab is not shown.
+    await expect(page.locator('.request-overview__data')).toContainText(
+      isEn(testInfo) ? 'Paid' : 'مدفوعة',
+    )
+    await expect(page.locator('.record-identity__subject')).toContainText('ENT-')
     await expect(page.locator('.request-certificate')).toHaveCount(0)
-    await page.locator('.request-detail__heading [data-testid="request-assign"]').click()
+    await page.locator('.record-summary__bar [data-testid="request-assign"]').click()
     const dialog = page.locator('.modal')
     await openAssessorList(page, dialog)
     await expect(assessorOptions(page).first()).toBeVisible()
@@ -179,14 +182,14 @@ test.describe('Requests follower', () => {
     })
     await assessorOptions(page).nth(1).click()
     await dialog.locator('button[type="submit"]').click()
-    await expect(page.locator('.request-facts')).toContainText(
+    await expect(page.locator('.record-status')).toContainText(
       isEn(testInfo) ? 'Assigned' : 'مُسند',
     )
     await openRequestTab(page, isEn(testInfo) ? 'History' : 'السجل')
     await expect(page.locator('.assignment-history__item')).toHaveCount(1)
 
     await page.goto('/admin/requests/9108')
-    await page.locator('.request-detail__heading [data-testid="request-assign"]').click()
+    await page.locator('.record-summary__bar [data-testid="request-assign"]').click()
     await chooseAssessor(page, dialog, 0)
     await dialog.locator('button[type="submit"]').click()
     await expect(dialog.locator('.field__error')).toBeVisible()
@@ -355,7 +358,7 @@ test.describe('Super Admin and settings', () => {
     await expect(dialog.locator('.field__error')).toHaveCount(0)
     await dialog.locator('button[type="submit"]').click()
     await expect(dialog).toHaveCount(0)
-    await expect(page.locator('.request-facts')).toContainText(
+    await expect(page.locator('.record-status')).toContainText(
       isEn(testInfo) ? 'Under review' : 'قيد المراجعة',
     )
     await openRequestTab(page, isEn(testInfo) ? 'History' : 'السجل')

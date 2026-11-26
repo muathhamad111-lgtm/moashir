@@ -71,6 +71,12 @@ test('the System Administrator finds a paid draft in the request list and follow
   })
 
   await row.locator(`a[href^="/admin/requests/"]`).first().click()
+  // Request page v4.1: the payment has its own tab.
+  await page
+    .locator('.request-detail__tabs [role="tab"]', {
+      hasText: isEn(testInfo) ? 'Payment' : 'الدفع',
+    })
+    .click()
   const card = page.locator('[data-testid="request-payment-card"]')
   await expect(card).toContainText('PAY-2026-000012')
   await page.screenshot({

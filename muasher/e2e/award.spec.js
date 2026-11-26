@@ -1,7 +1,7 @@
 import { Buffer } from 'node:buffer'
 import { test, expect } from '@playwright/test'
 import { seedPreferences, seedSignedIn } from './support/session'
-import { chooseRequestAction } from './support/requestRecord'
+import { chooseRequestAction, openRequestTab } from './support/requestRecord'
 import { completionSheet, nextCompletionStep } from './support/reviewWork'
 
 const IGNORED_CONSOLE = /Failed to load resource|40\d|50\d/i
@@ -257,9 +257,11 @@ test.describe('Award staff screens', () => {
     await nextCompletionStep(page)
     await shot(page, 'award-follower-return', testInfo)
     await dialog.locator('button[type="submit"]').click()
-    await expect(page.locator('.request-facts')).toContainText(
+    await expect(page.locator('.record-status')).toContainText(
       text(testInfo, 'Needs completion', 'بحاجة إلى استكمال'),
     )
+    // Request page v4.1: the completion requests have their own tab.
+    await openRequestTab(page, text(testInfo, 'Completion', 'الاستكمال'))
     await expect(page.locator('.completion-card')).toBeVisible()
     expect(errors).toEqual([])
   })
@@ -273,7 +275,7 @@ test.describe('Award staff screens', () => {
     await expect(dialog.locator('.field__error')).toBeVisible()
     await dialog.locator('textarea').fill(WITHDRAW_REASON)
     await dialog.locator('button[type="submit"]').click()
-    await expect(page.locator('.request-facts')).toContainText(text(testInfo, 'Withdrawn', 'مسحوب'))
+    await expect(page.locator('.record-status')).toContainText(text(testInfo, 'Withdrawn', 'مسحوب'))
   })
 
   test('the initial assessor completes the assessment and the request waits for filtering', async ({

@@ -20,5 +20,6 @@ final readonly class RequestDetail
         public bool $revealsStaffIdentities,
         public bool $isPaid,
         public ?BoundSubCriteria $subs,
+        public bool $hasCertificates,
     ) {}
 }

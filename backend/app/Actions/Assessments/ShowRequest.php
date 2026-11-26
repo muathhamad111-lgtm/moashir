@@ -26,7 +26,7 @@ final readonly class ShowRequest
 
     public function handle(User $viewer, Assessment $assessment): RequestDetail
     {
-        $assessment->loadMissing(['entity.'.EntityLevelQuery::RELATION, 'entity.'.EntityLevelQuery::DISPLAY_RELATION, 'openCompletionRequest', 'payment.receipt', 'awardCycle', 'region']);
+        $assessment->loadMissing(['entity.logo', 'entity.'.EntityLevelQuery::RELATION, 'entity.'.EntityLevelQuery::DISPLAY_RELATION, 'openCompletionRequest', 'payment.receipt', 'awardCycle', 'region']);
         $assessment->load('latestAssignment.assessor')->loadExists(['assignments as was_reassigned' => static fn (Builder $reassigned): Builder => $reassigned->where('status', AssignmentStatus::Reassigned)]);
         $revealsIdentities = $this->scope->accessOf($viewer, $assessment)->revealsStaffIdentities();
         $assignments = AssessmentAssignment::query()
@@ -46,6 +46,7 @@ final readonly class ShowRequest
             $revealsIdentities,
             $assessment->payment?->status === PaymentStatus::Paid,
             $completionRequests === [] ? null : $this->subs->of($assessment->criteriaVersion()->firstOrFail()),
+            $assessment->certificate()->exists(),
         );
     }
 }

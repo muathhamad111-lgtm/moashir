@@ -38,6 +38,7 @@ function entityName(id) {
 function toRow(r) {
   return {
     id: r.id,
+    number: r.number,
     entityId: r.entityId,
     entityName: entityName(r.entityId),
     status: r.status,
@@ -81,6 +82,7 @@ function matchesSearch(r, needle) {
     (name.ar ?? '').toLowerCase().includes(needle) ||
     (name.en ?? '').toLowerCase().includes(needle) ||
     r.id.toLowerCase().includes(needle) ||
+    (r.number ?? '').toLowerCase().includes(needle) ||
     String(r.assignedEvaluatorId ?? '').includes(needle)
   )
 }

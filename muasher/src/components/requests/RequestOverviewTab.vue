@@ -2,34 +2,32 @@
 import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 import Card from '@/components/ui/Card.vue'
-import CompletionRequestCard from '@/components/accredited/CompletionRequestCard.vue'
-import RequestPaymentCard from './RequestPaymentCard.vue'
-import RequestCertificateCard from './RequestCertificateCard.vue'
-import RequestResultBreakdown from './RequestResultBreakdown.vue'
-import { ACCREDITED_STATUSES, COMPLETION_STATUSES } from '@/constants/accredited'
-import { ASSESSMENT_PATHS } from '@/constants/assessment'
+import RequestFacts from './RequestFacts.vue'
+import { ACCREDITED_STATUSES } from '@/constants/accredited'
 import { formatNumber } from '@/utils/formatNumber'
 
-// The request at a glance: its result once completed, the open completion request, the payment and the certificate.
+// The request at a glance: its data for this path and state. The payment, the certificate and the completion
+// requests have their own tabs (operator review 2026-11-25); a completed request without a level keeps its result here.
 const props = defineProps({
   detail: { type: Object, required: true },
-  receiptDownloading: { type: Boolean, default: false },
 })
 
-const emit = defineEmits(['download-receipt'])
 const { t, n } = useI18n()
-const isAccredited = computed(() => props.detail.path === ASSESSMENT_PATHS.ACCREDITED)
-const isCompleted = computed(() => props.detail.status === ACCREDITED_STATUSES.COMPLETED)
-const result = computed(() => (isCompleted.value ? props.detail.record.result : null))
-const openCompletion = computed(() =>
-  props.detail.completionRequests.find(
-    (completion) => completion.status === COMPLETION_STATUSES.OPEN,
-  ),
+const result = computed(() =>
+  props.detail.status === ACCREDITED_STATUSES.COMPLETED && !props.detail.record.level
+    ? props.detail.record.result
+    : null,
 )
 </script>
 
 <template>
   <div class="request-overview">
+    <Card class="request-overview__data">
+      <template #header>
+        <h2 class="card__title-text">{{ t('requests.detail.requestInfo') }}</h2>
+      </template>
+      <RequestFacts :detail="detail" />
+    </Card>
     <Card v-if="result" class="request-result" data-testid="request-result">
       <template #header>
         <h2 class="card__title-text">{{ t('requests.detail.result.title') }}</h2>
@@ -46,21 +44,5 @@ const openCompletion = computed(() =>
         }}
       </p>
     </Card>
-    <RequestResultBreakdown v-if="result && isAccredited" :assessment-id="detail.id" />
-    <Card v-if="openCompletion">
-      <CompletionRequestCard :request="openCompletion" show-status />
-    </Card>
-    <RequestPaymentCard
-      v-if="detail.payment.details"
-      :payment="detail.payment.details"
-      :downloading="receiptDownloading"
-      @download="emit('download-receipt', $event)"
-    />
-    <RequestCertificateCard
-      v-if="isAccredited"
-      :key="`${detail.id}-${detail.status}`"
-      :request-id="detail.id"
-      :completed="isCompleted"
-    />
   </div>
 </template>
