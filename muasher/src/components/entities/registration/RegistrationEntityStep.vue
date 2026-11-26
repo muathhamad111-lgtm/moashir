@@ -24,6 +24,8 @@ const today = riyadhDateKey(new Date())
 
 <template>
   <div class="entity-form__grid">
+    <FieldInput name="name.ar" input-dir="rtl" :label="t('entities.fields.nameAr')" required />
+    <FieldInput name="name.en" input-dir="ltr" :label="t('entities.fields.nameEn')" required />
     <FieldSelect
       name="entityType"
       :label="t('entities.fields.entityType')"
@@ -39,11 +41,10 @@ const today = riyadhDateKey(new Date())
       required
     />
     <RegistrationDocumentField
+      class="registration-document--paired"
       name="licenseCertificate"
       :label="t('entities.documents.kinds.licenseCertificate')"
     />
-    <FieldInput name="name.ar" input-dir="rtl" :label="t('entities.fields.nameAr')" required />
-    <FieldInput name="name.en" input-dir="ltr" :label="t('entities.fields.nameEn')" required />
     <FieldSelect
       name="regionId"
       :label="t('entities.fields.region')"

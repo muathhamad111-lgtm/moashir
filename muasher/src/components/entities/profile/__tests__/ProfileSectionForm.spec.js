@@ -88,11 +88,13 @@ async function submit(wrapper) {
 beforeEach(() => vi.clearAllMocks())
 
 describe('ProfileSectionForm', () => {
-  it('focuses the requested field and marks no optional input with «*»', async () => {
+  it('focuses the requested field and marks only the governance grade with «*»', async () => {
     const { wrapper } = await factory({ focusField: 'employeesCount' })
     await flushPromises()
     expect(document.activeElement?.getAttribute('name')).toBe('employeesCount')
-    expect(wrapper.findAll('.field--required')).toHaveLength(0)
+    const required = wrapper.findAll('.field--required')
+    expect(required).toHaveLength(1)
+    expect(required[0].find('[name="governanceGrade"]').exists()).toBe(true)
     wrapper.unmount()
   })
 
@@ -117,13 +119,14 @@ describe('ProfileSectionForm', () => {
     wrapper.unmount()
   })
 
-  it('hides the governance grade after a «no» and sends it as null', async () => {
+  it('disables and clears the governance grade when «no governance grade» is ticked and sends it as null', async () => {
     entitiesService.saveProfileSection.mockResolvedValue({ data: profileWith() })
     const { wrapper } = await factory()
     await wrapper.find('[name="governanceGrade"]').setValue('120')
-    await wrapper.find('input[name="hasGovernanceGrade"][value="no"]').setValue(true)
+    await wrapper.find('input[name="noGovernanceGrade"]').setValue(true)
     await flushPromises()
-    expect(wrapper.find('[name="governanceGrade"]').exists()).toBe(false)
+    const grade = wrapper.find('[name="governanceGrade"]')
+    expect([grade.element.disabled, grade.element.value]).toEqual([true, ''])
     await submit(wrapper)
     expect(entitiesService.saveProfileSection).toHaveBeenCalledWith(
       'governance',

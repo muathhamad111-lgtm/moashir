@@ -25,11 +25,6 @@ const values = useFormValues()
         autocomplete="name"
         required
       />
-      <RegistrationDocumentField
-        name="authorizationLetter"
-        :label="t('entities.documents.kinds.authorizationLetter')"
-      />
-      <NationalIdField v-if="nationalIdRequired" />
       <FieldInput
         name="phone"
         type="tel"
@@ -37,6 +32,11 @@ const values = useFormValues()
         inputmode="tel"
         autocomplete="tel"
         :label="t('entities.fields.phone')"
+      />
+      <NationalIdField v-if="nationalIdRequired" class="entity-form__wide" />
+      <RegistrationDocumentField
+        name="authorizationLetter"
+        :label="t('entities.documents.kinds.authorizationLetter')"
       />
       <RegistrationEmailField class="entity-form__wide" />
       <FieldInput

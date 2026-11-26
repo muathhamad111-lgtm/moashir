@@ -142,18 +142,18 @@ describe('entity payload mapping', () => {
     expect(profilePayload(values({ hasStrategicPlan: 'no' })).hasStrategicPlan).toBe(false)
   })
 
-  it('sends no governance grade after a «no» and keeps an unanswered question empty', () => {
+  it('sends no governance grade with «no grade» ticked and starts an unset answer with the grade required', () => {
     expect(profilePayload(values({ hasGovernanceGrade: 'no' }))).toMatchObject({
       hasGovernanceGrade: false,
       governanceGrade: null,
     })
     expect(profileFormValues({ ...ENTITY, hasGovernanceGrade: null })).toMatchObject({
-      hasGovernanceGrade: '',
+      hasGovernanceGrade: 'yes',
     })
     expect(profileFormValues({ ...ENTITY, hasGovernanceGrade: false })).toMatchObject({
       hasGovernanceGrade: 'no',
     })
-    expect(emptyProfileValues().hasGovernanceGrade).toBe('')
+    expect(emptyProfileValues().hasGovernanceGrade).toBe('yes')
     expect(profilePayload(values({ hasGovernanceGrade: '' })).hasGovernanceGrade).toBeNull()
   })
 })
@@ -181,14 +181,13 @@ describe('entity schemas', () => {
         'name.ar',
         'unifiedNumber',
         'foundedOn',
-        'hasGovernanceGrade',
+        'governanceGrade',
         'licenseNumber',
         'licenseCertificate',
         'authorizationLetter',
       ]),
     )
     expect(errors).not.toContain('foundingYear')
-    expect(errors).not.toContain('governanceGrade')
   })
 
   it('requires a valid governance grade only after a «yes»', async () => {
@@ -206,7 +205,7 @@ describe('entity schemas', () => {
     )
     expect(await gradeErrors({ hasGovernanceGrade: 'yes', governanceGrade: '87.45' })).toBeNull()
     expect(await gradeErrors({ hasGovernanceGrade: 'no', governanceGrade: '120' })).toBeNull()
-    await expect(schema.validateAt('hasGovernanceGrade', emptyProfileValues())).rejects.toThrow(
+    await expect(schema.validateAt('governanceGrade', emptyProfileValues())).rejects.toThrow(
       'This field is required',
     )
   })

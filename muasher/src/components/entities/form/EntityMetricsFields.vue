@@ -13,7 +13,6 @@ const { strategicPlanOptions } = useEntityOptions()
   <fieldset class="entity-form__group">
     <legend class="entity-form__legend">{{ t('entities.sections.metrics') }}</legend>
     <div class="entity-form__grid">
-      <EntityGovernanceGradeFields :hint="t('entities.hints.governanceGrade')" />
       <FieldInput
         name="employeesCount"
         inputmode="numeric"
@@ -24,6 +23,7 @@ const { strategicPlanOptions } = useEntityOptions()
         inputmode="numeric"
         :label="t('entities.fields.annualBeneficiariesCount')"
       />
+      <EntityGovernanceGradeFields :hint="t('entities.hints.governanceGrade')" />
     </div>
     <FieldRadio
       name="hasStrategicPlan"

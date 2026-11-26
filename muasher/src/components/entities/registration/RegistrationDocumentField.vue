@@ -20,6 +20,7 @@ const files = computed(() =>
 <template>
   <BaseFileUpload
     class="registration-document"
+    :class="{ 'registration-document--attached': files.length }"
     :files="files"
     :name="name"
     :label="label"

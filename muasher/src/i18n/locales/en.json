@@ -2334,7 +2334,8 @@
       "licenseNumber": "Licence number",
       "foundedOn": "Founding date",
       "websiteUrl": "Website",
-      "unifiedNumber": "Unified national number"
+      "unifiedNumber": "Unified national number",
+      "noGovernanceGrade": "The entity has no governance grade"
     },
     "hints": {
       "nameEn": "Optional. Used in the English interface.",

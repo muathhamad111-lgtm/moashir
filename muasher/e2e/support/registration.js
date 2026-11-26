@@ -29,8 +29,10 @@ export function registrationNextButton(page) {
   return page.locator('.entity-register__actions button[type="submit"]')
 }
 
+// The grade is required unless «no governance grade» is ticked beneath it.
 export async function answerGovernanceGrade(page, grade) {
-  await page.locator(`input[name="hasGovernanceGrade"][value="${grade ? 'yes' : 'no'}"]`).check()
+  const noGrade = page.locator('input[name="noGovernanceGrade"]')
+  await noGrade.setChecked(!grade)
   if (grade) await page.locator('[name="governanceGrade"]').fill(grade)
 }
 

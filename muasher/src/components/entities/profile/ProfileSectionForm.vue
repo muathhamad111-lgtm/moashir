@@ -32,6 +32,8 @@ const props = defineProps({
   cityOptionsFor: { type: Function, required: true },
 })
 
+const GOVERNANCE_GRADE_FIELD = 'governanceGrade'
+
 const emit = defineEmits(['saved', 'cancel', 'dirty'])
 const { t } = useI18n()
 const root = ref(null)
@@ -50,6 +52,10 @@ const letter = useAuthorizationLetterRule({
 
 const cityOptions = computed(() => props.cityOptionsFor(form.values.regionId))
 const shownFields = computed(() => shownFieldsOf(props.section.fields, formAnswersOf(form.values)))
+// The governance grade is part of the governance field, which renders in place of its answer.
+const inputFields = computed(() =>
+  shownFields.value.filter((field) => field.name !== GOVERNANCE_GRADE_FIELD),
+)
 const blankMissing = computed(() =>
   shownFields.value
     .filter((field) => field.counted && !PROFILE_READ_ONLY_FIELDS.includes(field.name))
@@ -118,7 +124,7 @@ onMounted(() => nextTick(() => focusOn(props.focusField)))
       <legend class="profile-section__legend">
         {{ t(`portal.profile.sections.${section.key}`) }}
       </legend>
-      <template v-for="field in shownFields" :key="field.name">
+      <template v-for="field in inputFields" :key="field.name">
         <VatCertificateUpload v-if="PROFILE_FILE_FIELDS.includes(field.name)" :field="field" />
         <dl v-else-if="isReadOnly(field)" class="profile-section__readonly">
           <ProfileFieldCell

@@ -57,12 +57,12 @@ test('register asks for the entity first, then the authorized person and sign-in
     .locator('.entity-register__step [name]')
     .evaluateAll((fields) => [...new Set(fields.map((field) => field.getAttribute('name')))])
   expect(entityFields).toEqual([
+    'name.ar',
+    'name.en',
     'entityType',
     'unifiedNumber',
     'licenseNumber',
     'licenseCertificate',
-    'name.ar',
-    'name.en',
     'regionId',
     'cityId',
     'developmentSector',
@@ -70,20 +70,24 @@ test('register asks for the entity first, then the authorized person and sign-in
     'foundedOn',
     'employeesCount',
     'annualBeneficiariesCount',
-    'hasGovernanceGrade',
+    'governanceGrade',
+    'noGovernanceGrade',
   ])
+  await expect(page.locator('.entity-register__step legend')).toHaveCount(0)
   const grade = page.locator('[name="governanceGrade"]')
-  await expect(grade).toHaveCount(0)
-  await page.locator('input[name="hasGovernanceGrade"][value="yes"]').check()
-  await expect(grade).toBeVisible()
-  await page.locator('input[name="hasGovernanceGrade"][value="no"]').check()
-  await expect(grade).toHaveCount(0)
+  await expect(grade).toBeEnabled()
+  await grade.fill('87.5')
+  await page.locator('input[name="noGovernanceGrade"]').check()
+  await expect(grade).toBeDisabled()
+  await expect(grade).toHaveValue('')
+  await page.locator('input[name="noGovernanceGrade"]').uncheck()
+  await expect(grade).toBeEnabled()
   await expect(page.locator('.entity-register__step .field__hint')).toHaveCount(0)
   await expect(page.locator('[name="officialEmail"]')).toHaveCount(0)
 
   await registrationNextButton(page).click()
   await expect(page.locator('.wizard__step.is-invalid')).toHaveCount(1)
-  await expect(page.locator('[name="entityType"]')).toBeFocused()
+  await expect(page.locator('[name="name.ar"]')).toBeFocused()
 
   await fillRegistrationEntityStep(page)
   await goToRegistrationAccountStep(page)

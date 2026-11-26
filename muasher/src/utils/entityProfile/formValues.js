@@ -46,7 +46,7 @@ const READERS = Object.freeze({
   orgSize: (profile) => text(profile.orgSize),
   regionId: (profile) => text(profile.region?.id),
   cityId: (profile) => text(profile.city?.id),
-  hasGovernanceGrade: (profile) => planValue(profile.hasGovernanceGrade),
+  hasGovernanceGrade: (profile) => (profile.hasGovernanceGrade === false ? NO : YES),
   governanceGrade: (profile) => text(profile.governanceGrade),
   employeesCount: (profile) => text(profile.employeesCount),
   annualBeneficiariesCount: (profile) => text(profile.annualBeneficiariesCount),

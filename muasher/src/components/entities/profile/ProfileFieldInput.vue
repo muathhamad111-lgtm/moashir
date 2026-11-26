@@ -7,6 +7,7 @@ import FieldDate from '@/components/form/FieldDate.vue'
 import FieldSelect from '@/components/form/FieldSelect.vue'
 import FieldCheckbox from '@/components/form/FieldCheckbox.vue'
 import FieldRadio from '@/components/form/FieldRadio.vue'
+import EntityGovernanceGradeFields from '@/components/entities/form/EntityGovernanceGradeFields.vue'
 import { useEntityOptions } from '@/composables/useEntityOptions'
 import { riyadhDateKey } from '@/utils/datetime'
 import { fieldLabelKey } from '@/utils/entityProfile/sections'
@@ -67,6 +68,7 @@ const selectOptions = computed(() => OPTION_SOURCES[config.value.options]?.() ??
     :placeholder="t('common.select')"
     :required="field.required"
   />
+  <EntityGovernanceGradeFields v-else-if="config.kind === 'governance'" :hint="hint" />
   <FieldRadio
     v-else-if="config.kind === 'radio'"
     class="profile-field-input--wide"

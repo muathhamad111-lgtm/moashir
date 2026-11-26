@@ -103,8 +103,9 @@ async function goNext(wrapper) {
   await settle()
 }
 
+// «no» ticks «no governance grade» beneath the grade; «yes» unticks it, leaving the grade required.
 async function answerGovernance(wrapper, answer) {
-  await wrapper.find(`input[name="hasGovernanceGrade"][value="${answer}"]`).setValue(true)
+  await wrapper.find('input[name="noGovernanceGrade"]').setValue(answer === 'no')
   await flushPromises()
 }
 
@@ -163,16 +164,16 @@ beforeEach(() => {
 })
 
 describe('Register', () => {
-  it('asks for the entity first, in the agreed order and without field hints', async () => {
+  it('asks for the entity first, in the agreed order (layout of 2026-11-26) and without field hints', async () => {
     const { wrapper } = await mountRegister()
     expect(wrapper.findAll('.wizard__step')).toHaveLength(2)
     expect(stepFieldNames(wrapper)).toEqual([
+      'name.ar',
+      'name.en',
       'entityType',
       'unifiedNumber',
       'licenseNumber',
       'licenseCertificate',
-      'name.ar',
-      'name.en',
       'regionId',
       'cityId',
       'developmentSector',
@@ -180,8 +181,10 @@ describe('Register', () => {
       'foundedOn',
       'employeesCount',
       'annualBeneficiariesCount',
-      'hasGovernanceGrade',
+      'governanceGrade',
+      'noGovernanceGrade',
     ])
+    expect(wrapper.find('.entity-register__step legend').exists()).toBe(false)
     expect(wrapper.findAll('.entity-register__step .field__hint')).toHaveLength(0)
     expect(nextButton(wrapper).text()).toBe('Next')
   })
@@ -210,8 +213,8 @@ describe('Register', () => {
     await goNext(wrapper)
     expect(stepFieldNames(wrapper)).toEqual([
       'authorizedPersonName',
-      'authorizationLetter',
       'phone',
+      'authorizationLetter',
       'officialEmail',
       'password',
       'passwordConfirmation',
@@ -334,23 +337,28 @@ describe('Register', () => {
     expect(wrapper.text()).toContain(DUPLICATE)
   })
 
-  it('asks for the governance grade only after a «yes» and requires it then', async () => {
+  it('requires the governance grade unless «no governance grade» is ticked, which disables and clears it', async () => {
     const { wrapper } = await mountRegister()
     await fillEntityStep(wrapper)
-    expect(wrapper.find('[name="governanceGrade"]').exists()).toBe(false)
+    const grade = () => wrapper.find('[name="governanceGrade"]')
+    expect(grade().element.disabled).toBe(true)
 
     await answerGovernance(wrapper, 'yes')
-    expect(wrapper.find('[name="governanceGrade"]').exists()).toBe(true)
+    expect(grade().element.disabled).toBe(false)
     await goNext(wrapper)
     expect(wrapper.find('[name="officialEmail"]').exists()).toBe(false)
-    expect(wrapper.find('[name="governanceGrade"]').attributes('aria-invalid')).toBe('true')
+    expect(grade().attributes('aria-invalid')).toBe('true')
 
+    await setValues(wrapper, { governanceGrade: '87.5' })
+    await answerGovernance(wrapper, 'no')
+    expect(grade().element.value).toBe('')
+    await answerGovernance(wrapper, 'yes')
     await setValues(wrapper, { governanceGrade: '87.5' })
     await goNext(wrapper)
     expect(wrapper.find('[name="officialEmail"]').exists()).toBe(true)
   })
 
-  it('requires the governance question before leaving the entity step', async () => {
+  it('requires the governance grade by default before leaving the entity step', async () => {
     const { wrapper } = await mountRegister()
     await chooseNamedOption(wrapper, 'entityType', 'waqf')
     await setValues(wrapper, ENTITY_VALUES)

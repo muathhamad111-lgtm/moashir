@@ -79,6 +79,13 @@
   grid-column: 1 / -1;
 }
 
+// The governance grade with its «no grade» checkbox beneath it.
+.governance-grade {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
 .email-check {
   @include flex(column, stretch, flex-start, var(--space-3));
 }

@@ -154,8 +154,8 @@ test('the founding date opens the in-app calendar next to the field and picks a 
   await expect(calendar(page).locator('[data-date="2026-11-06"]')).toBeDisabled()
   await expect(calendar(page).locator('.date-calendar__nav--next')).toBeDisabled()
   await expectBeside(page.locator('.dropdown-popup--calendar'), field)
-  // The licence certificate upload (registration fields, 2026-11-25) now precedes the founding date, which moved it to
-  // the start column of the grid: the calendar opens aligned to the field's start edge.
+  // The founding date opens its row in the registration form (founding date | employees, layout of 2026-11-26), so it
+  // sits in the start column of the grid: the calendar opens aligned to the field's start edge.
   await expectAlignedToFieldEdge(field, 'start')
   await expectNextAtInlineEnd(page, testInfo)
   await capture(page, testInfo, 'register-popover')

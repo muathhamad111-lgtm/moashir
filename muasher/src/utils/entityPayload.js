@@ -22,6 +22,11 @@ function answerValue(value) {
   return value ? YES : NO
 }
 
+// Only an entity that said it has no grade starts ticked; any other starts with the grade required.
+function gradeAnswerValue(value) {
+  return value === false ? NO : YES
+}
+
 function answerPayload(value) {
   if (value === YES) return true
   return value === NO ? false : null
@@ -44,7 +49,7 @@ export function emptyProfileValues() {
     foundingYear: '',
     regionId: '',
     cityId: '',
-    hasGovernanceGrade: '',
+    hasGovernanceGrade: YES,
     governanceGrade: '',
     employeesCount: '',
     annualBeneficiariesCount: '',
@@ -64,7 +69,7 @@ export function profileFormValues(entity) {
     foundingYear: text(entity.foundingYear),
     regionId: text(entity.region?.id),
     cityId: text(entity.city?.id),
-    hasGovernanceGrade: answerValue(entity.hasGovernanceGrade),
+    hasGovernanceGrade: gradeAnswerValue(entity.hasGovernanceGrade),
     governanceGrade: text(entity.governanceGrade),
     employeesCount: text(entity.employeesCount),
     annualBeneficiariesCount: text(entity.annualBeneficiariesCount),

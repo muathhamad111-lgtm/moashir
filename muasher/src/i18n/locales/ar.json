@@ -2334,7 +2334,8 @@
       "licenseNumber": "رقم الترخيص",
       "foundedOn": "تاريخ التأسيس",
       "websiteUrl": "الموقع الإلكتروني",
-      "unifiedNumber": "الرقم الوطني الموحد"
+      "unifiedNumber": "الرقم الوطني الموحد",
+      "noGovernanceGrade": "لا توجد درجة حوكمة للجهة"
     },
     "hints": {
       "nameEn": "اختياري، ويظهر في الواجهة الإنجليزية.",

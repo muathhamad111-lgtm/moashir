@@ -72,9 +72,8 @@ test('reads the incomplete profile, edits one section and sends it for approval'
 
   const governance = section(page, 'governance')
   await governance.locator('.profile-section__edit').click()
-  await expect(governance.locator('[name="governanceGrade"]')).toHaveCount(0)
-  await expect(governance.locator('input[name="hasGovernanceGrade"]').first()).toBeFocused()
-  await governance.locator('input[name="hasGovernanceGrade"][value="yes"]').check()
+  await expect(governance.locator('[name="governanceGrade"]')).toBeFocused()
+  await expect(governance.locator('input[name="noGovernanceGrade"]')).not.toBeChecked()
   await governance.locator('[name="governanceGrade"]').fill('82.50')
   await governance.locator('[name="employeesCount"]').fill('14')
   await governance.locator('[name="annualBeneficiariesCount"]').fill('3200')
@@ -121,7 +120,7 @@ test('a stale save reloads the section with a short message', async ({ page }, t
   await openProfile(page, testInfo, NAMAA, { incomplete: true })
   const governance = section(page, 'governance')
   await governance.locator('.profile-section__edit').click()
-  await governance.locator('input[name="hasGovernanceGrade"][value="no"]').check()
+  await governance.locator('input[name="noGovernanceGrade"]').check()
   await governance.locator('[name="employeesCount"]').fill('14')
   await forceMockFault(page, {
     method: 'PATCH',
@@ -134,7 +133,7 @@ test('a stale save reloads the section with a short message', async ({ page }, t
   await expect(governance.locator('[name="employeesCount"]')).toHaveValue('')
   await shoot(page, testInfo, '05-desktop-stale-409')
   await clearMockFault(page)
-  await governance.locator('input[name="hasGovernanceGrade"][value="no"]').check()
+  await governance.locator('input[name="noGovernanceGrade"]').check()
   await governance.locator('[name="employeesCount"]').fill('14')
   await governance.locator('button[type="submit"]').click()
   await expect(governance.locator('.profile-section__status-text--success')).toBeVisible()

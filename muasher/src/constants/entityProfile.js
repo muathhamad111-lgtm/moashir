@@ -73,7 +73,7 @@ export const PROFILE_FIELD_INPUTS = Object.freeze({
   employeesCount: { kind: 'text', inputmode: 'numeric' },
   annualBeneficiariesCount: { kind: 'text', inputmode: 'numeric' },
   hasStrategicPlan: { kind: 'select', options: 'strategicPlan' },
-  hasGovernanceGrade: { kind: 'radio', options: 'yesNo' },
+  hasGovernanceGrade: { kind: 'governance', hint: 'governanceGrade' },
   authorizedPersonName: { kind: 'text', autocomplete: 'name' },
   phone: {
     kind: 'text',
