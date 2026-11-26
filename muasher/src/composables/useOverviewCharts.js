@@ -1,12 +1,6 @@
 import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
-import {
-  ACTIVITY_SERIES,
-  GOVERNANCE_BANDS,
-  OVERVIEW_PATHS,
-  PATH_SERIES,
-  REVENUE_SERIES,
-} from '@/constants/dashboardOverview'
+import { GOVERNANCE_BANDS, OVERVIEW_PATHS, PATH_SERIES } from '@/constants/dashboardOverview'
 import { LEVEL_BUCKETS, LEVEL_FILTER_VALUES, LEVEL_QUERY_KEY } from '@/constants/levels'
 import { ROUTE_NAMES } from '@/constants/routeNames'
 import { accessFor } from '@/constants/routeAccess'
@@ -56,24 +50,6 @@ export function useOverviewCharts(overview) {
   const categories = computed(() =>
     trends.value.buckets.map((day) => bucketLabel(day, trends.value.bucket, locale.value)),
   )
-
-  const activity = computed(() =>
-    ACTIVITY_SERIES.map((key, index) => ({
-      key,
-      label: t(`dashboard.overview.series.${key}`),
-      values: trends.value.series[key] ?? [],
-      color: SERIES_COLORS[index],
-    })),
-  )
-
-  const revenue = computed(() => [
-    {
-      key: REVENUE_SERIES,
-      label: t(`dashboard.overview.series.${REVENUE_SERIES}`),
-      values: trends.value.series[REVENUE_SERIES] ?? [],
-      color: SINGLE_COLOR,
-    },
-  ])
 
   const paths = computed(() => {
     const byPath = new Map((overview.value?.paths ?? []).map((row) => [row.path, row]))
@@ -153,8 +129,6 @@ export function useOverviewCharts(overview) {
 
   return {
     categories,
-    activity,
-    revenue,
     paths,
     levels,
     governance,

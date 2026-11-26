@@ -35,6 +35,12 @@ return [
         'first_month' => '2026-01',
     ],
 
+    'storage' => [
+        'quota_gb' => (int) (env('STORAGE_QUOTA_GB') ?: 50),
+        'warning_percent' => (int) (env('STORAGE_WARNING_PERCENT') ?: 80),
+        'critical_percent' => (int) (env('STORAGE_CRITICAL_PERCENT') ?: 95),
+    ],
+
     'health' => [
         'queue_heartbeat_max_age_seconds' => 300,
         'min_free_disk_mb' => (int) (env('HEALTH_MIN_FREE_DISK_MB') ?: 1024),

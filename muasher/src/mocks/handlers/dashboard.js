@@ -12,12 +12,13 @@ import { DASHBOARD_BOARDS } from '@/constants/dashboardBoards'
 import { reviewerActionItem } from './bankTransfers'
 import { allEntities, isDeleted, isErased } from '../stores/entitiesStore'
 import { entitiesByLevel } from '../stores/entityLevels'
-import { overviewErrors, overviewFor } from '../stores/dashboardOverview'
+import { boardFilterErrors, overviewErrors, overviewFor } from '../stores/dashboardOverview'
 import { assessorOverviewFor } from '../stores/assessorOverview'
 
 const LATENCY_MS = 320
 const ENTITY_BOARD = 'entity'
 const EXECUTIVE_PERMISSION = 'dashboard.executive.view'
+const STORAGE_PERMISSION = 'dashboard.storage.view'
 const COMMITTEE_SCENARIO = 'committee'
 const ASSESSOR_ROLE = 'assessor'
 const GENERATED_AT = '2026-11-05T06:00:00+00:00'
@@ -53,7 +54,19 @@ function actionItemsOf(user) {
 
 // The overview period fields the API reads.
 function overviewQueryOf(params) {
-  const fields = ['period', 'year', 'month', 'quarter', 'from', 'to']
+  const fields = [
+    'period',
+    'year',
+    'month',
+    'quarter',
+    'from',
+    'to',
+    'region',
+    'path',
+    'type',
+    'sector',
+    'size',
+  ]
   return Object.fromEntries(fields.map((field) => [field, params.get(field)]))
 }
 
@@ -100,10 +113,11 @@ export const dashboardHandlers = [
       return errorResponse(403, 'forbidden', 'This action is unauthorized.')
     const params = new URL(request.url).searchParams
     const query = overviewQueryOf(params)
-    const errors = overviewErrors(query)
+    const errors = { ...overviewErrors(query), ...boardFilterErrors(query) }
     if (Object.keys(errors).length)
       return errorResponse(422, 'validation_failed', Object.values(errors)[0][0], errors)
-    return envelope(overviewFor(query, levelCounts()))
+    const showsStorage = Boolean(user.superAdmin) || sessionCan(STORAGE_PERMISSION)
+    return envelope(overviewFor(query, levelCounts(), { showsStorage }))
   }),
   http.get('/api/v1/dashboard/assessor-overview', async ({ request }) => {
     await delay(LATENCY_MS)

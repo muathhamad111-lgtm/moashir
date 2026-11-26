@@ -38,6 +38,11 @@ final readonly class KpiNumber implements JsonSerializable
         return $this->value === $other->value;
     }
 
+    public function toNumber(): int|float
+    {
+        return str_contains($this->value, '.') ? (float) $this->value : (int) $this->value;
+    }
+
     public function jsonSerialize(): string
     {
         return $this->value;

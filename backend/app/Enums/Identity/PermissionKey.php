@@ -10,6 +10,7 @@ enum PermissionKey: string
     case NotificationsView = 'notifications.view';
     case NotificationsAuditView = 'notifications.audit.view';
     case DashboardExecutiveView = 'dashboard.executive.view';
+    case DashboardStorageView = 'dashboard.storage.view';
 
     case EntityProfileView = 'entity.profile.view';
     case EntityProfileEdit = 'entity.profile.edit';
@@ -126,6 +127,7 @@ enum PermissionKey: string
 
     private const array GRANTABLE = [
         'dashboard.executive.view',
+        'dashboard.storage.view',
         'entities.deactivate',
         'entities.reactivate',
         'entities.verification.resend',
@@ -146,6 +148,7 @@ enum PermissionKey: string
         'notifications.view',
         'notifications.audit.view',
         'dashboard.executive.view',
+        'dashboard.storage.view',
         'assessment.criteria.view',
         'assessment.history.view',
         'assessment.self.manage',

@@ -40,10 +40,6 @@ export const COMPARISON_BASES = Object.freeze({
 export const TREND_BUCKETS = Object.freeze({ DAY: 'day', WEEK: 'week', MONTH: 'month' })
 
 // Fixed series order: the categorical chart colours follow the series, never their rank.
-export const ACTIVITY_SERIES = Object.freeze(['entities', 'requests', 'completed'])
-
-export const REVENUE_SERIES = 'collected'
-
 export const PATH_SERIES = Object.freeze(['submitted', 'completed'])
 
 export const OVERVIEW_PATHS = Object.freeze(['self', 'accredited', 'advanced'])

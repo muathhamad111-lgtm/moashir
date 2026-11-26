@@ -43,6 +43,7 @@ require_once __DIR__.'/Support/national-id-helpers.php';
 require_once __DIR__.'/Support/watermark-helpers.php';
 require_once __DIR__.'/Support/nda-helpers.php';
 require_once __DIR__.'/Support/review-note-helpers.php';
+require_once __DIR__.'/Support/overview-breakdown-helpers.php';
 
 pest()->extend(TestCase::class)->in('Feature', 'Unit');
 

@@ -29,6 +29,17 @@ use App\Services\Dashboards\Boards\FilteringOfficerBoardQuery;
 use App\Services\Dashboards\Boards\FinanceOfficerBoardQuery;
 use App\Services\Dashboards\Boards\RequestFollowerBoardQuery;
 use App\Services\Dashboards\Boards\SystemAdminBoardQuery;
+use App\Services\Dashboards\Breakdowns\AssessorWorkloadBreakdown;
+use App\Services\Dashboards\Breakdowns\AwardCycleBreakdown;
+use App\Services\Dashboards\Breakdowns\EntityProfileBreakdown;
+use App\Services\Dashboards\Breakdowns\FinanceBreakdown;
+use App\Services\Dashboards\Breakdowns\InboxBreakdown;
+use App\Services\Dashboards\Breakdowns\KpiTargetBreakdown;
+use App\Services\Dashboards\Breakdowns\OverviewBreakdowns;
+use App\Services\Dashboards\Breakdowns\PaymentStatusBreakdown;
+use App\Services\Dashboards\Breakdowns\RequestStatusBreakdown;
+use App\Services\Dashboards\Breakdowns\StorageUsage;
+use App\Services\Dashboards\Breakdowns\UserAccountBreakdown;
 use App\Services\Dashboards\DashboardBoardQueries;
 use Illuminate\Support\ServiceProvider;
 
@@ -65,5 +76,18 @@ final class DashboardServiceProvider extends ServiceProvider
             ContactActionItems::class,
             SenderContactActionItems::class,
         ], ActionItemSources::TAG);
+
+        $this->app->tag([
+            RequestStatusBreakdown::class,
+            PaymentStatusBreakdown::class,
+            EntityProfileBreakdown::class,
+            AssessorWorkloadBreakdown::class,
+            KpiTargetBreakdown::class,
+            FinanceBreakdown::class,
+            AwardCycleBreakdown::class,
+            InboxBreakdown::class,
+            UserAccountBreakdown::class,
+            StorageUsage::class,
+        ], OverviewBreakdowns::TAG);
     }
 }

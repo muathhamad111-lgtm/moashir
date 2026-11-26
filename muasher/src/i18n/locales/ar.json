@@ -3084,16 +3084,6 @@
         "period": "خلال الفترة المختارة",
         "snapshot": "الوضع الحالي"
       },
-      "charts": {
-        "activity": "نشاط المنصة",
-        "accreditedAverage": "متوسط نتائج التقييم المعتمد",
-        "revenue": "المبالغ المحصّلة",
-        "paths": "الطلبات حسب المسار",
-        "levels": "الجهات حسب المستوى",
-        "governance": "الجهات حسب درجة الحوكمة",
-        "decades": "الجهات حسب عقد التأسيس",
-        "geography": "التوزيع الجغرافي"
-      },
       "series": {
         "entities": "الجهات المسجّلة",
         "requests": "الطلبات المقدّمة",
@@ -3171,6 +3161,125 @@
         "results": "النتائج"
       },
       "belowLevels": "دون المستويات"
+    },
+    "board": {
+      "titles": {
+        "periods": "عدد الطلبات في كل فترة",
+        "levels": "الجهات حسب المستوى",
+        "requestStates": "حالة الطلبات",
+        "paths": "الطلبات حسب المسار",
+        "paymentStates": "حالة المدفوعات",
+        "geography": "التوزيع الجغرافي",
+        "workload": "عبء عمل المقيّمين",
+        "sectors": "الجهات حسب القطاع التنموي",
+        "types": "الجهات حسب النوع",
+        "sizes": "الجهات حسب الحجم",
+        "governance": "الجهات حسب درجة الحوكمة",
+        "decades": "الجهات حسب عقد التأسيس",
+        "criteria": "المعايير الأدنى أداءً",
+        "targets": "المؤشرات مقابل المستهدف",
+        "finance": "تفاصيل مالية",
+        "storage": "المساحة التخزينية",
+        "award": "دورة الجائزة الحالية",
+        "inbox": "صندوق الرسائل",
+        "users": "المستخدمون والأمان",
+        "regions": "الجهات حسب المنطقة",
+        "profile": "الجهات حسب النوع والحجم"
+      },
+      "scope": {
+        "period": "خلال الفترة المختارة",
+        "asOfEnd": "كما في نهاية الفترة",
+        "now": "الوضع الحالي",
+        "workload": "الطلبات المفتوحة لكل مقيّم",
+        "storage": "الحالي، مع ما أُضيف خلال الفترة",
+        "award": "الدورة الجارية في الفترة",
+        "users": "الحسابات حاليًا، ومحاولات الدخول خلال الفترة"
+      },
+      "filters": {
+        "period": "الفترة",
+        "region": "المنطقة",
+        "path": "المسار",
+        "type": "نوع الجهة",
+        "sector": "القطاع التنموي",
+        "size": "حجم الجهة",
+        "applied": "الفلاتر المطبّقة"
+      },
+      "periods": {
+        "measure": "المقياس",
+        "total": "الإجمالي"
+      },
+      "requestStates": {
+        "awaiting_payment": "بانتظار الدفع",
+        "in_queue": "بانتظار الإسناد",
+        "under_review": "قيد التقييم",
+        "needs_completion": "بانتظار الاستكمال",
+        "completed": "مكتملة",
+        "declined": "مرفوضة أو مستردّة"
+      },
+      "paymentStates": {
+        "paid": "مدفوعة",
+        "pending": "معلّقة",
+        "under_review": "تحويل قيد المراجعة",
+        "failed": "فاشلة",
+        "cancelled": "ملغاة",
+        "refunded": "مستردّة"
+      },
+      "cycleStates": {
+        "draft": "مسودة",
+        "submission_open": "التقديم مفتوح",
+        "submission_closed": "التقديم مغلق",
+        "committee_assessment": "تقييم اللجنة",
+        "awaiting_secretary": "بانتظار الأمين",
+        "approved": "معتمدة",
+        "announced": "أُعلنت النتائج",
+        "closed": "مغلقة"
+      },
+      "facts": {
+        "finance": {
+          "vatCollected": "ضريبة القيمة المضافة المحصّلة",
+          "refundsTotal": "المبالغ المستردّة",
+          "receiptsIssued": "الإيصالات الصادرة",
+          "transfersAwaitingReview": "تحويلات بانتظار المراجعة",
+          "abandonedCarts": "سلال متروكة"
+        },
+        "award": {
+          "cycle": "الدورة",
+          "status": "المرحلة",
+          "submissionClosedOn": "إغلاق التقديم",
+          "announcementOn": "إعلان النتائج",
+          "applicants": "المؤهلون / المتقدمون"
+        },
+        "inbox": {
+          "received": "رسائل واردة",
+          "awaitingReply": "بانتظار الرد",
+          "replied": "تم الرد",
+          "averageReply": "متوسط زمن الرد"
+        },
+        "users": {
+          "staffActive": "موظفون نشطون",
+          "entityAccounts": "حسابات الجهات",
+          "mfaShare": "التحقق الثنائي مفعّل",
+          "locked": "حسابات مقفلة",
+          "failedLogins": "محاولات دخول فاشلة"
+        }
+      },
+      "hours": "{count} ساعة",
+      "storage": {
+        "gb": "{value} جيجابايت",
+        "usedShare": "مستخدمة",
+        "gaugeLabel": "المساحة المستخدمة {percent}",
+        "rows": {
+          "total": "المساحة الكلية",
+          "used": "المستخدمة",
+          "available": "المتاحة",
+          "added": "أُضيف خلال الفترة"
+        },
+        "alert": {
+          "warning": "تجاوزت المساحة المستخدمة حد التنبيه.",
+          "critical": "المساحة توشك على النفاد."
+        },
+        "measuredAt": "آخر قياس للقرص:"
+      }
     }
   },
   "assessment": {

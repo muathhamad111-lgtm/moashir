@@ -24,6 +24,15 @@ enum PaymentPurpose: string
         };
     }
 
+    public static function forPath(AssessmentPath $path): self
+    {
+        return match ($path) {
+            AssessmentPath::SelfAssessment => self::SelfAssessment,
+            AssessmentPath::Accredited => self::Accredited,
+            AssessmentPath::Advanced => self::Award,
+        };
+    }
+
     public function opensPath(): ?AssessmentPath
     {
         return match ($this) {

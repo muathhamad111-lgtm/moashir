@@ -25,6 +25,7 @@ Schedule::job(new RecordQueueHeartbeat)->everyMinute();
 Schedule::command('moashir:files:scan-pending')->everyFiveMinutes()->withoutOverlapping();
 Schedule::command('moashir:files:build-renditions')->everyTenMinutes()->withoutOverlapping();
 Schedule::command('moashir:files:purge-orphans')->dailyAt('03:00')->withoutOverlapping();
+Schedule::command('moashir:storage:measure')->dailyAt('02:15')->withoutOverlapping()->onOneServer();
 Schedule::command('backup:clean')->daily()->at('01:00');
 Schedule::command('backup:run')->daily()->at('01:30');
 Schedule::command('backup:monitor')->dailyAt('06:00')->withoutOverlapping();

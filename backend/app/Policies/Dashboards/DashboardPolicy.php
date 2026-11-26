@@ -18,4 +18,9 @@ final class DashboardPolicy
     {
         return $user->can(PermissionKey::DashboardExecutiveView->value);
     }
+
+    public function viewStorageUsage(User $user): bool
+    {
+        return $user->can(PermissionKey::DashboardStorageView->value);
+    }
 }

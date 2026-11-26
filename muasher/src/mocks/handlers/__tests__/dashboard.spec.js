@@ -177,6 +177,50 @@ describe('executive overview mock', () => {
     })
   })
 
+  it('adds the board breakdowns, with every status key in order', async () => {
+    seedMockSession({ id: 1, roles: ['system_admin'] })
+    const { breakdowns } = (await overview()).body.data
+    expect(breakdowns.requestsByStatus.map((row) => row.key)).toEqual([
+      'awaiting_payment',
+      'in_queue',
+      'under_review',
+      'needs_completion',
+      'completed',
+      'declined',
+    ])
+    expect(breakdowns.paymentsByStatus.map((row) => row.key)).toEqual([
+      'paid',
+      'pending',
+      'under_review',
+      'failed',
+      'cancelled',
+      'refunded',
+    ])
+    expect(Object.keys(breakdowns)).toEqual(
+      expect.arrayContaining([
+        'assessorWorkload',
+        'kpiTargets',
+        'finance',
+        'award',
+        'inbox',
+        'users',
+      ]),
+    )
+    expect(breakdowns.storage.quotaBytes).toBe(50 * 1024 ** 3)
+  })
+
+  it('narrows the overview by the board filters and refuses an unknown value', async () => {
+    seedMockSession({ id: 1, roles: ['system_admin'] })
+    const count = (body) => body.data.cards.find((card) => card.key === 'entities_active').value
+    const all = count((await overview()).body)
+    expect(count((await overview('?region=riyadh&sector=social')).body)).toBeLessThan(all)
+    for (const field of ['region', 'path', 'type', 'sector', 'size']) {
+      const refused = await overview(`?${field}=unknown`)
+      expect(refused.status).toBe(422)
+      expect(refused.body.errors).toHaveProperty(field)
+    }
+  })
+
   it('keeps the overview to holders of the executive permission', async () => {
     seedMockSession({ id: 41, roles: ['finance_officer'] })
     expect((await overview()).status).toBe(403)

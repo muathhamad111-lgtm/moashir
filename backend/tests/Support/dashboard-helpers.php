@@ -69,12 +69,12 @@ function overviewCards(TestResponse $response): Collection
     return collect($response->json('data.cards'))->mapWithKeys(static fn (array $card): array => [$card['key'] => ['value' => $card['value'], 'previous' => $card['previous']]]);
 }
 
-function overviewQueryCount(User $user): int
+function overviewQueryCount(User $user, string $query = ''): int
 {
-    overviewOf($user);
+    overviewOf($user, $query);
     DB::flushQueryLog();
     DB::enableQueryLog();
-    overviewOf($user);
+    overviewOf($user, $query);
     $count = count(DB::getQueryLog());
     DB::disableQueryLog();
 

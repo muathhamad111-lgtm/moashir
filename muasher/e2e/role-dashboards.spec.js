@@ -57,12 +57,11 @@ test('the dashboard opens with the platform overview for the System Administrato
   await page.goto('/dashboard')
   const overview = page.locator('[data-testid="executive-overview"]')
   await expect(overview.locator('.overview-cards__card')).toHaveCount(6)
-  await expect(overview.locator('.overview-panel')).toHaveCount(10)
-  await expect(overview.locator('[data-period="month"]')).toHaveAttribute('aria-pressed', 'true')
-  await expect(overview.locator('.chart--line .chart__line')).toHaveCount(1)
-  await overview.locator('.chart--line [data-series="requests"]').click()
-  await expect(overview.locator('.chart--line .chart__line')).toHaveCount(2)
-  await overview.locator('.chart--line [data-series="requests"]').click()
+  await expect(overview.locator('.board-row')).toHaveCount(8)
+  await expect(overview.locator('.overview-panel')).toHaveCount(19)
+  await expect(
+    overview.locator('.board-row').last().locator('[data-panel]').last(),
+  ).toHaveAttribute('data-panel', 'storage')
   await expect(overview.locator('.overview-cards__card--featured')).toHaveAttribute(
     'data-card',
     'payments_collected',
@@ -78,7 +77,10 @@ test('the dashboard opens with the platform overview for the System Administrato
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true)
   await page.screenshot({ path: `${SHOTS}/overview-${locale(testInfo)}.png`, fullPage: true })
 
-  await overview.locator('[data-period="year"]').click()
+  await overview.locator('.board-head .filter-dialog__toggle').click()
+  const dialog = page.getByRole('dialog')
+  await expect(dialog.locator('[data-period="month"]')).toHaveAttribute('aria-pressed', 'true')
+  await dialog.locator('[data-period="year"]').click()
   await expect(page).toHaveURL(/period=year/)
   await expect(overview.locator('.executive-overview__period')).toContainText(
     locale(testInfo) === 'en' ? 'January 1' : '1 يناير',
@@ -86,22 +88,86 @@ test('the dashboard opens with the platform overview for the System Administrato
   await expect(overview.locator('.executive-overview__compare')).toContainText(
     locale(testInfo) === 'en' ? 'the same span of the previous period' : 'بالمدة نفسها',
   )
+
+  await dialog.locator('[data-period="custom"]').click()
+  await expect(dialog.locator('.date-calendar')).toBeVisible()
+  await page.keyboard.press('Enter')
+  await page.keyboard.press('Enter')
+  await expect(page).toHaveURL(/from=([\d-]+)&to=\1/)
+  await expect(dialog.locator('.date-calendar')).toHaveCount(0)
+  await page.keyboard.press('Escape')
+  await expect(dialog).toHaveCount(0)
   await expect(overview.locator('.executive-overview__print')).toHaveAccessibleName(
     locale(testInfo) === 'en' ? 'Print dashboard' : 'طباعة اللوحة',
   )
 
-  await overview.locator('[data-period="custom"]').click()
-  await expect(overview.locator('.date-calendar')).toBeVisible()
-  await page.keyboard.press('Enter')
-  await page.keyboard.press('Enter')
-  await expect(page).toHaveURL(/from=([\d-]+)&to=\1/)
-  await expect(overview.locator('.date-calendar')).toHaveCount(0)
-  await expect(overview.locator('.overview-period__trigger')).toBeFocused()
-
   await page.emulateMedia({ media: 'print' })
   await expect(page.locator('.sidebar')).toBeHidden()
-  await expect(overview.locator('.executive-overview__tools')).toBeHidden()
+  await expect(overview.locator('.board-head__tools')).toBeHidden()
   await page.screenshot({ path: `${SHOTS}/overview-print-${locale(testInfo)}.png`, fullPage: true })
+})
+
+test('the overview filters narrow every card, show as chips and stay in the address', async ({
+  page,
+}, testInfo) => {
+  await seedRoles(page, testInfo, ['system_admin'], 7000)
+  await page.goto('/dashboard')
+  const overview = page.locator('[data-testid="executive-overview"]')
+  const active = overview.locator('[data-card="entities_active"] .overview-cards__value')
+  const before = Number((await active.innerText()).replace(/\D/g, ''))
+  await overview.locator('.board-head .filter-dialog__toggle').click()
+  const dialog = page.getByRole('dialog')
+  await dialog
+    .getByRole('combobox', { name: locale(testInfo) === 'en' ? 'Region' : 'المنطقة' })
+    .click()
+  await page
+    .getByRole('option', { name: locale(testInfo) === 'en' ? 'Riyadh Region' : 'منطقة الرياض' })
+    .click()
+  await dialog.getByRole('button', { name: locale(testInfo) === 'en' ? 'Apply' : 'تطبيق' }).click()
+  await expect(page).toHaveURL(/region=riyadh/)
+  await expect(overview.locator('[data-chip="region"]')).toBeVisible()
+  await expect
+    .poll(async () => Number((await active.innerText()).replace(/\D/g, '')))
+    .toBeLessThan(before)
+  await page.reload()
+  await expect(overview.locator('[data-chip="region"]')).toBeVisible()
+  await overview
+    .locator('.board-head')
+    .getByRole('button', { name: locale(testInfo) === 'en' ? 'Clear filters' : 'مسح الفلترة' })
+    .click()
+  await expect(page).not.toHaveURL(/region=/)
+})
+
+test('the overview rows end full: every card in a row shares its height', async ({
+  page,
+}, testInfo) => {
+  await seedRoles(page, testInfo, ['system_admin'], 7000)
+  await page.setViewportSize({ width: 1440, height: 1000 })
+  await page.goto('/dashboard')
+  await expect(page.locator('[data-panel="storage"]')).toBeVisible()
+  const rows = await page.locator('.board-row').evaluateAll((nodes) =>
+    nodes.map((row) => {
+      const cards = [...row.children].map((card) => card.getBoundingClientRect())
+      const box = row.getBoundingClientRect()
+      return {
+        heights: new Set(cards.map((card) => Math.round(card.height))).size,
+        lines: new Set(cards.map((card) => Math.round(card.top))).size,
+        gap: Math.abs(
+          Math.max(...cards.map((card) => card.right)) -
+            Math.min(...cards.map((card) => card.left)) -
+            box.width,
+        ),
+      }
+    }),
+  )
+  for (const row of rows) {
+    expect(row.lines).toBe(1)
+    expect(row.heights).toBe(1)
+    expect(row.gap).toBeLessThan(2)
+  }
+  await page.locator('[data-panel="geography"]').screenshot({
+    path: `${SHOTS}/overview-map-${locale(testInfo)}.png`,
+  })
 })
 
 test('the overview map shades the regions, switches the measure and lists a region’s cities', async ({
@@ -121,13 +187,7 @@ test('the overview map shades the regions, switches the measure and lists a regi
   await expect(map.locator('[data-testid="geography-cities"] h4')).toContainText(
     locale(testInfo) === 'en' ? 'Makkah' : 'مكة',
   )
-  const panels = await page
-    .locator('[data-panel="geography"], [data-panel="average"], [data-panel="governance"]')
-    .evaluateAll((nodes) => nodes.map((node) => node.getBoundingClientRect().height))
-  // The map spans two rows beside the gauge and the governance bar, so no row is left half empty.
-  expect(Math.abs(panels[0] - panels[1] - panels[2])).toBeLessThan(40)
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true)
-  await map.screenshot({ path: `${SHOTS}/overview-map-${locale(testInfo)}.png` })
 })
 
 test('the old executive link lands on the dashboard, and the overview stays with its permission', async ({

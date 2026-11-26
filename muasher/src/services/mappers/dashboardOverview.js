@@ -67,6 +67,7 @@ export function toExecutiveOverview(raw = {}) {
     paths: (raw.paths ?? []).map(toPath),
     snapshot: (raw.snapshot ?? []).filter((widget) => widget?.key),
     geography: toGeography(raw.geography),
+    breakdowns: raw.breakdowns ?? {},
     generatedAt: raw.generatedAt ?? null,
   }
 }

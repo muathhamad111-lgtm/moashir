@@ -1,26 +1,30 @@
 <script setup>
-import { computed, onMounted } from 'vue'
+import { computed, markRaw, onMounted } from 'vue'
 import { useI18n } from 'vue-i18n'
 import PageLoading from '@/components/feedback/PageLoading.vue'
 import ErrorState from '@/components/feedback/ErrorState.vue'
-import OverviewPeriodPicker from './OverviewPeriodPicker.vue'
 import OverviewCards from './OverviewCards.vue'
-import OverviewCharts from './OverviewCharts.vue'
 import OverviewPrintButton from './OverviewPrintButton.vue'
+import BoardFilters from '../board/BoardFilters.vue'
+import BoardChips from '../board/BoardChips.vue'
+import BoardActivity from '../board/BoardActivity.vue'
+import BoardEntities from '../board/BoardEntities.vue'
+import BoardOperations from '../board/BoardOperations.vue'
 import { useExecutiveOverview } from '@/composables/useExecutiveOverview'
 import { useOverviewRangeText } from '@/composables/useOverviewRangeText'
 import { formatRiyadhDateTime } from '@/utils/datetime'
 
 const { t, locale } = useI18n()
-const state = useExecutiveOverview()
-const { overview, status, errorMessage, fieldErrors, period, selection, customFrom, customTo } =
-  state
+const state = markRaw(useExecutiveOverview())
+const { overview, status, errorMessage, fieldErrors } = state
 
 const { periodText, previousText } = useOverviewRangeText(overview)
 const generatedAt = computed(() =>
   overview.value?.generatedAt ? formatRiyadhDateTime(overview.value.generatedAt, locale.value) : '',
 )
 const isInvalid = computed(() => Object.keys(fieldErrors.value).length > 0)
+// A refused period or filter is named under the title, since its field sits in the closed dialog.
+const invalidText = computed(() => Object.values(fieldErrors.value)[0]?.[0] ?? '')
 
 onMounted(state.load)
 </script>
@@ -31,7 +35,7 @@ onMounted(state.load)
     aria-labelledby="executive-overview-title"
     data-testid="executive-overview"
   >
-    <header class="executive-overview__head">
+    <header class="board-head">
       <div class="executive-overview__heading">
         <h2 id="executive-overview-title" class="executive-overview__title">
           {{ t('dashboard.overview.title') }}
@@ -41,19 +45,12 @@ onMounted(state.load)
           <span class="executive-overview__compare">{{ previousText }}</span>
         </p>
       </div>
-      <div class="executive-overview__tools">
-        <OverviewPeriodPicker
-          :period="period"
-          :selection="selection"
-          :from="customFrom"
-          :to="customTo"
-          :errors="fieldErrors"
-          @preset="state.choosePreset"
-          @calendar="state.chooseCalendar"
-          @custom="state.applyCustom"
-        />
+      <div class="board-head__tools">
+        <BoardFilters :state="state" />
         <OverviewPrintButton :disabled="status !== 'success'" />
       </div>
+      <BoardChips :state="state" />
+      <p v-if="invalidText" class="board-head__error" role="alert">{{ invalidText }}</p>
     </header>
 
     <PageLoading v-if="status === 'loading' && !overview" />
@@ -62,9 +59,11 @@ onMounted(state.load)
       :message="errorMessage || t('dashboard.loadError')"
       @retry="state.load"
     />
-    <div v-if="overview" class="executive-overview__body" :aria-busy="status === 'loading'">
+    <div v-if="overview" class="executive-overview__body board" :aria-busy="status === 'loading'">
       <OverviewCards :cards="overview.cards" />
-      <OverviewCharts :overview="overview" />
+      <BoardActivity :overview="overview" />
+      <BoardEntities :overview="overview" />
+      <BoardOperations :overview="overview" />
       <p v-if="generatedAt" class="executive-overview__generated">
         {{ t('dashboard.generatedAt') }}
         <time :datetime="overview.generatedAt">{{ generatedAt }}</time>

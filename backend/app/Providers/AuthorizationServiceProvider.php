@@ -152,6 +152,7 @@ final class AuthorizationServiceProvider extends ServiceProvider
         Gate::define(Ability::RecordOwnGender->value, [OwnGenderPolicy::class, 'record']);
         Gate::define(Ability::ViewDashboard->value, [DashboardPolicy::class, 'view']);
         Gate::define(Ability::ViewExecutiveOverview->value, [DashboardPolicy::class, 'viewOverview']);
+        Gate::define(Ability::ViewStorageUsage->value, [DashboardPolicy::class, 'viewStorageUsage']);
         Gate::define(Ability::GlobalSearch->value, [GlobalSearchPolicy::class, 'search']);
         Gate::define(Ability::IntegrationsOverview->value, [IntegrationSettingsPolicy::class, 'viewOverview']);
         Gate::define(Ability::ManagePaymentIntegration->value, [IntegrationSettingsPolicy::class, 'managePayment']);

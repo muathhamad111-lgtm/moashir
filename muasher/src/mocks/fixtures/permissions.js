@@ -52,6 +52,22 @@ export const permissionCatalogFixture = [
     grantable: true,
   },
   {
+    key: 'dashboard.storage.view',
+    module: 'dashboard',
+    label: {
+      ar: 'عرض المساحة التخزينية في لوحة المعلومات',
+      en: 'View storage usage on the dashboard',
+    },
+    description: {
+      ar: 'المساحة المستخدمة والمتاحة من سعة التخزين المخصصة للمنصة.',
+      en: 'The used and available share of the platform storage quota.',
+    },
+    system: true,
+    lockedToRoles: [],
+    confidential: false,
+    grantable: true,
+  },
+  {
     key: 'entity.profile.view',
     module: 'entity',
     label: { ar: 'عرض ملف الجهة', en: 'View own entity profile' },
@@ -1205,6 +1221,7 @@ export const defaultRoleMatrixFixture = {
     'notifications.view',
     'notifications.audit.view',
     'dashboard.executive.view',
+    'dashboard.storage.view',
     'entities.view',
     'entities.manage',
     'entities.deactivate',

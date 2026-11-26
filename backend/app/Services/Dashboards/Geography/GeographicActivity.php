@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Services\Dashboards\Geography;
 
+use App\Data\Dashboards\BoardFilter;
 use App\Data\Dashboards\ReportingPeriod;
 use App\Models\Entities\City;
 use App\Models\Entities\Region;
@@ -25,13 +26,13 @@ final readonly class GeographicActivity
     /**
      * @return array{regions: list<RegionRow>, cities: list<CityRow>}
      */
-    public function of(ReportingPeriod $period): array
+    public function of(ReportingPeriod $period, BoardFilter $filter): array
     {
         $figures = [
-            'entities' => $this->totals->entities(),
-            'requests' => $this->totals->requests($period),
-            'average_percent' => $this->totals->averagePercents($period),
-            'collected' => $this->totals->collected($period),
+            'entities' => $this->totals->entities($filter),
+            'requests' => $this->totals->requests($period, $filter),
+            'average_percent' => $this->totals->averagePercents($period, $filter),
+            'collected' => $this->totals->collected($period, $filter),
         ];
 
         return [

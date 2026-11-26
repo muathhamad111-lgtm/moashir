@@ -3,6 +3,7 @@ export const PERMISSIONS = {
   NOTIFICATIONS_VIEW: 'notifications.view',
   NOTIFICATIONS_AUDIT_VIEW: 'notifications.audit.view',
   DASHBOARD_EXECUTIVE_VIEW: 'dashboard.executive.view',
+  DASHBOARD_STORAGE_VIEW: 'dashboard.storage.view',
   ENTITY_PROFILE_VIEW: 'entity.profile.view',
   ENTITY_PROFILE_EDIT: 'entity.profile.edit',
   ENTITIES_VIEW: 'entities.view',

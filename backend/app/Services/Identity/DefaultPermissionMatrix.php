@@ -49,7 +49,7 @@ final class DefaultPermissionMatrix
     private function systemAdmin(): array
     {
         return [
-            P::NotificationsAuditView, P::DashboardExecutiveView,
+            P::NotificationsAuditView, P::DashboardExecutiveView, P::DashboardStorageView,
             P::EntitiesView, P::EntitiesManage, P::EntitiesDeactivate, P::EntitiesReactivate,
             P::EntitiesVerificationResend, P::EntitiesEmailChangeApprove, P::EntitiesProfileChangeApprove, P::EntitiesDelete, P::EntitiesExport,
             P::AssessmentCriteriaView, P::AssessmentHistoryView, P::EvidenceView,

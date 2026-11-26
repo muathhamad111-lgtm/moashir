@@ -12,6 +12,8 @@ use Illuminate\Support\Facades\Storage;
 
 const MAX_DASHBOARD_QUERIES = 45;
 
+const MAX_OVERVIEW_QUERIES = 70;
+
 beforeEach(function (): void {
     Storage::fake('local');
     Notification::fake();
@@ -24,7 +26,7 @@ it('builds the global boards with a constant number of queries', function (): vo
     $content = contentOfficer();
     storedPaidPayment();
     Kpi::factory()->create();
-    $before = [dashboardQueryCount($admin, 'system_admin'), overviewQueryCount($admin), dashboardQueryCount($finance, 'finance_officer'), dashboardQueryCount($content, 'content_officer')];
+    $before = [dashboardQueryCount($admin, 'system_admin'), dashboardQueryCount($finance, 'finance_officer'), dashboardQueryCount($content, 'content_officer')];
 
     for ($index = 0; $index < 4; $index++) {
         storedPaidPayment(null, $index % 2 === 0 ? IntegrationMode::Live : IntegrationMode::Test);
@@ -33,9 +35,32 @@ it('builds the global boards with a constant number of queries', function (): vo
         entityWithOwner(static fn ($factory) => $factory->pendingVerification());
     }
 
-    $after = [dashboardQueryCount($admin, 'system_admin'), overviewQueryCount($admin), dashboardQueryCount($finance, 'finance_officer'), dashboardQueryCount($content, 'content_officer')];
+    $after = [dashboardQueryCount($admin, 'system_admin'), dashboardQueryCount($finance, 'finance_officer'), dashboardQueryCount($content, 'content_officer')];
 
     expect($after)->toBe($before)->and(max($after))->toBeLessThanOrEqual(MAX_DASHBOARD_QUERIES);
+});
+
+it('builds the executive overview with a bounded, constant number of queries, filtered or not', function (): void {
+    $admin = systemAdmin();
+    $version = publishedAccreditedCriteria();
+    $assessor = assessorUser();
+    $entity = completedAccreditedRequest($version, $assessor)->entity()->firstOrFail();
+    storedPaidPayment($entity);
+    Kpi::factory()->published()->create();
+    $filtered = 'period=month&path=accredited&type='.$entity->entity_type->value.'&size='.$entity->org_size->value;
+    $before = [overviewQueryCount($admin), overviewQueryCount($admin, $filtered)];
+
+    for ($index = 0; $index < 3; $index++) {
+        assignedAccreditedRequest($version, assessorUser());
+        storedPaidPayment();
+        Kpi::factory()->published()->create();
+        contactMessage();
+        storedTestFile();
+    }
+
+    $after = [overviewQueryCount($admin), overviewQueryCount($admin, $filtered)];
+
+    expect($after)->toBe($before)->and(max($after))->toBeLessThanOrEqual(MAX_OVERVIEW_QUERIES);
 });
 
 it('builds the request boards with a constant number of queries', function (): void {

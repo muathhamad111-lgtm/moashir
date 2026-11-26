@@ -25,11 +25,12 @@ final class EntityDistributions
     ];
 
     /**
+     * @param  Builder<Entity>|null  $entities
      * @return array<string, int>
      */
-    public function statusCounts(): array
+    public function statusCounts(?Builder $entities = null): array
     {
-        return AggregateRow::counts($this->entities(), [
+        return AggregateRow::counts($this->entities($entities), [
             'total' => ['true', []],
             'active' => ['status = ?', [EntityStatus::Active->value]],
             'pending_verification' => ['status = ?', [EntityStatus::PendingVerification->value]],
@@ -40,37 +41,41 @@ final class EntityDistributions
     }
 
     /**
+     * @param  Builder<Entity>|null  $entities
      * @return list<array{key: string, count: int}>
      */
-    public function bySector(): array
+    public function bySector(?Builder $entities = null): array
     {
-        return $this->grouped('development_sector');
+        return $this->grouped($this->entities($entities), 'development_sector');
     }
 
     /**
+     * @param  Builder<Entity>|null  $entities
      * @return list<array{key: string, count: int}>
      */
-    public function byFoundingDecade(): array
+    public function byFoundingDecade(?Builder $entities = null): array
     {
-        return $this->grouped('(founding_year / 10) * 10');
+        return $this->grouped($this->entities($entities), '(founding_year / 10) * 10');
     }
 
     /**
+     * @param  Builder<Entity>|null  $entities
      * @return list<array{key: string, count: int}>
      */
-    public function byGovernance(): array
+    public function byGovernance(?Builder $entities = null): array
     {
-        $counts = AggregateRow::counts($this->entities(), self::GOVERNANCE_BANDS);
+        $counts = AggregateRow::counts($this->entities($entities), self::GOVERNANCE_BANDS);
 
         return array_map(static fn (string $band): array => ['key' => $band, 'count' => $counts[$band] ?? 0], array_keys(self::GOVERNANCE_BANDS));
     }
 
     /**
+     * @param  Builder<Entity>|null  $entities
      * @return list<array{key: string, count: int}>
      */
-    public function byLevel(): array
+    public function byLevel(?Builder $entities = null): array
     {
-        $ranked = $this->entities()->select('entities.id');
+        $ranked = $this->entities($entities)->select('entities.id');
         EntityLevelQuery::selectLevelKey($ranked);
         $ranked->withExists(EntityLevelQuery::openAccreditedRequestFlag());
         $counts = array_fill_keys(array_column(EntityLevelBucket::cases(), 'value'), 0);
@@ -90,12 +95,13 @@ final class EntityDistributions
     }
 
     /**
+     * @param  Builder<Entity>  $entities
      * @param  literal-string  $expression
      * @return list<array{key: string, count: int}>
      */
-    private function grouped(string $expression): array
+    private function grouped(Builder $entities, string $expression): array
     {
-        return array_values($this->entities()->toBase()
+        return array_values($entities->toBase()
             ->selectRaw($expression.' as bucket, count(*) as total')
             ->groupByRaw($expression)
             ->orderByRaw($expression)
@@ -108,10 +114,11 @@ final class EntityDistributions
     }
 
     /**
+     * @param  Builder<Entity>|null  $entities
      * @return Builder<Entity>
      */
-    private function entities(): Builder
+    private function entities(?Builder $entities): Builder
     {
-        return Entity::query()->notErased();
+        return $entities instanceof Builder ? clone $entities : Entity::query()->notErased();
     }
 }

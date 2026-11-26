@@ -10,6 +10,7 @@ use App\Actions\Dashboards\BuildDashboardSummary;
 use App\Actions\Dashboards\BuildExecutiveOverview;
 use App\Data\Dashboards\ActionItem;
 use App\Http\Requests\Dashboards\DashboardSummaryRequest;
+use App\Http\Requests\Dashboards\ExecutiveOverviewRequest;
 use App\Http\Requests\Dashboards\OverviewPeriodRequest;
 use App\Http\Resources\Dashboards\ActionItemResource;
 use App\Http\Resources\Dashboards\AssessorOverviewResource;
@@ -28,9 +29,9 @@ final class DashboardController
         return ApiResponse::resource(new DashboardSummaryResource($buildSummary->handle($user, $request->board())));
     }
 
-    public function overview(OverviewPeriodRequest $request, BuildExecutiveOverview $buildOverview): JsonResponse
+    public function overview(ExecutiveOverviewRequest $request, #[CurrentUser] User $user, BuildExecutiveOverview $buildOverview): JsonResponse
     {
-        return ApiResponse::resource(new ExecutiveOverviewResource($buildOverview->handle($request->period())));
+        return ApiResponse::resource(new ExecutiveOverviewResource($buildOverview->handle($request->period(), $request->filter(), $user)));
     }
 
     public function assessorOverview(OverviewPeriodRequest $request, #[CurrentUser] User $user, BuildAssessorOverview $buildOverview): JsonResponse

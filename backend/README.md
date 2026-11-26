@@ -160,6 +160,7 @@ variable switches it off, and the table holds digests only, never a password. Ma
 | `FILES_SCANNER` | `fake` marks every file clean except the test signature; honoured in `local` and `testing` only and refused elsewhere (ClamAV is used and `platform.fake_adapter_refused` is logged as critical); unset = ClamAV |
 | `FILES_CLAMAV_SOCKET`, `FILES_CLAMAV_TIMEOUT_SECONDS` | clamd address (`unix:///var/run/clamav/clamd.ctl` or `tcp://127.0.0.1:3310`) and timeout (30 s) |
 | `FILES_ORPHAN_GRACE_HOURS` | Age after which a stored file never attached to an owner is purged (default 24 hours, see "File housekeeping") |
+| `STORAGE_QUOTA_GB`, `STORAGE_WARNING_PERCENT`, `STORAGE_CRITICAL_PERCENT` | Storage quota of the platform files shown on the dashboard overview, and its warning and critical shares (defaults 50 GiB, 80 %, 95 %) |
 | `PDF_RENDERER` | `chromium` prints certificates, feedback reports and receipts with the headless shell below; `fake` renders placeholder PDFs, honoured in `local` and `testing` only and refused elsewhere (logged like `FILES_SCANNER`); unset = no renderer, downloads answer 503 `document.renderer_unavailable` |
 | `PDF_CHROME_BINARY` | Absolute path of the pinned Chrome for Testing `chrome-headless-shell` binary (server: `/opt/moashir/chrome-headless-shell/current/chrome-headless-shell-linux64/chrome-headless-shell`); a missing or non-executable path keeps the renderer unavailable and logs `documents.chrome_binary_unusable` (critical) |
 | `PDF_RENDER_TIMEOUT_SECONDS` | Timeout of each browser step while printing (default 60) |
@@ -3480,3 +3481,13 @@ apply SRI (`crossorigin="anonymous"`) to a script loaded from that CDN — the l
   - Re-run the `assessment_review_notes` lines of `database/sql/production-roles.sql` (column-level UPDATE on `superseded_at` only).
   - Then `php artisan moashir:permissions:sync`, which grants the two new keys `requests.notes.read` and `requests.notes.write` to `assessor`, `request_follower` and `system_admin`.
   - No new package or environment variable.
+- Dashboard v2.1 (B2, executive overview filters and breakdowns): `GET /api/v1/dashboard/overview` accepts the optional
+  `region` (a `regions.code`), `path`, `type`, `sector` and `size` filters (422 on an unknown value) and returns
+  `breakdowns`; the snapshot counts the entities as they stood at the period end and `lowest_criteria` covers the period.
+  - Migrations `2026_11_26_130000_grant_dashboard_storage_view_to_system_admin` (reversible; grants the key where it is
+    already catalogued) and `2026_11_26_130100_create_storage_measurements_table` (reversible). The default privileges of
+    `database/sql/production-roles.sql` cover the new table.
+  - Then `php artisan moashir:permissions:sync`, which creates the new key `dashboard.storage.view` and grants it to
+    `system_admin`; only its holders (and the Super Admin) receive `breakdowns.storage`.
+  - The scheduler runs `moashir:storage:measure` daily at 02:15 (one row per Riyadh day, re-runs update it).
+  - New environment variables `STORAGE_QUOTA_GB`, `STORAGE_WARNING_PERCENT`, `STORAGE_CRITICAL_PERCENT` (optional). No new package.

@@ -6,6 +6,9 @@ import {
 import { OVERVIEW_SNAPSHOT } from '../fixtures/overviewSnapshot'
 import { geographyFor } from './dashboardGeography'
 import { comparisonWindow, reportingWindow } from './reportingWindow'
+import { breakdownsFor } from './dashboardBreakdowns'
+import { regionsSeed } from '../fixtures/regionsSeed'
+import { DEVELOPMENT_SECTORS, ENTITY_TYPES, ORG_SIZES } from '@/constants/entityEnums'
 
 const DAY_MS = 86400000
 const MAX_DAYS = 1096
@@ -148,17 +151,81 @@ function trendsOf(start, end, bucket) {
   }
 }
 
+// Mock: each board filter keeps a stable share of the platform, so a filtered board shows
+// smaller, consistent figures. The real API filters its queries instead.
+const FILTER_SHARES = Object.freeze({ region: 0.34, path: 0.55, type: 0.6, sector: 0.4, size: 0.5 })
+
+const FILTER_VALUES = Object.freeze({
+  region: regionsSeed.map((region) => region.code),
+  path: ['self', 'accredited', 'advanced'],
+  type: ENTITY_TYPES,
+  sector: DEVELOPMENT_SECTORS,
+  size: ORG_SIZES,
+})
+
+// The board filters the API validates: each must be one of its known values when given.
+export function boardFilterErrors(query) {
+  return Object.fromEntries(
+    Object.entries(FILTER_VALUES)
+      .filter(([field, values]) => query[field] && !values.includes(query[field]))
+      .map(([field]) => [field, [`The selected ${field} is invalid.`]]),
+  )
+}
+
+export function filterScale(query) {
+  return Object.entries(FILTER_SHARES).reduce(
+    (scale, [field, share]) => (query[field] ? scale * share : scale),
+    1,
+  )
+}
+
+function scaleFigures(values, scale) {
+  if (scale === 1) return values
+  const count = (value) => Math.round(value * scale)
+  return {
+    ...values,
+    newEntities: count(values.newEntities),
+    requests: count(values.requests),
+    completed: count(values.completed),
+    accredited: count(values.accredited),
+    collected: (Number(values.collected) * scale).toFixed(2),
+  }
+}
+
+function scaleTrends(trends, scale) {
+  if (scale === 1) return trends
+  const series = Object.fromEntries(
+    Object.entries(trends.series).map(([key, values]) => [
+      key,
+      values.map((value) =>
+        key === 'collected' ? (Number(value) * scale).toFixed(2) : Math.round(value * scale),
+      ),
+    ]),
+  )
+  return { ...trends, series }
+}
+
+function scaleWidget(widget, scale) {
+  if (scale === 1 || !Array.isArray(widget.data) || widget.data[0]?.count === undefined)
+    return widget
+  return {
+    ...widget,
+    data: widget.data.map((row) => ({ ...row, count: Math.round(row.count * scale) })),
+  }
+}
+
 function card(key, value, previous, format = 'count') {
   return { key, value, previous, format }
 }
 
-export function overviewFor(query, levels) {
+export function overviewFor(query, levels, { showsStorage = false } = {}) {
   const window = windowOf(query)
   const { preset, start, end } = window
   const days = daysBetween(start, end)
   const previous = comparisonWindow(window)
-  const now = figures(start, end)
-  const before = figures(previous.start, previous.end)
+  const scale = filterScale(query)
+  const now = scaleFigures(figures(start, end), scale)
+  const before = scaleFigures(figures(previous.start, previous.end), scale)
   return {
     period: { from: keyOf(start), to: keyOf(addDays(end, -1)), preset },
     previousPeriod: {
@@ -172,16 +239,19 @@ export function overviewFor(query, levels) {
       card('assessments_completed', now.completed, before.completed),
       card('accredited_average_percent', now.average, before.average, 'percent'),
       card('payments_collected', now.collected, before.collected, 'money'),
-      card('entities_active', 37, null),
+      card('entities_active', Math.round(37 * scale), null),
     ],
-    trends: trendsOf(start, end, bucketOf(days)),
+    trends: scaleTrends(trendsOf(start, end, bucketOf(days)), scale),
     paths: [
       { path: 'self', submitted: null, completed: now.completed - Math.floor(now.completed / 2) },
       { path: 'accredited', submitted: now.accredited, completed: Math.floor(now.completed / 2) },
       { path: 'advanced', submitted: now.requests - now.accredited, completed: null },
     ],
-    snapshot: [{ key: 'entities_by_level', data: levels }, ...OVERVIEW_SNAPSHOT],
+    snapshot: [{ key: 'entities_by_level', data: levels }, ...OVERVIEW_SNAPSHOT].map((widget) =>
+      scaleWidget(widget, scale),
+    ),
     geography: geographyFor(now.requests),
+    breakdowns: breakdownsFor(now, scale, showsStorage),
     generatedAt: new Date().toISOString(),
   }
 }

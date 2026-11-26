@@ -51,7 +51,15 @@ final readonly class BankTransferQuery
 
     public function awaitingReviewCount(): int
     {
-        return $this->freezeGuard->excludeFrozen(Payment::query()->bankTransfers()->where('status', PaymentStatus::UnderReview))->count();
+        return $this->awaitingReview()->count();
+    }
+
+    /**
+     * @return Builder<Payment>
+     */
+    public function awaitingReview(): Builder
+    {
+        return $this->freezeGuard->excludeFrozen(Payment::query()->bankTransfers()->where('status', PaymentStatus::UnderReview));
     }
 
     /**

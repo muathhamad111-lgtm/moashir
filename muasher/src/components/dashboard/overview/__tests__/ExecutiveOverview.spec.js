@@ -6,6 +6,15 @@ import { dashboardService } from '@/services/dashboardService'
 import { toExecutiveOverview } from '@/services/mappers/dashboardOverview'
 
 vi.mock('@/services/dashboardService', () => ({ dashboardService: { getOverview: vi.fn() } }))
+vi.mock('@/services/regionsService', () => ({
+  regionsService: {
+    listRegions: vi.fn().mockResolvedValue({
+      data: [
+        { id: 1, code: 'riyadh', name: { ar: 'منطقة الرياض', en: 'Riyadh Region' }, cities: [] },
+      ],
+    }),
+  },
+}))
 
 const OVERVIEW = toExecutiveOverview({
   period: { from: '2026-11-01', to: '2026-11-17', preset: 'month' },
@@ -52,13 +61,48 @@ const OVERVIEW = toExecutiveOverview({
       ],
     },
   ],
+  breakdowns: {
+    requestsByStatus: [
+      { key: 'awaiting_payment', count: 1 },
+      { key: 'completed', count: 3 },
+    ],
+    paymentsByStatus: [{ key: 'paid', count: 4 }],
+    entitiesByType: [{ key: 'waqf', count: 2 }],
+    entitiesBySize: [{ key: 'small', count: 2 }],
+    entitiesByRegion: [
+      { key: 'riyadh', name: { ar: 'منطقة الرياض', en: 'Riyadh Region' }, count: 2 },
+    ],
+    assessorWorkload: [{ key: '12', name: 'Sara', open: 3, completed: 1 }],
+    kpiTargets: [{ key: 'k1', name: { ar: 'مؤشر', en: 'Indicator' }, value: 40, target: 80 }],
+    finance: {
+      vatCollected: '150.00',
+      refundsTotal: '0.00',
+      receiptsIssued: 2,
+      transfersAwaitingReview: 1,
+      abandonedCarts: 0,
+    },
+    award: null,
+    inbox: { received: 5, awaitingReply: 1, replied: 4, averageReplyHours: 6.5 },
+    users: { staffActive: 4, entityAccounts: 9, mfaShare: 100, locked: 0, failedLogins: 2 },
+    storage: {
+      quotaBytes: 50 * 1024 ** 3,
+      usedBytes: 45 * 1024 ** 3,
+      addedInPeriodBytes: 1024 ** 3,
+      warningPercent: 80,
+      criticalPercent: 95,
+      measuredAt: null,
+    },
+  },
   generatedAt: '2026-11-17T08:00:00+00:00',
 })
 
 async function mountAt(path = '/dashboard', locale = 'ar') {
   const globals = createTestGlobals({ locale })
   await globals.router.push(path)
-  const wrapper = mount(ExecutiveOverview, { global: { plugins: globals.plugins } })
+  const wrapper = mount(ExecutiveOverview, {
+    global: { plugins: globals.plugins, stubs: { teleport: true } },
+    attachTo: document.body,
+  })
   await flushPromises()
   return { wrapper, globals }
 }
@@ -72,7 +116,13 @@ beforeEach(() => {
 afterEach(() => {
   vi.useRealTimers()
   vi.clearAllMocks()
+  document.body.innerHTML = ''
 })
+
+async function openFilters(wrapper) {
+  await wrapper.find('.board-head .filter-dialog__toggle').trigger('click')
+  await flushPromises()
+}
 
 describe('ExecutiveOverview', () => {
   it('asks for this month by default and shows the period with its comparison', async () => {
@@ -84,6 +134,8 @@ describe('ExecutiveOverview', () => {
       'مقارنةً بالمدة نفسها من الفترة السابقة',
     )
     expect(wrapper.find('.executive-overview__compare').text()).toContain('17 أكتوبر 2026')
+    expect(wrapper.find('[data-chip="period"]').text()).toBe('الفترة: شهري')
+    await openFilters(wrapper)
     expect(wrapper.find('[data-period="month"]').attributes('aria-pressed')).toBe('true')
   })
 
@@ -101,20 +153,22 @@ describe('ExecutiveOverview', () => {
     expect(card('entities_active').text()).toContain('Current state')
   })
 
-  it('draws the activity, revenue, path, level and governance charts', async () => {
+  it('lays the cards out in rows that each end full, storage last', async () => {
     const { wrapper } = await mountAt('/dashboard', 'en')
-    const titles = wrapper.findAll('.overview-panel__title').map((title) => title.text())
-    expect(titles).toEqual([
-      'Platform activity',
-      'Entities by level',
-      'Amounts collected',
-      'Requests by path',
-      'Geographic distribution',
-      'Accredited assessment average',
-      'Entities by governance grade',
-      'Entities by development sector',
-      'Entities by founding decade',
-      'Lowest-performing criteria',
+    const rows = wrapper
+      .findAll('.board-row')
+      .map((row) =>
+        row.findAll(':scope > .overview-panel').map((panel) => panel.attributes('data-panel')),
+      )
+    expect(rows).toEqual([
+      ['periods'],
+      ['geography', 'levels'],
+      ['request-states', 'paths', 'payment-states'],
+      ['governance', 'workload'],
+      ['sectors', 'regions', 'profile', 'decades'],
+      ['criteria', 'targets'],
+      ['finance', 'award', 'inbox'],
+      ['users', 'storage'],
     ])
     expect(
       wrapper.findAll('.overview-cards__card').map((card) => card.attributes('data-card')),
@@ -127,7 +181,17 @@ describe('ExecutiveOverview', () => {
     expect(wrapper.find('.overview-cards__card--featured').attributes('data-card')).toBe(
       'payments_collected',
     )
-    expect(wrapper.find('.chart--gauge svg').attributes('aria-label')).toContain('79')
+  })
+
+  it('hides the storage card without its data, giving the row to the users card', async () => {
+    dashboardService.getOverview.mockResolvedValue({
+      data: { ...OVERVIEW, breakdowns: { ...OVERVIEW.breakdowns, storage: null } },
+    })
+    const { wrapper } = await mountAt('/dashboard', 'en')
+    const last = wrapper.findAll('.board-row').at(-1)
+    expect(
+      last.findAll(':scope > .overview-panel').map((panel) => panel.attributes('data-panel')),
+    ).toEqual(['users'])
   })
 
   it('ranks the lowest criteria as horizontal bars and states the result count once', async () => {
@@ -144,6 +208,7 @@ describe('ExecutiveOverview', () => {
 
   it('switches presets through the address and asks the server again', async () => {
     const { wrapper, globals } = await mountAt()
+    await openFilters(wrapper)
     await wrapper.find('[data-period="quarter"]').trigger('click')
     await flushPromises()
     expect(globals.router.currentRoute.value.query).toEqual({ period: 'quarter' })
@@ -152,6 +217,7 @@ describe('ExecutiveOverview', () => {
 
   it('chooses a month from the period popover and asks for it', async () => {
     const { wrapper, globals } = await mountAt('/dashboard', 'en')
+    await openFilters(wrapper)
     await wrapper.find('.overview-period__trigger').trigger('click')
     const september = wrapper
       .findAll('.period-grid__option')
@@ -173,6 +239,7 @@ describe('ExecutiveOverview', () => {
   it('picks a custom range on one calendar: the first day, then the last', async () => {
     const { wrapper, globals } = await mountAt('/dashboard?period=custom')
     expect(dashboardService.getOverview).not.toHaveBeenCalled()
+    await openFilters(wrapper)
     await wrapper.find('[data-date="2026-11-10"]').trigger('click')
     expect(wrapper.find('.range-chooser__one-day').exists()).toBe(true)
     await wrapper.find('[data-date="2026-11-03"]').trigger('click')
@@ -198,8 +265,41 @@ describe('ExecutiveOverview', () => {
       from: '2026-01-01',
       to: '2026-11-17',
     })
-    expect(wrapper.find('.overview-period__error').text()).toBe('Too long.')
+    expect(wrapper.find('.board-head__error').text()).toBe('Too long.')
     expect(wrapper.find('.error-state').exists()).toBe(false)
+    await openFilters(wrapper)
+    expect(wrapper.find('.overview-period__error').text()).toBe('Too long.')
+  })
+
+  it('applies the board filters through the address, names them, and clears them', async () => {
+    const { wrapper, globals } = await mountAt('/dashboard', 'en')
+    await openFilters(wrapper)
+    await wrapper.findComponent({ name: 'BoardFilters' }).vm.$nextTick()
+    const selects = wrapper.findAllComponents({ name: 'AppSelect' })
+    const named = (name) => selects.find((select) => select.props('name') === name)
+    named('board-region').vm.$emit('update:modelValue', 'riyadh')
+    named('board-size').vm.$emit('update:modelValue', 'small')
+    await flushPromises()
+    await wrapper
+      .findAll('button')
+      .find((button) => button.text() === 'Apply')
+      .trigger('click')
+    await flushPromises()
+    expect(globals.router.currentRoute.value.query).toEqual({ region: 'riyadh', size: 'small' })
+    expect(dashboardService.getOverview).toHaveBeenLastCalledWith({
+      period: 'month',
+      region: 'riyadh',
+      size: 'small',
+    })
+    expect(wrapper.find('[data-chip="region"]').text()).toBe('Region: Riyadh Region')
+    expect(wrapper.find('[data-chip="size"]').text()).toBe('Entity size: Small')
+    expect(wrapper.find('.filter-dialog__count').text()).toBe('2')
+    await wrapper
+      .findAll('button')
+      .find((button) => button.text().includes('Clear filters'))
+      .trigger('click')
+    await flushPromises()
+    expect(globals.router.currentRoute.value.query).toEqual({})
   })
 
   it('prints the dashboard from the print button', async () => {

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Services\Dashboards\Geography;
 
+use App\Data\Dashboards\BoardFilter;
 use App\Data\Dashboards\ReportingPeriod;
 use App\Enums\Assessments\AccreditedAssessmentStatus;
 use App\Enums\Assessments\AssessmentPath;
@@ -29,18 +30,22 @@ final readonly class LocationTotals
     /**
      * @return array<string, int>
      */
-    public function entities(): array
+    public function entities(BoardFilter $filter): array
     {
-        return $this->counts(Entity::query()->notErased()->toBase(), 'count(*)');
+        $entities = Entity::query()->notErased()->toBase();
+        $filter->applyToEntities($entities);
+
+        return $this->counts($entities, 'count(*)');
     }
 
     /**
      * @return array<string, int>
      */
-    public function requests(ReportingPeriod $period): array
+    public function requests(ReportingPeriod $period, BoardFilter $filter): array
     {
         $query = $this->located($this->assessments->operational()->toBase(), 'assessments.entity_id')
             ->whereIn('assessments.path', [AssessmentPath::Accredited->value, AssessmentPath::Advanced->value]);
+        $filter->applyToAssessments($query);
 
         return $this->counts($this->within($query, 'assessments.submitted_at', $period), 'count(*)');
     }
@@ -48,12 +53,13 @@ final readonly class LocationTotals
     /**
      * @return array<string, string>
      */
-    public function averagePercents(ReportingPeriod $period): array
+    public function averagePercents(ReportingPeriod $period, BoardFilter $filter): array
     {
         $query = $this->located($this->assessments->operational()->toBase(), 'assessments.entity_id')
             ->join('assessment_result_snapshots as snapshots', 'snapshots.id', '=', 'assessments.current_result_snapshot_id')
             ->where('assessments.path', AssessmentPath::Accredited->value)
             ->where('assessments.status', AccreditedAssessmentStatus::Completed->value);
+        $filter->applyToAssessments($query);
 
         return $this->values($this->within($query, 'assessments.completed_at', $period), 'round(avg(snapshots.percent), 2)');
     }
@@ -61,10 +67,11 @@ final readonly class LocationTotals
     /**
      * @return array<string, string>
      */
-    public function collected(ReportingPeriod $period): array
+    public function collected(ReportingPeriod $period, BoardFilter $filter): array
     {
         $query = $this->located(Payment::query()->toBase(), 'payments.entity_id')
             ->where('payments.status', PaymentStatus::Paid->value);
+        $filter->applyToPayments($query);
 
         return $this->values($this->within($query, 'payments.paid_at', $period), 'cast(sum(payments.total) as numeric(14, 2))');
     }

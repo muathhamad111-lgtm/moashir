@@ -50,4 +50,5 @@ enum Ability: string
     case QualifyEligibleRequests = 'award.filtering.qualify-eligible';
     case ViewDashboard = 'dashboard.summary.view';
     case ViewExecutiveOverview = 'dashboard.overview.view';
+    case ViewStorageUsage = 'dashboard.storage-usage.view';
 }

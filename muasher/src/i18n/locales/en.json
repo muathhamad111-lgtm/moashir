@@ -3084,16 +3084,6 @@
         "period": "In the selected period",
         "snapshot": "Current state"
       },
-      "charts": {
-        "activity": "Platform activity",
-        "accreditedAverage": "Accredited assessment average",
-        "revenue": "Amounts collected",
-        "paths": "Requests by path",
-        "levels": "Entities by level",
-        "governance": "Entities by governance grade",
-        "decades": "Entities by founding decade",
-        "geography": "Geographic distribution"
-      },
       "series": {
         "entities": "Entities registered",
         "requests": "Requests submitted",
@@ -3171,6 +3161,125 @@
         "results": "Results"
       },
       "belowLevels": "Below the levels"
+    },
+    "board": {
+      "titles": {
+        "periods": "Requests in each period",
+        "levels": "Entities by level",
+        "requestStates": "Request status",
+        "paths": "Requests by path",
+        "paymentStates": "Payment status",
+        "geography": "Geographic distribution",
+        "workload": "Assessor workload",
+        "sectors": "Entities by development sector",
+        "types": "Entities by type",
+        "sizes": "Entities by size",
+        "governance": "Entities by governance grade",
+        "decades": "Entities by founding decade",
+        "criteria": "Lowest-scoring criteria",
+        "targets": "Indicators against target",
+        "finance": "Finance details",
+        "storage": "Storage",
+        "award": "Current award cycle",
+        "inbox": "Inbox",
+        "users": "Users and security",
+        "regions": "Entities by region",
+        "profile": "Entities by type and size"
+      },
+      "scope": {
+        "period": "In the selected period",
+        "asOfEnd": "As at the end of the period",
+        "now": "Current state",
+        "workload": "Open requests per assessor",
+        "storage": "Current, with what the period added",
+        "award": "The cycle running in the period",
+        "users": "Accounts now; sign-in attempts in the period"
+      },
+      "filters": {
+        "period": "Period",
+        "region": "Region",
+        "path": "Path",
+        "type": "Entity type",
+        "sector": "Development sector",
+        "size": "Entity size",
+        "applied": "Applied filters"
+      },
+      "periods": {
+        "measure": "Measure",
+        "total": "Total"
+      },
+      "requestStates": {
+        "awaiting_payment": "Awaiting payment",
+        "in_queue": "Awaiting assignment",
+        "under_review": "Under assessment",
+        "needs_completion": "Awaiting completion",
+        "completed": "Completed",
+        "declined": "Declined or refunded"
+      },
+      "paymentStates": {
+        "paid": "Paid",
+        "pending": "Pending",
+        "under_review": "Transfer under review",
+        "failed": "Failed",
+        "cancelled": "Cancelled",
+        "refunded": "Refunded"
+      },
+      "cycleStates": {
+        "draft": "Draft",
+        "submission_open": "Submission open",
+        "submission_closed": "Submission closed",
+        "committee_assessment": "Committee assessment",
+        "awaiting_secretary": "Awaiting secretary",
+        "approved": "Approved",
+        "announced": "Results announced",
+        "closed": "Closed"
+      },
+      "facts": {
+        "finance": {
+          "vatCollected": "VAT collected",
+          "refundsTotal": "Refunded amounts",
+          "receiptsIssued": "Receipts issued",
+          "transfersAwaitingReview": "Transfers awaiting review",
+          "abandonedCarts": "Abandoned carts"
+        },
+        "award": {
+          "cycle": "Cycle",
+          "status": "Stage",
+          "submissionClosedOn": "Submission closed",
+          "announcementOn": "Results announcement",
+          "applicants": "Qualified / applicants"
+        },
+        "inbox": {
+          "received": "Messages received",
+          "awaitingReply": "Awaiting reply",
+          "replied": "Replied",
+          "averageReply": "Average reply time"
+        },
+        "users": {
+          "staffActive": "Active staff",
+          "entityAccounts": "Entity accounts",
+          "mfaShare": "Two-factor enabled",
+          "locked": "Locked accounts",
+          "failedLogins": "Failed sign-ins"
+        }
+      },
+      "hours": "{count} h",
+      "storage": {
+        "gb": "{value} GB",
+        "usedShare": "used",
+        "gaugeLabel": "Storage used {percent}",
+        "rows": {
+          "total": "Total",
+          "used": "Used",
+          "available": "Available",
+          "added": "Added in the period"
+        },
+        "alert": {
+          "warning": "Used storage is past the warning threshold.",
+          "critical": "Storage is nearly full."
+        },
+        "measuredAt": "Last disk measurement:"
+      }
     }
   },
   "assessment": {
