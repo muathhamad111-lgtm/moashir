@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Support\Monitoring;
 
+use App\Support\Security\SensitiveUrl;
 use Sentry\Breadcrumb;
 use Sentry\Event;
 
@@ -54,7 +55,7 @@ final class SentryEventScrubber
 
     public static function scrubText(string $text): string
     {
-        $withoutCredentials = (string) preg_replace(self::CREDENTIAL_PATTERNS, self::REDACTED, $text);
+        $withoutCredentials = (string) preg_replace(self::CREDENTIAL_PATTERNS, self::REDACTED, SensitiveUrl::redact($text));
         $withoutCredentials = (string) preg_replace(self::CREDENTIAL_FIELDS, '$1'.self::REDACTED, $withoutCredentials);
 
         return (string) preg_replace(self::PATTERNS, self::REDACTED, $withoutCredentials);
@@ -70,7 +71,7 @@ final class SentryEventScrubber
 
         return [
             'method' => $request['method'] ?? null,
-            'url' => is_string($request['url'] ?? null) ? strtok($request['url'], '?') : null,
+            'url' => is_string($request['url'] ?? null) ? SensitiveUrl::redact((string) strtok($request['url'], '?')) : null,
             'headers' => array_intersect_key($headers, array_flip(self::SAFE_HEADERS)),
         ];
     }

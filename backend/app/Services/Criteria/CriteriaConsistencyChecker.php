@@ -42,7 +42,7 @@ final class CriteriaConsistencyChecker
         $allocated = ActiveWeights::total($main->subCriteria);
 
         if (! $allocated->equals($main->weight)) {
-            $problems[] = new ConsistencyProblem(CriteriaNodeType::Main, $main->id, $main->code, ConsistencyProblemCode::WeightsMismatch, $main->weight, $allocated);
+            $problems[] = new ConsistencyProblem(CriteriaNodeType::Main, $main->id, $main->code, ConsistencyProblemCode::WeightsMismatch, $main->weight, $allocated, $main->name);
         }
 
         foreach ($main->subCriteria as $sub) {
@@ -65,13 +65,17 @@ final class CriteriaConsistencyChecker
         $hasActivePoint = $sub->guidingPoints->contains(static fn (GuidingPoint $point): bool => $point->is_active);
 
         if (! $hasActivePoint) {
-            return new ConsistencyProblem(CriteriaNodeType::Sub, $sub->id, $sub->code, ConsistencyProblemCode::NoActivePoint);
+            return new ConsistencyProblem(CriteriaNodeType::Sub, $sub->id, $sub->code, ConsistencyProblemCode::NoActivePoint, name: $sub->name);
         }
 
         $allocated = ActiveWeights::total($sub->guidingPoints);
 
-        return $allocated->isGreaterThan($sub->weight)
-            ? new ConsistencyProblem(CriteriaNodeType::Sub, $sub->id, $sub->code, ConsistencyProblemCode::PointsExceedSub, $sub->weight, $allocated)
-            : null;
+        if ($allocated->equals($sub->weight)) {
+            return null;
+        }
+
+        $code = $allocated->isGreaterThan($sub->weight) ? ConsistencyProblemCode::PointsExceedSub : ConsistencyProblemCode::PointsBelowSub;
+
+        return new ConsistencyProblem(CriteriaNodeType::Sub, $sub->id, $sub->code, $code, $sub->weight, $allocated, $sub->name);
     }
 }

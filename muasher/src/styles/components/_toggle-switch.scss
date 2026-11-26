@@ -20,7 +20,7 @@
 }
 
 .toggle-switch__label {
-  font-weight: var(--fw-medium);
+  font-weight: var(--fw-body);
   color: var(--theme-text);
   cursor: pointer;
 }
@@ -32,17 +32,21 @@
 }
 
 .toggle-switch__track {
+  // A rounded-square track with a square knob carrying the Moashir star: grey while off,
+  // brand-coloured while on, turning a quarter turn as it slides.
+  --switch-pad: 3px;
+  --switch-knob: calc(var(--size-switch-height) - var(--switch-pad) * 2);
   position: relative;
   flex-shrink: 0;
-  inline-size: var(--space-12);
-  block-size: var(--space-6);
-  border-radius: var(--radius-pill);
+  inline-size: var(--size-switch-width);
+  block-size: var(--size-switch-height);
+  border-radius: var(--radius-md);
   background-color: var(--theme-border);
   cursor: pointer;
   transition: background-color var(--t-base) var(--ease);
 
   &:has(.toggle-switch__input:checked) {
-    background-color: var(--color-primary);
+    background-color: var(--color-primary-800);
   }
 
   &:has(.toggle-switch__input:focus-visible) {
@@ -57,24 +61,59 @@
 .toggle-switch__input {
   position: absolute;
   inset: 0;
+  z-index: 1;
   margin: 0;
   opacity: 0;
   cursor: pointer;
 }
 
 .toggle-switch__thumb {
+  @include flex-center;
   position: absolute;
-  inset-block-start: 50%;
-  inset-inline-start: var(--space-1);
-  inline-size: var(--space-4);
-  block-size: var(--space-4);
-  border-radius: var(--radius-circle);
+  inset-block-start: var(--switch-pad);
+  inset-inline-start: var(--switch-pad);
+  inline-size: var(--switch-knob);
+  block-size: var(--switch-knob);
+  border-radius: var(--radius-sm);
   background-color: var(--color-white);
-  transform: translateY(-50%);
-  transition: inset-inline-start var(--t-base) var(--ease);
+  color: var(--color-gray-500);
   box-shadow: var(--shadow-sm);
+  transition: color var(--t-base) var(--ease);
+
+  @include motion-safe {
+    transition:
+      inset-inline-start var(--t-slow) var(--ease-spring),
+      color var(--t-base) var(--ease);
+  }
+
+  .brand-star {
+    inline-size: 66%;
+    block-size: 66%;
+
+    @include motion-safe {
+      transition: transform var(--t-slow) var(--ease-spring);
+    }
+  }
 }
 
 .toggle-switch__input:checked + .toggle-switch__thumb {
-  inset-inline-start: calc(100% - var(--space-4) - var(--space-1));
+  inset-inline-start: calc(100% - var(--switch-knob) - var(--switch-pad));
+  color: var(--color-primary-800);
+
+  .brand-star {
+    transform: rotate(90deg);
+  }
+}
+
+// A switch inside a table row: the label stays for screen readers only.
+.toggle-switch__text--hidden {
+  @include visually-hidden;
+}
+
+// Inside a table row the switch stands alone, without the card frame.
+.table .toggle-switch {
+  display: inline-flex;
+  padding: 0;
+  border: 0;
+  background-color: transparent;
 }

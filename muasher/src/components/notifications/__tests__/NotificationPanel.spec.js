@@ -7,11 +7,12 @@ const items = [
   {
     id: 1,
     code: 'PAY-02',
-    type: 'info',
+    module: 'PAY',
+    category: 'informational',
     title: { ar: 'تم استلام الرسوم', en: 'Fee received' },
     body: { ar: 'تم فتح النموذج.', en: 'Form opened.' },
     link: '/assessment/accredited/form/2041',
-    read: false,
+    isRead: false,
     createdAt: '2026-07-06T21:05:00+03:00',
   },
 ]

@@ -10,4 +10,5 @@ enum LoginStep: string
     case MfaChallenge = 'mfa_challenge';
     case MfaEnrollment = 'mfa_enrollment';
     case OtpRequired = 'otp_required';
+    case PendingReview = 'pending_review';
 }

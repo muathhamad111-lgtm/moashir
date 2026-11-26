@@ -7,6 +7,7 @@ namespace App\Models\Identity;
 use App\Models\Concerns\AppendOnly;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Support\Carbon;
 
 /**
  * @property int $id
@@ -14,6 +15,8 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property int $terms_version_id
  * @property string|null $ip_address
  * @property string|null $user_agent
+ * @property list<string>|null $accepted_roles
+ * @property Carbon $created_at
  */
 final class TermsAcceptance extends Model
 {
@@ -21,7 +24,15 @@ final class TermsAcceptance extends Model
 
     public const null UPDATED_AT = null;
 
-    protected $fillable = ['user_id', 'terms_version_id', 'ip_address', 'user_agent'];
+    protected $fillable = ['user_id', 'terms_version_id', 'ip_address', 'user_agent', 'accepted_roles'];
+
+    /**
+     * @return array<string, string>
+     */
+    protected function casts(): array
+    {
+        return ['accepted_roles' => 'array', 'created_at' => 'datetime'];
+    }
 
     /**
      * @return BelongsTo<User, $this>

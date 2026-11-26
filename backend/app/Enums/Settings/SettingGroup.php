@@ -14,4 +14,12 @@ enum SettingGroup: string
     case Bag = 'bag';
     case AbandonedCarts = 'abandoned_carts';
     case Files = 'files';
+    case Certificates = 'certificates';
+    case Contact = 'contact';
+    case Auth = 'auth';
+    case Insights = 'insights';
+    case Finance = 'finance';
+    case Periodic = 'periodic';
+    case Paths = 'paths';
+    case Nda = 'nda';
 }

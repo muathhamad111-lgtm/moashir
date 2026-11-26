@@ -6,23 +6,28 @@
   flex-direction: column;
   gap: var(--space-5);
   padding-block: var(--space-4);
-  padding-inline: var(--space-4);
-  max-inline-size: var(--size-content-max);
-  margin-inline: auto;
-  inline-size: 100%;
 }
 
-.entities-admin__header,
-.entity-record__header {
+.entities-admin__header {
   @include flex(row, flex-start, space-between, var(--space-4));
   flex-wrap: wrap;
+}
+
+// Title and the list toolbar share one row; the toolbar sits at the end, level with the title.
+.entities-admin__header--toolbar {
+  align-items: center;
+
+  > .filter-toolbar {
+    flex: 1 1 auto;
+    padding-block: 0;
+  }
 }
 
 .entities-admin__title,
 .entity-record__title {
   margin: 0;
   font-size: var(--fs-2xl);
-  font-weight: var(--fw-bold);
+  font-weight: var(--fw-heading);
   color: var(--theme-heading);
 }
 
@@ -52,7 +57,7 @@
     margin: 0;
   }
 
-  .fa-solid {
+  .app-icon {
     color: var(--color-info);
     font-size: var(--fs-lg);
   }
@@ -73,13 +78,51 @@
   color: var(--theme-text);
 }
 
+// Name on top, reference underneath; wide enough that a name takes one or two lines.
+.entity-table__entity {
+  @include flex(column, flex-start, flex-start, var(--space-1));
+  min-inline-size: var(--size-entity-name);
+}
+
 .entity-table__reference {
-  font-weight: var(--fw-medium);
+  color: var(--theme-text-muted);
+  font-size: var(--fs-xs);
+  font-weight: var(--fw-body);
   white-space: nowrap;
 }
 
+.entity-table__stack {
+  @include flex(column, flex-start, flex-start, var(--space-1));
+}
+
+.entity-table__muted {
+  color: var(--theme-text-muted);
+  font-size: var(--fs-xs);
+}
+
+.entity-last-assessment {
+  @include flex(column, flex-start, flex-start, var(--space-1));
+}
+
+.entity-last-assessment__percent {
+  white-space: nowrap;
+  font-weight: var(--fw-figure);
+  font-variant-numeric: tabular-nums;
+  color: var(--theme-heading);
+}
+
+.entity-last-assessment__date {
+  color: var(--theme-text-muted);
+  font-size: var(--fs-xs);
+}
+
+.entity-last-assessment--none {
+  color: var(--theme-text-muted);
+  font-size: var(--fs-sm);
+}
+
 .entity-table__name {
-  font-weight: var(--fw-semibold);
+  font-weight: var(--fw-emphasis);
   color: var(--theme-accent-text);
   text-decoration: none;
 
@@ -108,7 +151,7 @@
   align-self: flex-start;
   color: var(--theme-accent-text);
   font-size: var(--fs-sm);
-  font-weight: var(--fw-medium);
+  font-weight: var(--fw-body);
   text-decoration: none;
 
   &:hover {
@@ -120,7 +163,6 @@
   }
 }
 
-.entity-record__heading,
 .entity-record__actions {
   @include flex(row, center, flex-start, var(--space-3));
   flex-wrap: wrap;
@@ -129,14 +171,4 @@
 .entity-record__reference {
   font-size: var(--fs-sm);
   color: var(--theme-text-muted);
-}
-
-.entity-record__grid {
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: var(--space-5);
-
-  @include respond-to('lg') {
-    grid-template-columns: 1fr 1fr;
-  }
 }

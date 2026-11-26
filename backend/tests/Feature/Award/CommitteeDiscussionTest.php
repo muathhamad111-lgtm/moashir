@@ -72,6 +72,7 @@ it('opens a discussion session with a deadline where every member writes an opin
         ->and(discussionNoticeCodes($scenario['secretary']))->toContain(NotificationCode::CommitteeDiscussionEntry->value);
 
     switchTo($second)->getJson('/api/v1/committee/me/discussions')->assertOk()
+        ->assertJsonPath('meta.status_counts', ['open' => 1, 'closed' => 0, 'cancelled' => 0])
         ->assertJsonPath('data.0.id', $id)
         ->assertJsonPath('data.0.entries.0.is_mine', false)
         ->assertJsonPath('data.0.my_entry', null)
@@ -86,6 +87,9 @@ it('opens a discussion session with a deadline where every member writes an opin
     expect($assessment->refresh()->status->value)->toBe('awaiting_secretary_approval')
         ->and(Audit::query()->where('event', AuditEvent::CommitteeDiscussionClosed->value)->count())->toBe(1);
     test()->getJson(secretaryPath($scenario['cycle'], $assessment))->assertOk()->assertJsonPath('data.discussions.0.entries.0.member.name', $first->name);
+    switchTo($second)->getJson('/api/v1/committee/me/discussions?filter[status]=open')->assertOk()
+        ->assertJsonPath('meta.pagination.total', 0)
+        ->assertJsonPath('meta.status_counts', ['open' => 0, 'closed' => 1, 'cancelled' => 0]);
 });
 
 it('lets members approve an agreed outcome or request an edit with a reason', function (): void {

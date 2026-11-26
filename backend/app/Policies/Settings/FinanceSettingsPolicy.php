@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Policies\Settings;
 
+use App\Enums\Identity\PermissionKey;
 use App\Enums\Settings\FinanceSettingField;
 use App\Models\Identity\User;
 
@@ -16,6 +17,8 @@ final class FinanceSettingsPolicy
 
     public function editField(User $user, FinanceSettingField $field): bool
     {
-        return $user->can($field->permission()->value);
+        $permission = $field->permission();
+
+        return $permission instanceof PermissionKey && $user->can($permission->value);
     }
 }

@@ -8,6 +8,8 @@ enum Ability: string
 {
     case Authenticated = 'identity.authenticated';
     case SuperAdminSelfService = 'identity.super-admin.self-service';
+    case EnrollMfa = 'identity.mfa.enroll';
+    case RecordOwnGender = 'identity.gender.record-own';
     case ListRoles = 'identity.roles.list';
     case GlobalSearch = 'search.global';
     case IntegrationsOverview = 'settings.integrations.view';
@@ -18,6 +20,18 @@ enum Ability: string
     case ManageFinanceSettings = 'settings.finance.manage';
     case EditFinanceSettingField = 'settings.finance.edit-field';
     case ManageAssessmentSettings = 'settings.assessment-section.manage';
+    case ManagePathPrices = 'settings.prices-section.manage';
+    case ManageCertificateSettings = 'settings.certificates-section.manage';
+    case ManageContactSettings = 'settings.contact-section.manage';
+    case ManageAuthSettings = 'settings.auth-section.manage';
+    case ManageNda = 'settings.nda-section.manage';
+    case ViewAcceptedNda = 'identity.nda.view-accepted';
+    case ViewReadinessDetails = 'platform.readiness.details';
+    case IssueAccreditedCertificate = 'certificates.accredited-certificate.issue';
+    case ViewFeedbackReport = 'reports.feedback-report.view';
+    case ViewOwnInsights = 'reports.insights.view-own';
+    case ViewEntityInsights = 'reports.insights.view-entity';
+    case ViewAssessmentInsights = 'reports.insights.view-assessment';
     case ViewCommitteeRoster = 'award.committee-roster.view';
     case ManageCommitteeRoster = 'award.committee-roster.manage';
     case ManageCommitteeMember = 'award.committee-roster.member';
@@ -33,4 +47,8 @@ enum Ability: string
     case UnapproveRegionResults = 'award.results-board.unapprove-region';
     case ApproveNationalResults = 'award.results-board.approve-national';
     case AnnounceAwardResults = 'award.results-board.announce';
+    case QualifyEligibleRequests = 'award.filtering.qualify-eligible';
+    case ViewDashboard = 'dashboard.summary.view';
+    case ViewExecutiveOverview = 'dashboard.overview.view';
+    case ViewStorageUsage = 'dashboard.storage-usage.view';
 }

@@ -50,9 +50,34 @@ final class AssessmentLinks
         };
     }
 
+    public static function selfPath(): string
+    {
+        return '/paths/self';
+    }
+
+    public static function accreditedPath(): string
+    {
+        return '/paths/accredited';
+    }
+
+    public static function accreditedRequestTab(int $assessmentId, string $tab = 'request'): string
+    {
+        return '/paths/accredited/'.$assessmentId.'?'.http_build_query(['tab' => $tab]);
+    }
+
+    public static function awardPath(): string
+    {
+        return '/paths/award';
+    }
+
     public static function request(int $assessmentId): string
     {
         return self::STAFF_REQUESTS.$assessmentId;
+    }
+
+    public static function preparingRequests(AssessmentPath $path): string
+    {
+        return '/admin/requests?'.http_build_query(['path' => $path->value, 'stage' => 'preparing']);
     }
 
     public static function review(int $assessmentId): string

@@ -14,6 +14,7 @@ const ITEM_MAPPERS = {
     title: raw.entity?.name ?? '',
     reference: raw.number ?? '',
     path: raw.path ?? null,
+    pathLabel: raw.pathLabel ?? null,
     status: raw.status ?? null,
     isFrozen: raw.isFrozen === true,
   }),

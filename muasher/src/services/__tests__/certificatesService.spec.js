@@ -48,4 +48,52 @@ describe('certificatesService', () => {
       expect.objectContaining({ action: 'certificates.list' }),
     )
   })
+
+  it('treats the 409 states of a download as expected rejections', async () => {
+    apiClient.post.mockRejectedValue(
+      Object.assign(new Error('HTTP 409'), { response: { status: 409 } }),
+    )
+    await expect(certificatesService.download('cert-1')).rejects.toThrow('HTTP 409')
+    expect(logger.error).not.toHaveBeenCalled()
+  })
+
+  it('verifies a public code and maps the result', async () => {
+    apiClient.get.mockResolvedValue({
+      data: {
+        data: { result: 'under_review', certificate: { number: 'CRT-2026-000003', level: null } },
+      },
+    })
+    const { data } = await certificatesService.verify('9F3K-MQ2T')
+    expect(apiClient.get).toHaveBeenCalledWith('/verify/9F3K-MQ2T')
+    expect(data).toMatchObject({ result: 'under_review', certificate: { level: null } })
+  })
+
+  it('maps the contract fields of a certificate card', async () => {
+    apiClient.get.mockResolvedValue({
+      data: {
+        data: [
+          {
+            id: 'c1',
+            number: 'CRT-2026-000003',
+            status: 'issued',
+            request: { id: 14, number: 'ACC-2026-000014' },
+            entity: { name: { ar: 'جمعية', en: 'Association' } },
+            verificationCode: '9F3K-MQ2T',
+            verificationUrl: 'https://moashir.example.sa/verify/9F3KMQ2T',
+            hasPdf: true,
+          },
+        ],
+        meta: { statusCounts: { issued: 1 } },
+      },
+    })
+    const { data, meta } = await certificatesService.listCards()
+    expect(data[0]).toMatchObject({
+      requestId: 14,
+      requestNumber: 'ACC-2026-000014',
+      entityName: { ar: 'جمعية', en: 'Association' },
+      verificationCode: '9F3K-MQ2T',
+      hasPdf: true,
+    })
+    expect(meta.statusCounts.issued).toBe(1)
+  })
 })

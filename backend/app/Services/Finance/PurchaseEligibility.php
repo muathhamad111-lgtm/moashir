@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Services\Finance;
 
 use App\Contracts\Finance\PurchaseEligibilityCheck;
-use App\Enums\Finance\PaymentPurpose;
+use App\Data\Finance\OrderTerms;
 use App\Models\Entities\Entity;
 use Illuminate\Container\Attributes\Tag;
 
@@ -26,10 +26,10 @@ final readonly class PurchaseEligibility
         $this->checks = iterator_to_array($checks, false);
     }
 
-    public function assertMayPurchase(Entity $entity, PaymentPurpose $purpose): void
+    public function assertMayPurchase(Entity $entity, OrderTerms $terms): void
     {
         foreach ($this->checks as $check) {
-            $check->assertMayPurchase($entity, $purpose);
+            $check->assertMayPurchase($entity, $terms);
         }
     }
 }

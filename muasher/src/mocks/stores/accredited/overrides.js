@@ -28,7 +28,10 @@ function requireValues(scores) {
   const errors = {}
   ;['subs', 'points'].forEach((group) =>
     Object.entries(scores?.[group] ?? {}).forEach(([id, value]) => {
-      if (value === null) errors[`scores.${group}.${id}`] = [fieldMessage('validation.required', {}, `scores.${group}`)]
+      if (value === null)
+        errors[`scores.${group}.${id}`] = [
+          fieldMessage('validation.required', {}, `scores.${group}`),
+        ]
     }),
   )
   throwIfErrors(errors)
@@ -39,7 +42,8 @@ export function overrideScores(record, body) {
   requireValues(input.scores)
   overrideReason(body)
   assertNotFrozen(record)
-  if (!exposesResult(record)) throw assessmentReject.illegalTransition(toCanonicalStatus(record.status), 'override_score')
+  if (!exposesResult(record))
+    throw assessmentReject.illegalTransition(toCanonicalStatus(record.status), 'override_score')
   const changes = parseScoreSheet(input.scores, boundTree(record), record.scaleKind)
   record.scores = { ...record.scores, ...Object.fromEntries(changes) }
   recordSnapshot(record)
@@ -62,7 +66,17 @@ export function reopenAssessment(record, body) {
   const target = last && isActiveAssessor(last.assessorId) ? STATES.UNDER_REVIEW : STATES.SUBMITTED
   if (target === STATES.UNDER_REVIEW) {
     reopenSequence += 1
-    record.assignments.push({ id: reopenSequence, assessorId: last.assessorId, assignedById: null, status: 'active', reason: null, startedAt: at, endedAt: null, endReason: null, createdAt: at })
+    record.assignments.push({
+      id: reopenSequence,
+      assessorId: last.assessorId,
+      assignedById: null,
+      status: 'active',
+      reason: null,
+      startedAt: at,
+      endedAt: null,
+      endReason: null,
+      createdAt: at,
+    })
   }
   Object.assign(record, { status: target, completedAt: null })
   recordOverride(record, STATES.COMPLETED, target, 'reopen', at)
@@ -70,29 +84,40 @@ export function reopenAssessment(record, body) {
 }
 
 function validateTarget(body) {
-  if (!FORCE_TARGETS.includes(body.toStatus)) throw assessmentReject.validation({ toStatus: [fieldMessage('validation.invalid', {}, 'toStatus')] })
+  if (!FORCE_TARGETS.includes(body.toStatus))
+    throw assessmentReject.validation({
+      toStatus: [fieldMessage('validation.invalid', {}, 'toStatus')],
+    })
 }
 
 function endActive(record, at) {
   const active = activeAssignment(record)
-  if (active) Object.assign(active, { status: 'ended', endedAt: at, endReason: 'forced_transition' })
+  if (active)
+    Object.assign(active, { status: 'ended', endedAt: at, endReason: 'forced_transition' })
 }
 
 const TARGET_EFFECTS = {
   [STATES.DRAFT]: (record, at) => {
     endActive(record, at)
-    Object.assign(record, { submittedAt: null, dueAt: null, reviewSlaDays: null, completedAt: null })
+    Object.assign(record, {
+      submittedAt: null,
+      dueAt: null,
+      reviewSlaDays: null,
+      completedAt: null,
+    })
   },
   [STATES.SUBMITTED]: (record, at) => {
     endActive(record, at)
     record.completedAt = null
   },
   [STATES.ASSIGNED]: (record) => {
-    if (!activeAssignment(record)) throw assessmentReject.coded(409, 'assessment.assignment_required')
+    if (!activeAssignment(record))
+      throw assessmentReject.coded(409, 'assessment.assignment_required')
     record.completedAt = null
   },
   [STATES.UNDER_REVIEW]: (record) => {
-    if (!activeAssignment(record)) throw assessmentReject.coded(409, 'assessment.assignment_required')
+    if (!activeAssignment(record))
+      throw assessmentReject.coded(409, 'assessment.assignment_required')
     record.completedAt = null
   },
   [STATES.COMPLETED]: (record, at) => {
@@ -107,7 +132,10 @@ export function forceTransition(record, body) {
   validateTarget(body)
   overrideReason(body)
   assertNotFrozen(record)
-  if (record.path !== ASSESSMENT_PATHS.ACCREDITED || FORCE_SOURCES_BLOCKED.includes(record.status)) {
+  if (
+    record.path !== ASSESSMENT_PATHS.ACCREDITED ||
+    FORCE_SOURCES_BLOCKED.includes(record.status)
+  ) {
     throw assessmentReject.illegalTransition(toCanonicalStatus(record.status), 'force_transition')
   }
   const at = nowIso()

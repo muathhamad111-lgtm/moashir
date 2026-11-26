@@ -20,7 +20,7 @@ function codeSentTo(string $email): string
     $code = '';
 
     Notification::assertSentOnDemand(OtpCodeNotification::class, function (OtpCodeNotification $notification, array $channels, AnonymousNotifiable $notifiable) use ($email, &$code): bool {
-        $code = (string) ($notification->toMail($notifiable)->introLines[1] ?? '');
+        $code = (string) $notification->toMail($notifiable)->code;
 
         return $notifiable->routeNotificationFor('mail') === $email;
     });

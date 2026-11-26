@@ -1,0 +1,225 @@
+@use '../mixins' as *;
+
+// Completion rounds, the override mode and the completion request's review step (design §B.3.3,
+// §B.3.5). An item waiting for a new result is amber; a changed override row is outlined in red.
+
+// ── Waiting for a new result after a completion ───────────────────────────────
+.review-item.is-awaiting,
+.review-card.is-awaiting > .review-card__head {
+  border-color: var(--theme-warning-soft);
+  background-color: var(--theme-warning-soft);
+}
+
+.review-state.is-awaiting {
+  border-style: solid;
+  border-color: var(--theme-warning-text);
+}
+
+.review-strip__rounds {
+  font-size: var(--fs-xs);
+  font-weight: var(--fw-body);
+  color: var(--theme-warning-text);
+}
+
+.review-rounds {
+  overflow-x: auto;
+}
+
+.review-rounds__table {
+  inline-size: 100%;
+  border-collapse: collapse;
+  font-size: var(--fs-sm);
+
+  th,
+  td {
+    padding: var(--space-2) var(--space-3);
+    border-block-end: var(--border-width) solid var(--theme-border);
+    text-align: start;
+    vertical-align: middle;
+    white-space: nowrap;
+  }
+
+  td:last-child {
+    white-space: normal;
+  }
+
+  thead th {
+    font-size: var(--fs-xs);
+    font-weight: var(--fw-body);
+    color: var(--theme-text-secondary);
+  }
+
+  tbody th {
+    font-weight: var(--fw-body);
+    color: var(--theme-heading);
+  }
+}
+
+.review-rounds__caption {
+  padding-block-end: var(--space-2);
+  text-align: start;
+  font-size: var(--fs-xs);
+  font-weight: var(--fw-body);
+  color: var(--theme-text-secondary);
+}
+
+.review-rounds__row.is-pending {
+  background-color: var(--theme-warning-soft);
+}
+
+.review-rounds__pending {
+  @include flex(row, center, flex-start, var(--space-2));
+  flex-wrap: wrap;
+}
+
+// ── Override mode ──────────────────────────────────────────────────────────────
+.override-band {
+  @include flex(row, center, flex-start, var(--space-3));
+  flex-wrap: wrap;
+  padding: var(--space-3) var(--space-4);
+  border: var(--border-width) solid var(--theme-danger-text);
+  border-radius: var(--radius-lg);
+  background-color: var(--theme-danger-soft);
+}
+
+.override-band__icon {
+  color: var(--theme-danger-text);
+  font-size: var(--fs-lg);
+}
+
+.override-band__text {
+  @include flex(column, stretch, flex-start, var(--space-1));
+  flex: 1 1 var(--size-control-min);
+  min-inline-size: 0;
+}
+
+.override-band__title {
+  margin: 0;
+  font-weight: var(--fw-heading);
+  color: var(--theme-danger-text);
+}
+
+.override-band__summary {
+  @include flex(row, center, flex-start, var(--space-2));
+  flex-wrap: wrap;
+  margin: 0;
+  font-size: var(--fs-sm);
+  color: var(--theme-heading);
+}
+
+.override-band__busy {
+  color: var(--theme-text-secondary);
+}
+
+.override-band__actions {
+  @include flex(row, center, flex-end, var(--space-2));
+  flex-wrap: wrap;
+}
+
+.review-item.is-changed,
+.review-card.is-changed > .review-card__head {
+  outline: var(--border-width-thick) solid var(--theme-danger-text);
+  outline-offset: calc(var(--border-width-thick) * -1);
+}
+
+.review-workspace.is-overriding .review-score__unsaved {
+  color: var(--theme-danger-text);
+}
+
+.override-review {
+  @include flex(column, stretch, flex-start, var(--space-4));
+}
+
+.override-review__summary {
+  margin: 0;
+  padding: var(--space-3);
+  border-radius: var(--radius-md);
+  background-color: var(--theme-danger-soft);
+  font-weight: var(--fw-body);
+  color: var(--theme-heading);
+}
+
+.override-review__caption {
+  @include visually-hidden;
+}
+
+.override-review__table {
+  inline-size: 100%;
+  border-collapse: collapse;
+  font-size: var(--fs-sm);
+
+  th,
+  td {
+    padding: var(--space-2) var(--space-3);
+    border-block-end: var(--border-width) solid var(--theme-border);
+    text-align: start;
+  }
+
+  thead th {
+    font-size: var(--fs-xs);
+    color: var(--theme-text-secondary);
+  }
+}
+
+// ── Completion request: suggestions and the review step ────────────────────────
+.completion-dialog__suggested {
+  margin: 0;
+  padding: var(--space-3);
+  border-radius: var(--radius-md);
+  background-color: var(--theme-warning-soft);
+  font-size: var(--fs-sm);
+}
+
+.completion-review {
+  @include flex(column, stretch, flex-start, var(--space-4));
+}
+
+.completion-review__title {
+  margin-block: 0 var(--space-2);
+  font-size: var(--fs-base);
+  color: var(--theme-heading);
+}
+
+.completion-review__items {
+  @include flex(column, stretch, flex-start, var(--space-2));
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.completion-review__item {
+  @include flex(column, stretch, flex-start, var(--space-1));
+  padding: var(--space-2) var(--space-3);
+  border: var(--border-width) solid var(--theme-border);
+  border-radius: var(--radius-md);
+}
+
+.completion-review__label {
+  font-weight: var(--fw-body);
+  color: var(--theme-heading);
+}
+
+.completion-review__note {
+  font-size: var(--fs-sm);
+  color: var(--theme-text-secondary);
+}
+
+.completion-review__facts {
+  @include flex(column, stretch, flex-start, var(--space-3));
+  margin: 0;
+}
+
+.completion-review__fact {
+  @include flex(column, stretch, flex-start, var(--space-1));
+
+  dt {
+    font-size: var(--fs-sm);
+    color: var(--theme-text-secondary);
+  }
+
+  dd {
+    margin: 0;
+    color: var(--theme-heading);
+    white-space: pre-line;
+  }
+}

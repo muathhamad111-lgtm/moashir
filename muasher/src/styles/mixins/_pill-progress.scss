@@ -1,0 +1,23 @@
+// A native <progress> drawn as a rounded track with a brand fill, instead of the browser default.
+@mixin pill-progress($fill: var(--theme-accent-text), $track: var(--theme-border)) {
+  border: 0;
+  border-radius: var(--radius-pill);
+  background-color: $track;
+  overflow: hidden;
+  appearance: none;
+
+  &::-webkit-progress-bar {
+    border-radius: var(--radius-pill);
+    background-color: $track;
+  }
+
+  &::-webkit-progress-value {
+    border-radius: var(--radius-pill);
+    background-color: $fill;
+  }
+
+  &::-moz-progress-bar {
+    border-radius: var(--radius-pill);
+    background-color: $fill;
+  }
+}

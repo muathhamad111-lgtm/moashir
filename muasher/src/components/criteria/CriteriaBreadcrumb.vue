@@ -1,5 +1,6 @@
 <script setup>
 import { useI18n } from 'vue-i18n'
+import AppIcon from '@/components/ui/AppIcon.vue'
 
 defineProps({
   items: { type: Array, required: true },
@@ -18,11 +19,11 @@ const { t } = useI18n()
         <span v-else class="criteria-page__crumb is-current" aria-current="page">{{
           item.label
         }}</span>
-        <i
+        <AppIcon
           v-if="index < items.length - 1"
-          class="fa-solid fa-chevron-right u-flip-in-rtl criteria-page__crumb-sep"
-          aria-hidden="true"
-        ></i>
+          name="chevron-right"
+          class="criteria-page__crumb-sep"
+        />
       </li>
     </ol>
   </nav>

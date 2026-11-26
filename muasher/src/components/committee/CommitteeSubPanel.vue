@@ -1,0 +1,109 @@
+<script setup>
+import { computed } from 'vue'
+import { useI18n } from 'vue-i18n'
+import Badge from '@/components/ui/Badge.vue'
+import BaseTextarea from '@/components/form/BaseTextarea.vue'
+import ReviewScoreControl from '@/components/review/ReviewScoreControl.vue'
+import ReviewEvidenceList from '@/components/review/ReviewEvidenceList.vue'
+import CommitteePriorScores from './CommitteePriorScores.vue'
+import IndicatorGuidance from '@/components/assessment/IndicatorGuidance.vue'
+import { EVALUATION_TYPES } from '@/constants/criteria'
+import { SCORE_LEVELS } from '@/constants/assessment'
+import { COMMITTEE_LIMITS } from '@/constants/committee'
+import { savedScoreOf, scoreFieldName } from '@/utils/assessments/scoreSheet'
+import { evidenceOfSub, slotGroupsOf } from '@/utils/accredited/evidenceRules'
+import { localizedText } from '@/utils/localizedText'
+
+const props = defineProps({
+  sub: { type: Object, required: true },
+  workspace: { type: Object, required: true },
+})
+
+const emit = defineEmits(['download'])
+const { t, locale } = useI18n()
+
+const evaluation = computed(() => props.workspace.state.evaluation.value)
+const disabled = computed(
+  () => !props.workspace.state.canScore.value || Boolean(props.workspace.actions.busy.value),
+)
+const usesPoints = computed(() => props.sub.evaluationType === EVALUATION_TYPES.GUIDING_POINTS)
+const cv = computed(() => evaluation.value.cv[String(props.sub.id)] ?? '')
+const files = computed(() => evidenceOfSub(evaluation.value.evidence, props.sub.id))
+const typeOf = (node) => props.workspace.scoreSheet.typeOf(node)
+const units = computed(() =>
+  props.workspace.state.units.value.filter((unit) => unit.subId === props.sub.id),
+)
+const note = computed(() => props.workspace.notes.noteOf(props.sub.id))
+const noteError = computed(() =>
+  note.value.length > COMMITTEE_LIMITS.NOTE_MAX
+    ? t('award.common.maxChars', { max: COMMITTEE_LIMITS.NOTE_MAX })
+    : '',
+)
+
+function text(content) {
+  return localizedText(content, locale.value)
+}
+</script>
+
+<template>
+  <li :id="`committee-sub-${sub.id}`" class="review-sub" tabindex="-1">
+    <div class="review-sub__head">
+      <h3 class="review-sub__title">
+        {{ text(sub.name) }}
+      </h3>
+      <Badge :variant="usesPoints ? 'info' : 'muted'">{{
+        usesPoints
+          ? t('assessment.self.tree.points', { count: sub.points.length })
+          : t('assessment.self.tree.direct')
+      }}</Badge>
+    </div>
+    <div v-if="sub.hasCv" class="review-sub__cv">
+      <p class="review-sub__label">{{ t('review.cvTitle') }}</p>
+      <p v-if="cv" class="review-sub__cv-text">{{ cv }}</p>
+      <p v-else class="review-sub__empty">{{ t('review.noCv') }}</p>
+    </div>
+    <ReviewEvidenceList
+      :files="files"
+      :groups="slotGroupsOf(sub)"
+      :downloading="workspace.downloads.busy"
+      @download="emit('download', $event)"
+    />
+    <IndicatorGuidance
+      v-if="!usesPoints && sub.points.length"
+      :points="sub.points"
+      :title="t('review.directIndicatorsHint')"
+    />
+    <div class="review-sub__scores">
+      <div v-for="unit in units" :key="scoreFieldName(unit)" class="review-sub__point">
+        <ReviewScoreControl
+          :name="scoreFieldName(unit)"
+          :label="
+            unit.level === SCORE_LEVELS.POINT
+              ? text(unit.label)
+              : t('review.directScoreLabel', { name: text(unit.label) })
+          "
+          :scoring-type="typeOf(unit)"
+          :saved="savedScoreOf(evaluation.scores, unit)"
+          :disabled="disabled"
+        />
+      </div>
+    </div>
+    <BaseTextarea
+      :model-value="note"
+      :name="`committee-note-${sub.id}`"
+      :label="t('award.evaluation.subNote', { name: text(sub.name) })"
+      :hint="text(sub.assessorNoteLabel) || t('award.evaluation.noteHint')"
+      :rows="3"
+      :error="noteError"
+      :disabled="disabled"
+      @update:model-value="workspace.notes.setNote(sub.id, $event)"
+    />
+    <CommitteePriorScores
+      v-if="evaluation.prior"
+      :prior="evaluation.prior"
+      :units="units"
+      :sub-id="sub.id"
+      :type-of="typeOf"
+    />
+  </li>
+</template>

@@ -19,6 +19,7 @@ export const STATUS_VARIANTS = {
   'under-committee-assessment': 'info',
   'awaiting-secretary-approval': 'warning',
   approved: 'success',
+  'partially-approved': 'warning',
   announced: 'success',
   'certificate-issued': 'success',
   'rejected-conditions': 'danger',
@@ -45,6 +46,7 @@ export const STATUS_VARIANTS = {
   inactive: 'muted',
   deactivated: 'danger',
   'pending-verification': 'warning',
+  'pending-review': 'info',
 
   'awaiting-otp': 'muted',
   'awaiting-approval': 'warning',
@@ -91,6 +93,9 @@ export const STATUS_VARIANTS = {
   'non-winner': 'muted',
   'qualified-for-national': 'info',
   'national-winner': 'success',
+  'committee-discussion': 'info',
+  'returned-to-committee': 'warning',
+  'national-non-winner': 'muted',
 }
 
 export const STATUS_TOKENS = Object.keys(STATUS_VARIANTS)

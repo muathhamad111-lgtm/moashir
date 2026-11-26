@@ -1,6 +1,7 @@
 <script setup>
 import { computed } from 'vue'
 import { ASSESSMENT_NOTICE_ICONS as ICONS } from '@/constants/assessment'
+import AppIcon from '@/components/ui/AppIcon.vue'
 
 const props = defineProps({
   variant: {
@@ -19,7 +20,7 @@ const role = computed(() => (props.live ? 'alert' : 'note'))
 
 <template>
   <aside class="assessment-notice" :class="`assessment-notice--${variant}`" :role="role">
-    <i :class="icon" class="assessment-notice__icon" aria-hidden="true"></i>
+    <AppIcon :name="icon" class="assessment-notice__icon" />
     <div class="assessment-notice__body">
       <p class="assessment-notice__title">{{ title }}</p>
       <p v-if="message" class="assessment-notice__message">{{ message }}</p>

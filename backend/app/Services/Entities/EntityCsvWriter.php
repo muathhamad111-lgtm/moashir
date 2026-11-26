@@ -15,8 +15,8 @@ final class EntityCsvWriter
 
     private const array COLUMNS = [
         'reference', 'name_ar', 'name_en', 'entity_type', 'development_sector', 'org_size', 'founding_year',
-        'region', 'city', 'governance_grade', 'employees_count', 'annual_beneficiaries_count',
-        'has_strategic_plan', 'status', 'authorized_person_name', 'official_email', 'registered_at',
+        'region', 'city', 'governance_grade', 'has_governance_grade', 'employees_count',
+        'annual_beneficiaries_count', 'has_strategic_plan', 'status', 'authorized_person_name', 'official_email', 'registered_at',
     ];
 
     /**
@@ -51,9 +51,10 @@ final class EntityCsvWriter
             $entity->region->name->in($locale),
             $entity->city->name->in($locale),
             $entity->governance_grade ?? '',
+            $this->answer($entity->has_governance_grade, $locale),
             $entity->employees_count === null ? '' : (string) $entity->employees_count,
             $entity->annual_beneficiaries_count === null ? '' : (string) $entity->annual_beneficiaries_count,
-            $this->label('entities.export.'.($entity->has_strategic_plan ? 'yes' : 'no'), $locale),
+            $this->answer($entity->has_strategic_plan, $locale),
             $this->label('entities.statuses.'.$entity->status->value, $locale),
             $entity->owner->name ?? '',
             $entity->owner->email ?? '',
@@ -73,6 +74,11 @@ final class EntityCsvWriter
     private function writeRow($stream, array $cells): void
     {
         fputcsv($stream, array_map($this->neutralize(...), $cells), ',', '"', '');
+    }
+
+    private function answer(?bool $answer, string $locale): string
+    {
+        return $answer === null ? '' : $this->label('entities.export.'.($answer ? 'yes' : 'no'), $locale);
     }
 
     private function label(string $key, string $locale): string

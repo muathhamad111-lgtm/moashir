@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Services\Assessments;
 
 use App\Data\Audit\AuditEntry;
+use App\Enums\Assessments\AdvancedAssessmentStatus;
 use App\Enums\Assessments\AssessmentVerb;
 use App\Enums\Assessments\AssignmentEndReason;
 use App\Events\Assessments\CompletionDeadlineExpired;
@@ -21,7 +22,9 @@ final readonly class CompletionRequestExpirer
         private CompletionRequestCloser $completionRequests,
         private AssignmentRecorder $assignments,
         private AssessmentStateMachine $stateMachine,
+        private InitialReviewSla $sla,
         private AuditRecorder $audit,
+        private AdvancedResumeTarget $resumeTarget,
     ) {}
 
     public function expire(int $assessmentId): bool
@@ -54,14 +57,19 @@ final readonly class CompletionRequestExpirer
     private function applyOutcome(Assessment $locked, AssessmentCompletionRequest $request): void
     {
         $outcome = $request->expiry_outcome;
+        $resumesTo = $outcome->endsAssignment() ? null : $this->resumePointOf($locked, $request);
         $assessorId = $locked->loadMissing('activeAssignment')->activeAssignment?->assessor_user_id;
-        $next = $outcome->assessmentStatusOn($locked->path);
+        $next = $outcome->assessmentStatusOn($locked->path, $resumesTo);
         $previous = $locked->status;
 
         $this->completionRequests->expire($locked, $outcome);
 
         if ($outcome->endsAssignment()) {
             $this->assignments->endActive($locked, AssignmentEndReason::DeclinedIncomplete);
+        }
+
+        if ($next->runsReviewClock()) {
+            $this->sla->resumeAfter($locked, $request);
         }
 
         $this->stateMachine->transition($locked, $next, AssessmentVerb::ExpireCompletion, null);
@@ -73,5 +81,13 @@ final readonly class CompletionRequestExpirer
         ]));
 
         CompletionDeadlineExpired::dispatch($locked, $request->refresh(), $assessorId);
+    }
+
+    /**
+     * A return made after the assignment continues with its assessor only while that assessor can still work on it.
+     */
+    private function resumePointOf(Assessment $locked, AssessmentCompletionRequest $request): ?AdvancedAssessmentStatus
+    {
+        return $request->resumes_to instanceof AdvancedAssessmentStatus ? $this->resumeTarget->resolve($locked, $request->resumes_to) : null;
     }
 }

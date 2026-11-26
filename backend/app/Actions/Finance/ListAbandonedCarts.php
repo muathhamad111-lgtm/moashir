@@ -7,27 +7,23 @@ namespace App\Actions\Finance;
 use App\Data\Finance\AbandonedCartFilters;
 use App\Enums\Finance\PaymentPurpose;
 use App\Models\Finance\CheckoutIntent;
-use App\Services\Finance\FinanceSettings;
+use App\Services\Finance\AbandonedCarts;
 use App\Support\Search\SearchTextNormalizer;
 use App\Support\ValueObjects\SearchTerm;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Pagination\LengthAwarePaginator;
-use Illuminate\Support\Facades\Date;
 
 final readonly class ListAbandonedCarts
 {
-    public function __construct(private FinanceSettings $settings) {}
+    public function __construct(private AbandonedCarts $carts) {}
 
     /**
      * @return LengthAwarePaginator<int, CheckoutIntent>
      */
     public function handle(AbandonedCartFilters $filters): LengthAwarePaginator
     {
-        return CheckoutIntent::query()
-            ->with('entity.owner')
-            ->whereNull('converted_payment_id')
-            ->where('last_seen_at', '<=', Date::now()->subHours($this->settings->abandonedCartAfterHours()))
-            ->whereHas('entity', static fn (Builder $entity): Builder => $entity->notErased())
+        return $this->carts->query()
+            ->with(['entity.owner', 'entity.region'])
             ->when($filters->purpose instanceof PaymentPurpose, static fn (Builder $query): Builder => $query->where('purpose', $filters->purpose))
             ->when($filters->contacted === true, static fn (Builder $query): Builder => $query->whereNotNull('contacted_at'))
             ->when($filters->contacted === false, static fn (Builder $query): Builder => $query->whereNull('contacted_at'))

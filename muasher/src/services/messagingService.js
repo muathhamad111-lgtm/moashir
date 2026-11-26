@@ -4,10 +4,14 @@ import { serviceRequest } from './serviceRequest'
 
 export const messagingService = {
   sendSms(payload) {
-    return serviceRequest('messaging.sendSms', () => apiClient.post('/messaging/sms/send', payload), {
-      entity: 'sms',
-      payloadShape: payloadShape(payload),
-    })
+    return serviceRequest(
+      'messaging.sendSms',
+      () => apiClient.post('/messaging/sms/send', payload),
+      {
+        entity: 'sms',
+        payloadShape: payloadShape(payload),
+      },
+    )
   },
 
   listSegments() {

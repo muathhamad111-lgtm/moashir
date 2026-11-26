@@ -1,4 +1,8 @@
-import { defaultRoleMatrixFixture, permissionCatalogFixture, rolesFixture } from '../fixtures/permissions'
+import {
+  defaultRoleMatrixFixture,
+  permissionCatalogFixture,
+  rolesFixture,
+} from '../fixtures/permissions'
 
 const catalog = permissionCatalogFixture.map((item) => ({
   ...item,

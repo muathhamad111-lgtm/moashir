@@ -1,0 +1,265 @@
+@use 'tokens' as *;
+
+.lp-top {
+  position: fixed;
+  inset: 0 0 auto;
+  z-index: 100;
+  transition:
+    background-color 0.35s,
+    box-shadow 0.35s;
+
+  &.is-solid {
+    background: color-mix(in srgb, var(--lp-bg) 86%, transparent);
+    backdrop-filter: blur(14px);
+    box-shadow: 0 1px 0 var(--lp-line);
+  }
+
+  &.is-on-deep {
+    @include lp-deep-band;
+
+    &.is-solid {
+      background: rgba(10, 35, 37, 0.86);
+    }
+  }
+
+  &__bar {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    height: $lp-header-h;
+  }
+
+  &__brand {
+    flex: none;
+
+    img {
+      height: 50px;
+      width: auto;
+      max-width: none;
+    }
+  }
+
+  &__nav {
+    display: none;
+    gap: 4px;
+    min-width: 0;
+    margin-inline: auto;
+  }
+
+  &__link {
+    padding: 8px 11px;
+    border-radius: 8px;
+    font-size: 0.92rem;
+    font-weight: var(--fw-emphasis);
+    color: var(--lp-ink-2);
+    white-space: nowrap;
+    transition: color 0.2s;
+
+    &:hover,
+    &.is-active {
+      color: var(--lp-ink);
+    }
+
+    &.is-active {
+      box-shadow: inset 0 -2px 0 var(--lp-accent);
+      border-radius: 0;
+    }
+  }
+
+  &__actions {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-inline-start: auto;
+  }
+
+  &__wide {
+    display: none;
+  }
+
+  &__sep {
+    width: 1px;
+    height: 26px;
+    margin-inline: 4px;
+    background: var(--lp-line-strong);
+  }
+
+  &__icon-btn {
+    position: relative;
+    display: grid;
+    place-items: center;
+    flex: none;
+    width: 44px;
+    height: 44px;
+    padding: 0;
+    border-radius: 12px;
+    border: 1px solid var(--lp-line-strong);
+    background: transparent;
+    color: var(--lp-ink);
+    cursor: pointer;
+    transition:
+      border-color 0.25s,
+      background-color 0.25s;
+
+    &:hover {
+      border-color: var(--lp-ink);
+      background: color-mix(in srgb, var(--lp-aqua) 14%, transparent);
+    }
+
+    svg {
+      width: 20px;
+      height: 20px;
+    }
+  }
+
+  &__locale {
+    width: auto;
+    min-width: 44px;
+    padding-inline: 12px;
+    font-size: 0.85rem;
+    font-weight: var(--fw-body);
+  }
+
+  &__burger {
+    display: grid;
+  }
+
+  &__nav-actions {
+    display: none;
+  }
+}
+
+@media (max-width: #{$lp-bp-md - 0.02px}) {
+  .lp-top__nav-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-block-start: 8px;
+    padding-block-start: 12px;
+    border-top: 1px solid var(--lp-line);
+  }
+}
+
+[data-theme='light'] .lp .lp-top.is-on-deep .lp-only-light {
+  display: none !important;
+}
+
+[data-theme='light'] .lp .lp-top.is-on-deep .lp-top__brand .lp-only-dark {
+  display: block !important;
+}
+
+.lp-theme-switch {
+  svg {
+    position: absolute;
+    inset: 0;
+    margin: auto;
+    width: 19px;
+    height: 19px;
+    transition:
+      opacity 0.3s,
+      rotate 0.45s $lp-ease,
+      scale 0.45s $lp-ease;
+  }
+
+  &__sun {
+    opacity: 1;
+  }
+
+  &__moon {
+    opacity: 0;
+    rotate: -90deg;
+    scale: 0.6;
+  }
+}
+
+[data-theme='dark'] :is(.lp, .lp-auth) .lp-theme-switch {
+  .lp-theme-switch__sun {
+    opacity: 0;
+    rotate: 90deg;
+    scale: 0.6;
+  }
+
+  .lp-theme-switch__moon {
+    opacity: 1;
+    rotate: 0deg;
+    scale: 1;
+  }
+}
+
+@media (min-width: $lp-bp-md) {
+  .lp-top__wide {
+    display: inline-flex;
+  }
+}
+
+@media (max-width: #{$lp-bp-md - 0.02px}) {
+  .lp-top__sep {
+    display: none;
+  }
+
+  .lp-top__actions {
+    gap: 8px;
+  }
+}
+
+@media (min-width: $lp-bp-nav) {
+  .lp-top__nav {
+    display: flex;
+  }
+
+  .lp-top__actions {
+    margin-inline-start: 0;
+  }
+
+  .lp-top__burger {
+    display: none;
+  }
+}
+
+@media (min-width: $lp-bp-nav) and (max-width: #{$lp-bp-roomy - 0.02px}) {
+  .lp-top__bar {
+    gap: 14px;
+  }
+
+  .lp-top__link {
+    padding-inline: 8px;
+    font-size: 0.88rem;
+  }
+
+  .lp-top__start {
+    display: none;
+  }
+}
+
+@media (max-width: #{$lp-bp-nav - 0.02px}) {
+  .lp-top__nav {
+    position: absolute;
+    inset-block-start: $lp-header-h;
+    inset-inline: 12px;
+    flex-direction: column;
+    padding: 12px;
+    background: var(--lp-surface);
+    border: 1px solid var(--lp-line);
+    border-radius: 14px;
+    box-shadow: var(--lp-shadow);
+  }
+
+  .lp-top.is-nav-open .lp-top__nav {
+    display: flex;
+  }
+
+  .lp-top.is-on-deep .lp-top__nav {
+    background: $lp-dark-4;
+    border-color: rgba(217, 247, 247, 0.12);
+  }
+
+  .lp-top__link {
+    padding: 12px 14px;
+    font-size: 1rem;
+
+    &.is-active {
+      box-shadow: none;
+      color: var(--lp-accent);
+    }
+  }
+}

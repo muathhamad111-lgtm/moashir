@@ -15,6 +15,6 @@ final class EntityProfileChangeController
 {
     public function __invoke(IndexProfileChangesRequest $request, Entity $entity, ListStaffEntityProfileChanges $listChanges): JsonResponse
     {
-        return ApiResponse::paginated($listChanges->handle($entity, $request->perPage()), StaffProfileChangeResource::class);
+        return ApiResponse::paginated($listChanges->handle($entity, $request->perPage(), $request->section()), StaffProfileChangeResource::class);
     }
 }

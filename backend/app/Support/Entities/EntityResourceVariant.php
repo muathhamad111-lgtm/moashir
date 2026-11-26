@@ -9,6 +9,8 @@ use App\Http\Resources\Entities\EntityContactResource;
 use App\Http\Resources\Entities\EntitySummaryResource;
 use App\Http\Resources\Entities\StaffEntityResource;
 use App\Models\Entities\Entity;
+use App\Support\Assessments\LastAccreditedAssessmentQuery;
+use App\Support\Certificates\EntityLevelQuery;
 use Illuminate\Http\Resources\Json\JsonResource;
 
 final class EntityResourceVariant
@@ -29,6 +31,8 @@ final class EntityResourceVariant
     {
         $class = self::classFor($access);
 
-        return new $class($entity->loadMissing(['owner', 'region', 'city']));
+        $entity->loadMissing(['owner', 'region', 'city', 'logo', 'vatCertificate', 'licenseCertificate', 'authorizationLetter', EntityLevelQuery::RELATION, EntityLevelQuery::DISPLAY_RELATION, LastAccreditedAssessmentQuery::RELATION, LastAccreditedAssessmentQuery::RESULT_RELATION]);
+
+        return new $class($entity->loadExists(EntityLevelQuery::openAccreditedRequestFlag()));
     }
 }

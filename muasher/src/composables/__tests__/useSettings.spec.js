@@ -39,9 +39,8 @@ describe('useSettings', () => {
     ])
   })
 
-  it('labels certificate kinds and segments through i18n', () => {
-    const { certificateKindLabel, segmentLabel } = withComposable('en')
-    expect(certificateKindLabel('advanced-winner')).toBe('Advanced — winner')
+  it('labels the e-mail segments through i18n', () => {
+    const { segmentLabel } = withComposable('en')
     expect(segmentLabel('qualified')).toBe('Qualified entities')
   })
 })

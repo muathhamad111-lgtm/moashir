@@ -52,6 +52,10 @@ final readonly class ManuallySettlePayment
 
     private function settle(User $actor, Payment $locked, ManualSettlement $settlement): void
     {
+        if ($locked->isBankTransfer()) {
+            throw PaymentRejected::channelNotSupported();
+        }
+
         if (! $locked->status->isOpen()) {
             throw IllegalStateTransition::from($locked->status->value, self::VERB);
         }

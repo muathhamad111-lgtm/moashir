@@ -14,15 +14,7 @@
 
 .dev-home__title {
   font-size: var(--fs-4xl);
-  background: var(--gradient-brand);
-  background-clip: text;
-  -webkit-background-clip: text;
-  color: transparent;
-
-  [data-theme='light'] & {
-    color: var(--theme-heading);
-    background: none;
-  }
+  color: var(--theme-heading);
 }
 
 .dev-home__tagline {
@@ -67,11 +59,11 @@
 }
 
 .dev-home__name {
-  font-weight: var(--fw-semibold);
+  font-weight: var(--fw-emphasis);
 }
 
 .dev-home__value {
   color: var(--theme-accent-text);
-  font-weight: var(--fw-bold);
+  font-weight: var(--fw-body);
   white-space: nowrap;
 }

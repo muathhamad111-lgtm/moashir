@@ -4,16 +4,24 @@ declare(strict_types=1);
 
 namespace App\Services\Award;
 
+use App\Enums\Assessments\AssessmentPath;
 use App\Enums\Award\CycleMemberRole;
 use App\Enums\Identity\PermissionKey;
 use App\Enums\Identity\RoleKey;
 use App\Models\Award\AwardCycle;
 use App\Models\Identity\User;
+use App\Services\Identity\RequestPathScope;
 use Illuminate\Auth\Access\Response;
 
 final readonly class CycleRoleScope
 {
-    public function __construct(private CycleMembership $membership, private CycleRecordScope $records) {}
+    /**
+     * Roles that READ every award cycle's committee work and results (operator decision 2026-11-22: an Award Secretary
+     * reviews any cycle, read-only); every action stays with the cycle's own Award Secretaries.
+     */
+    public const array AWARD_READER_ROLES = [RoleKey::SystemAdmin, RoleKey::AwardSecretary];
+
+    public function __construct(private CycleMembership $membership, private CycleRecordScope $records, private RequestPathScope $paths) {}
 
     /**
      * @param  list<RoleKey>  $globalRoles
@@ -31,11 +39,20 @@ final readonly class CycleRoleScope
 
         $user->loadMissing('roles');
 
-        if (array_any($globalRoles, static fn (RoleKey $role): bool => in_array($role, $user->roleKeys(), true))) {
+        if (array_any($globalRoles, static fn (RoleKey $role): bool => in_array($role, $user->roleKeys(), true)) && $this->paths->covers($user, AssessmentPath::Advanced)) {
             return true;
         }
 
         return $memberRoles !== [] && $this->membership->isMember($user->id, $cycle->id, ...$memberRoles);
+    }
+
+    /**
+     * Whether the user acts for this cycle as one of its Award Secretaries; the SPA pairs it with the action permission
+     * to offer the actions only where the API accepts them.
+     */
+    public function isCycleSecretary(User $user, AwardCycle $cycle): bool
+    {
+        return $user->isSuperAdmin() || $this->membership->isMember($user->id, $cycle->id, CycleMemberRole::AwardSecretary);
     }
 
     public function respond(bool $allowed, User $user, AwardCycle $cycle, PermissionKey ...$permissions): Response

@@ -6,6 +6,10 @@ export const entityMessages = {
   },
   not_found: { ar: 'العنصر المطلوب غير موجود.', en: 'The requested resource was not found.' },
   validation_failed: { ar: 'البيانات المرسلة غير صحيحة.', en: 'The submitted data is invalid.' },
+  'filter.level_invalid': {
+    ar: 'المستوى المحدد غير صالح.',
+    en: 'The selected level is invalid.',
+  },
   rate_limited: {
     ar: 'عدد الطلبات كبير. يرجى المحاولة لاحقًا.',
     en: 'Too many requests. Please try again later.',
@@ -57,6 +61,47 @@ export const entityMessages = {
   },
   'otp.invalid': { ar: 'رمز التحقق غير صحيح.', en: 'The verification code is incorrect.' },
   'field.required': { ar: 'هذا الحقل مطلوب.', en: 'This field is required.' },
+  'field.present': { ar: 'يجب إرسال هذا الحقل.', en: 'This field must be present.' },
+  'field.max_chars': {
+    ar: 'يجب ألا يتجاوز :max حرفًا.',
+    en: 'This field must not exceed :max characters.',
+  },
+  'field.person_name': {
+    ar: 'يجب أن يكون الاسم من 3 إلى 150 حرفًا.',
+    en: 'The name must have 3 to 150 characters.',
+  },
+  'field.official_email_prohibited': {
+    ar: 'يُغيَّر البريد الرسمي من «تغيير البريد» فقط.',
+    en: 'The official e-mail is changed only through «Change e-mail».',
+  },
+  'profile.change_amended': {
+    ar: 'عدّلت الجهة طلبها بعد فتحه. راجع التعديلات الحالية ثم قرّر مجددًا.',
+    en: 'The entity amended its request after you opened it. Review the current changes and decide again.',
+  },
+  'profile.change_stale': {
+    ar: 'تغيّرت البيانات المعتمدة لبعض الحقول بعد تقديم الطلب، فلا يمكن اعتمادها. ارفضها أو اطلب من الجهة إعادة تقديمها.',
+    en: 'The approved value of some fields changed after the request was submitted, so they cannot be approved. Reject them or ask the entity to submit them again.',
+  },
+  'profile.change_unknown_items': {
+    ar: 'اختر من التعديلات الموجودة في الطلب فقط.',
+    en: 'Choose only among the changes in this request.',
+  },
+  'profile.change_coupled_items': {
+    ar: 'المنطقة والمدينة، وكذلك التسجيل الضريبي والرقم الضريبي، تُعتمد معًا أو تُرفض معًا.',
+    en: 'Region and city, and VAT registration and VAT number, are approved or rejected together.',
+  },
+  'profile.change_reason_required': {
+    ar: 'اكتب سبب الرفض (10 أحرف على الأقل) عند رفض أي تعديل.',
+    en: 'Write the reason for rejection (at least 10 characters) when you reject any change.',
+  },
+  'profile.change_missing': {
+    ar: 'لا يوجد طلب تعديل بانتظار الاعتماد.',
+    en: 'There is no profile change awaiting approval.',
+  },
+  'profile.section_stale': {
+    ar: 'تغيّرت بيانات هذا القسم بعد فتحه. راجع القيم الحالية ثم احفظ مجددًا.',
+    en: 'This section was changed after you opened it. Review the current values and save again.',
+  },
   'field.reason_min': {
     ar: 'يجب ألا يقل السبب عن :min أحرف.',
     en: 'The reason must be at least :min characters.',
@@ -78,8 +123,100 @@ export const entityMessages = {
     en: 'Choose an active city of the selected region.',
   },
   'field.governance_grade': {
-    ar: 'يجب أن تكون درجة الحوكمة رقمًا بين 0 و100 بمنزلتين عشريتين على الأكثر.',
-    en: 'The governance grade must be a number between 0 and 100 with at most two decimals.',
+    ar: 'يجب أن تكون درجة الحوكمة رقمًا بين 0 و100 بثلاث منازل عشرية على الأكثر.',
+    en: 'The governance grade must be a number between 0 and 100 with at most three decimals.',
+  },
+  'field.building_number': {
+    ar: 'رقم المبنى 4 أرقام (0-9)، مثل 7421.',
+    en: 'The building number has 4 digits (0-9), e.g. 7421.',
+  },
+  'field.postal_code': {
+    ar: 'الرمز البريدي 5 أرقام (0-9)، مثل 12214.',
+    en: 'The postal code has 5 digits (0-9), e.g. 12214.',
+  },
+  'field.additional_number': {
+    ar: 'الرقم الإضافي 4 أرقام (0-9)، مثل 3365.',
+    en: 'The additional number has 4 digits (0-9), e.g. 3365.',
+  },
+  'field.short_code': {
+    ar: 'العنوان المختصر 4 أحرف إنجليزية ثم 4 أرقام، مثل RRRD2929.',
+    en: 'The short address is 4 Latin letters followed by 4 digits, e.g. RRRD2929.',
+  },
+  'field.vat_number': {
+    ar: 'الرقم الضريبي يتكون من 15 رقمًا بالأرقام الإنجليزية (0-9) دون مسافات، ويبدأ بالرقم 3 وينتهي به.',
+    en: 'The VAT registration number has 15 Western digits (0-9) with no spaces, and starts and ends with 3.',
+  },
+  'field.vat_number_required': {
+    ar: 'أدخل الرقم الضريبي لأن الجهة مسجّلة في ضريبة القيمة المضافة.',
+    en: 'Enter the VAT registration number because the entity is registered for VAT.',
+  },
+  'field.vat_number_prohibited': {
+    ar: 'احذف الرقم الضريبي لأن الجهة غير مسجّلة في ضريبة القيمة المضافة.',
+    en: 'Remove the VAT registration number because the entity is not registered for VAT.',
+  },
+  'field.vat_certificate_type': {
+    ar: 'يجب أن تكون شهادة التسجيل الضريبي ملف PDF.',
+    en: 'The VAT registration certificate must be a PDF file.',
+  },
+  'field.vat_certificate_size': {
+    ar: 'يجب ألا يتجاوز حجم شهادة التسجيل الضريبي 5 ميجابايت.',
+    en: 'The VAT registration certificate must not exceed 5 MB.',
+  },
+  'entity.vat_not_registered': {
+    ar: 'اختر «نعم» في سؤال التسجيل في ضريبة القيمة المضافة واحفظ بيانات الفوترة أولًا، ثم ارفع شهادة التسجيل الضريبي.',
+    en: 'Answer «Yes» to the VAT registration question and save the billing details first, then upload the VAT registration certificate.',
+  },
+  'field.document_type': {
+    ar: 'يجب أن تكون الوثيقة ملف PDF.',
+    en: 'The document must be a PDF file.',
+  },
+  'field.document_size': {
+    ar: 'يجب ألا يتجاوز حجم الوثيقة :max ميجابايت.',
+    en: 'The document must not be larger than :max MB.',
+  },
+  'entity.document_missing': {
+    ar: 'هذه الوثيقة غير مرفقة لهذه الجهة.',
+    en: 'This document is not attached for this entity.',
+  },
+  'profile.change_authorization_letter_required': {
+    ar: 'تغيير الشخص المفوّض يحتاج خطاب تفويض جديدًا في الطلب نفسه، ويُعتمدان معًا أو يُرفضان معًا.',
+    en: 'A new authorized person needs a new authorization letter in the same request, and the two are approved or rejected together.',
+  },
+  'entity.vat_certificate_missing': {
+    ar: 'لا توجد شهادة تسجيل ضريبي مرفوعة لهذه الجهة.',
+    en: 'This entity has no VAT registration certificate uploaded.',
+  },
+  'field.logo_type': {
+    ar: 'يجب أن يكون الشعار بصيغة PNG أو JPEG.',
+    en: 'The logo must be a PNG or JPEG image.',
+  },
+  'field.logo_size': {
+    ar: 'يجب ألا يتجاوز حجم الشعار 2 ميجابايت.',
+    en: 'The logo must not exceed 2 MB.',
+  },
+  'field.unified_number': {
+    ar: 'يجب أن يتكون الرقم الوطني الموحد من 10 أرقام (0-9) بالضبط.',
+    en: 'The unified national number must contain exactly 10 digits (0-9).',
+  },
+  'field.unified_number_taken': {
+    ar: 'هذا الرقم الوطني الموحد مسجّل لجهة أخرى في المنصة. تحقّق من الرقم أو تواصل مع فريق المنصة.',
+    en: 'This unified national number is already registered for another entity on the platform. Check the number or contact the platform team.',
+  },
+  'field.license': {
+    ar: 'رقم الترخيص من 3 إلى 20 رقماً.',
+    en: 'The licence number must have 3 to 20 digits.',
+  },
+  'field.license_taken': {
+    ar: 'رقم الترخيص هذا مسجّل لجهة أخرى في المنصة. تحقّق من الرقم أو تواصل مع فريق المنصة.',
+    en: 'This licence number is registered for another organization. Check the number or contact the platform team.',
+  },
+  'field.founded_on': {
+    ar: 'أدخل تاريخ تأسيس صحيحاً بين 1900-01-01 واليوم.',
+    en: 'Enter a valid founding date between 1900-01-01 and today.',
+  },
+  'field.website': {
+    ar: 'أدخل عنوان موقع كاملاً يبدأ بـ https://',
+    en: 'Enter a full website address that starts with https://',
   },
   'field.phone': {
     ar: 'صيغة رقم الجوال غير صحيحة.',
@@ -120,10 +257,6 @@ export const entityMessages = {
 }
 
 export const entityNotices = {
-  registrationOtpSent: {
-    ar: 'إذا كان بالإمكان التسجيل بهذا البريد الإلكتروني فقد أرسلنا إليه رمز التحقق.',
-    en: 'If this e-mail can be registered, a verification code has been sent to it.',
-  },
   emailChangeOtpSent: {
     ar: 'أرسلنا رمز التحقق إلى البريد الإلكتروني الجديد.',
     en: 'A verification code has been sent to the new e-mail address.',

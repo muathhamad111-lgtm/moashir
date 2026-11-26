@@ -21,7 +21,7 @@
         </include>
     </source>
     <php>
-        <ini name="memory_limit" value="1G"/>
+        <ini name="memory_limit" value="2G"/>
         <server name="APP_ENV" value="testing"/>
         <server name="DB_CONNECTION" value="pgsql"/>
         <server name="DB_DATABASE" value="moashir_testing"/>

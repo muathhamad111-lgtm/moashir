@@ -12,6 +12,7 @@ use App\Models\Award\CycleCommitteeAssessor;
 use App\Models\Identity\User;
 use App\Services\Entities\EntityNotifier;
 use App\Support\ScalarValue;
+use Closure;
 
 final readonly class AwardStaffNotifier
 {
@@ -28,6 +29,22 @@ final readonly class AwardStaffNotifier
         $recipients = array_values(array_unique([...$this->membership->memberIdsOf($cycleId, CycleMemberRole::AwardSecretary), ...$admins]));
 
         $this->notifier->toStaffUsers($recipients, $notice, $actorId);
+    }
+
+    /**
+     * One notice per live committee evaluation of the request, so each assessor's link opens their own evaluation.
+     *
+     * @param  Closure(int): EntityNotice  $noticeFor  the notice for one assignment id
+     */
+    public function eachEvaluationOf(int $assessmentId, Closure $noticeFor, ?int $actorId): void
+    {
+        CommitteeAssignment::query()
+            ->where('assessment_id', $assessmentId)
+            ->live()
+            ->whereIn('cycle_committee_assessor_id', CycleCommitteeAssessor::query()->active()->select('id'))
+            ->with('member:id,assessor_user_id')
+            ->get()
+            ->each(fn (CommitteeAssignment $assignment) => $this->notifier->toStaffUsers([ScalarValue::int($assignment->member->assessor_user_id)], $noticeFor($assignment->id), $actorId));
     }
 
     public function committeeOf(int $assessmentId, EntityNotice $notice, ?int $actorId): void

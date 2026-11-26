@@ -4,52 +4,35 @@ import { serviceRequest } from './serviceRequest'
 
 export const bagService = {
   getProduct() {
-    return serviceRequest(
-      'bag.getProduct',
-      () => apiClient.get('/bag/product'),
-      { entity: 'bag' },
-    )
+    return serviceRequest('bag.getProduct', () => apiClient.get('/bag/product'), { entity: 'bag' })
   },
 
   getHistory() {
-    return serviceRequest(
-      'bag.getHistory',
-      () => apiClient.get('/bag/history'),
-      { entity: 'bag' },
-    )
+    return serviceRequest('bag.getHistory', () => apiClient.get('/bag/history'), { entity: 'bag' })
   },
 
   getEligibility() {
-    return serviceRequest(
-      'bag.getEligibility',
-      () => apiClient.get('/bag/eligibility'),
-      { entity: 'bag' },
-    )
+    return serviceRequest('bag.getEligibility', () => apiClient.get('/bag/eligibility'), {
+      entity: 'bag',
+    })
   },
 
   getSubscription() {
-    return serviceRequest(
-      'bag.getSubscription',
-      () => apiClient.get('/bag/subscription'),
-      { entity: 'bag' },
-    )
+    return serviceRequest('bag.getSubscription', () => apiClient.get('/bag/subscription'), {
+      entity: 'bag',
+    })
   },
 
-
   getEntityView() {
-    return serviceRequest(
-      'bag.getEntityView',
-      () => apiClient.get('/bag/entity-view'),
-      { entity: 'bag' },
-    )
+    return serviceRequest('bag.getEntityView', () => apiClient.get('/bag/entity-view'), {
+      entity: 'bag',
+    })
   },
 
   getConsultantView() {
-    return serviceRequest(
-      'bag.getConsultantView',
-      () => apiClient.get('/bag/consultant-view'),
-      { entity: 'bag' },
-    )
+    return serviceRequest('bag.getConsultantView', () => apiClient.get('/bag/consultant-view'), {
+      entity: 'bag',
+    })
   },
 
   openStageGaps(gapIds) {
@@ -70,11 +53,7 @@ export const bagService = {
   },
 
   listStages() {
-    return serviceRequest(
-      'bag.listStages',
-      () => apiClient.get('/bag/stages'),
-      { entity: 'bag' },
-    )
+    return serviceRequest('bag.listStages', () => apiClient.get('/bag/stages'), { entity: 'bag' })
   },
 
   updateGapGuidance(payload = {}) {
@@ -86,10 +65,8 @@ export const bagService = {
   },
 
   getReassessment() {
-    return serviceRequest(
-      'bag.getReassessment',
-      () => apiClient.get('/bag/reassessment'),
-      { entity: 'bag' },
-    )
+    return serviceRequest('bag.getReassessment', () => apiClient.get('/bag/reassessment'), {
+      entity: 'bag',
+    })
   },
 }

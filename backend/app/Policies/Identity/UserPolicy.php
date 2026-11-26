@@ -20,6 +20,11 @@ final class UserPolicy
         return $this->authorizeOn($actor, $target, PermissionKey::UsersView);
     }
 
+    public function export(User $actor): bool
+    {
+        return $actor->can(PermissionKey::UsersView->value) && $actor->can(PermissionKey::UsersExport->value);
+    }
+
     public function create(User $actor): bool
     {
         return $actor->can(PermissionKey::UsersManage->value);
@@ -38,6 +43,25 @@ final class UserPolicy
     public function resetMfa(User $actor, User $target): Response
     {
         return $this->authorizeOn($actor, $target, PermissionKey::UsersManage);
+    }
+
+    public function requestNameCorrection(User $actor, User $target): Response
+    {
+        if ($actor->id === $target->id) {
+            return Response::deny();
+        }
+
+        return $this->authorizeOn($actor, $target, PermissionKey::UsersManage);
+    }
+
+    public function viewIdentityHistory(User $actor, User $target): Response
+    {
+        return $this->authorizeOn($actor, $target, PermissionKey::UsersIdentityChangesReview);
+    }
+
+    public function manageOwnAvatar(User $actor): bool
+    {
+        return ! $actor->isEntityUser();
     }
 
     private function authorizeOn(User $actor, User $target, PermissionKey $permission): Response

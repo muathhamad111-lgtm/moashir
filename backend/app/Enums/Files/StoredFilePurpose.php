@@ -12,10 +12,36 @@ enum StoredFilePurpose: string
     case FinanceExport = 'finance_export';
     case AssessmentEvidence = 'assessment_evidence';
     case EvidenceBundle = 'evidence_bundle';
+    case CmsImage = 'cms_image';
+    case CmsLogo = 'cms_logo';
+    case KpiImage = 'kpi_image';
+    case BrandingLogo = 'branding_logo';
+    case CertificatePdf = 'certificate_pdf';
+    case EntityLogo = 'entity_logo';
+    case TransferProof = 'transfer_proof';
+    case UserAvatar = 'user_avatar';
+    case VatCertificate = 'vat_certificate';
+    case OfficeRendition = 'office_rendition';
+    case EntityLicenseCertificate = 'entity_license_certificate';
+    case EntityAuthorizationLetter = 'entity_authorization_letter';
+
+    private const array PUBLIC_ASSETS = ['apple_pay_domain_association', 'cms_image', 'cms_logo', 'kpi_image', 'branding_logo'];
+
+    private const array SERVED_IMAGES = ['cms_image', 'cms_logo', 'kpi_image', 'branding_logo'];
 
     private const array UPLOAD_TYPES = [
         'refund_evidence' => ['pdf' => ['application/pdf'], 'jpg' => ['image/jpeg'], 'jpeg' => ['image/jpeg'], 'png' => ['image/png']],
+        'transfer_proof' => ['pdf' => ['application/pdf'], 'jpg' => ['image/jpeg'], 'jpeg' => ['image/jpeg'], 'png' => ['image/png']],
         'apple_pay_domain_association' => ['' => ['text/plain'], 'txt' => ['text/plain']],
+        'cms_image' => ['png' => ['image/png'], 'jpg' => ['image/jpeg'], 'jpeg' => ['image/jpeg']],
+        'cms_logo' => ['png' => ['image/png'], 'jpg' => ['image/jpeg'], 'jpeg' => ['image/jpeg'], 'svg' => ['image/svg+xml']],
+        'kpi_image' => ['png' => ['image/png'], 'jpg' => ['image/jpeg'], 'jpeg' => ['image/jpeg']],
+        'branding_logo' => ['png' => ['image/png']],
+        'entity_logo' => ['png' => ['image/png'], 'jpg' => ['image/jpeg'], 'jpeg' => ['image/jpeg']],
+        'user_avatar' => ['png' => ['image/png'], 'jpg' => ['image/jpeg'], 'jpeg' => ['image/jpeg']],
+        'vat_certificate' => ['pdf' => ['application/pdf']],
+        'entity_license_certificate' => ['pdf' => ['application/pdf']],
+        'entity_authorization_letter' => ['pdf' => ['application/pdf']],
     ];
 
     /**
@@ -33,12 +59,60 @@ enum StoredFilePurpose: string
 
     public function visibility(): FileVisibility
     {
-        return $this === self::ApplePayDomainAssociation ? FileVisibility::PublicAsset : FileVisibility::Private;
+        return $this->isPublicAsset() ? FileVisibility::PublicAsset : FileVisibility::Private;
     }
 
     public function contentClass(): string
     {
-        return $this === self::ApplePayDomainAssociation ? 'P' : 'C';
+        return match (true) {
+            $this->isPublicAsset() => 'P',
+            $this === self::EntityLogo => 'I',
+            default => 'C',
+        };
+    }
+
+    public function isPublicAsset(): bool
+    {
+        return in_array($this->value, self::PUBLIC_ASSETS, true);
+    }
+
+    /**
+     * @return list<string>
+     */
+    public static function servedImageValues(): array
+    {
+        return self::SERVED_IMAGES;
+    }
+
+    public function allowsVectorImage(): bool
+    {
+        return $this === self::CmsLogo;
+    }
+
+    public function isWatermarked(): bool
+    {
+        return in_array($this, self::watermarked(), true);
+    }
+
+    /**
+     * Only assessment evidence is stamped (operator decision, 2026-11-21): transfer proofs, refund evidence, VAT
+     * certificates and the entity's license certificate and authorization letter (operator decision, 2026-11-25) sit
+     * outside the assessment and are served as uploaded.
+     *
+     * @return list<self>
+     */
+    public static function watermarked(): array
+    {
+        return [self::AssessmentEvidence];
+    }
+
+    /**
+     * Files served as a copy stamped for the viewer: the watermarked purposes and the evidence bundle, whose files
+     * are stamped for its requester.
+     */
+    public function isStampedForViewer(): bool
+    {
+        return $this->isWatermarked() || $this === self::EvidenceBundle;
     }
 
     public function isConfidential(): bool

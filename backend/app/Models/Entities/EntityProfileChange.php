@@ -14,6 +14,7 @@ use Illuminate\Support\Carbon;
  * @property int $id
  * @property int $entity_id
  * @property int|null $changed_by_user_id
+ * @property int|null $change_request_id
  * @property EntityProfileField $field
  * @property mixed $old_value
  * @property mixed $new_value
@@ -29,7 +30,7 @@ final class EntityProfileChange extends Model
     /**
      * @var list<string>
      */
-    protected $fillable = ['entity_id', 'changed_by_user_id', 'field', 'old_value', 'new_value'];
+    protected $fillable = ['entity_id', 'changed_by_user_id', 'field', 'old_value', 'new_value', 'change_request_id'];
 
     /**
      * @return array<string, string>

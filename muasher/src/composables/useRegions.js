@@ -8,10 +8,10 @@ export function useRegions() {
   const regions = ref([])
   const status = ref('idle')
 
-  async function load() {
+  async function load(fetchRegions = () => regionsService.listRegions()) {
     status.value = 'loading'
     try {
-      const { data } = await regionsService.listRegions()
+      const { data } = await fetchRegions()
       regions.value = data ?? []
       status.value = 'success'
     } catch {

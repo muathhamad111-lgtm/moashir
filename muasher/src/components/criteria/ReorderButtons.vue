@@ -23,7 +23,7 @@ const { t } = useI18n()
       variant="ghost"
       size="sm"
       icon-only
-      icon="fa-solid fa-arrow-up"
+      icon="arrow-up"
       :disabled="disabled || index === 0"
       :aria-label="t('criteria.actions.moveUpAria', { name: label })"
       @click="emit('move', -1)"
@@ -32,7 +32,7 @@ const { t } = useI18n()
       variant="ghost"
       size="sm"
       icon-only
-      icon="fa-solid fa-arrow-down"
+      icon="arrow-down"
       :disabled="disabled || index === count - 1"
       :aria-label="t('criteria.actions.moveDownAria', { name: label })"
       @click="emit('move', 1)"

@@ -19,7 +19,7 @@ final class ActiveWeights
         $weights = [];
 
         foreach ($nodes as $node) {
-            if ($node->is_active && $node->id !== $exceptId) {
+            if ($node->is_active && $node->id !== $exceptId && $node->weight instanceof Weight) {
                 $weights[] = $node->weight;
             }
         }

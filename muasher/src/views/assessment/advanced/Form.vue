@@ -8,6 +8,7 @@ import BaseButton from '@/components/ui/BaseButton.vue'
 import { useDraftDeletion } from '@/composables/useDraftDeletion'
 import { ADVANCED_STATUSES } from '@/constants/advanced'
 import { ROUTE_NAMES } from '@/constants/routeNames'
+import AppIcon from '@/components/ui/AppIcon.vue'
 
 const { t } = useI18n()
 const route = useRoute()
@@ -17,12 +18,13 @@ const { deleting, deleteDraft } = useDraftDeletion()
 
 useHead({ title: () => t('advanced.form.title') })
 
-function backToIntro() {
-  router.push({ name: ROUTE_NAMES.ASSESSMENT_ADVANCED })
+// Back to the award path page inside the portal, never to the public intro (AJ-04).
+function backToPath() {
+  router.push({ name: ROUTE_NAMES.PATHS_AWARD })
 }
 
 async function onDelete(assessment) {
-  if (await deleteDraft(assessment)) backToIntro()
+  if (await deleteDraft(assessment)) backToPath()
 }
 </script>
 
@@ -34,12 +36,22 @@ async function onDelete(assessment) {
       <p class="accredited-form__subtitle">{{ t('advanced.form.subtitle') }}</p>
     </header>
     <div class="accredited-form__note" role="note">
-      <i class="fa-solid fa-shield-halved" aria-hidden="true"></i>
+      <AppIcon name="shield-info" />
       <p>{{ t('advanced.form.note') }}</p>
     </div>
-    <AccreditedFormWorkspace :key="assessmentId" :assessment-id="assessmentId" @submitted="backToIntro">
+    <AccreditedFormWorkspace
+      :key="assessmentId"
+      :assessment-id="assessmentId"
+      @submitted="backToPath"
+    >
       <template #extra-actions="{ assessment }">
-        <BaseButton v-if="assessment.status === ADVANCED_STATUSES.DRAFT" variant="danger" icon="fa-solid fa-trash-can" :loading="deleting" @click="onDelete(assessment)">
+        <BaseButton
+          v-if="assessment.status === ADVANCED_STATUSES.DRAFT && !assessment.isPaid"
+          variant="danger"
+          icon="trash"
+          :loading="deleting"
+          @click="onDelete(assessment)"
+        >
           {{ t('advanced.draft.delete') }}
         </BaseButton>
       </template>

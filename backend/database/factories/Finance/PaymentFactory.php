@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Database\Factories\Finance;
 
+use App\Enums\Finance\PaymentChannel;
 use App\Enums\Finance\PaymentPurpose;
 use App\Enums\Finance\PaymentStatus;
 use App\Enums\Integrations\IntegrationMode;
@@ -53,6 +54,16 @@ final class PaymentFactory extends Factory
     public function testMode(): self
     {
         return $this->state(['mode' => IntegrationMode::Test]);
+    }
+
+    public function bankTransfer(): self
+    {
+        return $this->state([
+            'channel' => PaymentChannel::BankTransfer,
+            'provider' => null,
+            'status' => PaymentStatus::UnderReview,
+            'expires_at' => null,
+        ]);
     }
 
     public function paid(?string $providerPaymentId = null): self

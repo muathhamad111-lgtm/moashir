@@ -13,6 +13,7 @@ use App\Models\Award\AwardCycle;
 use App\Models\Award\FilteringDecision;
 use App\Models\Criteria\CriteriaVersion;
 use App\Models\Identity\User;
+use App\Support\ValueObjects\Percent;
 use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Notification;
@@ -72,6 +73,18 @@ it('lists the initial assessments of the cycle for its filtering officers and se
     switchTo(ownerOf($high->entity))->getJson("/api/v1/award/cycles/{$cycle->id}/filtering")->assertForbidden();
 });
 
+it('dates each filtering row by the review clock of its request', function (): void {
+    [$cycle, $version, $officer] = filteringCycle();
+    $assessment = initiallyAssessedRequest($cycle, $version, assessorUser());
+    $assessment->forceFill(['due_at' => Date::parse('2026-10-25 08:00:00')])->saveQuietly();
+
+    switchTo($officer)->getJson("/api/v1/award/cycles/{$cycle->id}/filtering")->assertOk()
+        ->assertJsonPath('data.0.id', $assessment->id)
+        ->assertJsonPath('data.0.due_at', '2026-10-25T08:00:00+00:00')
+        ->assertJsonPath('data.0.is_overdue', false)
+        ->assertJsonPath('data.0.submitted_at', $assessment->submitted_at?->toIso8601String());
+});
+
 it('shows the full initial assessment read only with the report data', function (): void {
     [$cycle, $version, $officer] = filteringCycle();
     $assessor = assessorUser();
@@ -92,13 +105,6 @@ it('shows the full initial assessment read only with the report data', function 
 
     $evidenceId = test()->getJson(filteringPath($cycle, $assessment))->json('data.review.evidence.0.id');
     test()->postJson("/api/v1/assessments/{$assessment->id}/evidence/{$evidenceId}/download")->assertOk()->assertJsonStructure(['data' => ['url', 'expires_at']]);
-});
-
-it('waits for the end of the submission period before filtering decisions', function (): void {
-    [$cycle, $version, $officer] = filteringCycle();
-    $assessment = initiallyAssessedRequest($cycle, $version, assessorUser());
-
-    switchTo($officer)->postJson(filteringPath($cycle, $assessment, 'qualify'))->assertConflict()->assertJsonPath('code', 'cycle.filtering_not_open');
 });
 
 it('qualifies a request that meets the disqualification score', function (): void {
@@ -155,6 +161,23 @@ it('qualifies below the disqualification score only with a recorded reason and a
         ->and(Audit::query()->where('event', AuditEvent::AwardQualifiedOverride->value)->count())->toBe(1)
         ->and(financeNoticeSent($secretary, NotificationCode::AdvancedFilteringException))->toBeTrue()
         ->and(financeNoticeSent($admin, NotificationCode::AdvancedFilteringException))->toBeTrue();
+});
+
+it('compares the initial result with the disqualification score as both are displayed', function (): void {
+    [$cycle, $version, $officer] = filteringCycle();
+    $assessment = initiallyAssessedRequest($cycle, $version, assessorUser(), LOW_MARKS);
+    $stored = $assessment->refresh()->currentResult?->percent;
+    $shown = $stored?->toDisplay() ?? '';
+    AwardCycle::query()->whereKey($cycle->id)->update(['disqualification_score' => $shown]);
+    closeCycleSubmissions($cycle);
+
+    expect($stored?->toDecimal())->not->toBe(Percent::of($shown)->toDecimal());
+
+    switchTo($officer)->getJson("/api/v1/award/cycles/{$cycle->id}/filtering")->assertOk()
+        ->assertJsonPath('data.0.meets_threshold', true)
+        ->assertJsonPath('meta.below_threshold', 0);
+    test()->postJson(filteringPath($cycle, $assessment, 'qualify'))->assertOk()
+        ->assertJsonPath('data.decision.is_override', false);
 });
 
 it('disqualifies a request with a mandatory reason and closes it', function (): void {

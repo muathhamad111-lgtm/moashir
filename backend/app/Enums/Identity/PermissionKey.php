@@ -10,6 +10,7 @@ enum PermissionKey: string
     case NotificationsView = 'notifications.view';
     case NotificationsAuditView = 'notifications.audit.view';
     case DashboardExecutiveView = 'dashboard.executive.view';
+    case DashboardStorageView = 'dashboard.storage.view';
 
     case EntityProfileView = 'entity.profile.view';
     case EntityProfileEdit = 'entity.profile.edit';
@@ -19,10 +20,9 @@ enum PermissionKey: string
     case EntitiesReactivate = 'entities.reactivate';
     case EntitiesVerificationResend = 'entities.verification.resend';
     case EntitiesEmailChangeApprove = 'entities.email_change.approve';
+    case EntitiesProfileChangeApprove = 'entities.profile_change.approve';
     case EntitiesDelete = 'entities.delete';
     case EntitiesExport = 'entities.export';
-
-    case PrivacyRequestsManage = 'privacy.requests.manage';
 
     case AssessmentCriteriaView = 'assessment.criteria.view';
     case AssessmentHistoryView = 'assessment.history.view';
@@ -37,6 +37,8 @@ enum PermissionKey: string
     case RequestsAssignedView = 'requests.assigned.view';
     case RequestsReviewRead = 'requests.review.read';
     case RequestsCompletionReturn = 'requests.completion.return';
+    case RequestsNotesRead = 'requests.notes.read';
+    case RequestsNotesWrite = 'requests.notes.write';
     case AssessmentScoreManage = 'assessment.score.manage';
     case AssessmentContextView = 'assessment.context.view';
 
@@ -55,6 +57,8 @@ enum PermissionKey: string
     case AwardResultsAnnounce = 'award.results.announce';
 
     case ReportsFeedbackView = 'reports.feedback.view';
+    case ReportsInsightsOwnView = 'reports.insights.own.view';
+    case ReportsInsightsView = 'reports.insights.view';
     case CertificatesOwnView = 'certificates.own.view';
     case CertificatesIssueAccredited = 'certificates.issue.accredited';
     case CertificatesManage = 'certificates.manage';
@@ -74,12 +78,16 @@ enum PermissionKey: string
 
     case ContentHomeManage = 'content.home.manage';
     case ContentKpisManage = 'content.kpis.manage';
+    case ContentInsightsManage = 'content.insights.manage';
+    case ContactMessagesManage = 'contact.messages.manage';
 
     case AiKbManage = 'ai.kb.manage';
     case AiProviderManage = 'ai.provider.manage';
 
     case UsersView = 'users.view';
     case UsersManage = 'users.manage';
+    case UsersExport = 'users.export';
+    case UsersIdentityChangesReview = 'users.identity_changes.review';
     case RolesMatrixView = 'roles.matrix.view';
     case RolesMatrixManage = 'roles.matrix.manage';
     case AuditView = 'audit.view';
@@ -94,6 +102,7 @@ enum PermissionKey: string
     case SettingsSmsManage = 'settings.sms.manage';
     case SettingsEmailManage = 'settings.email.manage';
     case SettingsNotificationsManage = 'settings.notifications.manage';
+    case SettingsPricesManage = 'settings.prices.manage';
     case MessagingCampaignsSend = 'messaging.campaigns.send';
 
     case PaymentsOwnView = 'payments.own.view';
@@ -102,26 +111,36 @@ enum PermissionKey: string
     case FinanceOperationsExport = 'finance.operations.export';
     case FinanceRefundsManage = 'finance.refunds.manage';
     case FinanceReceiptsManage = 'finance.receipts.manage';
+    case FinanceTransfersReview = 'finance.transfers.review';
+
+    case NdaManage = 'nda.manage';
 
     private const array SYSTEM_ADMIN_ONLY = [
+        self::SettingsAuthManage,
         self::SettingsBrandingManage,
         self::SettingsPaymentManage,
         self::SettingsSmsManage,
         self::SettingsEmailManage,
         self::AiProviderManage,
+        self::NdaManage,
     ];
 
     private const array GRANTABLE = [
         'dashboard.executive.view',
+        'dashboard.storage.view',
         'entities.deactivate',
         'entities.reactivate',
         'entities.verification.resend',
         'entities.email_change.approve',
+        'entities.profile_change.approve',
+        'users.identity_changes.review',
         'entities.delete',
-        'privacy.requests.manage',
         'bag.plan.approve',
         'bag.subscription.activate_free',
         'messaging.campaigns.send',
+        'contact.messages.manage',
+        'finance.transfers.review',
+        'settings.prices.manage',
     ];
 
     private const array NON_CONFIDENTIAL = [
@@ -129,6 +148,7 @@ enum PermissionKey: string
         'notifications.view',
         'notifications.audit.view',
         'dashboard.executive.view',
+        'dashboard.storage.view',
         'assessment.criteria.view',
         'assessment.history.view',
         'assessment.self.manage',
@@ -139,6 +159,7 @@ enum PermissionKey: string
         'award.cycles.manage',
         'award.committee.assigned.view',
         'certificates.own.view',
+        'reports.insights.own.view',
         'certificates.issue.accredited',
         'certificates.manage',
         'bag.own.view',
@@ -148,6 +169,7 @@ enum PermissionKey: string
         'criteria.publish',
         'content.home.manage',
         'content.kpis.manage',
+        'content.insights.manage',
         'ai.kb.manage',
         'roles.matrix.view',
         'roles.matrix.manage',
@@ -157,6 +179,7 @@ enum PermissionKey: string
         'settings.assessment.manage',
         'settings.certificates.manage',
         'settings.notifications.manage',
+        'settings.prices.manage',
         'payments.own.view',
         'payments.own.create',
     ];
@@ -166,7 +189,6 @@ enum PermissionKey: string
         'notifications.' => PermissionModule::Dashboard,
         'entity.' => PermissionModule::Entity,
         'entities.' => PermissionModule::Entity,
-        'privacy.' => PermissionModule::Privacy,
         'assessment.score.' => PermissionModule::Requests,
         'assessment.context.' => PermissionModule::Requests,
         'assessment.' => PermissionModule::Assessment,
@@ -178,12 +200,14 @@ enum PermissionKey: string
         'bag.' => PermissionModule::Bag,
         'criteria.' => PermissionModule::Criteria,
         'content.' => PermissionModule::Content,
+        'contact.' => PermissionModule::Content,
         'ai.' => PermissionModule::Ai,
         'users.' => PermissionModule::Admin,
         'roles.' => PermissionModule::Admin,
         'audit.' => PermissionModule::Admin,
         'settings.' => PermissionModule::Settings,
         'messaging.' => PermissionModule::Settings,
+        'nda.' => PermissionModule::Settings,
         'payments.' => PermissionModule::Finance,
         'finance.' => PermissionModule::Finance,
     ];

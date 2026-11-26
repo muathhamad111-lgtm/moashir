@@ -15,12 +15,7 @@ final class OverrideScoresRequest extends FormRequest
      */
     public function rules(): array
     {
-        $rules = ScoreInputRules::for($this->route('assessment'), 'required');
-        $rules['scores.subs.*'] = ['required', ...array_values(array_diff($rules['scores.subs.*'], ['nullable']))];
-        $rules['scores.points.*'] = ['required', ...array_values(array_diff($rules['scores.points.*'], ['nullable']))];
-        $rules['reason'] = ['required', 'string', 'min:20', 'max:1000'];
-
-        return $rules;
+        return [...ScoreInputRules::forOverride(), 'reason' => ['required', 'string', 'min:20', 'max:1000']];
     }
 
     public function scores(): SubmittedScores

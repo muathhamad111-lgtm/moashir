@@ -1,0 +1,8 @@
+abi <abi/4.0>,
+include <tunables/global>
+
+profile moashir-chrome-headless-shell /opt/moashir/chrome-headless-shell/*/chrome-headless-shell-linux64/chrome-headless-shell flags=(unconfined) {
+  userns,
+
+  include if exists <local/moashir-chrome-headless-shell>
+}

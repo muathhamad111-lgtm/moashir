@@ -13,6 +13,7 @@ use App\Services\Award\CommitteeVisibilityReader;
 use App\Support\Award\AwardLinks;
 use App\Support\Award\AwardNotices;
 use App\Support\Award\CommitteeEntityPresenter;
+use App\Support\Award\CommitteeWorkLinks;
 
 final readonly class NotifyCommitteeDiscussion
 {
@@ -25,7 +26,7 @@ final readonly class NotifyCommitteeDiscussion
         $assessment = $discussion->assessment;
 
         if ($event instanceof CommitteeDiscussionOpened) {
-            $this->notifier->committeeOf($assessment->id, AwardNotices::for(NotificationCode::CommitteeDiscussionOpened, $discussion->mode->value, $cycle, AwardLinks::committeeDiscussions(), [
+            $this->notifier->committeeOf($assessment->id, AwardNotices::for(NotificationCode::CommitteeDiscussionOpened, $discussion->mode->value, $cycle, CommitteeWorkLinks::discussions(), [
                 'label' => CommitteeEntityPresenter::label($assessment, $this->visibility->read()),
                 'deadline' => $discussion->deadline_at === null ? '-' : AwardNotices::moment($discussion->deadline_at),
             ]), $event->actorId);

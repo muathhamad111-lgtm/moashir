@@ -35,7 +35,11 @@ export function aiFormValues(resource) {
         organizationId: openai.organizationId ?? '',
         projectId: openai.projectId ?? '',
       },
-      anthropic: { ...commonValues(anthropic), workspaceId: anthropic.workspaceId ?? '', inferenceGeo: anthropic.inferenceGeo ?? 'global' },
+      anthropic: {
+        ...commonValues(anthropic),
+        workspaceId: anthropic.workspaceId ?? '',
+        inferenceGeo: anthropic.inferenceGeo ?? 'global',
+      },
     },
   }
 }
@@ -65,12 +69,20 @@ const PROVIDER_FIELDS = {
     organizationId: trimmedOrNull(config.organizationId),
     projectId: trimmedOrNull(config.projectId),
   }),
-  [AI_PROVIDERS.ANTHROPIC]: (config) => ({ ...commonOf(config), workspaceId: trimmedOrNull(config.workspaceId), inferenceGeo: config.inferenceGeo }),
+  [AI_PROVIDERS.ANTHROPIC]: (config) => ({
+    ...commonOf(config),
+    workspaceId: trimmedOrNull(config.workspaceId),
+    inferenceGeo: config.inferenceGeo,
+  }),
 }
 
 function providerPayload(provider, values, initial, full) {
   const fieldsOf = PROVIDER_FIELDS[provider]
-  const changed = changedValues(fieldsOf(values.providers[provider]), fieldsOf(initial.providers[provider]), { full })
+  const changed = changedValues(
+    fieldsOf(values.providers[provider]),
+    fieldsOf(initial.providers[provider]),
+    { full },
+  )
   return withSecrets(changed, { apiKey: values.providers[provider].apiKey })
 }
 
@@ -78,7 +90,11 @@ export function aiPayload(values, resource) {
   const full = writesEverything(resource)
   const initial = aiFormValues(resource)
   const payload = changedValues(generalOf(values), generalOf(initial), { full })
-  const providers = withoutEmptyObjects(Object.fromEntries(PROVIDERS.map((provider) => [provider, providerPayload(provider, values, initial, full)])))
+  const providers = withoutEmptyObjects(
+    Object.fromEntries(
+      PROVIDERS.map((provider) => [provider, providerPayload(provider, values, initial, full)]),
+    ),
+  )
   if (Object.keys(providers).length) payload.providers = providers
   return payload
 }

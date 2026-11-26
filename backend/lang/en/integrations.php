@@ -12,16 +12,16 @@ return [
     'sms_templates' => [
         'otp_code' => [
             'label' => 'Verification code',
-            'default_body' => 'Your Moashir verification code is {code}. It is valid for {minutes} minutes.',
+            'default_body' => 'Your Moashir verification code is {code}. It is valid for {validity}.',
         ],
     ],
 
     'sms_test' => [
-        'body' => 'Moashir test message sent at :time.',
+        'body' => 'Moashir check message sent at :time.',
     ],
 
     'email_test' => [
-        'subject' => 'Moashir e-mail settings test',
+        'subject' => 'Moashir e-mail settings check',
         'body' => 'This message confirms that the e-mail settings of the Moashir platform can deliver messages.',
     ],
 

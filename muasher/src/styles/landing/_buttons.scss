@@ -1,0 +1,67 @@
+@use 'tokens' as *;
+
+.lp-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 50px;
+  padding: 12px 28px;
+  border-radius: 12px;
+  border: 1.5px solid transparent;
+  background: none;
+  font-weight: var(--fw-emphasis);
+  font-size: 0.97rem;
+  white-space: nowrap;
+  cursor: pointer;
+  transition:
+    background-color 0.25s,
+    color 0.25s,
+    border-color 0.25s,
+    transform 0.25s $lp-ease;
+
+  &:active {
+    transform: scale(0.98);
+  }
+
+  &--fill {
+    background: var(--lp-btn);
+    color: var(--lp-btn-ink);
+    border-color: var(--lp-btn);
+
+    &:hover {
+      background: transparent;
+      color: var(--lp-btn);
+    }
+  }
+
+  &--line {
+    border-color: var(--lp-line-strong);
+    color: var(--lp-ink);
+
+    &:hover {
+      background: var(--lp-btn);
+      color: var(--lp-btn-ink);
+      border-color: var(--lp-btn);
+    }
+  }
+
+  &--sm {
+    min-height: 44px;
+    padding: 8px 18px;
+    font-size: 0.9rem;
+    border-radius: 10px;
+  }
+
+  &--lg {
+    min-height: 58px;
+    padding: 14px 40px;
+    font-size: 1.05rem;
+  }
+}
+
+.lp-cta-pair {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}

@@ -8,7 +8,12 @@ import {
   readBody,
 } from '../stores/integrations/integrationRejection'
 import { throttleTest } from '../stores/integrations/integrationTesting'
-import { emailResource, sendTestEmail, testEmail, updateEmail } from '../stores/integrations/emailIntegration'
+import {
+  emailResource,
+  sendTestEmail,
+  testEmail,
+  updateEmail,
+} from '../stores/integrations/emailIntegration'
 
 const PATH = '/api/v1/settings/email'
 

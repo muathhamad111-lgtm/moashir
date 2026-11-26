@@ -1,7 +1,7 @@
 <script setup>
 import { computed, reactive, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
-import BaseSelect from '@/components/form/BaseSelect.vue'
+import AppSelect from '@/components/form/AppSelect.vue'
 import BaseTextarea from '@/components/form/BaseTextarea.vue'
 import BaseButton from '@/components/ui/BaseButton.vue'
 
@@ -66,12 +66,17 @@ function onSave() {
     <div class="gap-guidance__head">
       <h4 class="gap-guidance__title">{{ t('bag.manage.guidance.title') }}</h4>
       <p class="gap-guidance__indicators">
-        {{ t('bag.manage.guidance.indicators', { gap: n(gap.gap, 'default'), weight: n(gap.target, 'default') }) }}
+        {{
+          t('bag.manage.guidance.indicators', {
+            gap: n(gap.gap, 'default'),
+            weight: n(gap.target, 'default'),
+          })
+        }}
       </p>
     </div>
 
     <div class="gap-guidance__row">
-      <BaseSelect
+      <AppSelect
         v-model="form.priority"
         :label="t('bag.manage.guidance.priorityLabel')"
         :name="`gap-priority-${gap.id}`"
@@ -79,7 +84,7 @@ function onSave() {
         :placeholder="t('bag.manage.guidance.priorityPlaceholder')"
         :disabled="saving"
       />
-      <BaseSelect
+      <AppSelect
         v-model="form.status"
         :label="t('bag.manage.guidance.statusLabel')"
         :name="`gap-status-${gap.id}`"
@@ -107,7 +112,7 @@ function onSave() {
     />
 
     <div class="gap-guidance__footer">
-      <BaseButton type="submit" variant="secondary" icon="fa-solid fa-floppy-disk" :loading="saving">
+      <BaseButton type="submit" variant="secondary" icon="save" :loading="saving">
         {{ t('bag.manage.guidance.save') }}
       </BaseButton>
     </div>

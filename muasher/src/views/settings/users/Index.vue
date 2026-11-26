@@ -1,248 +1,332 @@
 <script setup>
 import { computed, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
+import { useRouter } from 'vue-router'
 import ListToolbar from '@/components/data-list/ListToolbar.vue'
+import DataListCard from '@/components/data-list/DataListCard.vue'
 import DataTable from '@/components/data-list/DataTable.vue'
 import Pagination from '@/components/data-list/Pagination.vue'
 import StatsCards from '@/components/data-list/StatsCards.vue'
-import ActionsDropdown from '@/components/data-list/ActionsDropdown.vue'
 import BaseButton from '@/components/ui/BaseButton.vue'
-import StatusBadge from '@/components/ui/StatusBadge.vue'
-import Badge from '@/components/ui/Badge.vue'
-import DropdownList from '@/components/ui/DropdownList.vue'
+import AppSelect from '@/components/form/AppSelect.vue'
+import ReasonDialog from '@/components/modal/ReasonDialog.vue'
 import UserForm from '@/components/users/UserForm.vue'
+import UserDetailsDialog from '@/components/users/UserDetailsDialog.vue'
+import UserStatusBadge from '@/components/users/UserStatusBadge.vue'
+import RowActions from '@/components/data-list/RowActions.vue'
+import UserPathAccessCell from '@/components/users/UserPathAccessCell.vue'
+import UserListDetailCell from '@/components/users/UserListDetailCell.vue'
+import AssessorQualificationsDialog from '@/components/users/AssessorQualificationsDialog.vue'
+import RequestScopeDialog from '@/components/users/RequestScopeDialog.vue'
+import NameCorrectionDialog from '@/components/users/NameCorrectionDialog.vue'
+import IdentityHistoryDialog from '@/components/users/IdentityHistoryDialog.vue'
+import { useUserIdentityActions } from '@/composables/useUserIdentityActions'
 import { useTable } from '@/composables/useTable'
 import { useFilters } from '@/composables/useFilters'
 import { useSearchPrefill } from '@/composables/useSearchPrefill'
 import { usePagination } from '@/composables/usePagination'
-import { useConfirm } from '@/composables/useConfirm'
 import { useToast } from '@/composables/useToast'
 import { useUsers } from '@/composables/useUsers'
+import { useUserActions } from '@/composables/useUserActions'
+import { useUserPathAccess } from '@/composables/useUserPathAccess'
+import { useUserRecord } from '@/composables/useUserRecord'
+import { useUserStatCards } from '@/composables/useUserStatCards'
+import { useUsersExport } from '@/composables/useUsersExport'
+import { usePermissions } from '@/composables/usePermissions'
 import { usersService } from '@/services/usersService'
-import { formatDate } from '@/utils/datetime'
+import { formatRiyadhDate, formatRiyadhTime } from '@/utils/datetime'
 import { ROUTE_NAMES } from '@/constants/routeNames'
+import { accessFor } from '@/constants/routeAccess'
+import { PERMISSIONS } from '@/constants/permissionKeys'
+import {
+  IDENTITY_ACTIONS,
+  PATH_ACCESS_ACTIONS,
+  USER_ACTIONS,
+  USER_DETAIL_COLUMNS,
+  USER_INLINE_ACTIONS,
+} from '@/constants/users'
 
 const { t, locale } = useI18n()
-const { confirm } = useConfirm()
 const toast = useToast()
-const { roleLabel, roleFilterOptions, statusFilterOptions } = useUsers()
+const { can, canAccess } = usePermissions()
+const { roleLabel, roleFilterOptions, statusFilterOptions, ndaFilterOptions } = useUsers()
 
-const filters = useFilters({ role: '', status: '' })
+const filters = useFilters({ role: '', status: '', nda: '' })
 const { search } = filters
 useSearchPrefill(search, ROUTE_NAMES.ADMIN_USERS)
 const paginator = usePagination({ perPage: 10 })
 const { pagination, setPage } = paginator
 const stats = ref(null)
+const ndaMeta = ref({ scopeRoles: [], currentVersion: null })
+const canManage = computed(() => can(PERMISSIONS.USERS_MANAGE))
+const canViewRoles = computed(() => canAccess(accessFor(ROUTE_NAMES.ADMIN_PERMISSIONS)))
+const canReviewIdentity = computed(() => canAccess(accessFor(ROUTE_NAMES.ADMIN_IDENTITY_CHANGES)))
+const identity = useUserIdentityActions()
 
 const { items, status, errorMessage, load } = useTable({
   fetcher: async (params) => {
     const envelope = await usersService.list(params)
     stats.value = envelope.meta?.stats ?? null
+    ndaMeta.value = {
+      scopeRoles: envelope.meta?.ndaScopeRoles ?? [],
+      currentVersion: envelope.meta?.ndaCurrentVersion ?? null,
+    }
     return envelope
   },
   filters,
   pagination: paginator,
 })
 
-const statCards = computed(() => [
-  {
-    id: 'total',
-    icon: 'fa-solid fa-users',
-    value: stats.value?.total ?? 0,
-    label: t('users.stats.total'),
-  },
-  {
-    id: 'active',
-    icon: 'fa-solid fa-user-check',
-    value: stats.value?.active ?? 0,
-    label: t('users.stats.active'),
-  },
-  {
-    id: 'inactive',
-    icon: 'fa-solid fa-user-slash',
-    value: stats.value?.inactive ?? 0,
-    label: t('users.stats.inactive'),
-  },
-  {
-    id: 'roles',
-    icon: 'fa-solid fa-user-shield',
-    value: Object.keys(stats.value?.byRole ?? {}).length,
-    label: t('users.stats.roles'),
-  },
-])
+const actions = useUserActions({ onChanged: () => load() })
+
+const statCards = useUserStatCards(stats)
+const exporter = useUsersExport()
+const router = useRouter()
 
 const columns = computed(() => [
-  { key: 'name', label: t('users.columns.name') },
-  { key: 'email', label: t('users.columns.email') },
-  { key: 'role', label: t('users.columns.role') },
-  { key: 'status', label: t('users.columns.status') },
-  { key: 'lastLogin', label: t('users.columns.lastLogin') },
-  { key: 'actions', label: t('components.actions.label') },
+  { key: 'name', label: t('users.columns.user') },
+  { key: 'role', label: t('users.columns.role'), width: 'lg' },
+  { key: 'paths', label: t('users.columns.paths'), width: 'md' },
+  { key: 'status', label: t('users.columns.status'), width: 'lg' },
+  ...USER_DETAIL_COLUMNS.map((column) => ({ ...column, label: t(`users.columns.${column.key}`) })),
+  ...(canManage.value
+    ? [{ key: 'actions', label: t('components.actions.label'), width: 'sm' }]
+    : []),
 ])
 
-function rowActions(row) {
-  return [
-    { key: 'edit', label: t('users.actions.edit'), icon: 'fa-solid fa-pen' },
-    row.status === 'active'
-      ? { key: 'deactivate', label: t('users.actions.deactivate'), icon: 'fa-solid fa-user-slash', variant: 'danger' }
-      : { key: 'activate', label: t('users.actions.activate'), icon: 'fa-solid fa-user-check' },
-  ]
-}
-
+// The last sign-in as a date and a time; the column's tooltip names it.
 function lastLoginLabel(value) {
   if (!value) return t('users.lastLogin.never')
-  return formatDate(value, locale.value, { dateStyle: 'medium', timeStyle: 'short' })
+  return `${formatRiyadhDate(value, locale.value)} ${formatRiyadhTime(value, locale.value)}`
+}
+
+function lastLoginTitle(value) {
+  return value ? t('users.lastLogin.at', { when: lastLoginLabel(value) }) : undefined
+}
+
+function rolesText(roles) {
+  return roles.map((roleCode) => roleLabel(roleCode)).join(t('common.listSeparator'))
 }
 
 const formOpen = ref(false)
 const editing = ref(null)
+const details = ref(null)
+const detailsOpen = ref(false)
+const pathAccess = useUserPathAccess({ onSaved: () => load() })
+const userRecord = useUserRecord()
 
 function openCreate() {
   editing.value = null
   formOpen.value = true
 }
 
-function openEdit(row) {
-  editing.value = row
-  formOpen.value = true
+async function save({ id, payload }) {
+  if (id) await usersService.update(id, payload)
+  else await usersService.create(payload)
 }
 
-async function onSaved({ id, payload }) {
-  try {
-    if (id) {
-      await usersService.update(id, payload)
-      toast.success(t('users.toasts.updated'))
-    } else {
-      await usersService.create(payload)
-      toast.success(t('users.toasts.created'))
-    }
-    formOpen.value = false
-    await load()
-  } catch {
-    toast.error(t('users.toasts.saveFailed'))
-  }
+function onSaved({ id }) {
+  toast.success(id ? t('users.toasts.updated') : t('users.toasts.created'))
+  load()
 }
 
-async function activateUser(row) {
-  const accepted = await confirm({
-    title: t('users.confirm.activateTitle'),
-    message: t('users.confirm.activateMessage', { name: row.name }),
-    confirmLabel: t('users.actions.activate'),
-    variant: 'primary',
-  })
-  if (!accepted) return
-  try {
-    await usersService.activate(row.id)
-    toast.success(t('users.toasts.activated'))
-    await load()
-  } catch {
-    toast.error(t('users.toasts.statusFailed'))
-  }
-}
-
-async function deactivateUser(row) {
-  const accepted = await confirm({
-    title: t('users.confirm.deactivateTitle'),
-    message: t('users.confirm.deactivateMessage', { name: row.name }),
-    confirmLabel: t('users.actions.deactivate'),
-    variant: 'danger',
-  })
-  if (!accepted) return
-  try {
-    await usersService.deactivate(row.id)
-    toast.success(t('users.toasts.deactivated'))
-    await load()
-  } catch {
-    toast.error(t('users.toasts.statusFailed'))
-  }
+// The list row lacks the personal fields; the dialog gets the full record (the row keeps ndaStatus).
+async function openWithRecord(row, target, open) {
+  const record = await userRecord.recordOf(row)
+  if (!record) return
+  target.value = { ...row, ...record }
+  open.value = true
 }
 
 function onAction(key, row) {
-  if (key === 'edit') openEdit(row)
-  else if (key === 'activate') activateUser(row)
-  else if (key === 'deactivate') deactivateUser(row)
+  if (key === USER_ACTIONS.DETAILS) return openWithRecord(row, details, detailsOpen)
+  if (key === USER_ACTIONS.EDIT) return openWithRecord(row, editing, formOpen)
+  if (key === USER_ACTIONS.ACTIVITY)
+    return router.push({ name: ROUTE_NAMES.ADMIN_AUDIT_LOG, query: { actorId: row.id } })
+  if (PATH_ACCESS_ACTIONS.includes(key)) return pathAccess.open(key, row)
+  if (IDENTITY_ACTIONS.includes(key)) return identity.open(key, row)
+  actions.start(key, row)
 }
 </script>
 
 <template>
   <section class="users-page">
     <header class="users-page__header">
-      <div>
-        <h1 class="users-page__title">{{ t('users.index.title') }}</h1>
-        <p class="users-page__subtitle">{{ t('users.index.subtitle') }}</p>
+      <h1 class="users-page__title">{{ t('users.index.title') }}</h1>
+      <div class="users-page__actions">
+        <BaseButton
+          v-if="canViewRoles"
+          variant="secondary"
+          icon="lock"
+          :to="{ name: ROUTE_NAMES.ADMIN_PERMISSIONS }"
+          >{{ t('users.index.rolesLink') }}</BaseButton
+        >
+        <BaseButton
+          v-if="canReviewIdentity"
+          variant="secondary"
+          icon="doc"
+          :to="{ name: ROUTE_NAMES.ADMIN_IDENTITY_CHANGES }"
+          >{{ t('nationalIdentity.review.link') }}</BaseButton
+        >
+        <BaseButton v-if="canManage" variant="primary" icon="user" @click="openCreate">{{
+          t('users.index.add')
+        }}</BaseButton>
       </div>
     </header>
 
     <StatsCards :stats="statCards" :loading="status === 'loading' && !stats" />
 
-    <ListToolbar v-model:search="search" :search-placeholder="t('users.index.searchPlaceholder')">
-      <template #filters>
-        <DropdownList
-          :model-value="filters.filters.role"
-          :options="roleFilterOptions"
-          :placeholder="t('users.filters.role')"
-          @update:model-value="filters.setFilter('role', $event)"
-        />
-        <DropdownList
-          :model-value="filters.filters.status"
-          :options="statusFilterOptions"
-          :placeholder="t('users.filters.status')"
-          @update:model-value="filters.setFilter('status', $event)"
-        />
+    <DataListCard>
+      <template #toolbar>
+        <ListToolbar
+          v-model:search="search"
+          :search-placeholder="t('users.index.searchPlaceholder')"
+          :filter-state="filters"
+        >
+          <template #filters="{ draft }">
+            <AppSelect
+              :model-value="draft.filters.role"
+              :options="roleFilterOptions"
+              :label="t('users.filters.role')"
+              @update:model-value="draft.setFilter('role', $event)"
+            />
+            <AppSelect
+              :model-value="draft.filters.status"
+              :options="statusFilterOptions"
+              :label="t('users.filters.status')"
+              @update:model-value="draft.setFilter('status', $event)"
+            />
+            <AppSelect
+              :model-value="draft.filters.nda"
+              :options="ndaFilterOptions"
+              :label="t('nda.users.filter')"
+              @update:model-value="draft.setFilter('nda', $event)"
+            />
+          </template>
+          <template v-if="can(PERMISSIONS.USERS_EXPORT)" #export>
+            <BaseButton
+              variant="secondary"
+              size="sm"
+              icon="download"
+              :loading="exporter.exporting.value"
+              :disabled="status !== 'success'"
+              @click="exporter.exportCsv(filters.toParams())"
+            >
+              {{ t('users.index.export') }}
+            </BaseButton>
+          </template>
+        </ListToolbar>
       </template>
-      <template #actions>
-        <BaseButton variant="primary" size="sm" icon="fa-solid fa-user-plus" @click="openCreate">
-          {{ t('users.index.add') }}
-        </BaseButton>
-      </template>
-    </ListToolbar>
 
-    <DataTable
-      :columns="columns"
-      :items="items"
-      :status="status"
-      :error-message="errorMessage"
-      :empty-title="t('users.index.emptyTitle')"
-      :empty-message="t('users.index.emptyMessage')"
-      @retry="load"
-    >
-      <template #empty-action>
-        <BaseButton variant="primary" icon="fa-solid fa-user-plus" @click="openCreate">
-          {{ t('users.index.add') }}
-        </BaseButton>
-      </template>
-      <template #cell-name="{ item }">
-        <span class="users-page__name">{{ item.name }}</span>
-      </template>
-      <template #cell-email="{ item }">
-        <a class="users-page__email" :href="`mailto:${item.email}`" dir="ltr">{{ item.email }}</a>
-      </template>
-      <template #cell-role="{ item }">
-        <span class="users-page__roles">
-          <Badge v-for="roleCode in item.roles" :key="roleCode" variant="info">
-            {{ roleLabel(roleCode) }}
-          </Badge>
-        </span>
-      </template>
-      <template #cell-status="{ item }">
-        <StatusBadge :status="item.status" />
-      </template>
-      <template #cell-lastLogin="{ item }">
-        <span class="users-page__last-login">{{ lastLoginLabel(item.lastLogin) }}</span>
-      </template>
-      <template #cell-actions="{ item }">
-        <ActionsDropdown :actions="rowActions(item)" @select="onAction($event, item)" />
-      </template>
-    </DataTable>
+      <DataTable
+        table-key="users-list"
+        :columns="columns"
+        :items="items"
+        :status="status"
+        :error-message="errorMessage"
+        :empty-title="t('users.index.emptyTitle')"
+        :empty-message="t('users.index.emptyMessage')"
+        @retry="load"
+      >
+        <template v-if="canManage" #empty-action>
+          <BaseButton variant="primary" icon="user" @click="openCreate">{{
+            t('users.index.add')
+          }}</BaseButton>
+        </template>
+        <template #cell-name="{ item }">
+          <span class="users-page__identity">
+            <span class="users-page__name">{{ item.name }}</span>
+            <a class="users-page__email" :href="`mailto:${item.email}`" dir="ltr">{{
+              item.email
+            }}</a>
+          </span>
+        </template>
+        <template #cell-role="{ item }">
+          <span class="users-page__roles">{{ rolesText(item.roles) }}</span>
+        </template>
+        <template #cell-paths="{ item }"><UserPathAccessCell :user="item" /></template>
+        <template #cell-status="{ item }">
+          <span class="users-page__state">
+            <UserStatusBadge :status="item.status" />
+            <span class="table__meta" :title="lastLoginTitle(item.lastLoginAt)">{{
+              lastLoginLabel(item.lastLoginAt)
+            }}</span>
+          </span>
+        </template>
+        <template
+          v-for="column in USER_DETAIL_COLUMNS"
+          :key="column.key"
+          #[`cell-${column.key}`]="{ item }"
+          ><UserListDetailCell
+            :field="column.key"
+            :user="item"
+            :nda-version="ndaMeta.currentVersion"
+        /></template>
+        <template #cell-actions="{ item }">
+          <RowActions
+            :actions="actions.actionsFor(item)"
+            :name="item.name"
+            :inline-keys="USER_INLINE_ACTIONS"
+            @select="onAction($event, item)"
+          />
+        </template>
+      </DataTable>
 
-    <Pagination
-      v-if="status === 'success' && pagination.lastPage > 1"
-      :page="pagination.page"
-      :last-page="pagination.lastPage"
-      :disabled="status === 'loading'"
-      @update:page="setPage($event)"
+      <template #footer>
+        <Pagination
+          v-if="status === 'success' && pagination.lastPage > 1"
+          :page="pagination.page"
+          :last-page="pagination.lastPage"
+          :disabled="status === 'loading'"
+          @update:page="setPage($event)"
+        />
+      </template>
+    </DataListCard>
+
+    <UserForm
+      v-if="canManage"
+      v-model="formOpen"
+      :user="editing"
+      :save="save"
+      :nda-scope-roles="ndaMeta.scopeRoles"
+      @saved="onSaved"
     />
-
-    <UserForm v-model="formOpen" :user="editing" @saved="onSaved" />
+    <UserDetailsDialog v-model="detailsOpen" :user="details" />
+    <AssessorQualificationsDialog
+      v-if="canManage"
+      v-model="pathAccess.qualificationsOpen.value"
+      :user="pathAccess.user.value"
+      @saved="pathAccess.saved"
+    />
+    <RequestScopeDialog
+      v-if="canManage"
+      v-model="pathAccess.scopeOpen.value"
+      :user="pathAccess.user.value"
+      @saved="pathAccess.saved"
+    />
+    <NameCorrectionDialog
+      v-if="canManage"
+      v-model="identity.correction.open"
+      :user="identity.correction.user"
+      :action="identity.submitCorrection"
+    />
+    <IdentityHistoryDialog
+      v-model="identity.history.open"
+      :user="identity.history.user"
+      :status="identity.history.status"
+      :items="identity.history.items"
+      @retry="identity.loadHistory(identity.history.user)"
+    />
+    <ReasonDialog
+      v-if="actions.dialog.value"
+      v-model="actions.dialogOpen.value"
+      :title="actions.dialog.value.title"
+      :subtitle="actions.dialog.value.subtitle"
+      :destructive="actions.dialog.value.destructive"
+      :submit-label="actions.dialog.value.submitLabel"
+      :optional="actions.dialog.value.optional"
+      :action="actions.runWithReason"
+      action-name="users.statusAction"
+    />
   </section>
 </template>

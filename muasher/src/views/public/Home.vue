@@ -1,69 +1,63 @@
 <script setup>
+import { computed, nextTick, watch } from 'vue'
+import { useRoute } from 'vue-router'
+import { useI18n } from 'vue-i18n'
 import { usePublicHome } from '@/composables/useHomeContent'
-import HomeHero from '@/components/public/HomeHero.vue'
-import HomeEvaluationPaths from '@/components/public/HomeEvaluationPaths.vue'
-import HomeExcellenceModel from '@/components/public/HomeExcellenceModel.vue'
-import HomeHowItWorks from '@/components/public/HomeHowItWorks.vue'
-import HomeFastKit from '@/components/public/HomeFastKit.vue'
-import HomeLeadership from '@/components/public/HomeLeadership.vue'
-import HomeLensesBrief from '@/components/public/HomeLensesBrief.vue'
-import HomeKpiPromo from '@/components/public/HomeKpiPromo.vue'
-import HomePartners from '@/components/public/HomePartners.vue'
-import HomeContact from '@/components/public/HomeContact.vue'
-import Skeleton from '@/components/feedback/Skeleton.vue'
-import ErrorState from '@/components/feedback/ErrorState.vue'
-import EmptyState from '@/components/feedback/EmptyState.vue'
+import { usePageSeo } from '@/composables/usePageSeo'
+import { useFeaturedKpis } from '@/composables/useFeaturedKpis'
+import { useHeroFontPreload } from '@/composables/useHeroFontPreload'
+import { useLandingReady } from '@/composables/landing/useLandingReady'
+import { landingEntries } from '@/components/landing/landingSectionRegistry'
 
-const registry = {
-  hero: HomeHero,
-  'evaluation-paths': HomeEvaluationPaths,
-  'excellence-model': HomeExcellenceModel,
-  'how-it-works': HomeHowItWorks,
-  'fast-excellence-kit': HomeFastKit,
-  leadership: HomeLeadership,
-  'analytics-lenses': HomeLensesBrief,
-  'kpi-promo': HomeKpiPromo,
-  partners: HomePartners,
-  contact: HomeContact,
+const route = useRoute()
+const { t } = useI18n()
+const { orderedSections, siteSettings, seo, status, load, localized } = usePublicHome()
+const { onReady } = useLandingReady()
+useFeaturedKpis()
+useHeroFontPreload()
+
+usePageSeo({
+  title: () => localized(seo.value?.title) || localized(siteSettings.value?.seo?.title),
+  description: () =>
+    localized(seo.value?.description) || localized(siteSettings.value?.seo?.description),
+})
+
+const entries = computed(() => landingEntries(orderedSections.value))
+
+function scrollToHash() {
+  const anchor = route.hash ? route.hash.slice(1) : ''
+  if (anchor) document.getElementById(anchor)?.scrollIntoView()
 }
 
-const { orderedSections, siteSettings, status, load, localized } = usePublicHome()
+watch(
+  () => [status.value, route.hash],
+  ([current]) => {
+    if (current !== 'success') return
+    onReady(() => nextTick(scrollToHash))
+  },
+  { immediate: true },
+)
 </script>
 
 <template>
-  <div class="landing">
-    <div v-if="status === 'loading'" class="landing__loading">
-      <Skeleton variant="block" :count="2" />
-      <div class="landing__loading-grid">
-        <Skeleton v-for="i in 3" :key="i" variant="block" />
-      </div>
+  <div class="lp-page">
+    <div v-if="status === 'error' || status === 'empty'" class="lp-state" role="status">
+      <h1>
+        {{ t(status === 'error' ? 'landing.state.errorTitle' : 'public.notPublished.title') }}
+      </h1>
+      <p>{{ t(status === 'error' ? 'public.loadError' : 'public.notPublished.message') }}</p>
+      <button v-if="status === 'error'" type="button" class="lp-btn lp-btn--fill" @click="load">
+        {{ t('actions.reload') }}
+      </button>
     </div>
-
-    <ErrorState
-      v-else-if="status === 'error'"
-      :message="$t('public.loadError')"
-      @retry="load"
-    />
-
-    <EmptyState
-      v-else-if="status === 'empty'"
-      :title="$t('public.notPublished.title')"
-      :message="$t('public.notPublished.message')"
-      icon="fa-regular fa-newspaper"
-    />
-
     <template v-else>
-      <template v-for="section in orderedSections" :key="section.id">
-        <component
-          :is="registry[section.key]"
-          v-if="registry[section.key]"
-          v-reveal
-          :id="section.key"
-          :section="section"
-          :localized="localized"
-          v-bind="section.key === 'contact' ? { siteSettings } : {}"
-        />
-      </template>
+      <component
+        :is="entry.view.component"
+        v-for="entry in entries"
+        :id="entry.anchor || undefined"
+        :key="entry.key"
+        :section="entry.section"
+      />
     </template>
   </div>
 </template>

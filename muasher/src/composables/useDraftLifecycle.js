@@ -22,11 +22,17 @@ export function useDraftLifecycle() {
     }
   }
 
+  async function cloneDraft(payload) {
+    const { data } = await criteriaService.createDraft(payload)
+    toast.success(t('criteria.draft.created', { number: data.versionNumber }))
+    return data
+  }
+
   async function discardDraft(draft) {
     const accepted = await confirm({
-      title: t('criteria.draft.discardTitle'),
-      message: t('criteria.draft.discardMessage', { number: draft.versionNumber }),
-      confirmLabel: t('criteria.version.discardDraft'),
+      title: t('criteria.draft.discardTitle', { number: draft.versionNumber }),
+      message: t('criteria.draft.discardMessage'),
+      confirmLabel: t('actions.delete'),
       variant: 'danger',
     })
     if (!accepted) return false
@@ -40,5 +46,5 @@ export function useDraftLifecycle() {
     }
   }
 
-  return { createDraft, discardDraft }
+  return { createDraft, cloneDraft, discardDraft }
 }

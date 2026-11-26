@@ -5,50 +5,51 @@ declare(strict_types=1);
 namespace App\Services\Assessments;
 
 use App\Data\Assessments\CarriedScore;
+use App\Data\Assessments\DesiredScores;
 use App\Data\Assessments\RebindPlan;
+use App\Data\Assessments\RevisionStamp;
 use App\Data\Assessments\ScorableUnit;
 use App\Data\Assessments\ScoreChange;
 use App\Data\Assessments\ScoreChangeSet;
 use App\Data\Assessments\ScoredUnit;
-use App\Data\Assessments\ScoreSheet;
 use App\Data\Assessments\ScoringTree;
 use App\Enums\Assessments\ScoreLevel;
 use App\Enums\Assessments\ScorerRole;
 use App\Models\Assessments\Assessment;
 use App\Models\Assessments\AssessmentScore;
 use App\Models\Identity\User;
-use App\Support\RequestContext;
 use App\Support\ScalarValue;
 use App\Support\ValueObjects\RawScore;
 use Illuminate\Support\Facades\Date;
 
 final readonly class ScoreSheetWriter
 {
-    public function __construct(private ScoreSheetReader $reader, private RequestContext $context) {}
+    public function __construct(private ScoreSheetReader $reader, private RevisionStamper $stamper) {}
 
-    public function replace(Assessment $assessment, ScoringTree $tree, ScoreSheet $desired, User $scorer, ScorerRole $role): ScoreChangeSet
+    public function replace(Assessment $assessment, ScoringTree $tree, DesiredScores $desired, User $scorer, ScorerRole $role): ScoreChangeSet
     {
+        $stamp = $this->stamper->stampFor($scorer, $assessment);
         $current = $this->currentByKey($assessment);
         $superseded = [];
         $cleared = [];
 
         foreach ($current as $key => $row) {
-            $wanted = $desired->rawForKey($key);
+            $stored = $row->rawScore($tree->scoringTypeOf($row->level, $row->nodeId(), $assessment->scale_kind));
 
-            if ($wanted instanceof RawScore && $wanted->equals($row->rawScore($assessment->scale_kind))) {
+            if ($this->keeps($key, $row, $stored, $desired, $stamp)) {
                 continue;
             }
 
             $superseded[] = $row;
 
-            if (! $wanted instanceof RawScore) {
-                $cleared[] = new ScoreChange($tree->unit($row->level, $row->nodeId())->code ?? $key, $row->rawScore($assessment->scale_kind), null);
+            if (! $desired->sheet->rawForKey($key) instanceof RawScore) {
+                $cleared[] = new ScoreChange($tree->unit($row->level, $row->nodeId())->code ?? $key, $stored, null);
             }
         }
 
         $this->supersede($superseded);
 
-        return new ScoreChangeSet([...$cleared, ...$this->insertChanged($assessment, $current, $desired, $scorer, $role)]);
+        return new ScoreChangeSet([...$cleared, ...$this->insertChanged($assessment, $current, $desired, $stamp, $role)]);
     }
 
     public function applyRebind(Assessment $assessment, RebindPlan $plan): void
@@ -67,6 +68,7 @@ final readonly class ScoreSheetWriter
                 'raw_value' => $carried->previous->raw_value,
                 'percent' => $carried->previous->percent,
                 'version' => 1,
+                'completion_request_id' => $carried->previous->completion_request_id,
             ]);
         }
     }
@@ -89,23 +91,34 @@ final readonly class ScoreSheetWriter
      * @param  array<string, AssessmentScore>  $current
      * @return list<ScoreChange>
      */
-    private function insertChanged(Assessment $assessment, array $current, ScoreSheet $desired, User $scorer, ScorerRole $role): array
+    private function insertChanged(Assessment $assessment, array $current, DesiredScores $desired, RevisionStamp $stamp, ScorerRole $role): array
     {
         $versions = $this->latestVersions($assessment);
         $changes = [];
 
-        foreach ($desired->entries() as $scored) {
-            $before = ($current[$scored->unit->key()] ?? null)?->rawScore($assessment->scale_kind);
+        foreach ($desired->sheet->entries() as $scored) {
+            $key = $scored->unit->key();
+            $row = $current[$key] ?? null;
+            $before = $row?->rawScore($scored->raw->type);
 
-            if ($before instanceof RawScore && $before->equals($scored->raw)) {
+            if ($row instanceof AssessmentScore && $before instanceof RawScore && $this->keeps($key, $row, $before, $desired, $stamp)) {
                 continue;
             }
 
-            $this->insert($assessment, $scored, $scorer, $role, ($versions[$scored->unit->key()] ?? 0) + 1);
+            $this->insert($assessment, $scored, $stamp, $role, ($versions[$key] ?? 0) + 1);
             $changes[] = new ScoreChange($scored->unit->code, $before, $scored->raw);
         }
 
         return $changes;
+    }
+
+    private function keeps(string $key, AssessmentScore $row, RawScore $stored, DesiredScores $desired, RevisionStamp $stamp): bool
+    {
+        $wanted = $desired->sheet->rawForKey($key);
+
+        return $wanted instanceof RawScore
+            && $wanted->equals($stored)
+            && ! $desired->reconfirms($key, $row->completion_request_id, $stamp->completionRequestId);
     }
 
     /**
@@ -122,17 +135,18 @@ final readonly class ScoreSheetWriter
             ->update(['superseded_at' => Date::now()]);
     }
 
-    private function insert(Assessment $assessment, ScoredUnit $scored, User $scorer, ScorerRole $role, int $version): void
+    private function insert(Assessment $assessment, ScoredUnit $scored, RevisionStamp $stamp, ScorerRole $role, int $version): void
     {
         AssessmentScore::query()->create([
             'assessment_id' => $assessment->id,
             ...$this->nodeColumns($scored->unit),
-            'scorer_user_id' => $scorer->id,
+            'scorer_user_id' => $stamp->authorId,
             'scorer_role' => $role,
             'raw_value' => $scored->raw->toDecimal(),
             'percent' => $scored->raw->percent(),
             'version' => $version,
-            'change_reason' => $this->context->reason(),
+            'change_reason' => $stamp->reason,
+            'completion_request_id' => $stamp->completionRequestId,
         ]);
     }
 

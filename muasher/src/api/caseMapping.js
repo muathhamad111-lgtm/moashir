@@ -4,7 +4,16 @@ const CAMEL_IDENTIFIER = /^[a-z][a-zA-Z0-9]*$/
 const SNAKE_IDENTIFIER = /^[a-z][a-z0-9]*(?:_[a-z0-9]+)+$/
 const BRACKETED_KEY = /^[A-Za-z0-9_]+(?:\[[A-Za-z0-9_]+\])+$/
 
-const OPAQUE_KEY_CONTAINERS = new Set(['matrix', 'metadata'])
+// Containers whose own keys are data, not field names: kept as they are both ways (the table
+// columns are keyed by table ids such as "finance.paymentEvents").
+const OPAQUE_KEY_CONTAINERS = new Set([
+  'matrix',
+  'metadata',
+  'old_values',
+  'new_values',
+  'table_columns',
+  'tableColumns',
+])
 const BRIDGED_ENUM_KEYS = new Set(['evaluationType', 'scaleKind'])
 const FIELD_PATH_CONTAINERS = new Set(['errors'])
 
@@ -69,7 +78,10 @@ function createConverter({ convertIdentifier, convertStatus, internalKeyOf }) {
   function convertFieldErrors(errors) {
     if (!isPlainObject(errors)) return errors
     return Object.fromEntries(
-      Object.entries(errors).map(([path, messages]) => [convertFieldPath(path, convertIdentifier), messages]),
+      Object.entries(errors).map(([path, messages]) => [
+        convertFieldPath(path, convertIdentifier),
+        messages,
+      ]),
     )
   }
 
@@ -79,7 +91,10 @@ function createConverter({ convertIdentifier, convertStatus, internalKeyOf }) {
     if (FIELD_PATH_CONTAINERS.has(key)) return [nextKey, convertFieldErrors(child)]
     const converted = convert(child)
     const internalKey = internalKeyOf(key, nextKey)
-    return [nextKey, hasCanonicalValue(internalKey) ? mapStatusValue(converted, convertStatus) : converted]
+    return [
+      nextKey,
+      hasCanonicalValue(internalKey) ? mapStatusValue(converted, convertStatus) : converted,
+    ]
   }
 
   function convert(value) {

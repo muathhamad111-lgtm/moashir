@@ -2,14 +2,30 @@ import { CRITERIA_VERSION_STATUSES } from '@/constants/criteria'
 import { awardCyclesFixture } from '../../fixtures/awardCycles'
 import { versionWithStatus } from '../criteriaStore'
 import { addDays } from '../accredited/dates'
+import { scenarioAnchor, seededEntryFee } from './feeScenario'
 
 const RUNNING_EXCLUDED = ['draft', 'closed']
-const DATE_FIELDS = ['submissionStart', 'submissionEnd', 'committeeStart', 'committeeEnd', 'announcementAt', 'announcedAt', 'closedAt']
+const DATE_FIELDS = [
+  'submissionStart',
+  'submissionEnd',
+  'committeeStart',
+  'committeeEnd',
+  'announcementAt',
+  'announcedAt',
+  'closedAt',
+]
 
 const state = { cycles: [], nextId: 100 }
 
 function datesOf(offsets, anchor) {
-  return Object.fromEntries(DATE_FIELDS.map((field) => [field, offsets[field] === null || offsets[field] === undefined ? null : addDays(anchor, offsets[field])]))
+  return Object.fromEntries(
+    DATE_FIELDS.map((field) => [
+      field,
+      offsets[field] === null || offsets[field] === undefined
+        ? null
+        : addDays(anchor, offsets[field]),
+    ]),
+  )
 }
 
 function seededCycle(fixture, version, anchor) {
@@ -17,6 +33,7 @@ function seededCycle(fixture, version, anchor) {
   return {
     id: fixture.id,
     name: { ...fixture.name },
+    description: fixture.description ? { ...fixture.description } : null,
     year: new Date(dates.submissionStart).getUTCFullYear(),
     status: fixture.status,
     criteriaVersionId: version?.id ?? null,
@@ -26,19 +43,22 @@ function seededCycle(fixture, version, anchor) {
     disqualificationScore: fixture.disqualificationScore,
     initialReviewSlaDays: fixture.initialReviewSlaDays,
     participationCertificateEnabled: fixture.participationCertificateEnabled,
+    entryFee: seededEntryFee(fixture),
     regionIds: [...fixture.regionIds],
     members: fixture.members.map((member) => ({ ...member })),
     initialAssessors: fixture.initialAssessors.map((link) => ({ ...link })),
     createdById: 1,
     openedAt: fixture.status === 'draft' ? null : dates.submissionStart,
-    submissionsClosedAt: ['draft', 'submission-open'].includes(fixture.status) ? null : dates.submissionEnd,
+    submissionsClosedAt: ['draft', 'submission-open'].includes(fixture.status)
+      ? null
+      : dates.submissionEnd,
     closedFromStatus: fixture.closedFromStatus,
     createdAt: addDays(dates.submissionStart, -20),
     updatedAt: addDays(dates.submissionStart, -20),
   }
 }
 
-export function resetCycleStore(anchor = new Date().toISOString()) {
+export function resetCycleStore(anchor = scenarioAnchor() ?? new Date().toISOString()) {
   const version = versionWithStatus(CRITERIA_VERSION_STATUSES.PUBLISHED)
   state.cycles = awardCyclesFixture.map((fixture) => seededCycle(fixture, version, anchor))
   state.nextId = Math.max(100, ...state.cycles.map((cycle) => cycle.id))
@@ -65,8 +85,22 @@ export function isRunning(cycle) {
   return !RUNNING_EXCLUDED.includes(cycle.status)
 }
 
-export function runningCycle(exceptId = null) {
-  return state.cycles.find((cycle) => isRunning(cycle) && cycle.id !== exceptId) ?? null
+function newestFirst(left, right) {
+  return Date.parse(right.submissionStart) - Date.parse(left.submissionStart) || right.id - left.id
+}
+
+export function runningCycles() {
+  return state.cycles.filter(isRunning).sort(newestFirst)
+}
+
+export function openCycles(now = Date.now()) {
+  return state.cycles
+    .filter((cycle) => acceptsApplications(cycle, now) && Date.parse(cycle.submissionStart) <= now)
+    .sort(newestFirst)
+}
+
+export function currentCycle(now = Date.now()) {
+  return openCycles(now)[0] ?? runningCycles()[0] ?? null
 }
 
 export function acceptsApplications(cycle, now = Date.now()) {

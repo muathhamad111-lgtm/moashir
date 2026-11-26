@@ -17,13 +17,6 @@ final class CriteriaTreeRejected extends ApiException
         ]));
     }
 
-    public static function pointsConfirmationRequired(int $pointCount): self
-    {
-        return new self(new ApiError(Response::HTTP_UNPROCESSABLE_ENTITY, 'criteria.points_confirm_required', [
-            'confirm_delete_points' => [__('errors.criteria.points_confirm_required_detail', ['count' => (string) $pointCount])],
-        ], [], ['impact' => ['point_count' => $pointCount]]));
-    }
-
     public static function orderIncomplete(): self
     {
         return new self(new ApiError(Response::HTTP_UNPROCESSABLE_ENTITY, 'order.incomplete', [
@@ -35,6 +28,13 @@ final class CriteriaTreeRejected extends ApiException
     {
         return new self(new ApiError(Response::HTTP_UNPROCESSABLE_ENTITY, 'criteria.node_not_in_version', [
             "nodes.{$index}.id" => [__('errors.criteria.node_not_in_version')],
+        ]));
+    }
+
+    public static function notAChild(int $index): self
+    {
+        return new self(new ApiError(Response::HTTP_UNPROCESSABLE_ENTITY, 'criteria.node_not_a_child', [
+            "weights.{$index}.id" => [__('errors.criteria.node_not_a_child')],
         ]));
     }
 }

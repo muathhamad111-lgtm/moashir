@@ -15,9 +15,9 @@ use App\Models\Identity\User;
 use App\Services\Assessments\StaffActionReason;
 use App\Services\Audit\AuditRecorder;
 use App\Services\Award\AwardCycleRowLock;
+use App\Services\Award\CycleCriteriaVersionFollower;
+use App\Services\Award\InitialAssessorLinks;
 use App\Services\Award\RunningCycleGuard;
-use App\Support\ScalarValue;
-use Illuminate\Database\UniqueConstraintViolationException;
 use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\DB;
 
@@ -30,6 +30,8 @@ final readonly class OpenCycleSubmissions
         private AwardCycleRowLock $rowLock,
         private RunningCycleGuard $running,
         private AuditRecorder $audit,
+        private InitialAssessorLinks $initialAssessors,
+        private CycleCriteriaVersionFollower $criteria,
     ) {}
 
     public function handle(?User $actor, AwardCycle $cycle, ?string $reason): AwardCycle
@@ -38,11 +40,7 @@ final readonly class OpenCycleSubmissions
             $this->reason->record($actor, $reason);
         }
 
-        try {
-            return DB::transaction(fn (): AwardCycle => $this->open($actor, $cycle));
-        } catch (UniqueConstraintViolationException) {
-            throw AwardRejected::anotherCycleRunning(ScalarValue::int(AwardCycle::query()->running()->value('id')));
-        }
+        return DB::transaction(fn (): AwardCycle => $this->open($actor, $cycle));
     }
 
     private function open(?User $actor, AwardCycle $cycle): AwardCycle
@@ -58,7 +56,12 @@ final readonly class OpenCycleSubmissions
             throw AwardRejected::submissionWindowPassed();
         }
 
-        $this->running->assertNoOtherRunning($locked);
+        if (! $this->initialAssessors->hasActive($locked->id)) {
+            throw AwardRejected::noInitialAssessors();
+        }
+
+        $this->running->assertMayStart($locked, AwardCycleStatus::SubmissionOpen);
+        $this->criteria->bindBeforeOpening($locked);
         $previousStart = $locked->submission_start->toIso8601String();
 
         if ($locked->submission_start->greaterThan($now)) {

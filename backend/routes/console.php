@@ -4,11 +4,13 @@ declare(strict_types=1);
 
 use App\Jobs\Finance\ExpirePaymentsJob;
 use App\Jobs\Finance\ReconcilePendingPaymentsJob;
+use App\Jobs\Platform\RecordQueueHeartbeat;
 use Illuminate\Support\Facades\Schedule;
 
-Schedule::command('moashir:expire-invitations')->hourly()->withoutOverlapping();
+Schedule::command('moashir:expire-invitations')->everyFiveMinutes()->withoutOverlapping();
 Schedule::command('moashir:prune-otp-codes')->hourly()->withoutOverlapping();
-Schedule::command('auth:clear-resets')->hourly();
+Schedule::command('moashir:prune-password-reset-links')->hourly()->withoutOverlapping();
+Schedule::command('moashir:send-nda-reminders')->hourly()->withoutOverlapping()->onOneServer();
 Schedule::command('moashir:assessments:sweep-criteria-update-holds')->everyTenMinutes()->withoutOverlapping();
 Schedule::command('moashir:assessments:open-paid-requests')->everyTenMinutes()->withoutOverlapping();
 Schedule::command('moashir:assessments:flag-overdue')->hourly()->withoutOverlapping();
@@ -19,7 +21,18 @@ Schedule::command('moashir:award:remind-submission-deadline')->hourly()->without
 Schedule::command('moashir:award:flag-overdue-committee')->hourly()->withoutOverlapping();
 Schedule::job(new ExpirePaymentsJob)->everyMinute();
 Schedule::job(new ReconcilePendingPaymentsJob)->everyFiveMinutes();
+Schedule::job(new RecordQueueHeartbeat)->everyMinute();
 Schedule::command('moashir:files:scan-pending')->everyFiveMinutes()->withoutOverlapping();
+Schedule::command('moashir:files:build-renditions')->everyTenMinutes()->withoutOverlapping();
 Schedule::command('moashir:files:purge-orphans')->dailyAt('03:00')->withoutOverlapping();
+Schedule::command('moashir:storage:measure')->dailyAt('02:15')->withoutOverlapping()->onOneServer();
 Schedule::command('backup:clean')->daily()->at('01:00');
 Schedule::command('backup:run')->daily()->at('01:30');
+Schedule::command('backup:monitor')->dailyAt('06:00')->withoutOverlapping();
+Schedule::command('moashir:certificates:prune-verification-logs')->dailyAt('03:30')->withoutOverlapping();
+Schedule::command('moashir:contact-messages:purge-closed')->dailyAt('03:45')->withoutOverlapping();
+Schedule::command('moashir:periods:generate')->dailyAt('00:05')->timezone(config()->string('app.display_timezone'))->withoutOverlapping();
+Schedule::command('moashir:periods:close')->dailyAt('00:15')->timezone(config()->string('app.display_timezone'))->withoutOverlapping();
+Schedule::command('moashir:periods:notify')->dailyAt('09:00')->timezone(config()->string('app.display_timezone'))->withoutOverlapping();
+Schedule::command('moashir:periods:digest')->dailyAt('08:00')->timezone(config()->string('app.display_timezone'))->withoutOverlapping();
+Schedule::command('moashir:assessments:remind-paid-drafts')->dailyAt('10:00')->timezone(config()->string('app.display_timezone'))->withoutOverlapping();

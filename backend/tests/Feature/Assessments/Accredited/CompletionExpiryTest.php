@@ -3,7 +3,6 @@
 declare(strict_types=1);
 
 use App\Enums\Audit\AuditEvent;
-use App\Enums\Finance\PaymentPurpose;
 use App\Enums\Notifications\NotificationCode;
 use App\Models\Assessments\Assessment;
 use App\Models\Assessments\AssessmentAssignment;
@@ -31,6 +30,7 @@ function returnedForCompletion(CriteriaVersion $version, User $assessor, string 
 {
     $assessment = reviewedAccreditedRequest($version, $assessor);
 
+    scoreEveryUnit($assessor, $assessment);
     switchTo($assessor)->postJson("/api/v1/assessments/{$assessment->id}/request-completion", [
         'notes' => 'يرجى إرفاق محضر اعتماد مجلس الإدارة للسياسة وتحديث وصفها.',
         'items' => [['sub_criterion_id' => subOf($version, 'M1.1')->id, 'kind' => 'cv']],
@@ -177,7 +177,7 @@ it('lets the entity buy a new accredited assessment after a decline', function (
     Date::setTestNow('2026-11-08 08:01:00');
     expireCompletionRequests();
 
-    app(AccreditedPurchaseCheck::class)->assertMayPurchase($assessment->entity, PaymentPurpose::Accredited);
+    app(AccreditedPurchaseCheck::class)->assertMayStart($assessment->entity);
     $next = openedAccreditedRequest($assessment->entity);
 
     expect($next->id)->not->toBe($assessment->id)

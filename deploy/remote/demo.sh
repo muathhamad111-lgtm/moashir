@@ -15,6 +15,9 @@ case "${ACTION}" in
     *) die "The action must be install or rotate-passwords." ;;
 esac
 
+environment_is_demo "${ENVIRONMENT}" \
+    || die "Demo data is refused: ${ENVIRONMENT} is not in the demo posture (MOASHIR_DEMO=true). Opt in only for an environment that holds fictional data: provision.sh posture demo ${ENVIRONMENT}."
+
 readonly DESTINATION="/root/moashir-${ENVIRONMENT}-demo-accounts.txt"
 
 WORKDIR=""
@@ -32,7 +35,7 @@ remove_workdir() {
 main() {
     WORKDIR="$(mktemp -d "$(environment_dir "${ENVIRONMENT}")/shared/demo.XXXXXX")"
     trap remove_workdir EXIT
-    chown "${MOASHIR_APP_USER}:${MOASHIR_APP_USER}" "${WORKDIR}"
+    chown "$(environment_runtime_user "${ENVIRONMENT}"):$(environment_runtime_user "${ENVIRONMENT}")" "${WORKDIR}"
     chmod 0700 "${WORKDIR}"
 
     artisan "${ENVIRONMENT}" "${COMMAND}" --accounts-file="${WORKDIR}/accounts.txt" --no-interaction

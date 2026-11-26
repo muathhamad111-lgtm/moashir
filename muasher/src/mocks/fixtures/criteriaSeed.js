@@ -1,4 +1,4 @@
-import { EVALUATION_TYPES } from '@/constants/criteria'
+import { EVALUATION_TYPES, SCORING_TYPES } from '@/constants/criteria'
 
 export const criteriaSeedLabel = {
   ar: 'نموذج التميز المؤسسي - الإصدار الأول',
@@ -20,6 +20,21 @@ export const criteriaSeedFixture = [
     weight: '1000.00',
     distributeEqually: false,
     group: 'enablers',
+    attachments: [
+      {
+        name: {
+          ar: 'الخطة الاستراتيجية المعتمدة',
+          en: 'Approved strategic plan',
+        },
+        guidance: {
+          ar: 'ارفع الخطة الاستراتيجية السارية بعد اعتمادها من مجلس الإدارة.',
+          en: 'Upload the current strategic plan as approved by the board.',
+        },
+        required: false,
+        allowedTypes: ['pdf'],
+        maxFiles: 2,
+      },
+    ],
     subs: [
       {
         name: {
@@ -153,6 +168,7 @@ export const criteriaSeedFixture = [
         weight: '250.00',
         distributeEqually: false,
         evaluationType: EVALUATION_TYPES.DIRECT,
+        scoringType: SCORING_TYPES.ACHIEVEMENT,
         hasCv: true,
         attachments: [
           {

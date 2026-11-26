@@ -10,6 +10,7 @@ use App\Events\Award\RegionResultsApproved;
 use App\Services\Award\AwardStaffNotifier;
 use App\Support\Award\AwardLinks;
 use App\Support\Award\AwardNotices;
+use App\Support\ValueObjects\LocalizedText;
 
 final readonly class NotifyAwardResultsApproved
 {
@@ -21,13 +22,13 @@ final readonly class NotifyAwardResultsApproved
         $link = AwardLinks::results($cycle->id);
 
         if ($event instanceof NationalResultsApproved) {
-            $this->notifier->secretariesAndAdmins($cycle->id, AwardNotices::for(NotificationCode::NationalResultApproved, 'staff', $cycle, $link)->inAppOnly(), $event->actorId);
+            $this->notifier->secretariesAndAdmins($cycle->id, AwardNotices::for(NotificationCode::NationalResultApproved, 'staff', $cycle, AwardLinks::national($cycle->id))->inAppOnly(), $event->actorId);
 
             return;
         }
 
-        $extra = ['region' => $event->region->name, 'count' => (string) $event->winnersCount];
+        $extra = ['region' => $event->region->name, 'winners' => LocalizedText::fromChoice('quantities.winners', $event->winnersCount)];
         $this->notifier->secretariesAndAdmins($cycle->id, AwardNotices::for(NotificationCode::RegionApproved, 'staff', $cycle, $link, $extra)->inAppOnly(), $event->actorId);
-        $this->notifier->secretariesAndAdmins($cycle->id, AwardNotices::for(NotificationCode::QualifiedForNational, 'staff', $cycle, $link, $extra)->inAppOnly(), $event->actorId);
+        $this->notifier->secretariesAndAdmins($cycle->id, AwardNotices::for(NotificationCode::QualifiedForNational, 'staff', $cycle, AwardLinks::national($cycle->id), $extra)->inAppOnly(), $event->actorId);
     }
 }

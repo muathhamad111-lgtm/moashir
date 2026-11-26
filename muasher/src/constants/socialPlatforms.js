@@ -1,8 +1,24 @@
 export const SOCIAL_PLATFORMS = {
-  x: { icon: 'fa-brands fa-x-twitter', labelKey: 'social.x' },
-  twitter: { icon: 'fa-brands fa-x-twitter', labelKey: 'social.x' },
-  linkedin: { icon: 'fa-brands fa-linkedin-in', labelKey: 'social.linkedin' },
-  youtube: { icon: 'fa-brands fa-youtube', labelKey: 'social.youtube' },
-  instagram: { icon: 'fa-brands fa-instagram', labelKey: 'social.instagram' },
-  facebook: { icon: 'fa-brands fa-facebook-f', labelKey: 'social.facebook' },
+  x: { icon: 'brand-x', labelKey: 'social.x', example: 'https://x.com/account' },
+  twitter: { icon: 'brand-x', labelKey: 'social.x', example: 'https://x.com/account' },
+  linkedin: {
+    icon: 'brand-linkedin',
+    labelKey: 'social.linkedin',
+    example: 'https://www.linkedin.com/company/account',
+  },
+  youtube: {
+    icon: 'brand-youtube',
+    labelKey: 'social.youtube',
+    example: 'https://www.youtube.com/@account',
+  },
+  instagram: {
+    icon: 'brand-instagram',
+    labelKey: 'social.instagram',
+    example: 'https://www.instagram.com/account',
+  },
+  facebook: {
+    icon: 'brand-facebook',
+    labelKey: 'social.facebook',
+    example: 'https://www.facebook.com/account',
+  },
 }

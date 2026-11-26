@@ -34,17 +34,49 @@ const runTest = () => smsIntegrationService.testConnection(SMS_PROVIDERS.TAQNYAT
 </script>
 
 <template>
-  <IntegrationCard :title="t('integrations.providers.taqnyat')" :description="t('integrations.sms.taqnyat.description')" :status="status">
-    <FieldSecret name="providers.taqnyat.bearerToken" :meta="config.bearerToken" :label="t('integrations.sms.taqnyat.bearerToken')" />
+  <IntegrationCard
+    :title="t('integrations.providers.taqnyat')"
+    :description="t('integrations.sms.taqnyat.description')"
+    :status="status"
+  >
+    <FieldSecret
+      name="providers.taqnyat.bearerToken"
+      :meta="config.bearerToken"
+      :label="t('integrations.sms.taqnyat.bearerToken')"
+    />
     <div class="sms-sender">
-      <FieldSelect name="providers.taqnyat.senderName" :label="t('integrations.sms.fields.senderName')" :options="senderOptions" :hint="t('integrations.sms.taqnyat.senderHint')" />
-      <BaseButton variant="secondary" size="sm" icon="fa-solid fa-arrows-rotate" :loading="senders.state.value === PROVIDER_ACTION_STATES.PENDING" :disabled="!tokenStored" @click="senders.execute()">
+      <FieldSelect
+        name="providers.taqnyat.senderName"
+        :label="t('integrations.sms.fields.senderName')"
+        :options="senderOptions"
+        :hint="t('integrations.sms.taqnyat.senderHint')"
+      />
+      <BaseButton
+        variant="secondary"
+        size="sm"
+        icon="refresh"
+        :loading="senders.state.value === PROVIDER_ACTION_STATES.PENDING"
+        :disabled="!tokenStored"
+        @click="senders.execute()"
+      >
         {{ t('integrations.sms.taqnyat.loadSenders') }}
       </BaseButton>
     </div>
-    <p v-if="loaded && !activeSenders.length" class="sms-sender__empty" role="status">{{ t('integrations.sms.taqnyat.noSenders') }}</p>
-    <p v-else-if="loaded" class="field__hint" role="status">{{ t('integrations.sms.taqnyat.sendersLoaded', { count: activeSenders.length }) }}</p>
-    <ProviderActionFeedback v-if="senders.state.value === PROVIDER_ACTION_STATES.FAILED" :failure="senders.failure.value" />
-    <ConnectionTestPanel :run="runTest" :disabled="!config.configured" :disabled-hint="t('integrations.feedback.saveDetailsFirst')" @settled="emit('tested')" />
+    <p v-if="loaded && !activeSenders.length" class="sms-sender__empty" role="status">
+      {{ t('integrations.sms.taqnyat.noSenders') }}
+    </p>
+    <p v-else-if="loaded" class="field__hint" role="status">
+      {{ t('integrations.sms.taqnyat.sendersLoaded', { count: activeSenders.length }) }}
+    </p>
+    <ProviderActionFeedback
+      v-if="senders.state.value === PROVIDER_ACTION_STATES.FAILED"
+      :failure="senders.failure.value"
+    />
+    <ConnectionTestPanel
+      :run="runTest"
+      :disabled="!config.configured"
+      :disabled-hint="t('integrations.feedback.saveDetailsFirst')"
+      @settled="emit('tested')"
+    />
   </IntegrationCard>
 </template>

@@ -147,10 +147,11 @@ it('validates the new draft payload', function (array $payload, string $field): 
     'non numeric source' => [['clone_from_version_id' => 'latest'], 'clone_from_version_id'],
 ]);
 
-it('keeps draft creation away from the system administrator', function (): void {
-    signIn(systemAdmin());
-
+it('lets the system administrator open a draft and keeps it away from roles without criteria.manage', function (): void {
+    signIn(staffUser(RoleKey::RequestFollower));
     $this->postJson('/api/v1/criteria/versions', [])->assertForbidden();
+
+    switchTo(systemAdmin())->postJson('/api/v1/criteria/versions', [])->assertCreated();
 });
 
 it('discards a draft, hides its tree and audits the discard', function (): void {
@@ -198,14 +199,14 @@ it('shows a version and its consistency report', function (): void {
         ->assertJsonPath('data.problems.1.code', 'M1.1');
 });
 
-it('translates the consistency messages', function (): void {
+it('translates the consistency messages and names the criterion instead of its code', function (): void {
     $draft = draftVersion();
-    mainIn($draft, 'M1', '1000.00');
+    $main = mainIn($draft, 'M1', '1000.00');
     signIn(criteriaOfficer());
 
     $arabic = $this->getJson('/api/v1/criteria/versions/'.$draft->id.'/check')->json('data.problems.0.message');
     $english = $this->withHeader('Accept-Language', 'en')->getJson('/api/v1/criteria/versions/'.$draft->id.'/check')->json('data.problems.0.message');
 
-    expect($arabic)->toContain('M1')->toContain('1000.00')
-        ->and($english)->toBe('The active sub-criteria of M1 total 0.00, but they must equal the main criterion weight of 1000.00.');
+    expect($arabic)->toContain("«{$main->name->ar}»")->toContain('1000.00')->not->toContain('M1')
+        ->and($english)->toBe("The active sub-criteria of “{$main->name->en}” total 0.00, but they must equal the main criterion weight of 1000.00.");
 });

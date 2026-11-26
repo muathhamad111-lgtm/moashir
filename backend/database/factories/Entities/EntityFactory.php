@@ -13,6 +13,7 @@ use App\Models\Entities\City;
 use App\Models\Entities\Entity;
 use App\Models\Entities\Region;
 use App\Models\Identity\User;
+use App\Support\ScalarValue;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Facades\Date;
 
@@ -45,9 +46,23 @@ final class EntityFactory extends Factory
             'region_id' => Region::factory(),
             'city_id' => static fn (array $attributes): int => City::factory()->create(['region_id' => $attributes['region_id']])->id,
             'governance_grade' => '82.50',
+            'has_governance_grade' => static fn (array $attributes): ?bool => $attributes['governance_grade'] === null ? null : true,
             'employees_count' => fake()->numberBetween(5, 200),
             'annual_beneficiaries_count' => fake()->numberBetween(100, 40_000),
             'has_strategic_plan' => true,
+            'license_number' => fake()->unique()->numerify('77########'),
+            'unified_number' => fake()->unique()->numerify('7#########'),
+            'founded_on' => static fn (array $attributes): string => ScalarValue::int($attributes['founding_year']).'-03-01',
+            'website_url' => null,
+            'address_building_number' => '7421',
+            'address_street' => 'طريق الملك فهد',
+            'address_district' => 'حي العليا',
+            'address_city' => 'الرياض',
+            'address_postal_code' => '12214',
+            'address_additional_number' => '3365',
+            'address_short_code' => null,
+            'vat_registered' => false,
+            'vat_number' => null,
             'status' => EntityStatus::Active,
             'verified_at' => Date::now(),
             'profile_completed_at' => Date::now(),
@@ -64,6 +79,16 @@ final class EntityFactory extends Factory
         return $this->state(['status' => EntityStatus::PendingVerification, 'verified_at' => null]);
     }
 
+    public function pendingReview(): self
+    {
+        return $this->state(['status' => EntityStatus::PendingReview]);
+    }
+
+    public function rejected(): self
+    {
+        return $this->state(['status' => EntityStatus::Rejected, 'rejected_at' => Date::now(), 'rejection_reason' => 'بيانات الترخيص المرفقة لا تطابق سجل الجهة لدى المركز الوطني.']);
+    }
+
     public function deactivated(): self
     {
         return $this->state(['status' => EntityStatus::Deactivated, 'deactivated_at' => Date::now(), 'deactivation_reason' => 'توقف نشاط الجهة مؤقتًا بطلب من مجلس الإدارة.']);
@@ -71,7 +96,26 @@ final class EntityFactory extends Factory
 
     public function incompleteProfile(): self
     {
-        return $this->state(['governance_grade' => null, 'employees_count' => null, 'annual_beneficiaries_count' => null, 'profile_completed_at' => null]);
+        return $this->state(['governance_grade' => null, 'has_governance_grade' => null, 'employees_count' => null, 'annual_beneficiaries_count' => null, 'profile_completed_at' => null]);
+    }
+
+    public function withoutGovernanceGrade(): self
+    {
+        return $this->state(['governance_grade' => null, 'has_governance_grade' => false]);
+    }
+
+    public function withoutBilling(): self
+    {
+        return $this->state([
+            'address_building_number' => null, 'address_street' => null, 'address_district' => null, 'address_city' => null,
+            'address_postal_code' => null, 'address_additional_number' => null, 'address_short_code' => null,
+            'vat_registered' => null, 'vat_number' => null, 'profile_completed_at' => null,
+        ]);
+    }
+
+    public function vatRegistered(string $vatNumber = '310123456700003'): self
+    {
+        return $this->state(['vat_registered' => true, 'vat_number' => $vatNumber]);
     }
 
     public function withOwner(): self

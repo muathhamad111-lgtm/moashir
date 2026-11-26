@@ -13,7 +13,7 @@ beforeEach(function (): void {
     Notification::fake();
 });
 
-it('shows the payment operations log to System Administrators without payloads and with masked references', function (): void {
+it('shows the payment operations log to System Administrators with the entity name, without payloads and with masked references', function (): void {
     ['gateway' => $gateway, 'owner' => $owner] = payingEntity();
     $payment = openedPayment($owner);
     $providerId = providerPaymentOf($gateway, $payment);
@@ -23,7 +23,12 @@ it('shows the payment operations log to System Administrators without payloads a
         ->assertJsonPath('meta.pagination.total', 2);
     $webhook = collect($response->json('data'))->firstWhere('source', 'webhook');
 
-    expect($webhook['payment'])->toBe(['id' => $payment->public_id, 'reference' => $payment->reference])
+    expect($webhook['payment'])->toBe([
+        'id' => $payment->public_id,
+        'reference' => $payment->reference,
+        'entity_name' => $payment->entity_name->toArray(),
+    ])
+        ->and($webhook['payment']['entity_name']['ar'])->toBeString()->not->toBe('')
         ->and($webhook['result'])->toBe('applied')
         ->and($webhook['signature_valid'])->toBeTrue()
         ->and($webhook['provider_ref'])->toBe('…'.substr($providerId, -6))

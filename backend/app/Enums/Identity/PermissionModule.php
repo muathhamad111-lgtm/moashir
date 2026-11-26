@@ -8,7 +8,6 @@ enum PermissionModule: string
 {
     case Dashboard = 'dashboard';
     case Entity = 'entity';
-    case Privacy = 'privacy';
     case Assessment = 'assessment';
     case Requests = 'requests';
     case Award = 'award';

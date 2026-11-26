@@ -52,6 +52,7 @@ final readonly class ResultBreakdownPresenter
                     'code' => ScalarValue::string($sub['code'] ?? null),
                     'name' => $this->names->sub(ScalarValue::int($sub['id'] ?? null))?->toArray(),
                     'evaluation_type' => ScalarValue::string($sub['evaluation_type'] ?? null),
+                    'scoring_type' => $this->nullableString($sub['scoring_type'] ?? null),
                     'raw_value' => $this->nullableString($sub['raw_value'] ?? null),
                     ...$this->figures($sub),
                 ];
@@ -76,6 +77,7 @@ final readonly class ResultBreakdownPresenter
                         'sub_criterion_id' => ScalarValue::int($sub['id'] ?? null),
                         'code' => ScalarValue::string($point['code'] ?? null),
                         'description' => $this->names->point(ScalarValue::int($point['id'] ?? null))?->toArray(),
+                        'scoring_type' => $this->nullableString($point['scoring_type'] ?? null),
                         'raw_value' => $this->nullableString($point['raw_value'] ?? null),
                         ...$this->figures($point),
                     ];

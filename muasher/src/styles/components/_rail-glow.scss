@@ -1,0 +1,14 @@
+// The primary glowing at the bottom edge of the sidebar rail (look 3). Every text colour on the
+// rail is derived to read on it at full strength (BrandRailDeriver), so it is decoration only.
+.rail-glow {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  border-radius: inherit;
+  background-image: radial-gradient(
+    90% 30% at 50% 100%,
+    var(--sidebar-glow, transparent),
+    transparent
+  );
+  pointer-events: none;
+}

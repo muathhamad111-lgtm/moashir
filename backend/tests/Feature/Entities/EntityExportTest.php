@@ -52,6 +52,19 @@ it('neutralizes spreadsheet formulas in exported cells', function (): void {
         ->and($csv)->toContain("'+SUM(A1)");
 });
 
+it('leaves the strategic plan cell empty while it is unanswered', function (): void {
+    entityWithOwner(static fn ($factory) => $factory->state(['has_strategic_plan' => null]));
+    entityWithOwner(static fn ($factory) => $factory->state(['has_strategic_plan' => false]));
+    signIn(systemAdmin());
+    $this->withHeaders(['Accept-Language' => 'en']);
+
+    $rows = array_map(str_getcsv(...), array_values(array_filter(explode("\n", trim(ltrim($this->postJson('/api/v1/entities/export')->assertOk()->streamedContent(), "\u{FEFF}"))))));
+    $column = array_search('Strategic plan', $rows[0], true);
+
+    expect($column)->toBeInt()
+        ->and(collect(array_slice($rows, 1))->pluck($column)->sort()->values()->all())->toBe(['', 'No']);
+});
+
 it('denies the export without the export permission', function (RoleKey $role): void {
     signIn(staffUser($role));
 

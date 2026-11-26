@@ -15,6 +15,6 @@ final class UnlockUserController
 {
     public function __invoke(OptionalReasonRequest $request, User $managedUser, UnlockUser $unlockUser): JsonResponse
     {
-        return ApiResponse::resource(new UserResource($unlockUser->handle($managedUser, $request->reason())->load('roles')));
+        return ApiResponse::resource(new UserResource($unlockUser->handle($managedUser, $request->reason())->load(User::ADMINISTRATION_RELATIONS)));
     }
 }

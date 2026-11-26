@@ -7,7 +7,10 @@ function mountModal(props = {}) {
   return mount(AssignEvaluatorModal, {
     props: { modelValue: true, options: [{ value: 10, label: 'Sultan' }], ...props },
     attachTo: document.body,
-    global: { ...createTestGlobals({ locale: 'en' }), stubs: { teleport: true, SearchSelect: true } },
+    global: {
+      ...createTestGlobals({ locale: 'en' }),
+      stubs: { teleport: true },
+    },
   })
 }
 

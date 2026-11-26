@@ -11,6 +11,7 @@ use App\Enums\Settings\SettingKey;
 use App\Exceptions\Settings\SettingsRejected;
 use App\Jobs\Assessments\RecomputeAccreditedDueDatesJob;
 use App\Models\Identity\User;
+use App\Services\Award\CycleConcurrencySwitch;
 use App\Services\Notifications\SecurityAlerter;
 use App\Services\Settings\SettingsLock;
 use App\Services\Settings\SettingsStore;
@@ -26,6 +27,7 @@ final readonly class UpdateAssessmentSettings
         private SettingsLock $lock,
         private RequestContext $context,
         private SecurityAlerter $alerter,
+        private CycleConcurrencySwitch $concurrency,
     ) {}
 
     public function handle(User $actor, AssessmentSettingsUpdate $update): void
@@ -34,7 +36,7 @@ final readonly class UpdateAssessmentSettings
             return;
         }
 
-        if ($actor->isSuperAdmin() && ($update->reason === null || $update->reason === '')) {
+        if (($actor->isSuperAdmin() || $this->concurrency->changesTo($update->cycleConcurrency)) && ($update->reason === null || $update->reason === '')) {
             throw SettingsRejected::reasonRequired();
         }
 

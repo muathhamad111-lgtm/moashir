@@ -1,51 +1,92 @@
 <script setup>
-import { computed } from 'vue'
+import { computed, defineAsyncComponent } from 'vue'
 import { useHead } from '@unhead/vue'
 import { useI18n } from 'vue-i18n'
 import { useRoute } from 'vue-router'
 import AppToast from '@/components/feedback/AppToast.vue'
+import AppUpdateBanner from '@/components/feedback/AppUpdateBanner.vue'
 import ConfirmModal from '@/components/modal/ConfirmModal.vue'
+import SuccessModal from '@/components/modal/SuccessModal.vue'
 import AppLayout from '@/components/layout/AppLayout.vue'
 import PublicLayout from '@/components/layout/PublicLayout.vue'
 import AuthLayout from '@/components/layout/AuthLayout.vue'
+import PortalLayout from '@/components/layout/PortalLayout.vue'
+import AppLoadingScreen from '@/components/feedback/AppLoadingScreen.vue'
+import AccountCompletionHost from '@/components/identity/completion/AccountCompletionHost.vue'
+import NdaGateHost from '@/components/identity/nda/NdaGateHost.vue'
 import { useLocale } from '@/composables/useLocale'
 import { useTheme } from '@/composables/useTheme'
-import { useBrandingStore } from '@/stores/branding'
-import { fontAwesomeKitScripts } from '@/plugins/fontAwesome'
+import { usePlatformIdentity } from '@/composables/usePlatformIdentity'
+import { useSiteBranding } from '@/composables/useSiteBranding'
+import { useBrandSchemeStyle } from '@/composables/useBrandSchemeStyle'
+import { useAdoptedStyleSheet } from '@/composables/useAdoptedStyleSheet'
+import { useTtsShell } from '@/composables/useTtsShell'
+import { useDeferredVisibility } from '@/composables/useDeferredVisibility'
+import { BRAND_THEME_COLOR } from '@/constants/branding'
+import { THEMES } from '@/constants/themes'
 
-const LAYOUTS = { app: AppLayout, public: PublicLayout, auth: AuthLayout }
+const LAYOUTS = {
+  app: AppLayout,
+  portal: PortalLayout,
+  public: PublicLayout,
+  auth: AuthLayout,
+  landing: defineAsyncComponent(() => import('@/components/layout/LandingLayout.vue')),
+}
 
 const { t } = useI18n()
 const route = useRoute()
 const { locale, dir } = useLocale()
 const { theme } = useTheme()
-const branding = useBrandingStore()
+const { layoutKey, isTtsShell } = useTtsShell()
 
-const layout = computed(() => LAYOUTS[route.meta.layout] ?? PublicLayout)
-const backOfficeAccent = computed(() =>
-  route.meta.layout === 'app' ? branding.accentToken : undefined,
-)
+// Until the first navigation resolves (the session check, the guards, the page chunk) the
+// route is the router's start location: no layout is known yet, so the official waiting page
+// stands in rather than the public chrome. Once the route resolves the layout mounts beneath
+// it (the page starts loading its data) while the screen keeps its minimum time.
+const isBooting = computed(() => route.matched.length === 0)
+const bootMarkVisible = useDeferredVisibility(isBooting)
+const showsBootScreen = computed(() => isBooting.value || bootMarkVisible.value)
+const layout = computed(() => LAYOUTS[layoutKey.value] ?? PublicLayout)
+const documentTheme = computed(() => (isTtsShell.value ? THEMES.light : theme.value))
+const brandSchemeCss = useBrandSchemeStyle()
+useAdoptedStyleSheet(computed(() => (isTtsShell.value ? brandSchemeCss.value : '')))
+
+const { platformName, siteName } = usePlatformIdentity()
+const { favicon } = useSiteBranding()
+
+const DEFAULT_ICON_LINKS = [
+  { rel: 'icon', type: 'image/svg+xml', href: '/favicon.svg' },
+  { rel: 'icon', type: 'image/png', sizes: '32x32', href: '/favicon-32x32.png' },
+  { rel: 'icon', type: 'image/png', sizes: '16x16', href: '/favicon-16x16.png' },
+  { rel: 'icon', href: '/favicon.ico', sizes: 'any' },
+  { rel: 'apple-touch-icon', sizes: '180x180', href: '/apple-touch-icon.png' },
+]
+const MANIFEST_LINK = { rel: 'manifest', href: '/site.webmanifest' }
+
+const iconLinks = computed(() => [
+  ...(favicon.value
+    ? [
+        { rel: 'icon', type: 'image/png', href: favicon.value },
+        { rel: 'apple-touch-icon', href: favicon.value },
+      ]
+    : DEFAULT_ICON_LINKS),
+  MANIFEST_LINK,
+])
 
 useHead({
   htmlAttrs: {
     lang: () => locale.value,
     dir: () => dir.value,
-    'data-theme': () => theme.value,
-    'data-accent': () => backOfficeAccent.value,
+    'data-theme': () => documentTheme.value,
+    'data-shell': () => (isTtsShell.value ? 'tts' : undefined),
   },
-  title: () => (route.meta.titleKey ? t(route.meta.titleKey) : t('app.name')),
-  titleTemplate: (title) => (title ? `${title} | ${t('meta.siteName')}` : t('meta.siteName')),
-  link: [
-    { rel: 'icon', type: 'image/png', sizes: '32x32', href: '/favicon-32x32.png' },
-    { rel: 'icon', type: 'image/png', sizes: '16x16', href: '/favicon-16x16.png' },
-    { rel: 'icon', href: '/favicon.ico', sizes: 'any' },
-    { rel: 'apple-touch-icon', sizes: '180x180', href: '/apple-touch-icon.png' },
-    { rel: 'manifest', href: '/site.webmanifest' },
-  ],
+  title: () => (route.meta.titleKey ? t(route.meta.titleKey) : platformName.value),
+  titleTemplate: (title) => (title ? `${title} | ${siteName.value}` : siteName.value),
+  link: iconLinks,
   meta: [
     { name: 'description', content: () => t('meta.description') },
-    { name: 'theme-color', content: '#022426' },
-    { name: 'msapplication-TileColor', content: '#022426' },
+    { name: 'theme-color', content: BRAND_THEME_COLOR },
+    { name: 'msapplication-TileColor', content: BRAND_THEME_COLOR },
     { name: 'msapplication-config', content: '/browserconfig.xml' },
     { property: 'og:type', content: 'website' },
     { property: 'og:site_name', content: () => t('meta.siteName') },
@@ -59,14 +100,20 @@ useHead({
     { name: 'twitter:description', content: () => t('meta.description') },
     { name: 'twitter:image', content: '/twitter-card.png' },
   ],
-  script: fontAwesomeKitScripts(),
 })
 </script>
 
 <template>
-  <component :is="layout">
-    <router-view />
-  </component>
+  <router-view v-if="!isBooting" v-slot="{ Component }">
+    <component :is="layout">
+      <component :is="Component" v-if="Component" />
+    </component>
+  </router-view>
+  <AppLoadingScreen v-if="showsBootScreen" variant="screen" :shows-mark="bootMarkVisible" />
   <AppToast />
+  <AppUpdateBanner />
   <ConfirmModal />
+  <SuccessModal />
+  <AccountCompletionHost v-if="!isBooting" />
+  <NdaGateHost v-if="!isBooting" />
 </template>

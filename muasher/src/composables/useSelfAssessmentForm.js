@@ -36,5 +36,16 @@ export function useSelfAssessmentForm(assessmentId) {
     form.value = { ...form.value, assessment: { ...form.value.assessment, ...changes } }
   }
 
-  return { status, errorMessage, form, assessment, units, isDraft, isReadOnly, load, applyScores, patchAssessment }
+  return {
+    status,
+    errorMessage,
+    form,
+    assessment,
+    units,
+    isDraft,
+    isReadOnly,
+    load,
+    applyScores,
+    patchAssessment,
+  }
 }

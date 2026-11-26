@@ -1,16 +1,70 @@
-.datepicker__control {
-  &::-webkit-calendar-picker-indicator {
-    cursor: pointer;
-    opacity: var(--opacity-backdrop);
-    transition: opacity var(--t-fast) var(--ease);
+@use '../mixins' as *;
 
-    &:hover {
-      opacity: 1;
-    }
+.datepicker {
+  @include flex(row, center, flex-start, var(--space-1));
+  position: relative;
+  // In a narrow column the segments give way, so the calendar button always stays inside the frame.
+  min-inline-size: 0;
+
+  &:focus-within {
+    @include focus-ring;
+    border-color: var(--theme-accent);
+  }
+
+  &.is-open {
+    border-color: var(--theme-accent);
   }
 }
 
-[data-theme='dark'] .datepicker__control::-webkit-calendar-picker-indicator,
-:root:not([data-theme='light']) .datepicker__control::-webkit-calendar-picker-indicator {
-  filter: invert(1);
+.datepicker__segment {
+  flex: 0 1 var(--size-date-segment);
+  inline-size: var(--size-date-segment);
+  min-inline-size: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  text-align: center;
+
+  &--year {
+    flex-basis: var(--size-date-year);
+    inline-size: var(--size-date-year);
+  }
+
+  &::placeholder {
+    color: var(--theme-text-secondary);
+  }
+
+  &:focus-visible {
+    outline: none;
+  }
+}
+
+.datepicker__separator {
+  color: var(--theme-text-secondary);
+}
+
+.datepicker__calendar {
+  @include flex(row, center, center);
+  flex-shrink: 0;
+  margin-inline-start: auto;
+  padding: var(--space-1);
+  border: 0;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--theme-text-secondary);
+  cursor: pointer;
+
+  &:hover:not(:disabled) {
+    color: var(--theme-text);
+  }
+
+  &:focus-visible {
+    @include focus-ring;
+  }
+
+  &:disabled {
+    cursor: not-allowed;
+  }
 }

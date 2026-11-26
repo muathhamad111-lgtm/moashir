@@ -2,14 +2,12 @@
 
 .accredited-intro {
   @include flex(column, stretch, flex-start, var(--space-5));
-  max-inline-size: var(--size-content-max);
-  margin-inline: auto;
 }
 
 .accredited-intro__eyebrow {
   margin-block-end: var(--space-1);
   font-size: var(--fs-sm);
-  font-weight: var(--fw-medium);
+  font-weight: var(--fw-body);
   color: var(--theme-accent-text);
 }
 
@@ -78,7 +76,7 @@
 
 .accredited-intro__benefit-title {
   font-size: var(--fs-base);
-  font-weight: var(--fw-semibold);
+  font-weight: var(--fw-heading);
   color: var(--theme-heading);
 }
 
@@ -95,7 +93,7 @@
   background-color: var(--color-info-soft);
   color: var(--theme-text);
 
-  i {
+  .app-icon {
     color: var(--color-info);
     margin-block-start: var(--space-1);
   }

@@ -3,6 +3,8 @@ import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useCriteria } from '@/composables/useCriteria'
 import { percentOf, sumWeights, weightBudget } from '@/utils/weight'
+import { westernizeInputDigits } from '@/utils/numerals'
+import AppIcon from '@/components/ui/AppIcon.vue'
 
 const props = defineProps({
   parentWeight: { type: String, required: true },
@@ -13,6 +15,11 @@ const props = defineProps({
     validator: (value) => ['equal', 'manual'].includes(value),
   },
   disabled: { type: Boolean, default: false },
+  level: {
+    type: String,
+    default: 'subs',
+    validator: (value) => ['subs', 'points'].includes(value),
+  },
 })
 
 const emit = defineEmits(['update:children', 'update:mode'])
@@ -25,22 +32,25 @@ const activeWeights = computed(() =>
 const summary = computed(() => weightBudget(props.parentWeight, sumWeights(activeWeights.value)))
 
 const STATUS = {
-  balanced: { tone: 'success', icon: 'fa-circle-check' },
-  under: { tone: 'warning', icon: 'fa-triangle-exclamation' },
-  over: { tone: 'danger', icon: 'fa-circle-exclamation' },
+  balanced: { tone: 'success', icon: 'check-circle' },
+  under: { tone: 'warning', icon: 'warning-triangle' },
+  over: { tone: 'danger', icon: 'warning-triangle' },
 }
 
 const status = computed(() => STATUS[summary.value.state])
+const messages = computed(() =>
+  props.level === 'points' ? 'criteria.weights.points' : 'criteria.weights',
+)
 
 const statusMessage = computed(() => {
   if (summary.value.state === 'over') {
-    return t('criteria.weights.overAllocated', {
+    return t(`${messages.value}.overAllocated`, {
       over: weight(summary.value.remaining.replace('-', '')),
     })
   }
   if (summary.value.state === 'under')
-    return t('criteria.weights.underAllocated', { remaining: weight(summary.value.remaining) })
-  return t('criteria.weights.balanced')
+    return t(`${messages.value}.underAllocated`, { remaining: weight(summary.value.remaining) })
+  return t(`${messages.value}.balanced`)
 })
 
 function setMode(mode) {
@@ -74,11 +84,7 @@ function isEditable(child) {
           :disabled="disabled"
           @click="setMode(option)"
         >
-          <i
-            class="fa-solid"
-            :class="option === 'equal' ? 'fa-scale-balanced' : 'fa-sliders'"
-            aria-hidden="true"
-          ></i>
+          <AppIcon :name="option === 'equal' ? 'scale' : 'gear'" />
           {{ t(`criteria.weights.${option}`) }}
         </button>
       </div>
@@ -117,7 +123,7 @@ function isEditable(child) {
             :value="child.weight"
             :disabled="!isEditable(child)"
             :aria-label="t('criteria.weights.weightForAria', { name: child.label })"
-            @input="updateWeight(child.id, $event.target.value)"
+            @input="updateWeight(child.id, westernizeInputDigits($event.target))"
           />
           <span v-if="child.active === false" class="weight-editor__inactive">{{
             t('criteria.weights.inactive')
@@ -131,10 +137,10 @@ function isEditable(child) {
     <p v-else class="weight-editor__empty">{{ t('criteria.weights.noChildren') }}</p>
 
     <p v-if="mode === 'equal'" class="weight-editor__note">
-      {{ t('criteria.weights.equalActive') }}
+      {{ t(`${messages}.equalActive`) }}
     </p>
     <p class="weight-editor__status" :class="`weight-editor__status--${status.tone}`" role="status">
-      <i class="fa-solid" :class="status.icon" aria-hidden="true"></i>
+      <AppIcon :name="status.icon" />
       {{ statusMessage }}
     </p>
   </section>

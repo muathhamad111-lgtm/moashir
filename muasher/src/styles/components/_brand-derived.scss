@@ -1,0 +1,114 @@
+@use '../mixins' as *;
+
+// Swatches and preview read the unsaved colours as `--draft-*`, set on `.branding-editor`.
+.brand-derived__list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-size: var(--fs-sm);
+}
+
+// One derived colour: its name and swatch, then its Auto/Custom state with the action that changes it.
+.brand-derived__row {
+  @include flex(row, center, space-between, var(--space-3));
+  flex-wrap: wrap;
+  padding-block: var(--space-3);
+  border-block-end: var(--border-width) solid var(--theme-border);
+
+  &:last-child {
+    border-block-end: 0;
+  }
+}
+
+.brand-derived__name {
+  @include flex(row, center, flex-start, var(--space-3));
+  flex: 1 1 14rem;
+  min-inline-size: 0;
+}
+
+.brand-derived__label {
+  @include flex(column, flex-start, flex-start, 0);
+  color: var(--theme-heading);
+  font-weight: var(--fw-body);
+}
+
+.brand-derived__hex,
+.brand-derived__auto {
+  font-size: var(--fs-xs);
+  font-weight: var(--fw-body);
+  color: var(--theme-text-muted);
+}
+
+.brand-derived__swatch {
+  display: inline-grid;
+  place-items: center;
+  flex-shrink: 0;
+  inline-size: var(--size-touch-target);
+  block-size: var(--size-touch-target);
+  border: var(--border-width) solid var(--theme-border-strong);
+  border-radius: var(--radius-md);
+  font-weight: var(--fw-body);
+
+  &[data-color='onPrimary'] {
+    background-color: var(--draft-primary);
+    color: var(--draft-on-primary);
+  }
+
+  &[data-color='primaryText'] {
+    background-color: var(--theme-bg);
+    color: var(--draft-primary-text);
+  }
+
+  &[data-color='primaryHover'] {
+    background-color: var(--draft-primary-hover);
+    color: var(--draft-on-primary);
+  }
+
+  &[data-color='primarySoft'] {
+    background-color: var(--draft-primary-tint);
+    color: var(--draft-primary-text);
+  }
+
+  &[data-color='onSecondary'] {
+    background-color: var(--draft-secondary);
+    color: var(--draft-on-secondary);
+  }
+}
+
+.brand-derived__use {
+  font-size: var(--fs-xs);
+  font-weight: var(--fw-body);
+  color: var(--theme-text-muted);
+}
+
+.brand-derived__state {
+  @include flex(column, flex-start, center, var(--space-2));
+}
+
+.brand-derived__actions {
+  @include flex(row, center, flex-start, var(--space-2));
+  flex-wrap: wrap;
+}
+
+.brand-derived__picker {
+  inline-size: var(--size-touch-target);
+  block-size: var(--size-touch-target);
+  padding: var(--space-1);
+  border: var(--border-width) solid var(--theme-input-border);
+  border-radius: var(--radius-md);
+  background-color: var(--theme-surface);
+  cursor: pointer;
+
+  &:focus-visible {
+    @include focus-ring;
+  }
+
+  &:disabled {
+    opacity: var(--opacity-disabled);
+    cursor: not-allowed;
+  }
+}
+
+.brand-derived__sr {
+  @include visually-hidden;
+}

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Services\Assessments;
 
+use App\Data\Assessments\DesiredScores;
 use App\Data\Assessments\RecordedScores;
 use App\Data\Assessments\ScoringTree;
 use App\Data\Assessments\SubmittedScores;
@@ -25,7 +26,7 @@ final readonly class SelfScoreRecorder
     public function record(User $scorer, Assessment $assessment, ScoringTree $tree, SubmittedScores $scores): RecordedScores
     {
         $sheet = $this->parser->parse($scores, $tree, $assessment->scale_kind);
-        $changes = $this->writer->replace($assessment, $tree, $sheet, $scorer, ScorerRole::Entity);
+        $changes = $this->writer->replace($assessment, $tree, new DesiredScores($sheet, $sheet), $scorer, ScorerRole::Entity);
 
         if (! $changes->isEmpty()) {
             $assessment->touch();

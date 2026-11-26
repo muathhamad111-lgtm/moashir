@@ -1,0 +1,49 @@
+@use '../mixins' as *;
+
+.brand-colors__hint {
+  margin: 0 0 var(--space-4);
+  font-size: var(--fs-sm);
+  color: var(--theme-text-muted);
+}
+
+.brand-colors__fields {
+  display: grid;
+  gap: var(--space-4);
+
+  @include respond-to('md') {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+.brand-colors__default {
+  margin-block-start: var(--space-3);
+}
+
+.brand-color-field {
+  @include flex(row, flex-start, flex-start, var(--space-3));
+}
+
+.brand-color-field__picker {
+  flex-shrink: 0;
+  inline-size: var(--size-touch-target);
+  block-size: var(--size-touch-target);
+  padding: var(--space-1);
+  border: var(--border-width) solid var(--theme-input-border);
+  border-radius: var(--btn-radius, var(--radius-md));
+  background-color: var(--theme-surface);
+  cursor: pointer;
+
+  &:focus-visible {
+    @include focus-ring;
+  }
+
+  &:disabled {
+    opacity: var(--opacity-disabled);
+    cursor: not-allowed;
+  }
+}
+
+.brand-color-field__input {
+  flex: 1;
+  min-inline-size: 0;
+}

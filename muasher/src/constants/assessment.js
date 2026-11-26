@@ -15,16 +15,6 @@ export const SCALE_KINDS = {
   RELATIVE: 'relative',
 }
 
-export const SCALE_MAX = {
-  [SCALE_KINDS.OF_10]: 10,
-  [SCALE_KINDS.RELATIVE]: 100,
-}
-
-export const SCALE_STEP = {
-  [SCALE_KINDS.OF_10]: 1,
-  [SCALE_KINDS.RELATIVE]: 5,
-}
-
 export const SCORE_LEVELS = {
   SUB: 'sub',
   POINT: 'point',
@@ -43,8 +33,14 @@ export const SELF_ASSESSMENT_CODES = {
 export const SELF_REQUEST_PREFIX = 'SLF'
 
 export const ASSESSMENT_NOTICE_ICONS = {
-  info: 'fa-solid fa-circle-info',
-  warning: 'fa-solid fa-triangle-exclamation',
-  danger: 'fa-solid fa-circle-exclamation',
-  frozen: 'fa-solid fa-snowflake',
+  info: 'info-circle',
+  warning: 'warning-triangle',
+  danger: 'warning-triangle',
+  frozen: 'snowflake',
 }
+
+export const ASSESSMENT_TABS = Object.freeze({
+  CURRENT: 'current',
+  HISTORY: 'history',
+  RESULTS: 'results',
+})

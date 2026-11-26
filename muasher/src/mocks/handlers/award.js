@@ -1,17 +1,22 @@
 import { http } from '../contract/http'
 import { envelope, noContent } from '../contract/responses'
 import { paginate } from '../contract/pagination'
-import { assessmentReject, assessmentRoute, readJson } from '../stores/assessments/assessmentRejection'
+import {
+  assessmentReject,
+  assessmentRoute,
+  readJson,
+} from '../stores/assessments/assessmentRejection'
 import { signedInActor } from '../stores/assessments/assessmentAccess'
 import { findAssessment } from '../stores/assessments/assessmentsStore'
 import { assessmentResource } from '../stores/assessments/selfSerializers'
 import { normalizeSearchText } from '../stores/searchIndex'
 import { runAccreditedSchedule } from '../stores/accredited/scheduler'
-import { findCycle, runningCycle } from '../stores/award/cycleStore'
+import { currentCycle, openCycles } from '../stores/award/cycleStore'
 import {
   authorizeAdvancedEntity,
   authorizeCreateCycle,
   authorizeDecideFiltering,
+  authorizeDecideFilteringInCycle,
   authorizeDeleteDraft,
   authorizeFilteringRequest,
   authorizeManageCycle,
@@ -20,31 +25,41 @@ import {
   authorizeViewCycle,
   authorizeViewFiltering,
 } from '../stores/award/cycleAccess'
-import { cycleDetailResource, cycleResource, publicCycleResource } from '../stores/award/cycleSerializers'
+import {
+  cycleDetailResource,
+  cycleResource,
+  publicCycleResource,
+} from '../stores/award/cycleSerializers'
 import { cycleDefaultsResource } from '../stores/award/cycleDefaults'
 import { cycleFiltersFrom, cycleStats, listedCycles } from '../stores/award/cycleQueries'
 import { createCycle, updateCycle } from '../stores/award/cycleEditing'
 import { listCandidates, syncInitialAssessors, syncMembers } from '../stores/award/cycleStaff'
-import { closeCycle, closeCycleSubmissions, openCycle, reopenCycle } from '../stores/award/cycleTransitions'
-import { disqualifyRequest, filteringDetail, filteringQueue, filteringRow, qualifyRequest } from '../stores/award/filtering'
-import { advancedCurrentResource, applyForAdvanced, deleteAdvancedDraft } from '../stores/award/advancedEntity'
+import {
+  closeCycle,
+  closeCycleSubmissions,
+  openCycle,
+  reopenCycle,
+} from '../stores/award/cycleTransitions'
+import {
+  bulkPreview,
+  disqualifyRequest,
+  filteringDetail,
+  filteringQueue,
+  filteringRow,
+  qualifyEligible,
+  qualifyRequest,
+} from '../stores/award/filtering'
+import {
+  advancedCurrentResource,
+  applyForAdvanced,
+  deleteAdvancedDraft,
+} from '../stores/award/advancedEntity'
+import { boundCycle, cycleRoute } from './awardRouting'
 
 const CYCLES = '/api/v1/award/cycles'
 const CYCLE = `${CYCLES}/:cycle`
 const FILTERING = `${CYCLE}/filtering/:assessment`
 const NUMERIC_ID = /^\d+$/
-
-function cycleRoute(resolve) {
-  const route = assessmentRoute(resolve)
-  return (info) => (NUMERIC_ID.test(info.params.cycle) && (!info.params.assessment || NUMERIC_ID.test(info.params.assessment)) ? route(info) : undefined)
-}
-
-function boundCycle(params) {
-  runAccreditedSchedule()
-  const cycle = findCycle(params.cycle)
-  if (!cycle) throw assessmentReject.notFound()
-  return cycle
-}
 
 function managedRoute(act) {
   return cycleRoute(async ({ params, request }) => {
@@ -70,8 +85,16 @@ export const awardHandlers = [
     `${CYCLES}/current`,
     assessmentRoute(() => {
       runAccreditedSchedule()
-      const cycle = runningCycle()
+      const cycle = currentCycle()
       return envelope(cycle ? publicCycleResource(cycle) : null)
+    }),
+  ),
+
+  http.get(
+    `${CYCLES}/open`,
+    assessmentRoute(() => {
+      runAccreditedSchedule()
+      return envelope(openCycles().map((cycle) => publicCycleResource(cycle)))
     }),
   ),
 
@@ -99,8 +122,14 @@ export const awardHandlers = [
       runAccreditedSchedule()
       const query = new URL(request.url).searchParams
       const filters = cycleFiltersFrom(query)
-      const { items, pagination } = paginate(listedCycles(user, filters, normalizeSearchText), query)
-      return envelope(items.map((cycle) => cycleResource(cycle, { withCounts: true })), { pagination, stats: cycleStats(user, filters, normalizeSearchText) })
+      const { items, pagination } = paginate(
+        listedCycles(user, filters, normalizeSearchText),
+        query,
+      )
+      return envelope(
+        items.map((cycle) => cycleResource(cycle, { withCounts: true })),
+        { pagination, stats: cycleStats(user, filters, normalizeSearchText) },
+      )
     }),
   ),
 
@@ -109,7 +138,11 @@ export const awardHandlers = [
     assessmentRoute(async ({ request }) => {
       const user = signedInActor()
       authorizeCreateCycle(user)
-      return envelope(cycleDetailResource(createCycle(user, await readJson(request)), user), {}, { status: 201 })
+      return envelope(
+        cycleDetailResource(createCycle(user, await readJson(request)), user),
+        {},
+        { status: 201 },
+      )
     }),
   ),
 
@@ -146,11 +179,25 @@ export const awardHandlers = [
       const user = signedInActor()
       const cycle = boundCycle(params)
       authorizeViewFiltering(user, cycle)
-      const { items, meta } = filteringQueue(cycle, new URL(request.url).searchParams, normalizeSearchText)
+      const { items, meta } = filteringQueue(
+        cycle,
+        new URL(request.url).searchParams,
+        normalizeSearchText,
+      )
       return envelope(items, meta)
     }),
   ),
 
+  // Before the detail route: `qualify-eligible` would otherwise bind as an assessment id.
+  http.get(
+    `${CYCLE}/filtering/qualify-eligible`,
+    cycleRoute(({ params }) => {
+      const user = signedInActor()
+      const cycle = boundCycle(params)
+      authorizeDecideFilteringInCycle(user, cycle)
+      return envelope(bulkPreview(user, cycle))
+    }),
+  ),
   http.get(
     FILTERING,
     cycleRoute(({ params }) => {
@@ -162,16 +209,26 @@ export const awardHandlers = [
     }),
   ),
 
+  http.post(
+    `${CYCLE}/filtering/qualify-eligible`,
+    cycleRoute(async ({ params, request }) => {
+      const user = signedInActor()
+      const cycle = boundCycle(params)
+      authorizeDecideFilteringInCycle(user, cycle)
+      return envelope(qualifyEligible(user, cycle, await readJson(request)))
+    }),
+  ),
   http.post(`${FILTERING}/qualify`, decisionRoute(qualifyRequest)),
   http.post(`${FILTERING}/disqualify`, decisionRoute(disqualifyRequest)),
 
   http.get(
     '/api/v1/assessments/advanced/current',
-    assessmentRoute(() => {
+    assessmentRoute(({ request }) => {
       const user = signedInActor()
       authorizeAdvancedEntity(user)
       runAccreditedSchedule()
-      return envelope(advancedCurrentResource(user))
+      const cycleId = new URL(request.url).searchParams.get('awardCycleId')
+      return envelope(advancedCurrentResource(user, cycleId))
     }),
   ),
 

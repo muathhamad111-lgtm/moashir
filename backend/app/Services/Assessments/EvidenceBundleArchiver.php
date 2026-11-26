@@ -5,13 +5,17 @@ declare(strict_types=1);
 namespace App\Services\Assessments;
 
 use App\Data\Files\GeneratedFile;
+use App\Data\Watermark\StampedFile;
+use App\Enums\Files\AccessIntent;
 use App\Enums\Files\StoredFilePurpose;
 use App\Models\Assessments\EvidenceBundle;
 use App\Models\Assessments\EvidenceFile;
 use App\Models\Files\StoredFile;
-use App\Services\Files\StoredFileDisk;
+use App\Models\Identity\User;
 use App\Services\Files\StoredFileWriter;
-use Illuminate\Support\Str;
+use App\Services\Watermark\FileStamper;
+use App\Services\Watermark\WatermarkWorkspace;
+use App\Services\Watermark\WatermarkWorkspaces;
 use RuntimeException;
 use ZipArchive;
 
@@ -19,21 +23,22 @@ final readonly class EvidenceBundleArchiver
 {
     private const string MIME_TYPE = 'application/zip';
 
-    public function __construct(private StoredFileDisk $disk, private StoredFileWriter $writer) {}
+    public function __construct(
+        private StoredFileWriter $writer,
+        private FileStamper $stamper,
+        private WatermarkWorkspaces $workspaces,
+    ) {}
 
     /**
      * @param  list<EvidenceFile>  $evidence
      */
     public function archive(EvidenceBundle $bundle, array $evidence): StoredFile
     {
-        $workspace = sys_get_temp_dir().'/moashir-bundle-'.Str::uuid()->toString();
-
-        if (! mkdir($workspace, 0700) && ! is_dir($workspace)) {
-            throw new RuntimeException('The bundle workspace could not be created.');
-        }
+        $requester = User::withTrashed()->findOrFail($bundle->requested_by_user_id);
+        $workspace = $this->workspaces->open();
 
         try {
-            $archive = $this->build($workspace, $evidence);
+            $archive = $this->build($workspace, $requester, $evidence);
 
             return $this->writer->storeGeneratedFromPath(new GeneratedFile(
                 StoredFilePurpose::EvidenceBundle,
@@ -43,16 +48,16 @@ final readonly class EvidenceBundleArchiver
                 self::MIME_TYPE,
             ), $archive, $bundle);
         } finally {
-            $this->clean($workspace);
+            $workspace->close();
         }
     }
 
     /**
      * @param  list<EvidenceFile>  $evidence
      */
-    private function build(string $workspace, array $evidence): string
+    private function build(WatermarkWorkspace $workspace, User $requester, array $evidence): string
     {
-        $path = $workspace.'/bundle.zip';
+        $path = $workspace->path('bundle.zip');
         $zip = new ZipArchive;
 
         if ($zip->open($path, ZipArchive::CREATE | ZipArchive::OVERWRITE) !== true) {
@@ -60,9 +65,9 @@ final readonly class EvidenceBundleArchiver
         }
 
         foreach ($evidence as $index => $file) {
-            $local = $workspace.'/'.$index;
-            $this->copyTo($file->storedFile, $local);
-            $zip->addFile($local, $this->entryNameOf($index, $file));
+            $local = $workspace->path((string) $index);
+            $stamped = $this->stampInto($requester, $file->storedFile, $local);
+            $zip->addFile($local, $this->entryNameOf($index, $file, $stamped->fileName));
         }
 
         if (! $zip->close()) {
@@ -72,37 +77,27 @@ final readonly class EvidenceBundleArchiver
         return $path;
     }
 
-    private function copyTo(StoredFile $file, string $local): void
+    private function stampInto(User $requester, StoredFile $file, string $local): StampedFile
     {
-        $source = $this->disk->readStream($file);
-        $target = fopen($local, 'wb');
+        $workspace = $this->workspaces->open();
 
         try {
-            if ($target === false || stream_copy_to_stream($source, $target) === false) {
-                throw new RuntimeException('An evidence file could not be copied into the bundle.');
+            $stamped = $this->stamper->stamp($requester, $file, AccessIntent::Download, $workspace);
+
+            if (! copy($stamped->path, $local)) {
+                throw new RuntimeException('A stamped evidence file could not be added to the bundle.');
             }
+
+            return $stamped;
         } finally {
-            fclose($source);
-
-            if (is_resource($target)) {
-                fclose($target);
-            }
+            $workspace->close();
         }
     }
 
-    private function entryNameOf(int $index, EvidenceFile $file): string
+    private function entryNameOf(int $index, EvidenceFile $file, string $fileName): string
     {
-        $name = preg_replace('/[\x00-\x1F\x7F\/\\\\:*?"<>|]+/u', '-', $file->storedFile->original_name) ?? 'file';
+        $name = preg_replace('/[\x00-\x1F\x7F\/\\\\:*?"<>|]+/u', '-', $fileName) ?? 'file';
 
-        return $file->sub_code.'/'.sprintf('%03d', $index + 1).'-'.$name;
-    }
-
-    private function clean(string $workspace): void
-    {
-        foreach (glob($workspace.'/*') ?: [] as $entry) {
-            unlink($entry);
-        }
-
-        rmdir($workspace);
+        return $file->ownerCode().'/'.sprintf('%03d', $index + 1).'-'.$name;
     }
 }

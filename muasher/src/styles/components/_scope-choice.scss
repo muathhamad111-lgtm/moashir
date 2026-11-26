@@ -12,7 +12,7 @@
 .scope-choice__legend {
   margin-block-end: var(--space-2);
   padding: 0;
-  font-weight: var(--fw-semibold);
+  font-weight: var(--fw-body);
   color: var(--theme-heading);
 }
 
@@ -76,7 +76,7 @@
 }
 
 .scope-choice__title {
-  font-weight: var(--fw-semibold);
+  font-weight: var(--fw-heading);
   color: var(--theme-heading);
 }
 
@@ -96,7 +96,7 @@
   color: var(--theme-text);
   font-size: var(--fs-sm);
 
-  i {
+  .app-icon {
     color: var(--color-info);
     margin-block-start: var(--space-1);
   }
@@ -105,4 +105,22 @@
 .scope-choice:disabled .scope-choice__option {
   cursor: not-allowed;
   opacity: var(--opacity-disabled);
+}
+
+// The open requests a scope reaches (publish review page): under the text on phones, at the end from md.
+.scope-choice__reach {
+  grid-column: 3;
+  justify-self: start;
+
+  @include respond-to('md') {
+    grid-column: 4;
+    grid-row: 1;
+    justify-self: end;
+  }
+}
+
+.scope-choice__option:has(.scope-choice__reach) {
+  @include respond-to('md') {
+    grid-template-columns: auto auto 1fr auto;
+  }
 }

@@ -28,7 +28,25 @@ function draftVersion(array $attributes = []): CriteriaVersion
     return CriteriaVersion::factory()->create($attributes);
 }
 
+/**
+ * Publishes a draft whose criteria were authored with the scale's scoring type, as the criteria writer does.
+ */
 function publishVersion(CriteriaVersion $version, ScaleKind $scale = ScaleKind::OutOfTen): CriteriaVersion
+{
+    $type = $scale->scoringType();
+    $mainIds = MainCriterion::query()->where('criteria_version_id', $version->id)->pluck('id');
+    $subIds = SubCriterion::query()->whereIn('main_criterion_id', $mainIds)->pluck('id');
+    MainCriterion::query()->whereKey($mainIds)->update(['default_scoring_type' => $type]);
+    SubCriterion::query()->whereKey($subIds)->update(['scoring_type' => $type, 'default_point_scoring_type' => $type]);
+    GuidingPoint::query()->whereIn('sub_criterion_id', $subIds)->update(['scoring_type' => $type]);
+
+    return publishAuthoredVersion($version, $scale);
+}
+
+/**
+ * Publishes a draft exactly as its criteria were authored, mixed scoring types included.
+ */
+function publishAuthoredVersion(CriteriaVersion $version, ScaleKind $scale = ScaleKind::OutOfTen): CriteriaVersion
 {
     $version->forceFill(['status' => CriteriaVersionStatus::Published, 'published_at' => Date::now(), 'scale_kind' => $scale])->save();
 

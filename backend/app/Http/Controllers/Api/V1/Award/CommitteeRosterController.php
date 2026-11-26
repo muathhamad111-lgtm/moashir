@@ -8,6 +8,7 @@ use App\Actions\Award\AppointCommitteeAssessor;
 use App\Actions\Award\ListCommitteeCandidates;
 use App\Actions\Award\ListCommitteeMembers;
 use App\Actions\Award\RemoveCommitteeAssessor;
+use App\Enums\Identity\Ability;
 use App\Http\Requests\Award\AppointCommitteeAssessorRequest;
 use App\Http\Requests\Award\CycleActionRequest;
 use App\Http\Requests\Award\SearchCommitteeCandidatesRequest;
@@ -23,9 +24,11 @@ use Illuminate\Http\Response;
 
 final class CommitteeRosterController
 {
-    public function index(AwardCycle $cycle, ListCommitteeMembers $members): JsonResponse
+    public function index(AwardCycle $cycle, #[CurrentUser] User $viewer, ListCommitteeMembers $members): JsonResponse
     {
-        return ApiResponse::data(CommitteeMemberResource::collection($members->handle($cycle))->resolve(request()));
+        $meta = ['can_manage' => $viewer->can(Ability::ManageCommitteeRoster->value, $cycle)];
+
+        return ApiResponse::data(CommitteeMemberResource::collection($members->handle($cycle))->resolve(request()), meta: $meta);
     }
 
     public function candidates(SearchCommitteeCandidatesRequest $request, AwardCycle $cycle, ListCommitteeCandidates $candidates): JsonResponse

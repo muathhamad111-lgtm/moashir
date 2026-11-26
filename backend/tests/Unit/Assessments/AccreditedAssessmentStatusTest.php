@@ -52,3 +52,13 @@ it('describes the accredited states used by the queue, the SLA and the entity fo
         ->and(Status::Completed->exposesResult())->toBeTrue()
         ->and(Status::UnderReview->exposesResult())->toBeFalse();
 });
+
+it('keeps the paid drafts in a preparing stage apart from the assignment queue', function (): void {
+    expect(AssessmentPath::Accredited->preparingStateValues())->toBe(['draft'])
+        ->and(AssessmentPath::Advanced->preparingStateValues())->toBe(['draft'])
+        ->and(AssessmentPath::SelfAssessment->preparingStateValues())->toBe([])
+        ->and(array_intersect(AssessmentPath::Accredited->preparingStateValues(), AssessmentPath::Accredited->queueStateValues()))->toBe([])
+        ->and(Status::Draft->isPreparedByEntity())->toBeTrue()
+        ->and(Status::AwaitingPayment->isPreparedByEntity())->toBeFalse()
+        ->and(Status::NeedsCompletion->isPreparedByEntity())->toBeFalse();
+});

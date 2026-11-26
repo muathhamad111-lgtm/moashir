@@ -23,6 +23,7 @@ import {
   CRITERIA_NODE_TYPES as NODE,
   CRITERIA_REASON_MIN_LENGTH,
 } from '@/constants/criteria'
+import AppIcon from '@/components/ui/AppIcon.vue'
 
 const props = defineProps({
   modelValue: { type: Boolean, required: true },
@@ -98,7 +99,9 @@ watch(
 const title = computed(() => {
   if (type.value === VERSION_TARGET) return t('criteria.correction.versionTitle')
   const node = props.target?.node
-  return t('criteria.correction.title', { name: node?.code ?? localized(node?.name) })
+  return t('criteria.correction.title', {
+    name: localized(node?.name) || localized(node?.description),
+  })
 })
 
 const primaryLabels = computed(() => {
@@ -129,7 +132,7 @@ const [reason] = form.defineField('reason')
   >
     <div class="criteria-form">
       <p class="criteria-form__note criteria-form__note--emphasis" role="note">
-        <i class="fa-solid fa-spell-check" aria-hidden="true"></i>
+        <AppIcon name="pen-line" />
         <span>{{ t('criteria.correction.note', { number: version.versionNumber }) }}</span>
       </p>
       <div class="criteria-form__grid">

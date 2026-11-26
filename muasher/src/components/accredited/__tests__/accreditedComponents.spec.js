@@ -10,6 +10,7 @@ import AccreditedCurrentCard from '../AccreditedCurrentCard.vue'
 import AccreditedFeedbackList from '../AccreditedFeedbackList.vue'
 import AccreditedCompleteness from '../AccreditedCompleteness.vue'
 import CvEntryField from '../CvEntryField.vue'
+import { slotGroupsOf } from '@/utils/accredited/evidenceRules'
 
 function render(component, props, locale = 'en') {
   const globals = createTestGlobals({ locale })
@@ -17,13 +18,39 @@ function render(component, props, locale = 'en') {
   return mount(component, { props, global: { plugins: globals.plugins } })
 }
 
-const FILE = { id: 'e1', subCriterionId: 101, code: 'M1.1', attachmentKey: 'sub_101_1', fileName: 'vision.pdf', mimeType: 'application/pdf', sizeBytes: 204800, scanStatus: 'clean', uploadedAt: '2026-10-01T08:00:00Z' }
+const FILE = {
+  id: 'e1',
+  subCriterionId: 101,
+  code: 'M1.1',
+  attachmentKey: 'sub_101_1',
+  fileName: 'vision.pdf',
+  mimeType: 'application/pdf',
+  sizeBytes: 204800,
+  scanStatus: 'clean',
+  uploadedAt: '2026-10-01T08:00:00Z',
+}
 
 const SUB = {
   id: 101,
   code: 'M1.1',
-  attachments: [{ key: 'sub_101_1', name: { ar: 'وثيقة الرؤية', en: 'Vision document' }, required: true }],
-  points: [{ id: 1001, code: 'M1.1.1', attachments: [{ key: 'point_1001_1', name: { ar: 'نشر الرؤية', en: 'Vision publication' }, required: true }] }],
+  name: { ar: 'التوجه الاستراتيجي', en: 'Strategic direction' },
+  attachments: [
+    { key: 'sub_101_1', name: { ar: 'وثيقة الرؤية', en: 'Vision document' }, required: true },
+  ],
+  points: [
+    {
+      id: 1001,
+      code: 'M1.1.1',
+      description: { ar: 'نشر الرؤية للعاملين', en: 'Vision shared with staff' },
+      attachments: [
+        {
+          key: 'point_1001_1',
+          name: { ar: 'نشر الرؤية', en: 'Vision publication' },
+          required: true,
+        },
+      ],
+    },
+  ],
 }
 
 const UPLOADS = { uploading: {}, removing: {}, errors: {}, downloading: {} }
@@ -31,37 +58,97 @@ const LIMITS = { maxFileMb: 20, maxFilesPerSub: 2, allowedTypes: ['pdf', 'png'] 
 
 describe('evidence components', () => {
   it('labels every scan state with text and an icon, never colour alone', () => {
-    const labels = ['pending', 'clean', 'infected', 'failed'].map((status) => render(ScanStatusBadge, { status }).text())
+    const labels = ['pending', 'clean', 'infected', 'failed'].map((status) =>
+      render(ScanStatusBadge, { status }).text(),
+    )
     expect(labels).toEqual(['Being scanned', 'Clean', 'Refused', 'Scan failed'])
-    expect(render(ScanStatusBadge, { status: 'infected' }, 'ar').find('i').exists()).toBe(true)
+    expect(
+      render(ScanStatusBadge, { status: 'infected' }, 'ar').find('svg.app-icon').exists(),
+    ).toBe(true)
   })
 
   it('offers the download of a clean file and the replacement of a refused one', async () => {
     const clean = render(EvidenceFileItem, { file: FILE, editable: true })
     expect(clean.find('[aria-label="Download vision.pdf"]').exists()).toBe(true)
     expect(clean.find('.evidence-file__refusal').exists()).toBe(false)
-    const refused = render(EvidenceFileItem, { file: { ...FILE, scanStatus: 'infected' }, editable: true })
+    const refused = render(EvidenceFileItem, {
+      file: { ...FILE, scanStatus: 'infected' },
+      editable: true,
+    })
     expect(refused.find('[aria-label="Download vision.pdf"]').exists()).toBe(false)
     expect(refused.find('.evidence-file__refusal').text()).toContain('Replace it')
     const replacement = new File(['%PDF'], 'vision-v2.pdf')
     const input = refused.find('.evidence-upload__input')
     Object.defineProperty(input.element, 'files', { value: [replacement] })
     await input.trigger('change')
-    expect(refused.emitted('replace')[0][0]).toEqual({ file: { ...FILE, scanStatus: 'infected' }, replacement })
+    expect(refused.emitted('replace')[0][0]).toEqual({
+      file: { ...FILE, scanStatus: 'infected' },
+      replacement,
+    })
     const readOnly = render(EvidenceFileItem, { file: FILE, editable: false })
     expect(readOnly.find('[aria-label="Remove vision.pdf"]').exists()).toBe(false)
   })
 
   it('shows sub-criterion and guiding-point slots with required and provided states and the per-sub limit', () => {
-    const wrapper = render(EvidenceSlotGroup, { sub: SUB, evidence: [FILE, { ...FILE, id: 'e2', attachmentKey: null, scanStatus: 'pending' }], editable: true, limits: LIMITS, uploads: UPLOADS })
+    const wrapper = render(EvidenceSlotGroup, {
+      owner: { level: 'sub', id: 101 },
+      label: 'Strategic direction',
+      groups: slotGroupsOf(SUB),
+      evidence: [FILE, { ...FILE, id: 'e2', attachmentKey: null, scanStatus: 'pending' }],
+      editable: true,
+      limits: LIMITS,
+      uploads: UPLOADS,
+    })
     const slots = wrapper.findAll('.evidence-slots__slot')
     expect(slots).toHaveLength(3)
     expect(slots[0].text()).toContain('Provided')
-    expect(slots[1].text()).toContain('M1.1.1')
+    expect(wrapper.find('.evidence-slots__indicator').text()).toBe(
+      'Indicator attachments: Vision shared with staff',
+    )
+    expect(slots[1].text()).toContain('Vision publication')
     expect(slots[1].text()).toContain('Required')
+    expect(wrapper.text()).not.toContain('M1.1')
+    expect(wrapper.find('.evidence-slots').attributes('aria-label')).toBe(
+      'Evidence of Strategic direction',
+    )
     expect(slots[2].text()).toContain('Optional')
     expect(wrapper.find('.evidence-slots__full').exists()).toBe(true)
-    expect(wrapper.findAll('.evidence-upload button').every((button) => button.attributes('disabled') !== undefined)).toBe(true)
+    expect(
+      wrapper
+        .findAll('.evidence-upload button')
+        .every((button) => button.attributes('disabled') !== undefined),
+    ).toBe(true)
+  })
+
+  it('shows a main criterion attachment with its guidance, its own types and its file limit', async () => {
+    const plan = {
+      key: 'main_1_1',
+      name: { ar: 'الخطة الاستراتيجية', en: 'Strategic plan' },
+      guidance: { ar: 'الخطة المعتمدة', en: 'The approved plan' },
+      required: true,
+      allowedTypes: ['pdf'],
+      maxFiles: 1,
+    }
+    const owner = { level: 'main', id: 1 }
+    const wrapper = render(EvidenceSlotGroup, {
+      owner,
+      label: 'Leadership',
+      groups: [{ key: 'own', point: null, slots: [plan] }],
+      evidence: [{ ...FILE, level: 'main', mainCriterionId: 1, attachmentKey: 'main_1_1' }],
+      editable: true,
+      limits: { ...LIMITS, maxFilesPerSub: 10 },
+      uploads: UPLOADS,
+    })
+    const slots = wrapper.findAll('.evidence-slots__slot')
+    expect(slots).toHaveLength(1)
+    expect(wrapper.find('.evidence-slots__limits').text()).toContain('for this main criterion')
+    expect(slots[0].find('.evidence-slots__guidance').text()).toBe('The approved plan')
+    expect(slots[0].find('.evidence-slots__rule').text()).toBe(
+      'Accepted types: pdf. Files: up to 1.',
+    )
+    expect(slots[0].find('.evidence-slots__full').text()).toContain('maximum of 1')
+    expect(slots[0].find('.evidence-upload button').attributes('disabled')).toBeDefined()
+    expect(slots[0].find('.evidence-upload input').attributes('accept')).toBe('.pdf')
   })
 })
 
@@ -70,7 +157,15 @@ describe('completion, current request and result components', () => {
     id: 7,
     status: 'expired-continued',
     notes: 'يرجى إرفاق القوائم المالية المدققة.',
-    items: [{ subCriterionId: 402, code: 'M4.2', kind: 'evidence', note: 'القوائم المدققة لعام 2025' }],
+    items: [
+      {
+        subCriterionId: 402,
+        code: 'M4.2',
+        name: { ar: 'الاستدامة المالية', en: 'Financial sustainability' },
+        kind: 'evidence',
+        note: 'القوائم المدققة لعام 2025',
+      },
+    ],
     deadlineAt: '2026-11-12T20:59:00Z',
     expiryOutcome: 'decline',
     requestedAt: '2026-10-28T09:00:00Z',
@@ -81,7 +176,8 @@ describe('completion, current request and result components', () => {
     const wrapper = render(CompletionRequestCard, { request: REQUEST, showStatus: true })
     expect(wrapper.text()).toContain('The request is closed as incomplete')
     expect(wrapper.text()).toContain('Expired, review continued')
-    expect(wrapper.text()).toContain('M4.2')
+    expect(wrapper.find('.completion-card__sub').text()).toBe('Financial sustainability')
+    expect(wrapper.text()).not.toContain('M4.2')
     expect(wrapper.find('.date-stamp__hijri').text()).toMatch(/1448/)
     expect(wrapper.text()).not.toMatch(/[\u0660-\u0669]/)
   })
@@ -89,7 +185,12 @@ describe('completion, current request and result components', () => {
   it('shows the order in progress, the active request and explains a declined request', () => {
     const wrapper = render(AccreditedCurrentCard, {
       current: {
-        awaitingPayment: { paymentId: '3f0c9a52-6d1e-4b7a-9c21-5a1e00000011', reference: 'PAY-2026-000021', status: 'created', expiresAt: '2026-11-01T10:30:00Z' },
+        awaitingPayment: {
+          paymentId: '3f0c9a52-6d1e-4b7a-9c21-5a1e00000011',
+          reference: 'PAY-2026-000021',
+          status: 'created',
+          expiresAt: '2026-11-01T10:30:00Z',
+        },
         active: null,
         latestClosed: { id: 9107, number: 'ACC-2026-000007', status: 'declined' },
       },
@@ -97,16 +198,39 @@ describe('completion, current request and result components', () => {
     expect(wrapper.text()).toContain('PAY-2026-000021')
     expect(wrapper.text()).toContain('Closed as incomplete')
     expect(wrapper.text()).toContain('not provided before the deadline')
-    expect(wrapper.findAll('a').map((link) => link.attributes('href'))).toEqual(['/payments/3f0c9a52-6d1e-4b7a-9c21-5a1e00000011'])
+    expect(wrapper.findAll('a').map((link) => link.attributes('href'))).toEqual([
+      '/payments/3f0c9a52-6d1e-4b7a-9c21-5a1e00000011',
+    ])
   })
 
   it('lists the written feedback per sub-criterion and says when none was written', () => {
     const wrapper = render(AccreditedFeedbackList, {
       feedback: [
-        { subId: 101, code: 'M1.1', name: { ar: 'التوجه الاستراتيجي', en: 'Strategic direction' }, percent: '81.67', strengths: 'رؤية واضحة', improvementPoints: null, notes: null },
-        { subId: 102, code: 'M1.2', name: { ar: 'الحوكمة', en: 'Governance' }, percent: '70.00', strengths: null, improvementPoints: null, notes: null },
+        {
+          subId: 101,
+          code: 'M1.1',
+          name: { ar: 'التوجه الاستراتيجي', en: 'Strategic direction' },
+          percent: '81.67',
+          strengths: 'رؤية واضحة',
+          improvementPoints: null,
+          notes: null,
+        },
+        {
+          subId: 102,
+          code: 'M1.2',
+          name: { ar: 'الحوكمة', en: 'Governance' },
+          percent: '70.00',
+          strengths: null,
+          improvementPoints: null,
+          notes: null,
+        },
       ],
     })
+    expect(wrapper.findAll('.accredited-feedback__sub').map((title) => title.text())).toEqual([
+      'Strategic direction',
+      'Governance',
+    ])
+    expect(wrapper.text()).not.toContain('M1.')
     expect(wrapper.findAll('.accredited-feedback__field')).toHaveLength(1)
     expect(wrapper.find('.accredited-feedback__field--strengths').text()).toContain('Strengths')
     expect(wrapper.find('.accredited-feedback__empty').exists()).toBe(true)
@@ -114,18 +238,82 @@ describe('completion, current request and result components', () => {
 
   it('lists the missing items from the server and reveals the sub-criterion', async () => {
     const wrapper = render(AccreditedCompleteness, {
-      missing: { missingCv: [{ subCriterionId: 101, code: 'M1.1' }], missingAttachments: [{ subCriterionId: 101, code: 'M1.1', attachmentKey: 'point_1001_1' }] },
-      criteria: { mains: [{ subs: [SUB] }] },
+      missing: {
+        missingCv: [{ subCriterionId: 101, code: 'M1.1' }],
+        missingAttachments: [{ subCriterionId: 101, code: 'M1.1', attachmentKey: 'point_1001_1' }],
+        missingMainAttachments: [],
+      },
+      criteria: { mains: [{ id: 1, subs: [SUB] }] },
     })
     expect(wrapper.text()).toContain('2 items are missing')
     expect(wrapper.text()).toContain('Attachment: Vision publication')
+    expect(wrapper.findAll('.accredited-completeness__sub').map((name) => name.text())).toEqual([
+      'Strategic direction',
+      'Strategic direction',
+    ])
+    expect(wrapper.text()).not.toContain('M1.1')
     await wrapper.find('.accredited-completeness__link').trigger('click')
     expect(wrapper.emitted('reveal')[0]).toEqual([101])
   })
 
+  it('lists a missing main criterion attachment and reveals the main criterion', async () => {
+    const plan = { key: 'main_1_1', name: { ar: 'الخطة', en: 'Strategic plan' }, required: true }
+    const wrapper = render(AccreditedCompleteness, {
+      missing: {
+        missingCv: [],
+        missingAttachments: [],
+        missingMainAttachments: [{ mainCriterionId: 1, code: 'M1', attachmentKey: 'main_1_1' }],
+      },
+      criteria: {
+        mains: [
+          { id: 1, name: { ar: 'القيادة', en: 'Leadership' }, attachments: [plan], subs: [] },
+        ],
+      },
+    })
+    expect(wrapper.text()).toContain('Main criterion attachment: Strategic plan')
+    expect(wrapper.find('.accredited-completeness__sub').text()).toBe('Leadership')
+    await wrapper.find('.accredited-completeness__link').trigger('click')
+    expect(wrapper.emitted('reveal-main')[0]).toEqual([1])
+  })
+
   it('flags a missing CV entry only while the draft is empty', () => {
-    expect(render(CvEntryField, { subId: 802, code: 'M8.2', modelValue: '', editable: true, missing: true }).find('.field__error').exists()).toBe(true)
-    expect(render(CvEntryField, { subId: 802, code: 'M8.2', modelValue: 'نص', editable: true, missing: true }).find('.field__error').exists()).toBe(false)
-    expect(render(CvEntryField, { subId: 802, code: 'M8.2', modelValue: '', editable: false, missing: true }).find('textarea').attributes('disabled')).toBeDefined()
+    expect(
+      render(CvEntryField, {
+        subId: 802,
+        name: 'Volunteering',
+        modelValue: '',
+        editable: true,
+        missing: true,
+      })
+        .find('.field__error')
+        .exists(),
+    ).toBe(true)
+    expect(
+      render(CvEntryField, { subId: 802, name: 'Volunteering', editable: true })
+        .find('label')
+        .text(),
+    ).toContain('CV entry of Volunteering')
+    expect(
+      render(CvEntryField, {
+        subId: 802,
+        name: 'Volunteering',
+        modelValue: 'نص',
+        editable: true,
+        missing: true,
+      })
+        .find('.field__error')
+        .exists(),
+    ).toBe(false)
+    expect(
+      render(CvEntryField, {
+        subId: 802,
+        name: 'Volunteering',
+        modelValue: '',
+        editable: false,
+        missing: true,
+      })
+        .find('textarea')
+        .attributes('disabled'),
+    ).toBeDefined()
   })
 })

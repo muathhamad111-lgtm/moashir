@@ -42,6 +42,21 @@ final readonly class LocalizedText implements JsonSerializable
     }
 
     /**
+     * Joins the translations of the given keys into one list per locale.
+     *
+     * @param  non-empty-list<string>  $keys
+     */
+    public static function listOf(array $keys): self
+    {
+        return new self(self::joinedIn($keys, 'ar'), self::joinedIn($keys, 'en'));
+    }
+
+    public static function fromChoice(string $key, int $count): self
+    {
+        return new self(trans_choice($key, $count, [], 'ar'), trans_choice($key, $count, [], 'en'));
+    }
+
+    /**
      * @return array{ar: string, en: string}
      */
     public function toArray(): array
@@ -65,6 +80,16 @@ final readonly class LocalizedText implements JsonSerializable
     public function equals(self $other): bool
     {
         return $this->ar === $other->ar && $this->en === $other->en;
+    }
+
+    /**
+     * @param  list<string>  $keys
+     */
+    private static function joinedIn(array $keys, string $locale): string
+    {
+        $items = array_map(static fn (string $key): string => ScalarValue::string(__($key, [], $locale)), $keys);
+
+        return implode(ScalarValue::string(__('notifications.list_separator', [], $locale)), $items);
     }
 
     /**

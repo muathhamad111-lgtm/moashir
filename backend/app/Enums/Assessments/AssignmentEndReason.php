@@ -11,4 +11,5 @@ enum AssignmentEndReason: string
     case ForcedTransition = 'forced_transition';
     case DeclinedIncomplete = 'declined_incomplete';
     case Withdrawn = 'withdrawn';
+    case AssessorUnavailable = 'assessor_unavailable';
 }

@@ -9,12 +9,14 @@ use App\Enums\Criteria\CriteriaNodeType;
 
 final readonly class CriteriaChange
 {
-    public const array SCORE_AFFECTING_FIELDS = ['weight', 'evaluation_type', 'active'];
+    public const array SCORE_AFFECTING_FIELDS = ['weight', 'evaluation_type', 'scoring_type', 'active'];
 
     /**
      * @param  list<string>  $fields
      * @param  array<string, mixed>  $before
      * @param  array<string, mixed>  $after
+     * @param  bool  $scored  false for an indicator of a directly evaluated sub-criterion: it is descriptive, so changing it
+     *                        never changes a score
      */
     public function __construct(
         public CriteriaNodeType $nodeType,
@@ -25,10 +27,15 @@ final readonly class CriteriaChange
         public array $fields = [],
         public array $before = [],
         public array $after = [],
+        public bool $scored = true,
     ) {}
 
     public function isScoreAffecting(): bool
     {
+        if (! $this->scored) {
+            return false;
+        }
+
         return match ($this->change) {
             CriteriaChangeType::Added, CriteriaChangeType::Removed => true,
             CriteriaChangeType::Modified => array_intersect($this->fields, self::SCORE_AFFECTING_FIELDS) !== [],

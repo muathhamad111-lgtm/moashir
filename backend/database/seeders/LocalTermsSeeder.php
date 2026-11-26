@@ -36,7 +36,7 @@ final class LocalTermsSeeder extends Seeder
             return;
         }
 
-        foreach (TermsKind::cases() as $kind) {
+        foreach (TermsKind::legal() as $kind) {
             if (TermsVersion::query()->current()->where('kind', $kind->value)->exists()) {
                 continue;
             }

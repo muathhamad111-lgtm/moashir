@@ -31,12 +31,13 @@ enum AdvancedAssessmentStatus: string implements ReviewedAssessmentState
     case QualifiedForNational = 'qualified_for_national';
     case NationalWinner = 'national_winner';
     case NationalNonWinner = 'national_non_winner';
+    case Refunded = 'refunded';
 
     public const string ENTITY_PLACEHOLDER = 'under_review';
 
     private const array TERMINAL = [
         self::RejectedConditions, self::Expired, self::DeclinedIncomplete, self::Withdrawn, self::NotQualified,
-        self::NonWinner, self::NationalWinner, self::NationalNonWinner,
+        self::NonWinner, self::NationalWinner, self::NationalNonWinner, self::Refunded,
     ];
 
     public function isOpen(): bool
@@ -59,6 +60,11 @@ enum AdvancedAssessmentStatus: string implements ReviewedAssessmentState
         return ! in_array($this, [self::RejectedConditions, self::Draft, self::Expired], true);
     }
 
+    public function isPreparedByEntity(): bool
+    {
+        return $this === self::Draft;
+    }
+
     public function runsReviewClock(): bool
     {
         return $this === self::Assigned || $this === self::UnderInitialAssessment;
@@ -74,9 +80,28 @@ enum AdvancedAssessmentStatus: string implements ReviewedAssessmentState
         return $this === self::Assigned || $this === self::UnderInitialAssessment;
     }
 
+    /**
+     * Operator decision 2026-11-23 («السماح في المسارين»): a request the entity is completing may change assessor
+     * too; the resubmission then resumes with the new one.
+     */
+    public function acceptsReassignment(): bool
+    {
+        return $this->hasAssessor() || $this === self::NeedsCompletion;
+    }
+
+    public function acceptsCompletionReturn(): bool
+    {
+        return $this === self::AwaitingReviewAssignment || $this->hasAssessor();
+    }
+
     public function isWithdrawable(): bool
     {
         return $this->isInRequestQueue() && $this->isOpen() && ! $this->isResult();
+    }
+
+    public function isRefundable(): bool
+    {
+        return $this === self::Draft || $this->isWithdrawable();
     }
 
     public function isQualified(): bool
@@ -104,6 +129,20 @@ enum AdvancedAssessmentStatus: string implements ReviewedAssessmentState
         return $this->isInFiltering();
     }
 
+    public function isInInitialReview(): bool
+    {
+        return in_array($this, [self::AwaitingReviewAssignment, self::Assigned, self::UnderInitialAssessment], true);
+    }
+
+    /**
+     * The owning entity reads "under review" from submission until the announcement. Needs-completion and the
+     * closures it must know about (declined, withdrawn, refunded) stay visible, since they ask or tell it something.
+     */
+    public function isHiddenFromOwnerUntilAnnouncement(): bool
+    {
+        return $this->isInInitialReview() || $this->isHiddenFromEntityUntilAnnouncement();
+    }
+
     public function precedesSecretaryReview(): bool
     {
         return in_array($this, [
@@ -126,6 +165,14 @@ enum AdvancedAssessmentStatus: string implements ReviewedAssessmentState
     public static function filteringVisibleStates(): array
     {
         return array_values(array_filter(self::cases(), static fn (self $status): bool => $status->isInFiltering()));
+    }
+
+    /**
+     * @return list<self>
+     */
+    public static function ownerHiddenStates(): array
+    {
+        return array_values(array_filter(self::cases(), static fn (self $status): bool => $status->isHiddenFromOwnerUntilAnnouncement()));
     }
 
     /**
@@ -181,12 +228,22 @@ enum AdvancedAssessmentStatus: string implements ReviewedAssessmentState
      */
     private function nextStates(): array
     {
+        $states = $this->forwardStates();
+
+        return $this->isRefundable() ? [...$states, self::Refunded] : $states;
+    }
+
+    /**
+     * @return list<self>
+     */
+    private function forwardStates(): array
+    {
         return match ($this) {
             self::Draft => [self::Draft, self::AwaitingReviewAssignment, self::Expired],
             self::AwaitingReviewAssignment => [self::NeedsCompletion, self::Assigned, self::Withdrawn],
-            self::NeedsCompletion => [self::NeedsCompletion, self::AwaitingReviewAssignment, self::DeclinedIncomplete, self::Withdrawn],
-            self::Assigned => [self::Assigned, self::UnderInitialAssessment, self::Withdrawn],
-            self::UnderInitialAssessment => [self::UnderInitialAssessment, self::AwaitingFiltering, self::Withdrawn],
+            self::NeedsCompletion => [self::NeedsCompletion, self::AwaitingReviewAssignment, self::Assigned, self::UnderInitialAssessment, self::DeclinedIncomplete, self::Withdrawn],
+            self::Assigned => [self::Assigned, self::NeedsCompletion, self::UnderInitialAssessment, self::Withdrawn],
+            self::UnderInitialAssessment => [self::UnderInitialAssessment, self::NeedsCompletion, self::AwaitingFiltering, self::Withdrawn],
             self::AwaitingFiltering => [self::QualifiedForCommittee, self::NotQualified, self::Withdrawn],
             self::QualifiedForCommittee => [self::UnderCommitteeAssessment, self::Withdrawn],
             self::UnderCommitteeAssessment => [self::AwaitingSecretaryApproval, self::Withdrawn],
@@ -197,7 +254,7 @@ enum AdvancedAssessmentStatus: string implements ReviewedAssessmentState
             self::RegionalWinner => [self::QualifiedForNational],
             self::QualifiedForNational => [self::NationalWinner, self::NationalNonWinner],
             self::RejectedConditions, self::Expired, self::DeclinedIncomplete, self::Withdrawn, self::NotQualified,
-            self::NonWinner, self::NationalWinner, self::NationalNonWinner => [],
+            self::NonWinner, self::NationalWinner, self::NationalNonWinner, self::Refunded => [],
         };
     }
 }

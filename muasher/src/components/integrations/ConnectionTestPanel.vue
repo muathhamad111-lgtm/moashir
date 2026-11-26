@@ -18,7 +18,10 @@ const { t } = useI18n()
 const { state, result, failure, execute } = useProviderAction(() => props.run(), {
   onSettled: () => emit('settled', result.value ?? failure.value?.result ?? null),
 })
-const shownResult = computed(() => (state.value === PROVIDER_ACTION_STATES.SUCCESS ? result.value : failure.value?.result) ?? null)
+const shownResult = computed(
+  () =>
+    (state.value === PROVIDER_ACTION_STATES.SUCCESS ? result.value : failure.value?.result) ?? null,
+)
 </script>
 
 <template>
@@ -26,7 +29,7 @@ const shownResult = computed(() => (state.value === PROVIDER_ACTION_STATES.SUCCE
     <div class="connection-test__actions">
       <BaseButton
         variant="secondary"
-        icon="fa-solid fa-plug-circle-check"
+        icon="link"
         :loading="state === PROVIDER_ACTION_STATES.PENDING"
         :disabled="disabled"
         @click="execute"

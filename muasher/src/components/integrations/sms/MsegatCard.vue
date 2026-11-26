@@ -27,13 +27,35 @@ const runTest = () => smsIntegrationService.testConnection(SMS_PROVIDERS.MSEGAT)
 </script>
 
 <template>
-  <IntegrationCard :title="t('integrations.providers.msegat')" :description="t('integrations.sms.msegat.description')" :status="status">
+  <IntegrationCard
+    :title="t('integrations.providers.msegat')"
+    :description="t('integrations.sms.msegat.description')"
+    :status="status"
+  >
     <div class="integration-form__grid">
-      <FieldInput name="providers.msegat.username" :label="t('integrations.sms.msegat.username')" input-dir="ltr" autocomplete="off" />
-      <FieldInput name="providers.msegat.senderName" :label="t('integrations.sms.fields.senderName')" :hint="t('integrations.sms.msegat.senderHint')" input-dir="ltr" autocomplete="off" />
+      <FieldInput
+        name="providers.msegat.username"
+        :label="t('integrations.sms.msegat.username')"
+        input-dir="ltr"
+        autocomplete="off"
+      />
+      <FieldInput
+        name="providers.msegat.senderName"
+        :label="t('integrations.sms.fields.senderName')"
+        :hint="t('integrations.sms.msegat.senderHint')"
+        input-dir="ltr"
+        autocomplete="off"
+      />
     </div>
-    <FieldSecret name="providers.msegat.apiKey" :meta="config.apiKey" :label="t('integrations.sms.msegat.apiKey')" />
-    <FieldCheckbox name="providers.msegat.templateRestricted" :label="t('integrations.sms.msegat.templateRestricted')" />
+    <FieldSecret
+      name="providers.msegat.apiKey"
+      :meta="config.apiKey"
+      :label="t('integrations.sms.msegat.apiKey')"
+    />
+    <FieldCheckbox
+      name="providers.msegat.templateRestricted"
+      :label="t('integrations.sms.msegat.templateRestricted')"
+    />
     <p class="field__hint">{{ t('integrations.sms.msegat.templateRestrictedHint') }}</p>
     <MsegatTemplatesList
       :action="templates"
@@ -42,7 +64,15 @@ const runTest = () => smsIntegrationService.testConnection(SMS_PROVIDERS.MSEGAT)
       :loaded-at="config.approvedTemplatesLoadedAt"
       :disabled="!keyStored"
     />
-    <ProviderActionFeedback v-if="templates.state.value === PROVIDER_ACTION_STATES.FAILED" :failure="templates.failure.value" />
-    <ConnectionTestPanel :run="runTest" :disabled="!config.configured" :disabled-hint="t('integrations.feedback.saveDetailsFirst')" @settled="emit('tested')" />
+    <ProviderActionFeedback
+      v-if="templates.state.value === PROVIDER_ACTION_STATES.FAILED"
+      :failure="templates.failure.value"
+    />
+    <ConnectionTestPanel
+      :run="runTest"
+      :disabled="!config.configured"
+      :disabled-hint="t('integrations.feedback.saveDetailsFirst')"
+      @settled="emit('tested')"
+    />
   </IntegrationCard>
 </template>

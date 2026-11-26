@@ -6,24 +6,24 @@ import { createTestGlobals } from '@/test-utils'
 
 const kpi = {
   id: 1,
+  slug: 'participating-associations',
   name: { ar: 'الجمعيات المشاركة', en: 'Participating associations' },
-  value: 486,
-  target: 700,
-  baseline: 320,
+  value: '486',
+  target: '700',
+  baseline: '320',
   unit: { ar: 'جمعية', en: 'associations' },
-  description: { ar: 'وصف عربي', en: 'English description' },
-  category: 'beneficiaries',
+  shortDescription: { ar: 'وصف عربي', en: 'English description' },
+  category: { id: 3, key: 'beneficiaries', name: { ar: 'المستفيدون', en: 'Beneficiaries' } },
   status: 'good',
-  lastUpdate: '2025-01-15',
-  icon: 'fa-solid fa-people-group',
-  color: 'primary',
+  lastUpdate: '2026-06-30T09:00:00Z',
+  icon: 'users-two',
   cardColor: 'primary',
+  badgeColor: 'info',
   order: 1,
-  published: true,
 }
 
 function localizedFor(locale) {
-  return (content) => (typeof content === 'string' ? content : content[locale] || content.ar)
+  return (content) => (content ? content[locale] || content.ar : '')
 }
 
 function mountCard(locale = 'en', overrides = {}) {
@@ -34,7 +34,7 @@ function mountCard(locale = 'en', overrides = {}) {
 }
 
 describe('KpiCard', () => {
-  it('renders the localized name, unit and description (en)', () => {
+  it('renders the localized name, unit and short description (en)', () => {
     const wrapper = mountCard('en')
     expect(wrapper.find('.kpi-card__name').text()).toBe('Participating associations')
     expect(wrapper.find('.kpi-card__unit').text()).toBe('associations')
@@ -46,17 +46,21 @@ describe('KpiCard', () => {
     expect(wrapper.find('.kpi-card__name').text()).toBe('الجمعيات المشاركة')
   })
 
-  it('applies the card color variant class', () => {
-    expect(mountCard().find('.kpi-card').classes()).toContain('kpi-card--primary')
+  it('applies the card color token class', () => {
+    expect(mountCard('en', { cardColor: 'success' }).find('.kpi-card').classes()).toContain(
+      'kpi-card--success',
+    )
   })
 
-  it('falls back to the color field then primary for an unknown cardColor', () => {
+  it('reads the editor token name and falls back to primary for an unknown token', () => {
+    expect(
+      mountCard('en', { cardColor: undefined, cardColorToken: 'warning' })
+        .find('.kpi-card')
+        .classes(),
+    ).toContain('kpi-card--warning')
     expect(mountCard('en', { cardColor: 'chartreuse' }).find('.kpi-card').classes()).toContain(
       'kpi-card--primary',
     )
-    expect(
-      mountCard('en', { cardColor: 'chartreuse', color: 'success' }).find('.kpi-card').classes(),
-    ).toContain('kpi-card--success')
   })
 
   it('renders a status badge with text (not color alone)', () => {
@@ -80,9 +84,11 @@ describe('KpiCard', () => {
 
   it('computes the progress meter against the target and exposes it to a11y', () => {
     const wrapper = mountCard()
-    const meter = wrapper.find('.kpi-card__meter')
-    expect(meter.attributes('role')).toBe('progressbar')
-    expect(meter.attributes('aria-valuenow')).toBe('69')
+    const meter = wrapper.find('progress.kpi-card__meter')
+    expect(meter.attributes('value')).toBe('69')
+    expect(meter.attributes('max')).toBe('100')
+    expect(meter.attributes('aria-label')).toBe('Participating associations')
+    expect(meter.attributes('style')).toBeUndefined()
   })
 
   it('is a keyboard-accessible link and emits activate on Enter', async () => {
@@ -106,7 +112,7 @@ describe('KpiCard', () => {
     const facts = wrapper.findAll('.kpi-card__fact-value').map((el) => el.text())
     expect(facts.some((text) => text.includes('700'))).toBe(true)
     expect(facts.some((text) => text.includes('320'))).toBe(true)
-    expect(facts).toContain('2025-01-15')
+    expect(facts.some((text) => text.includes('2026'))).toBe(true)
   })
 
   it('observes the card and counts up to the value when it enters the viewport', async () => {

@@ -5,27 +5,31 @@ declare(strict_types=1);
 namespace App\Services\Assessments;
 
 use App\Data\Assessments\RequestQueueFilters;
+use App\Data\Periods\PeriodFilter;
 use App\Enums\Assessments\AssessmentPath;
+use App\Enums\Assessments\QueueStage;
 use App\Models\Assessments\Assessment;
 use App\Services\Entities\EntityFreezeGuard;
+use App\Services\Periods\PeriodScopes;
 use App\Support\ValueObjects\SearchTerm;
+use Closure;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\Date;
 
 final readonly class RequestQueueQuery
 {
-    public function __construct(private EntityFreezeGuard $freezeGuard) {}
+    public function __construct(private EntityFreezeGuard $freezeGuard, private PeriodScopes $periods) {}
 
     /**
      * @return Builder<Assessment>
      */
     public function filtered(RequestQueueFilters $filters): Builder
     {
-        $query = $this->freezeGuard->excludeFrozen(Assessment::query()->where(static function (Builder $queued) use ($filters): void {
-            foreach ($filters->paths() as $path) {
-                $queued->orWhere(static fn (Builder $byPath): Builder => $byPath->ofPath($path)->whereIn('status', $path->queueStateValues()));
-            }
-        }));
+        $query = $this->inStates([$filters->path], static fn (AssessmentPath $path): array => $filters->stage->stateValuesOf($path));
+
+        if ($filters->stage === QueueStage::Overdue) {
+            $this->overdue($query);
+        }
 
         if ($filters->status !== null) {
             $query->where('status', $filters->status);
@@ -47,7 +51,29 @@ final readonly class RequestQueueQuery
             $query->matchingSearch($filters->search);
         }
 
+        if ($filters->period instanceof PeriodFilter) {
+            $this->inPeriod($query, $filters->path, $filters->period);
+        }
+
         return $query;
+    }
+
+    /**
+     * @param  list<AssessmentPath>  $paths
+     * @return Builder<Assessment>
+     */
+    public function queued(array $paths): Builder
+    {
+        return $this->inStates($paths, static fn (AssessmentPath $path): array => $path->queueStateValues());
+    }
+
+    /**
+     * @param  list<AssessmentPath>  $paths
+     * @return Builder<Assessment>
+     */
+    public function preparing(array $paths): Builder
+    {
+        return $this->inStates($paths, static fn (AssessmentPath $path): array => $path->preparingStateValues());
     }
 
     /**
@@ -63,5 +89,41 @@ final readonly class RequestQueueQuery
                 }
             })
             ->where('due_at', '<', Date::now());
+    }
+
+    /**
+     * A submitted request belongs to the period it was submitted in; a draft to the period it was opened in.
+     *
+     * @param  Builder<Assessment>  $query
+     */
+    private function inPeriod(Builder $query, AssessmentPath $path, PeriodFilter $period): void
+    {
+        $query->where(function (Builder $inPeriod) use ($path, $period): void {
+            $inPeriod
+                ->where(function (Builder $submitted) use ($path, $period): void {
+                    $this->periods->submittedIn($submitted->whereIn('status', $path->queueStateValues()), $period);
+                })
+                ->orWhere(function (Builder $draft) use ($path, $period): void {
+                    $this->periods->openedIn($draft->whereIn('status', $path->preparingStateValues()), $period);
+                });
+        });
+    }
+
+    /**
+     * @param  list<AssessmentPath>  $paths
+     * @param  Closure(AssessmentPath): list<string>  $statesOf
+     * @return Builder<Assessment>
+     */
+    private function inStates(array $paths, Closure $statesOf): Builder
+    {
+        return $this->freezeGuard->excludeFrozen(Assessment::query()->where(static function (Builder $inStates) use ($paths, $statesOf): void {
+            foreach ($paths as $path) {
+                $inStates->orWhere(static fn (Builder $byPath): Builder => $byPath->ofPath($path)->whereIn('status', $statesOf($path)));
+            }
+
+            if ($paths === []) {
+                $inStates->whereRaw('false');
+            }
+        }));
     }
 }

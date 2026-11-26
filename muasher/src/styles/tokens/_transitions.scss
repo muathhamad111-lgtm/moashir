@@ -3,3 +3,5 @@ $t-tab: 200ms;
 $t-base: 250ms;
 $t-slow: 350ms;
 $ease: cubic-bezier(0.4, 0, 0.2, 1);
+// A small overshoot for things that snap into place (the switch knob).
+$ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);

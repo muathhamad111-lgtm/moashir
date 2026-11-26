@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Support\Assessments;
 
 use App\Data\Entities\EntityNotice;
+use App\Data\Notifications\NoticeText;
 use App\Enums\Notifications\NotificationCode;
 use App\Models\Assessments\Assessment;
 use App\Support\ValueObjects\LocalizedText;
@@ -36,13 +37,6 @@ final class RequestNotices
 
         $root = self::ROOT.$assessment->path->value.'.'.$key;
 
-        return new EntityNotice(
-            $code,
-            LocalizedText::fromTranslationWith($root.'.title', $replacements),
-            LocalizedText::fromTranslationWith($root.'.body', $replacements),
-            $link,
-            true,
-            true,
-        );
+        return EntityNotice::fromText($code, new NoticeText($root, $replacements), $link, $assessment->path);
     }
 }

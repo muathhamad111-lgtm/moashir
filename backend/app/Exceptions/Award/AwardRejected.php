@@ -10,11 +10,6 @@ use Illuminate\Http\Response;
 
 final class AwardRejected extends ApiException
 {
-    public static function anotherCycleRunning(int $cycleId): self
-    {
-        return new self(new ApiError(Response::HTTP_CONFLICT, 'cycle.another_open', [], [], ['award_cycle_id' => $cycleId]));
-    }
-
     public static function datesUnordered(): self
     {
         return self::fieldError('cycle.dates_unordered', 'submission_start');
@@ -39,9 +34,9 @@ final class AwardRejected extends ApiException
         return self::fieldError('cycle.region_has_requests', 'region_ids');
     }
 
-    public static function criteriaVersionNotPublished(): self
+    public static function noPublishedCriteria(): self
     {
-        return self::fieldError('cycle.criteria_version_not_published', 'criteria_version_id');
+        return new self(new ApiError(Response::HTTP_CONFLICT, 'cycle.no_published_criteria'));
     }
 
     public static function participationSettingReserved(): self
@@ -86,6 +81,11 @@ final class AwardRejected extends ApiException
         return new self(new ApiError(Response::HTTP_CONFLICT, 'advanced.request_exists', [], [], ['assessment_id' => $assessmentId]));
     }
 
+    public static function paymentBeingProcessed(): self
+    {
+        return new self(new ApiError(Response::HTTP_CONFLICT, 'advanced.payment_being_processed'));
+    }
+
     public static function memberInvalid(string $field): self
     {
         return self::fieldError('cycle.member_invalid', $field);
@@ -96,6 +96,11 @@ final class AwardRejected extends ApiException
         return self::fieldError('cycle.initial_assessor_invalid', $field);
     }
 
+    public static function initialAssessorNotQualified(string $field): self
+    {
+        return self::fieldError('assessor.not_qualified', $field);
+    }
+
     public static function segregationConflict(string $field): self
     {
         return self::fieldError('sod_conflict', $field);
@@ -104,6 +109,25 @@ final class AwardRejected extends ApiException
     public static function segregationConflictOnAction(): self
     {
         return new self(new ApiError(Response::HTTP_FORBIDDEN, 'sod_conflict'));
+    }
+
+    public static function thresholdLocked(): self
+    {
+        return new self(new ApiError(Response::HTTP_CONFLICT, 'cycle.threshold_locked', [
+            'disqualification_score' => [__('errors.cycle.threshold_locked')],
+        ]));
+    }
+
+    public static function noInitialAssessors(): self
+    {
+        return new self(new ApiError(Response::HTTP_UNPROCESSABLE_ENTITY, 'cycle.no_initial_assessors', [
+            'initial_assessor_ids' => [__('errors.cycle.no_initial_assessors')],
+        ]));
+    }
+
+    public static function paidDraft(): self
+    {
+        return new self(new ApiError(Response::HTTP_CONFLICT, 'award.paid_draft'));
     }
 
     public static function filteringNotOpen(): self

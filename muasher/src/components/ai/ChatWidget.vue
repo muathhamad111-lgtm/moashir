@@ -2,9 +2,9 @@
 import { nextTick, ref, useId, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useAiChat } from '@/composables/useAiChat'
+import { useFocusTrap } from '@/composables/useFocusTrap'
 import ChatMessage from './ChatMessage.vue'
-import DemoDataNotice from '@/components/ui/DemoDataNotice.vue'
-import { MOCK_MODULES } from '@/constants/mockModules'
+import AppIcon from '@/components/ui/AppIcon.vue'
 
 const { t } = useI18n()
 const { availability, messages, sending, lastError, localized, send, retry } = useAiChat()
@@ -12,7 +12,6 @@ const { availability, messages, sending, lastError, localized, send, retry } = u
 const isOpen = ref(false)
 const draft = ref('')
 const panelRef = ref(null)
-const inputRef = ref(null)
 const threadRef = ref(null)
 const launcherRef = ref(null)
 const panelId = useId()
@@ -20,17 +19,8 @@ const titleId = useId()
 
 const SUGGESTION_KEYS = ['whatIs', 'paths', 'criteria', 'register']
 
-const FOCUSABLE =
-  'a[href], button:not([disabled]), input:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'
-
-function focusables() {
-  return Array.from(panelRef.value?.querySelectorAll(FOCUSABLE) ?? [])
-}
-
-async function open() {
+function open() {
   isOpen.value = true
-  await nextTick()
-  inputRef.value?.focus()
 }
 
 function close() {
@@ -43,25 +33,7 @@ function toggle() {
   else open()
 }
 
-function onKeydown(event) {
-  if (event.key === 'Escape') {
-    event.stopPropagation()
-    close()
-    return
-  }
-  if (event.key !== 'Tab') return
-  const elements = focusables()
-  if (!elements.length) return
-  const first = elements[0]
-  const last = elements[elements.length - 1]
-  if (event.shiftKey && document.activeElement === first) {
-    event.preventDefault()
-    last.focus()
-  } else if (!event.shiftKey && document.activeElement === last) {
-    event.preventDefault()
-    first.focus()
-  }
-}
+const { onKeydown } = useFocusTrap(panelRef, { isActive: isOpen, onEscape: close })
 
 async function scrollToEnd() {
   await nextTick()
@@ -86,8 +58,6 @@ watch(
   () => scrollToEnd(),
 )
 watch(sending, () => scrollToEnd())
-
-const DEMO_MODULES = [MOCK_MODULES.AI]
 </script>
 
 <template>
@@ -102,7 +72,7 @@ const DEMO_MODULES = [MOCK_MODULES.AI]
       :aria-label="isOpen ? $t('ai.close') : $t('ai.launcherLabel')"
       @click="toggle"
     >
-      <i :class="isOpen ? 'fa-solid fa-xmark' : 'fa-solid fa-comment-dots'" aria-hidden="true"></i>
+      <AppIcon :name="isOpen ? 'x' : 'chat'" />
     </button>
 
     <section
@@ -118,7 +88,7 @@ const DEMO_MODULES = [MOCK_MODULES.AI]
       <header class="chat-widget__header">
         <div class="chat-widget__heading">
           <span class="chat-widget__avatar" aria-hidden="true">
-            <i class="fa-solid fa-robot"></i>
+            <AppIcon name="robot" />
           </span>
           <div>
             <h2 :id="titleId" class="chat-widget__title">{{ $t('ai.title') }}</h2>
@@ -131,14 +101,13 @@ const DEMO_MODULES = [MOCK_MODULES.AI]
           :aria-label="$t('ai.close')"
           @click="close"
         >
-          <i class="fa-solid fa-xmark" aria-hidden="true"></i>
+          <AppIcon name="x" />
         </button>
       </header>
 
       <div ref="threadRef" class="chat-widget__thread">
-        <DemoDataNotice scope="section" :modules="DEMO_MODULES" />
         <p class="chat-widget__disclaimer">
-          <i class="fa-solid fa-shield-halved" aria-hidden="true"></i>
+          <AppIcon name="shield-info" />
           {{ $t('ai.disclaimer') }}
         </p>
 
@@ -147,13 +116,21 @@ const DEMO_MODULES = [MOCK_MODULES.AI]
           {{ $t('ai.checking') }}
         </div>
 
-        <div v-else-if="availability === 'inactive'" class="chat-widget__status chat-widget__status--inactive" role="status">
-          <i class="fa-solid fa-power-off" aria-hidden="true"></i>
+        <div
+          v-else-if="availability === 'inactive'"
+          class="chat-widget__status chat-widget__status--inactive"
+          role="status"
+        >
+          <AppIcon name="power" />
           {{ $t('ai.inactive') }}
         </div>
 
-        <div v-else-if="availability === 'error'" class="chat-widget__status chat-widget__status--error" role="alert">
-          <i class="fa-solid fa-triangle-exclamation" aria-hidden="true"></i>
+        <div
+          v-else-if="availability === 'error'"
+          class="chat-widget__status chat-widget__status--error"
+          role="alert"
+        >
+          <AppIcon name="warning-triangle" />
           <span>{{ $t('ai.unavailable') }}</span>
           <button type="button" class="chat-widget__inline-retry" @click="retry">
             {{ $t('common.retry') }}
@@ -194,9 +171,14 @@ const DEMO_MODULES = [MOCK_MODULES.AI]
           </div>
 
           <div v-if="lastError" class="chat-widget__turn-error" role="alert">
-            <i class="fa-solid fa-triangle-exclamation" aria-hidden="true"></i>
+            <AppIcon name="warning-triangle" />
             <span>{{ $t('ai.turnError') }}</span>
-            <button type="button" class="chat-widget__inline-retry" :disabled="sending" @click="retry">
+            <button
+              type="button"
+              class="chat-widget__inline-retry"
+              :disabled="sending"
+              @click="retry"
+            >
               {{ $t('common.retry') }}
             </button>
           </div>
@@ -210,8 +192,8 @@ const DEMO_MODULES = [MOCK_MODULES.AI]
         <div class="chat-widget__composer-row">
           <input
             :id="`${panelId}-input`"
-            ref="inputRef"
             v-model="draft"
+            data-autofocus
             type="text"
             class="chat-widget__input"
             :placeholder="$t('ai.placeholder')"
@@ -224,7 +206,7 @@ const DEMO_MODULES = [MOCK_MODULES.AI]
             :disabled="availability !== 'active' || sending || !draft.trim()"
             :aria-label="$t('ai.send')"
           >
-            <i class="fa-solid fa-paper-plane" aria-hidden="true"></i>
+            <AppIcon name="send" />
           </button>
         </div>
       </form>

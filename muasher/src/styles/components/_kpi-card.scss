@@ -66,7 +66,7 @@
   font-size: var(--fs-lg);
 
   .kpi-card--primary & {
-    color: var(--color-primary);
+    color: var(--theme-accent-text);
     background-color: var(--color-info-soft);
   }
   .kpi-card--success & {
@@ -94,7 +94,7 @@
 .kpi-card__name {
   margin: 0;
   font-size: var(--fs-base);
-  font-weight: var(--fw-semibold);
+  font-weight: var(--fw-heading);
   color: var(--theme-heading);
   line-height: var(--lh-base);
 }
@@ -107,7 +107,7 @@
 
 .kpi-card__number {
   font-size: var(--fs-5xl);
-  font-weight: var(--fw-black);
+  font-weight: var(--fw-display);
   color: var(--theme-heading);
   line-height: var(--lh-tight);
   font-variant-numeric: tabular-nums;
@@ -145,32 +145,40 @@
 }
 
 .kpi-card__meter {
-  block-size: var(--space-2);
   inline-size: 100%;
+  block-size: var(--space-2);
+  border: 0;
   border-radius: var(--radius-pill);
   background-color: var(--theme-border);
+  appearance: none;
   overflow: hidden;
-}
 
-.kpi-card__meter-fill {
-  display: block;
-  block-size: 100%;
-  inline-size: var(--kpi-progress, 0%);
-  border-radius: var(--radius-pill);
-  background: var(--gradient-brand);
-  transition: inline-size var(--t-slow) var(--ease);
+  &::-webkit-progress-bar {
+    border-radius: var(--radius-pill);
+    background-color: var(--theme-border);
+  }
+
+  &::-webkit-progress-value {
+    border-radius: var(--radius-pill);
+    background: var(--kpi-meter-fill, var(--gradient-brand));
+  }
+
+  &::-moz-progress-bar {
+    border-radius: var(--radius-pill);
+    background: var(--kpi-meter-fill, var(--gradient-brand));
+  }
 
   .kpi-card--success & {
-    background: var(--color-success);
+    --kpi-meter-fill: var(--color-success);
   }
   .kpi-card--info & {
-    background: var(--color-info);
+    --kpi-meter-fill: var(--color-info);
   }
   .kpi-card--warning & {
-    background: var(--color-warning);
+    --kpi-meter-fill: var(--color-warning);
   }
   .kpi-card--danger & {
-    background: var(--color-danger);
+    --kpi-meter-fill: var(--color-danger);
   }
 }
 
@@ -221,7 +229,7 @@
 .kpi-card__fact-value {
   margin: 0;
   font-size: var(--fs-sm);
-  font-weight: var(--fw-semibold);
+  font-weight: var(--fw-figure);
   color: var(--theme-heading);
   font-variant-numeric: tabular-nums;
 }
@@ -230,7 +238,7 @@
   @include flex(row, center, flex-start, var(--space-1));
   padding-block-start: var(--space-2);
   font-size: var(--fs-xs);
-  font-weight: var(--fw-semibold);
+  font-weight: var(--fw-figure);
   color: var(--theme-accent-text);
 
   &::after {
@@ -244,8 +252,7 @@
 
 @media (prefers-reduced-motion: reduce) {
   .kpi-card,
-  .kpi-card__reveal,
-  .kpi-card__meter-fill {
+  .kpi-card__reveal {
     transition: none;
   }
 

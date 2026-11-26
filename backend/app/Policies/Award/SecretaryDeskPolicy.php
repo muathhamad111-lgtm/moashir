@@ -7,7 +7,6 @@ namespace App\Policies\Award;
 use App\Enums\Assessments\AdvancedAssessmentStatus;
 use App\Enums\Award\CycleMemberRole;
 use App\Enums\Identity\PermissionKey;
-use App\Enums\Identity\RoleKey;
 use App\Models\Assessments\Assessment;
 use App\Models\Award\AwardCycle;
 use App\Models\Award\CommitteeAssignment;
@@ -59,7 +58,7 @@ final readonly class SecretaryDeskPolicy
 
     private function reviews(User $actor, AwardCycle $cycle): bool
     {
-        return $this->scope->allows($actor, $cycle, PermissionKey::AwardSecretaryReview, [RoleKey::SystemAdmin], [CycleMemberRole::AwardSecretary]);
+        return $this->scope->allows($actor, $cycle, PermissionKey::AwardSecretaryReview, CycleRoleScope::AWARD_READER_ROLES, [CycleMemberRole::AwardSecretary]);
     }
 
     private function isCommitteeRequestOf(AwardCycle $cycle, Assessment $assessment): bool

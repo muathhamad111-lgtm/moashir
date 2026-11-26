@@ -23,6 +23,13 @@ it('maps each expiry outcome of the analysis to its request, completion and audi
     'advanced, decline' => [Outcome::Decline, AssessmentPath::Advanced, AdvancedAssessmentStatus::DeclinedIncomplete, CompletionRequestStatus::ExpiredDeclined, AuditEvent::AssessmentDeclinedIncomplete, true],
 ]);
 
+it('continues an expired return at the assessor state it left, and still declines at that state', function (): void {
+    expect(Outcome::ContinueAsSubmitted->assessmentStatusOn(AssessmentPath::Advanced, AdvancedAssessmentStatus::UnderInitialAssessment))->toBe(AdvancedAssessmentStatus::UnderInitialAssessment)
+        ->and(Outcome::ContinueAsSubmitted->assessmentStatusOn(AssessmentPath::Advanced, AdvancedAssessmentStatus::Assigned))->toBe(AdvancedAssessmentStatus::Assigned)
+        ->and(Outcome::Decline->assessmentStatusOn(AssessmentPath::Advanced, AdvancedAssessmentStatus::UnderInitialAssessment))->toBe(AdvancedAssessmentStatus::DeclinedIncomplete)
+        ->and(AdvancedAssessmentStatus::NeedsCompletion->allowsTransitionTo(AdvancedAssessmentStatus::UnderInitialAssessment))->toBeTrue();
+});
+
 it('uses the exact outcome names shared with the frontend', function (): void {
     expect(array_column(Outcome::cases(), 'value'))->toBe(['continue_as_submitted', 'decline'])
         ->and(array_column(CompletionRequestStatus::cases(), 'value'))->toBe(['open', 'resubmitted', 'cancelled', 'expired_continued', 'expired_declined']);

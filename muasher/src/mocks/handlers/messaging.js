@@ -60,6 +60,10 @@ export const messagingHandlers = [
     await delay(900)
     if (maybeFail(0.12)) return errorResponse('The marketing campaign could not be sent', 500)
     const body = await request.json()
-    return envelope({ queued: true, channel: body.channel ?? 'email', count: (body.cartIds ?? []).length })
+    return envelope({
+      queued: true,
+      channel: body.channel ?? 'email',
+      count: (body.cartIds ?? []).length,
+    })
   }),
 ]

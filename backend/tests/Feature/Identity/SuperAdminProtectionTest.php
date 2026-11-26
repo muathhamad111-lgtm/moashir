@@ -48,7 +48,7 @@ it('rejects every attempt to assign the Super Admin through the API with a secur
     signIn(systemAdmin());
     $target = staffUser(RoleKey::Assessor);
 
-    $this->postJson('/api/v1/users', ['name' => 'سلمان المطيري', 'email' => 'new.user@moashir.example.sa', 'roles' => ['super_admin']])
+    $this->postJson('/api/v1/users', ['name' => 'سلمان المطيري', 'gender' => 'male', 'email' => 'new.user@moashir.example.sa', 'roles' => ['super_admin']])
         ->assertUnprocessable()
         ->assertJsonPath('code', 'role_not_assignable');
     $this->putJson("/api/v1/users/{$target->id}", ['roles' => ['assessor', 'super_admin']])

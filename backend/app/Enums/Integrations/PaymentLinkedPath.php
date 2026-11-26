@@ -8,6 +8,8 @@ enum PaymentLinkedPath: string
 {
     case Accredited = 'accredited';
     case Bag = 'bag';
+    case SelfAssessment = 'self';
+    case Award = 'award';
 
     /**
      * @return list<string>

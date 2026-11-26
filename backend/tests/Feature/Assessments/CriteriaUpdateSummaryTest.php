@@ -125,6 +125,7 @@ it('takes the label of a removed item from the version the draft left', function
 
     $next = republishCriteria('all', static function (CriteriaVersion $draftVersion): void {
         pointOf($draftVersion, 'M1.2.2')->delete();
+        pointOf($draftVersion, 'M1.2.1')->forceFill(['weight' => Weight::of('400.00')])->save();
     });
 
     expect(criteriaUpdateSeenBy($draft))->toMatchArray([

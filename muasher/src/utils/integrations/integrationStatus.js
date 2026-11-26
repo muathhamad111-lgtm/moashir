@@ -9,11 +9,11 @@ export const INTEGRATION_STATUS_VARIANTS = Object.freeze({
 })
 
 export const INTEGRATION_STATUS_ICONS = Object.freeze({
-  [S.NOT_CONFIGURED]: 'fa-solid fa-circle-minus',
-  [S.CONFIGURED_UNTESTED]: 'fa-solid fa-circle-question',
-  [S.TEST_PASSED]: 'fa-solid fa-circle-check',
-  [S.TEST_FAILED]: 'fa-solid fa-circle-xmark',
-  [S.ACTIVE]: 'fa-solid fa-power-off',
+  [S.NOT_CONFIGURED]: 'minus',
+  [S.CONFIGURED_UNTESTED]: 'question-circle',
+  [S.TEST_PASSED]: 'check-circle',
+  [S.TEST_FAILED]: 'x',
+  [S.ACTIVE]: 'power',
 })
 
 export function testStatusOf(lastTest) {

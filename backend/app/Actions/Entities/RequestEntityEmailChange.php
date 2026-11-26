@@ -11,7 +11,6 @@ use App\Enums\Identity\EmailChangeStatus;
 use App\Enums\Identity\OtpChannel;
 use App\Enums\Identity\OtpPurpose;
 use App\Exceptions\Entities\EmailChangeRejected;
-use App\Exceptions\IllegalStateTransition;
 use App\Models\Identity\EmailChangeRequest;
 use App\Models\Identity\OtpCode;
 use App\Models\Identity\User;
@@ -31,10 +30,6 @@ final readonly class RequestEntityEmailChange
     public function handle(User $owner, EmailAddress $newEmail): OtpChallenge
     {
         $entity = $this->ownEntity->of($owner);
-
-        if (! $entity->isActive()) {
-            throw IllegalStateTransition::from($entity->status->value, 'change_email');
-        }
 
         return DB::transaction(function () use ($owner, $entity, $newEmail): OtpChallenge {
             $open = EmailChangeRequest::query()

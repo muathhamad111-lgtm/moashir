@@ -20,7 +20,10 @@ export const QUEUE_STATUSES = [
   ACCREDITED_STATUSES.DECLINED,
 ]
 
-export const ENTITY_EDITABLE_STATUSES = [ACCREDITED_STATUSES.DRAFT, ACCREDITED_STATUSES.NEEDS_COMPLETION]
+export const ENTITY_EDITABLE_STATUSES = [
+  ACCREDITED_STATUSES.DRAFT,
+  ACCREDITED_STATUSES.NEEDS_COMPLETION,
+]
 
 export const ASSIGNABLE_STATUSES = [ACCREDITED_STATUSES.SUBMITTED]
 
@@ -56,26 +59,51 @@ export const COMPLETION_ITEM_KINDS = { CV: 'cv', EVIDENCE: 'evidence' }
 
 export const EXPIRY_OUTCOMES = { CONTINUE: 'continue_as_submitted', DECLINE: 'decline' }
 
-export const SCAN_STATUSES = { PENDING: 'pending', CLEAN: 'clean', INFECTED: 'infected', FAILED: 'failed' }
+export const SCAN_STATUSES = {
+  PENDING: 'pending',
+  CLEAN: 'clean',
+  INFECTED: 'infected',
+  FAILED: 'failed',
+}
 
-export const BUNDLE_STATUSES = { PREPARING: 'preparing', READY: 'ready', FAILED: 'failed', EXPIRED: 'expired' }
+export const BUNDLE_STATUSES = {
+  PREPARING: 'preparing',
+  READY: 'ready',
+  FAILED: 'failed',
+  EXPIRED: 'expired',
+}
 
 export const REVIEW_MODES = { EDIT: 'edit', READ_ONLY: 'read_only' }
 
 export const ASSIGNED_TABS = { NEW: 'new', IN_PROGRESS: 'in_progress', COMPLETED: 'completed' }
 
-export const ASSIGNMENT_STATUSES = { ACTIVE: 'active', REASSIGNED: 'reassigned', COMPLETED: 'completed', ENDED: 'ended' }
+export const ASSIGNMENT_MODES = Object.freeze({ ASSIGN: 'assign', REASSIGN: 'reassign' })
+
+export const ASSIGNMENT_STATUSES = {
+  ACTIVE: 'active',
+  REASSIGNED: 'reassigned',
+  COMPLETED: 'completed',
+  ENDED: 'ended',
+}
 
 export const FEEDBACK_FIELDS = ['strengths', 'improvementPoints', 'notes']
 
-export const QUEUE_SORTS = ['-submitted_at', 'submitted_at', 'due_at', '-due_at', 'status', '-status', '-created_at', 'created_at']
+export const QUEUE_SORTS = [
+  '-submitted_at',
+  'submitted_at',
+  'due_at',
+  '-due_at',
+  'status',
+  '-status',
+  '-created_at',
+  'created_at',
+]
 
 export const DEFAULT_QUEUE_SORT = '-submitted_at'
 
 export const ACCREDITED_LIMITS = {
   CV_MAX: 10000,
   FEEDBACK_MAX: 5000,
-  COMPLETION_NOTES_MIN: 10,
   COMPLETION_NOTES_MAX: 2000,
   COMPLETION_ITEM_NOTE_MAX: 500,
   COMPLETION_DEADLINE_MAX_DAYS: 60,
@@ -108,6 +136,7 @@ export const ACCREDITED_CODES = {
   CONTENT_MISMATCH: 'file.content_mismatch',
   NOT_CLEAN: 'file.not_clean',
   SCORES_INCOMPLETE: 'scores.incomplete',
+  SCORES_ROUND_INCOMPLETE: 'scores.round_incomplete',
   BUNDLE_EMPTY: 'evidence.bundle_empty',
   BUNDLE_NOT_READY: 'evidence.bundle_not_ready',
   ENTITY_DELETED: 'entity.deleted',
@@ -119,3 +148,17 @@ export const ACCREDITED_CODES = {
 }
 
 export const ACCREDITED_REQUEST_PREFIX = 'ACC'
+
+// The quick filters of the request list (admin review 2026-11-20), as the API names them.
+export const QUEUE_STAGES = Object.freeze({
+  ALL: 'all',
+  PREPARING: 'preparing',
+  AWAITING_ASSIGNMENT: 'awaiting_assignment',
+  IN_PROGRESS: 'in_progress',
+  OVERDUE: 'overdue',
+  CLOSED: 'closed',
+})
+
+export const QUEUE_STAGE_LIST = Object.values(QUEUE_STAGES).filter(
+  (stage) => stage !== QUEUE_STAGES.ALL,
+)

@@ -24,7 +24,7 @@
 }
 
 .assessment-timeline__name {
-  font-weight: var(--fw-medium);
+  font-weight: var(--fw-emphasis);
 }
 
 .assessment-timeline__actor {
@@ -56,7 +56,7 @@
   color: var(--theme-accent-text);
   font: inherit;
   font-size: var(--fs-sm);
-  font-weight: var(--fw-medium);
+  font-weight: var(--fw-figure);
   cursor: pointer;
 
   &:focus-visible {

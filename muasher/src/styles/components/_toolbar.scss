@@ -26,3 +26,135 @@
     opacity: 1;
   }
 }
+
+// Search and filter sit in the table's top end corner, after the page actions.
+.filter-toolbar {
+  justify-content: flex-end;
+}
+
+// One control height for the whole row, so the open search field lines up with the buttons.
+.filter-toolbar .btn {
+  min-block-size: var(--size-toolbar-control);
+}
+
+// Search, filter and export share one row; the open field gives up width first, down to a
+// readable minimum, and only on the narrowest screens do whole buttons move to a second row.
+.filter-toolbar__controls {
+  @include flex(row, center, flex-end, var(--space-2));
+  flex: 0 1 auto;
+  flex-wrap: wrap;
+  min-inline-size: 0;
+
+  // Buttons (filter, export) keep their label on one line; only the open search field shrinks.
+  > .filter-dialog,
+  > .btn {
+    flex-shrink: 0;
+    white-space: nowrap;
+  }
+}
+
+.expandable-search {
+  min-inline-size: 0;
+
+  // The field starts from its minimum and grows up to the full search width, so it shrinks
+  // before any button has to move to a second row.
+  &.is-expanded {
+    flex: 1 1 var(--size-search-min);
+    inline-size: var(--size-search);
+    min-inline-size: min(var(--size-search-min), 100%);
+    max-inline-size: var(--size-search);
+  }
+}
+
+.expandable-search__toggle {
+  gap: var(--space-2);
+}
+
+.expandable-search__field {
+  @include flex(row, center, flex-start, var(--space-2));
+  min-block-size: var(--size-toolbar-control);
+  padding-inline: var(--space-3) var(--space-1);
+  border: var(--border-width) solid var(--theme-accent-text);
+  border-radius: var(--radius-lg);
+  background-color: var(--theme-surface);
+
+  &:focus-within {
+    @include focus-ring;
+  }
+}
+
+.expandable-search__icon {
+  flex-shrink: 0;
+  color: var(--theme-text-muted);
+}
+
+.expandable-search__input {
+  flex: 1 1 auto;
+  min-inline-size: 0;
+  border: 0;
+  background: transparent;
+  color: var(--theme-text);
+  font-size: var(--fs-sm);
+
+  &::placeholder {
+    color: var(--theme-text-secondary);
+    opacity: 1;
+  }
+
+  &:focus-visible {
+    outline: none;
+  }
+}
+
+.filter-dialog {
+  @include flex(row, center, flex-start, var(--space-2));
+}
+
+.filter-dialog__toggle {
+  gap: var(--space-2);
+
+  &.is-active {
+    border-color: var(--theme-accent-text);
+    color: var(--theme-accent-text);
+  }
+}
+
+.filter-dialog__count {
+  @include flex-center;
+  min-inline-size: var(--space-5);
+  block-size: var(--space-5);
+  padding-inline: var(--space-1);
+  border-radius: var(--radius-circle);
+  background-color: var(--theme-accent);
+  color: var(--theme-on-accent);
+  font-size: var(--fs-xs);
+  font-weight: var(--fw-figure);
+}
+
+.filter-dialog__fields {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--space-4);
+
+  @include respond-to('sm') {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+.expandable-search__close {
+  @include flex-center;
+  flex-shrink: 0;
+  inline-size: var(--size-toolbar-close);
+  block-size: var(--size-toolbar-close);
+  border-radius: var(--radius-circle);
+  color: var(--theme-text-muted);
+
+  &:hover {
+    color: var(--theme-text);
+    background-color: var(--theme-surface-raised);
+  }
+
+  &:focus-visible {
+    @include focus-ring;
+  }
+}

@@ -1,11 +1,13 @@
 import { test, expect } from '@playwright/test'
-import { seedLocale } from './support/session'
+import { seedSignedIn } from './support/session'
+
+const STAFF = { id: 5101, roles: ['system_admin'], entityId: null, name: 'مدير النظام' }
 
 test.describe('dev component gallery', () => {
   test.beforeEach(async ({ page }, testInfo) => {
-    if (testInfo.project.name === 'chromium-en-ltr') {
-      await seedLocale(page, 'en')
-    }
+    await seedSignedIn(page, STAFF, {
+      locale: testInfo.project.name === 'chromium-en-ltr' ? 'en' : 'ar',
+    })
   })
 
   test('renders every gallery section without console errors', async ({ page }, testInfo) => {

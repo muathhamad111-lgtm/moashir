@@ -17,7 +17,7 @@
 
 .navbar__brand {
   @include flex(row, center, flex-start, var(--space-3));
-  font-weight: var(--fw-bold);
+  font-weight: var(--fw-emphasis);
   color: var(--theme-heading);
 
   &:focus-visible {
@@ -26,50 +26,160 @@
 }
 
 .navbar__logo {
-  block-size: var(--space-8);
+  block-size: var(--size-navbar-logo);
   inline-size: auto;
   object-fit: contain;
 }
 
 .navbar--app {
+  --focus-ring-color: var(--brand-on-secondary);
   flex-wrap: wrap;
-  gap: var(--space-3);
-  min-block-size: var(--size-navbar);
+  gap: var(--space-2);
+  min-block-size: var(--tts-header-height);
+  padding-block: var(--space-2);
+  padding-inline: var(--space-3);
+  border: 0;
+  border-radius: var(--tts-radius-header);
   background-color: var(--navbar-bg);
+  color: var(--brand-on-secondary);
+  inset-block-start: var(--tts-page-top);
+  box-shadow: 0 calc(var(--tts-page-top) * -1) 0 0 var(--content-bg);
+
+  @include respond-to('sm') {
+    gap: var(--space-3);
+    padding-inline: var(--space-5);
+  }
 
   @include respond-to('md') {
     flex-wrap: nowrap;
   }
 
-  .btn--icon {
+  .navbar__start > .btn,
+  .navbar__phone > .btn,
+  .navbar__actions > .btn,
+  .navbar__actions > .notification-bell > .btn,
+  .global-search__toggle {
     min-inline-size: var(--size-touch-target);
     min-block-size: var(--size-touch-target);
-    border-radius: var(--radius-lg);
-    background-color: var(--theme-surface-raised);
+    border-radius: var(--btn-radius);
+    background-color: var(--brand-on-secondary-overlay);
+    color: var(--brand-on-secondary);
+
+    &:hover:not(:disabled) {
+      box-shadow: none;
+      background-color: var(--brand-on-secondary-hover);
+    }
+  }
+
+  .btn--icon .app-icon {
+    font-size: var(--icon-size-lg);
+  }
+
+  .global-search__field {
+    border-color: transparent;
+    border-radius: var(--btn-radius);
+    background-color: var(--brand-on-secondary-overlay);
+  }
+
+  .global-search.is-open .global-search__field,
+  .global-search__field:focus-within {
+    border-color: var(--brand-on-secondary);
+  }
+
+  .global-search__icon,
+  .global-search__label,
+  .global-search__shortcut {
+    color: var(--brand-on-secondary-soft);
+  }
+
+  .global-search__shortcut {
+    border-color: var(--brand-on-secondary-overlay);
+  }
+
+  .global-search.is-floated .global-search__label {
+    color: var(--brand-on-secondary);
+    background-color: var(--navbar-bg);
+  }
+
+  .global-search__input,
+  .global-search__clear {
+    color: var(--brand-on-secondary);
+  }
+
+  .global-search__input::placeholder {
+    color: var(--brand-on-secondary-soft);
+  }
+
+  .global-search__popup {
+    --focus-ring-color: var(--brand-primary-text);
+  }
+
+  .global-search--compact .global-search__body {
+    border-radius: var(--tts-radius-header);
+    border-block-end: 0;
+  }
+
+  .navbar__avatar {
+    border-color: var(--brand-on-secondary-overlay);
+
+    &:hover,
+    &[aria-expanded='true'] {
+      border-color: var(--brand-on-secondary);
+    }
   }
 }
 
 .navbar__start {
   @include flex(row, center, flex-start, var(--space-3));
   min-inline-size: 0;
-}
 
-.navbar__title {
-  display: none;
-  margin: 0;
-  font-family: var(--font-heading);
-  font-size: var(--fs-xl);
-  font-weight: var(--fw-bold);
-  color: var(--theme-heading);
-  @include truncate;
-
-  @include respond-to('sm') {
-    display: block;
+  // Phones: the start holds the logo, or back and the screen title, and takes the free room.
+  @include respond-below('md') {
+    flex: 1;
   }
 }
 
+// Phones only (TopNavbar renders it below md in place of the sidebar toggle).
+.navbar__phone {
+  @include flex(row, center, flex-start, var(--space-2));
+  min-inline-size: 0;
+}
+
+.navbar__phone-brand {
+  @include flex(row, center, flex-start);
+  min-block-size: var(--size-touch-target);
+  border-radius: var(--btn-radius, var(--radius-md));
+
+  &:focus-visible {
+    @include focus-ring;
+  }
+}
+
+.navbar__phone-logo {
+  // As tall as the bar's buttons, so the bar reads as one even row.
+  block-size: var(--size-touch-target);
+  inline-size: auto;
+  object-fit: contain;
+}
+
+.navbar__phone-title {
+  @include truncate;
+  min-inline-size: 0;
+  color: var(--brand-on-secondary);
+  font-family: var(--font-heading);
+  font-size: var(--fs-base);
+  font-weight: var(--fw-emphasis);
+}
+
 .navbar__actions {
-  @include flex(row, center, flex-end, var(--space-2));
+  @include flex(row, center, flex-end, var(--space-1));
+  flex-wrap: nowrap;
+  min-inline-size: 0;
+  max-inline-size: 100%;
+
+  @include respond-to('sm') {
+    gap: var(--space-2);
+  }
 }
 
 .navbar__user {
@@ -86,7 +196,7 @@
   color: var(--theme-on-accent);
   font-family: var(--font-heading);
   font-size: var(--fs-lg);
-  font-weight: var(--fw-bold);
+  font-weight: var(--fw-emphasis);
   cursor: pointer;
   transition: border-color var(--t-fast) var(--ease);
 
@@ -97,5 +207,55 @@
 
   &:focus-visible {
     @include focus-ring;
+  }
+}
+
+.navbar__user-head {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.navbar__user-name {
+  font-weight: var(--fw-emphasis);
+  color: var(--theme-text);
+}
+
+.navbar__user-roles {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-1);
+}
+
+.locale-switcher__short {
+  display: none;
+}
+
+.navbar__locale {
+  .locale-switcher__full {
+    display: none;
+
+    @include respond-to('sm') {
+      display: inline;
+    }
+  }
+
+  .locale-switcher__short {
+    display: inline;
+
+    @include respond-to('sm') {
+      display: none;
+    }
+  }
+}
+
+.navbar--app .navbar__start .btn--icon,
+.navbar--app .navbar__actions .btn--icon,
+.navbar--app .global-search .btn--icon,
+.navbar--app .navbar__actions > .btn {
+  @include in-tts-shell {
+    min-inline-size: var(--size-touch-target);
+    min-block-size: var(--size-touch-target);
+    border-radius: var(--btn-radius);
   }
 }

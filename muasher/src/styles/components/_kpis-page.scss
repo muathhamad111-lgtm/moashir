@@ -28,13 +28,13 @@
   background-color: var(--color-dark);
   color: var(--color-primary);
   font-size: var(--fs-xs);
-  font-weight: var(--fw-semibold);
+  font-weight: var(--fw-figure);
 }
 
 .kpis-page__title {
   margin: 0;
   font-size: var(--fs-5xl);
-  font-weight: var(--fw-black);
+  font-weight: var(--fw-display);
   color: var(--color-white);
   line-height: var(--lh-tight);
 }
@@ -85,7 +85,7 @@
 
 .kpis-page__filter-label {
   font-size: var(--fs-xs);
-  font-weight: var(--fw-semibold);
+  font-weight: var(--fw-body);
   color: var(--theme-text-muted);
 }
 
@@ -139,4 +139,8 @@
   .kpi-grid-enter-from {
     transform: none;
   }
+}
+
+.kpis-page__filters {
+  display: contents;
 }

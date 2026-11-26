@@ -24,7 +24,7 @@ final class PaymentEventResource extends JsonResource
 
         return [
             'id' => $event->id,
-            'payment' => $event->payment instanceof Payment ? ['id' => $event->payment->public_id, 'reference' => $event->payment->reference] : null,
+            'payment' => $event->payment instanceof Payment ? $this->paymentOf($event->payment) : null,
             'source' => $event->source->value,
             'event_type' => $event->event_type,
             'mode' => $event->mode?->value,
@@ -34,6 +34,18 @@ final class PaymentEventResource extends JsonResource
             'provider_ref' => PaymentPresenter::maskedReference($event->provider_payment_id),
             'created_at' => $event->created_at->toIso8601String(),
             'processed_at' => $event->processed_at?->toIso8601String(),
+        ];
+    }
+
+    /**
+     * @return array{id: string, reference: string, entity_name: array{ar: string, en: string|null}}
+     */
+    private function paymentOf(Payment $payment): array
+    {
+        return [
+            'id' => $payment->public_id,
+            'reference' => $payment->reference,
+            'entity_name' => $payment->entity_name->toArray(),
         ];
     }
 }

@@ -12,5 +12,5 @@ final readonly class DemoActivity
     /**
      * @param  list<Payment>  $payments
      */
-    public function __construct(public AwardCycle $cycle, public array $payments) {}
+    public function __construct(public AwardCycle $cycle, public array $payments, public int $accreditedResults = 0) {}
 }

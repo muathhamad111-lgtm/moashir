@@ -64,7 +64,12 @@ function insertPlaceholder(token) {
   <fieldset class="template-editor" :disabled="disabled">
     <legend v-if="label" class="template-editor__legend">{{ label }}</legend>
 
-    <div v-if="placeholders.length" class="template-editor__palette" role="group" :aria-label="t('settings.template.paletteLabel')">
+    <div
+      v-if="placeholders.length"
+      class="template-editor__palette"
+      role="group"
+      :aria-label="t('settings.template.paletteLabel')"
+    >
       <span class="template-editor__palette-label">{{ t('settings.template.insert') }}</span>
       <button
         v-for="item in placeholders"

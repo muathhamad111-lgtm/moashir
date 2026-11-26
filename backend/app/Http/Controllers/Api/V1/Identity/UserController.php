@@ -11,34 +11,42 @@ use App\Actions\Identity\UpdateStaffUser;
 use App\Http\Requests\Identity\IndexUsersRequest;
 use App\Http\Requests\Identity\StoreUserRequest;
 use App\Http\Requests\Identity\UpdateUserRequest;
+use App\Http\Resources\Identity\UserListResource;
 use App\Http\Resources\Identity\UserResource;
 use App\Http\Responses\ApiResponse;
 use App\Models\Identity\User;
+use App\Services\Nda\NdaStatusLookup;
 use Illuminate\Container\Attributes\CurrentUser;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Response;
 
 final class UserController
 {
-    public function index(IndexUsersRequest $request, ListStaffUsers $listUsers, SummarizeStaffUsers $summarize): JsonResponse
+    public function index(IndexUsersRequest $request, ListStaffUsers $listUsers, SummarizeStaffUsers $summarize, NdaStatusLookup $nda): JsonResponse
     {
         $filters = $request->filters();
+        $users = $listUsers->handle($filters);
+        $statuses = $nda->of(array_values($users->items()));
+        $items = array_map(static fn (User $user): array => [
+            ...new UserListResource($user)->resolve($request),
+            'nda_status' => $statuses[$user->id]->value,
+        ], array_values($users->items()));
 
-        return ApiResponse::paginated($listUsers->handle($filters), UserResource::class, ['stats' => $summarize->handle($filters)]);
+        return ApiResponse::page($users, $items, ['stats' => $summarize->handle($filters), ...$nda->meta()]);
     }
 
     public function store(StoreUserRequest $request, #[CurrentUser] User $actor, InviteStaffUser $inviteUser): JsonResponse
     {
-        return ApiResponse::resource(new UserResource($inviteUser->handle($actor, $request->staffUser())), Response::HTTP_CREATED);
+        return ApiResponse::resource(new UserResource($inviteUser->handle($actor, $request->staffUser())->load(User::ADMINISTRATION_RELATIONS)), Response::HTTP_CREATED);
     }
 
     public function show(User $managedUser): JsonResponse
     {
-        return ApiResponse::resource(new UserResource($managedUser->load('roles')));
+        return ApiResponse::resource(new UserResource($managedUser->load(User::ADMINISTRATION_RELATIONS)));
     }
 
     public function update(UpdateUserRequest $request, User $managedUser, #[CurrentUser] User $actor, UpdateStaffUser $updateUser): JsonResponse
     {
-        return ApiResponse::resource(new UserResource($updateUser->handle($actor, $managedUser, $request->changes())));
+        return ApiResponse::resource(new UserResource($updateUser->handle($actor, $managedUser, $request->changes())->load(User::ADMINISTRATION_RELATIONS)));
     }
 }

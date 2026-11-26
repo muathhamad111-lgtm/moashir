@@ -1,5 +1,6 @@
 <script setup>
 import { computed, nextTick, ref, watch } from 'vue'
+import { digitsOnly } from '@/utils/numerals'
 
 const props = defineProps({
   modelValue: { type: String, default: '' },
@@ -8,11 +9,16 @@ const props = defineProps({
   disabled: { type: Boolean, default: false },
   invalid: { type: Boolean, default: false },
   describedBy: { type: String, default: undefined },
+  // The boxes appear one after another when the group first mounts (a code step opening).
+  entrance: { type: Boolean, default: false },
+  // The code was accepted: the boxes turn to the success colour.
+  verified: { type: Boolean, default: false },
 })
 
 const emit = defineEmits(['update:modelValue', 'complete'])
 
 const boxes = ref([])
+const shaking = ref(false)
 
 const digits = computed(() => {
   const chars = (props.modelValue ?? '').slice(0, props.length).split('')
@@ -40,7 +46,7 @@ function focusBox(index) {
 }
 
 function onInput(index, event) {
-  const raw = event.target.value.replace(/\D/g, '')
+  const raw = digitsOnly(event.target.value)
   if (!raw) {
     setDigit(index, '')
     return
@@ -71,7 +77,7 @@ function onKeydown(index, event) {
 
 function onPaste(index, event) {
   event.preventDefault()
-  const text = (event.clipboardData?.getData('text') ?? '').replace(/\D/g, '')
+  const text = digitsOnly(event.clipboardData?.getData('text') ?? '')
   if (!text) return
   const current = digits.value.slice()
   for (let offset = 0; offset < text.length && index + offset < props.length; offset += 1) {
@@ -94,11 +100,34 @@ watch(
   },
 )
 
+// A wrong code shakes the row once each time the error appears.
+watch(
+  () => props.invalid,
+  (invalid, wasInvalid) => {
+    if (!invalid || wasInvalid) return
+    shaking.value = false
+    requestAnimationFrame(() => (shaking.value = true))
+  },
+)
+
+const groupClasses = computed(() => [
+  'otp-input',
+  props.entrance && 'otp-input--entrance',
+  shaking.value && 'is-shaking',
+  props.verified && 'is-verified',
+])
+
 defineExpose({ focusFirst: () => focusBox(0) })
 </script>
 
 <template>
-  <div class="otp-input" role="group" :aria-label="label" :aria-describedby="describedBy">
+  <div
+    :class="groupClasses"
+    role="group"
+    :aria-label="label"
+    :aria-describedby="describedBy"
+    @animationend.self="shaking = false"
+  >
     <input
       v-for="(digit, index) in digits"
       :key="index"

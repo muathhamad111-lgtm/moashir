@@ -33,7 +33,7 @@ final class CommitteeScoresResource extends JsonResource
         return [
             'assignment_id' => $scores->assignment->id,
             'status' => $scores->assignment->status->value,
-            'scale' => ['kind' => $scale->value, 'maximum' => $scale->maximum()],
+            'scale' => $scale === null ? null : ['kind' => $scale->value, 'maximum' => $scale->maximum()],
             'scores' => ['subs' => (object) $byLevel[ScoreLevel::Sub->value], 'points' => (object) $byLevel[ScoreLevel::Point->value]],
             'progress' => ['scored' => $scores->scoredCount(), 'required' => $scores->requiredCount()],
             'percent' => $scores->assignment->percent?->toDisplay(),

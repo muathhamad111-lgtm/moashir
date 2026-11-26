@@ -12,7 +12,7 @@
 .fee-summary__eyebrow {
   margin-block-end: var(--space-1);
   font-size: var(--fs-xs);
-  font-weight: var(--fw-medium);
+  font-weight: var(--fw-body);
   color: var(--theme-accent-text);
 }
 
@@ -54,7 +54,7 @@
 
 .fee-summary__total-label {
   font-size: var(--fs-base);
-  font-weight: var(--fw-semibold);
+  font-weight: var(--fw-body);
   color: var(--theme-heading);
 }
 
@@ -64,7 +64,7 @@
 
 .fee-summary__amount-value {
   font-size: var(--fs-2xl);
-  font-weight: var(--fw-bold);
+  font-weight: var(--fw-figure);
   color: var(--theme-accent-text);
   font-variant-numeric: tabular-nums;
 }

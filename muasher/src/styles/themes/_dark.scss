@@ -5,6 +5,8 @@
   --theme-bg: var(--color-dark);
   --theme-surface: #{rgba($color-secondary, 0.04)};
   --theme-surface-raised: #{rgba($color-secondary, 0.08)};
+  // Sticky bars must be opaque: the translucent surface lets scrolled content show through.
+  --theme-bar-bg: var(--theme-bg);
   --theme-text: var(--color-secondary);
   --theme-text-muted: var(--color-gray-300);
   --theme-text-secondary: var(--color-gray-300);
@@ -15,15 +17,33 @@
   --theme-accent-text: var(--accent-fill, var(--color-primary));
   --theme-on-accent: var(--color-dark);
   --theme-accent-soft: color-mix(in srgb, var(--theme-accent) 16%, transparent);
+  --theme-accent-hover: color-mix(in srgb, var(--theme-accent) 88%, var(--color-dark));
+  --theme-gold-text: var(--color-gold);
+  --theme-tint: #{rgba($color-secondary, 0.03)};
+  --theme-warning-text: var(--color-warning);
+  --theme-success-text: var(--color-success);
+  --theme-warning-soft: color-mix(in srgb, var(--theme-warning-text) 18%, transparent);
+  --theme-danger-soft: color-mix(in srgb, var(--theme-danger-text) 18%, transparent);
+  --theme-success-soft: color-mix(in srgb, var(--theme-success-text) 18%, transparent);
+  --theme-info-text: var(--color-info);
+  --theme-border-strong: #{rgba($color-secondary, 0.32)};
+  --theme-input-border: var(--theme-text-muted);
+  --pattern-opacity: var(--opacity-pattern-dark);
   --content-bg: var(--theme-bg);
-  --sidebar-bg: var(--color-dark-deep);
-  --sidebar-text: #{rgba($color-secondary, 0.82)};
-  --sidebar-caption: #{rgba($color-secondary, 0.6)};
-  --sidebar-hover-bg: #{rgba($color-secondary, 0.08)};
-  --sidebar-hover-text: var(--color-secondary);
-  --sidebar-active-text: var(--theme-accent-text);
-  --sidebar-focus-ring: var(--theme-accent);
   --navbar-bg: var(--content-bg);
+  --path-self-edge: var(--color-info);
+  --path-self-text: #{$color-path-self-text-dark};
+  --path-accredited-edge: var(--color-primary);
+  --path-accredited-text: #{$color-path-accredited-text-dark};
+  --path-advanced-edge: var(--color-gold);
+  --path-advanced-text: #{$color-path-advanced-text-dark};
+  --path-bag-edge: var(--color-bronze);
+  --path-bag-text: #{$color-path-bag-text-dark};
+  --theme-surface-solid: color-mix(in srgb, var(--color-secondary) 4%, var(--color-dark));
+  --field-label-rest: transparent;
+  --field-label-backdrop: var(--theme-bg);
+  --field-label-under: transparent;
+  --path-fill-strength: #{$opacity-path-fill-dark};
 }
 
 :root,

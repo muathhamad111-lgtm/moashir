@@ -35,15 +35,3 @@ export function useCriteriaVersions() {
 
   return { versions, status, draft, published, findVersion, load }
 }
-
-export function useCriteriaVersion() {
-  const version = ref(null)
-
-  async function loadVersion(versionId) {
-    const envelope = await criteriaService.getVersion(versionId)
-    version.value = envelope.data
-    return version.value
-  }
-
-  return { version, loadVersion }
-}

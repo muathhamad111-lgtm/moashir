@@ -11,16 +11,32 @@ use App\Models\Assessments\AssessmentCompletionRequest;
 
 final class CompletionScope
 {
-    public function assertRequested(Assessment $locked, string $subCode, CompletionItemKind $kind, string $field): void
+    /**
+     * @param  string  $code  the main criterion or sub-criterion the change touches
+     */
+    public function assertRequested(Assessment $locked, string $code, CompletionItemKind $kind, string $field): void
     {
-        if (! $locked->path->isReviewed() || $locked->status !== $locked->path->reviewStages()->needsCompletion) {
+        if (! $this->isBackForCompletion($locked)) {
             return;
         }
 
         $request = $locked->loadMissing('openCompletionRequest')->openCompletionRequest;
 
-        if (! $request instanceof AssessmentCompletionRequest || ! $request->requests($subCode, $kind->value)) {
+        if (! $request instanceof AssessmentCompletionRequest || ! $request->requests($code, $kind->value)) {
             throw AssessmentRejected::completionItemNotRequested($field);
         }
+    }
+
+    /**
+     * The open completion request while the request is back with the entity for completion; null otherwise.
+     */
+    public function openRequestOf(Assessment $assessment): ?AssessmentCompletionRequest
+    {
+        return $this->isBackForCompletion($assessment) ? $assessment->loadMissing('openCompletionRequest')->openCompletionRequest : null;
+    }
+
+    private function isBackForCompletion(Assessment $assessment): bool
+    {
+        return $assessment->path->isReviewed() && $assessment->status === $assessment->path->reviewStages()->needsCompletion;
     }
 }

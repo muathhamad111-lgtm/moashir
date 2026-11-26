@@ -18,6 +18,12 @@ function write(action, execute, entity, payload) {
 }
 
 export const criteriaService = {
+  listEditEvents(params = {}) {
+    return send('listEditEvents', () => apiClient.get('/criteria/edit-events', { params }), {
+      entity: 'criteria-edit-event',
+      paramsShape: payloadShape(params),
+    })
+  },
   listVersions(params = {}) {
     return send('listVersions', () => apiClient.get('/criteria/versions', { params }), {
       entity: 'criteria-version',
@@ -26,6 +32,11 @@ export const criteriaService = {
   },
   getVersion(versionId) {
     return send('getVersion', () => apiClient.get(`/criteria/versions/${versionId}`), {
+      entity: 'criteria-version',
+    })
+  },
+  getTree(versionId) {
+    return send('getTree', () => apiClient.get(`/criteria/versions/${versionId}/tree`), {
       entity: 'criteria-version',
     })
   },
@@ -48,6 +59,41 @@ export const criteriaService = {
     return send('checkVersion', () => apiClient.get(`/criteria/versions/${versionId}/check`), {
       entity: 'criteria-version',
     })
+  },
+  saveSubWeights(mainId, weights) {
+    const payload = { weights }
+    return write(
+      'saveSubWeights',
+      () => apiClient.put(`/criteria/mains/${mainId}/subs/weights`, payload),
+      'sub-criterion',
+      payload,
+    )
+  },
+  savePointWeights(subId, weights) {
+    const payload = { weights }
+    return write(
+      'savePointWeights',
+      () => apiClient.put(`/criteria/subs/${subId}/points/weights`, payload),
+      'guiding-point',
+      payload,
+    )
+  },
+  applyPointScoringType(subId, scoringType) {
+    const payload = { scoringType }
+    return write(
+      'applyPointScoringType',
+      () => apiClient.put(`/criteria/subs/${subId}/points/scoring-type`, payload),
+      'sub-criterion',
+      payload,
+    )
+  },
+  previewPublication(versionId) {
+    return send(
+      'previewPublication',
+      () => apiClient.get(`/criteria/versions/${versionId}/changes`),
+      { entity: 'criteria-version' },
+      { expectedStatuses: DOMAIN_REJECTION },
+    )
   },
   publishVersion(versionId, { scope = null, reason = null } = {}) {
     const payload = { confirm: true, scope, reason }
@@ -138,8 +184,8 @@ export const criteriaService = {
       payload,
     )
   },
-  switchEvaluationType(subId, evaluationType, { confirmDeletePoints = false } = {}) {
-    const payload = { evaluationType, confirmDeletePoints }
+  switchEvaluationType(subId, evaluationType) {
+    const payload = { evaluationType }
     return write(
       'switchEvaluationType',
       () => apiClient.patch(`/criteria/subs/${subId}/evaluation-type`, payload),

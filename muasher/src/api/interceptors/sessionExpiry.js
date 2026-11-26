@@ -1,4 +1,4 @@
-import { notifySessionExpired } from '../sessionEvents'
+import { markServerActivity, notifySessionExpired } from '../sessionEvents'
 
 const SESSION_LOSS_STATUSES = new Set([401, 419])
 
@@ -12,4 +12,9 @@ export function reportSessionLoss(error) {
     notifySessionExpired()
   }
   throw error
+}
+
+export function recordServerActivity(response) {
+  markServerActivity()
+  return response
 }

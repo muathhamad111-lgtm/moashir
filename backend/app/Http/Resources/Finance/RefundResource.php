@@ -13,6 +13,8 @@ use Illuminate\Http\Resources\Json\JsonResource;
  */
 final class RefundResource extends JsonResource
 {
+    public const array RELATIONS = ['payment', 'recordedBy', 'evidenceFile'];
+
     /**
      * @return array<string, mixed>
      */

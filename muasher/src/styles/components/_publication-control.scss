@@ -24,3 +24,13 @@
   font-size: var(--fs-sm);
   color: var(--theme-text-muted);
 }
+
+.publication-control__actions {
+  @include flex(row, center, flex-end, var(--space-2));
+  flex-wrap: wrap;
+}
+
+.publication-control__date {
+  display: block;
+  margin-block-start: var(--space-1);
+}

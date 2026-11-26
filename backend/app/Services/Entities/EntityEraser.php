@@ -9,7 +9,7 @@ use App\Data\Entities\ErasureOutcome;
 use App\Enums\Entities\ErasureRetainedRecord;
 use App\Models\Entities\Entity;
 use App\Models\Entities\EntityProfileChange;
-use App\Models\Entities\PrivacyRequest;
+use App\Models\Entities\EntityProfileChangeRequest;
 use App\Models\Identity\EmailChangeRequest;
 use App\Models\Identity\User;
 use App\Support\ValueObjects\EntityName;
@@ -74,7 +74,7 @@ final readonly class EntityEraser
                 ->when($owner instanceof User, static fn (Builder $inner): Builder => $inner->orWhere('user_id', $owner?->id)))
             ->delete();
         EntityProfileChange::query()->where('entity_id', $entity->id)->delete();
-        PrivacyRequest::query()->where('entity_id', $entity->id)->delete();
+        EntityProfileChangeRequest::query()->where('entity_id', $entity->id)->delete();
         $this->deadlines->forget($entity);
     }
 
@@ -85,8 +85,22 @@ final readonly class EntityEraser
             'marketing_consent_at' => null,
             'marketing_unsubscribed_at' => null,
             'deactivation_reason' => null,
+            'rejection_reason' => null,
             'deletion_reason' => null,
             'verification_reminded_at' => null,
+            'unified_number' => null,
+            'license_number' => null,
+            'founded_on' => null,
+            'website_url' => null,
+            'address_building_number' => null,
+            'address_street' => null,
+            'address_district' => null,
+            'address_city' => null,
+            'address_postal_code' => null,
+            'address_additional_number' => null,
+            'address_short_code' => null,
+            'vat_registered' => null,
+            'vat_number' => null,
             'anonymized_at' => $erasedAt,
         ])->save();
     }

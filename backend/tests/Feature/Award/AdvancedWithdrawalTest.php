@@ -2,12 +2,16 @@
 
 declare(strict_types=1);
 
+use App\Enums\Assessments\AdvancedAssessmentStatus;
 use App\Enums\Audit\AuditEvent;
+use App\Enums\Award\AwardCycleStatus;
 use App\Enums\Award\CycleMemberRole;
 use App\Enums\Notifications\NotificationCode;
+use App\Models\Assessments\Assessment;
 use App\Models\Assessments\AssessmentAssignment;
 use App\Models\Assessments\AssessmentStatusTransition;
 use App\Models\Audit\Audit;
+use App\Models\Identity\User;
 use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\Notification;
 
@@ -69,4 +73,47 @@ it('withdraws a frozen request and requires a reason from the Super Admin', func
     switchTo(requestFollower())->postJson("/api/v1/requests/{$assessment->id}/withdraw", ['reason' => WITHDRAWAL_REASON])->assertOk()->assertJsonPath('data.status', 'withdrawn');
 
     expect(Audit::query()->where('event', AuditEvent::AwardWithdrawn->value)->firstOrFail()->new_values['frozen'])->toBeTrue();
+});
+
+/**
+ * @return list<string|null>
+ */
+function historyStatusesSeenBy(User $viewer, Assessment $assessment): array
+{
+    $history = switchTo($viewer)->getJson("/api/v1/assessments/{$assessment->id}")->assertOk()->json('data.status_history');
+
+    return [...array_column($history, 'from'), ...array_column($history, 'to')];
+}
+
+it('masks the award stage a request was withdrawn from until announcement, for each kind of viewer', function (): void {
+    ['cycle' => $cycle, 'requests' => [$assessment]] = committeeScenario();
+    expect($assessment->status)->toBe(AdvancedAssessmentStatus::UnderCommitteeAssessment);
+    $owner = ownerOf($assessment->entity);
+    $dashboardRow = collect(boardWidget(boardOf($owner), 'requests'))->firstWhere('id', $assessment->id);
+    expect($dashboardRow['status'])->toBe(AdvancedAssessmentStatus::ENTITY_PLACEHOLDER)
+        ->and(financeNoticeSent($owner, NotificationCode::AdvancedQualified))->toBeFalse()
+        ->and(financeNoticeSent($owner, NotificationCode::CommitteeAssigned))->toBeFalse();
+    $follower = requestFollower();
+    switchTo($follower)->postJson("/api/v1/requests/{$assessment->id}/withdraw", ['reason' => WITHDRAWAL_REASON])->assertOk();
+    expect(financeNoticeSent($owner, NotificationCode::AdvancedWithdrawn))->toBeTrue();
+    $initialAssessor = User::query()->findOrFail(AssessmentAssignment::query()->where('assessment_id', $assessment->id)->value('assessor_user_id'));
+    $masked = AdvancedAssessmentStatus::valuesOf(...AdvancedAssessmentStatus::filteringVisibleStates());
+    $outcomes = array_values(array_diff($masked, [AdvancedAssessmentStatus::AwaitingFiltering->value]));
+    $stage = AdvancedAssessmentStatus::UnderCommitteeAssessment->value;
+
+    $entitySees = historyStatusesSeenBy($owner, $assessment);
+    expect(array_intersect($entitySees, $masked))->toBe([])
+        ->and($entitySees)->toContain(AdvancedAssessmentStatus::ENTITY_PLACEHOLDER);
+
+    $assessorSees = historyStatusesSeenBy($initialAssessor, $assessment);
+    expect(array_intersect($assessorSees, $outcomes))->toBe([])
+        ->and($assessorSees)->toContain(AdvancedAssessmentStatus::AwaitingFiltering->value);
+
+    expect(historyStatusesSeenBy($follower, $assessment))->toContain($stage);
+
+    $cycle->forceFill(['status' => AwardCycleStatus::Announced, 'national_approved_at' => Date::now(), 'announced_at' => Date::now()])->save();
+
+    expect(historyStatusesSeenBy($owner, $assessment))->toContain($stage)
+        ->and(historyStatusesSeenBy($initialAssessor, $assessment))->toContain($stage)
+        ->and(historyStatusesSeenBy($follower, $assessment))->toContain($stage);
 });

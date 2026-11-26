@@ -1,6 +1,21 @@
 import { payloadShape } from '@/utils/payloadShape'
 import { apiClient } from '@/api/client'
 import { serviceRequest } from './serviceRequest'
+import { toCertificateCard, toStaffCertificate, toVerification } from './mappers/certificates'
+
+const DOWNLOAD_REJECTIONS = [409, 503]
+const VERIFY_REJECTIONS = [429]
+const STAFF_REJECTIONS = [404, 409, 422, 429]
+const REQUEST_CERTIFICATES_LIMIT = 20
+
+function staffWrite(action, execute, payload) {
+  return serviceRequest(
+    `certificates.${action}`,
+    execute,
+    { entity: 'certificate', payloadShape: payloadShape(payload) },
+    { expectedStatuses: STAFF_REJECTIONS },
+  ).then((envelope) => ({ ...envelope, data: toStaffCertificate(envelope.data) }))
+}
 
 export const certificatesService = {
   list(params = {}) {
@@ -8,6 +23,13 @@ export const certificatesService = {
       entity: 'certificate',
       paramsShape: payloadShape(params),
     })
+  },
+
+  listCards(params = {}) {
+    return certificatesService.list(params).then((envelope) => ({
+      ...envelope,
+      data: (envelope.data ?? []).map(toCertificateCard),
+    }))
   },
 
   get(certificateId) {
@@ -23,6 +45,68 @@ export const certificatesService = {
       'certificates.download',
       () => apiClient.post(`/certificates/${certificateId}/download`),
       { entity: 'certificate' },
+      { expectedStatuses: DOWNLOAD_REJECTIONS },
     )
+  },
+
+  listForRequest(assessmentId) {
+    const params = { 'filter[assessmentId]': assessmentId, perPage: REQUEST_CERTIFICATES_LIMIT }
+    return certificatesService.list(params).then((envelope) => ({
+      ...envelope,
+      data: (envelope.data ?? []).map(toStaffCertificate),
+      issuanceMode: envelope.meta?.accreditedIssuanceMode ?? null,
+    }))
+  },
+
+  // The assigned assessor's view of the request: its current certificate and the issuance mode.
+  requestState(assessmentId) {
+    return serviceRequest(
+      'certificates.requestState',
+      () => apiClient.get(`/assessments/${assessmentId}/certificate`),
+      { entity: 'certificate' },
+    ).then((envelope) => ({
+      ...envelope,
+      data: {
+        certificate: envelope.data?.certificate
+          ? toStaffCertificate(envelope.data.certificate)
+          : null,
+        issuanceMode: envelope.data?.issuanceMode ?? null,
+      },
+    }))
+  },
+
+  revoke(certificateId, reason) {
+    const payload = { reason }
+    return staffWrite(
+      'revoke',
+      () => apiClient.post(`/certificates/${certificateId}/revoke`, payload),
+      payload,
+    )
+  },
+
+  reissue(certificateId, reason) {
+    const payload = { reason }
+    return staffWrite(
+      'reissue',
+      () => apiClient.post(`/certificates/${certificateId}/reissue`, payload),
+      payload,
+    )
+  },
+
+  issueForRequest(assessmentId, payload = {}) {
+    return staffWrite(
+      'issueForRequest',
+      () => apiClient.post(`/assessments/${assessmentId}/certificate`, payload),
+      payload,
+    )
+  },
+
+  verify(code) {
+    return serviceRequest(
+      'certificates.verify',
+      () => apiClient.get(`/verify/${encodeURIComponent(code)}`),
+      { entity: 'certificate-verification' },
+      { expectedStatuses: VERIFY_REJECTIONS },
+    ).then((envelope) => ({ ...envelope, data: toVerification(envelope.data) }))
   },
 }

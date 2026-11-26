@@ -6,6 +6,7 @@ import { ROUTE_NAMES } from '@/constants/routeNames'
 import { useSiteStatusStore } from '@/stores/siteStatus'
 import Skeleton from '@/components/feedback/Skeleton.vue'
 import BaseButton from '@/components/ui/BaseButton.vue'
+import AppIcon from '@/components/ui/AppIcon.vue'
 
 const { t } = useI18n()
 const siteStatus = useSiteStatusStore()
@@ -17,7 +18,7 @@ onMounted(() => siteStatus.refresh())
 <template>
   <section class="maintenance" aria-labelledby="maintenance-title">
     <span class="maintenance__icon" aria-hidden="true">
-      <i class="fa-solid fa-screwdriver-wrench"></i>
+      <AppIcon name="gear" />
     </span>
 
     <div v-if="status === 'loading'" class="maintenance__loading" role="status">
@@ -30,10 +31,10 @@ onMounted(() => siteStatus.refresh())
       <p class="maintenance__hint">{{ t('maintenance.staffHint') }}</p>
       <div class="maintenance__actions">
         <router-link class="btn btn--primary" :to="{ name: ROUTE_NAMES.AUTH_LOGIN }">
-          <i class="fa-solid fa-right-to-bracket u-flip-in-rtl" aria-hidden="true"></i>
+          <AppIcon name="login" />
           {{ t('maintenance.staffLogin') }}
         </router-link>
-        <BaseButton variant="ghost" icon="fa-solid fa-rotate" @click="siteStatus.refresh()">
+        <BaseButton variant="ghost" icon="refresh" @click="siteStatus.refresh()">
           {{ t('maintenance.retry') }}
         </BaseButton>
       </div>
@@ -43,7 +44,7 @@ onMounted(() => siteStatus.refresh())
       <h1 id="maintenance-title" class="maintenance__title">{{ t('maintenance.available') }}</h1>
       <div class="maintenance__actions">
         <router-link class="btn btn--primary" :to="{ name: ROUTE_NAMES.PUBLIC_HOME }">
-          <i class="fa-solid fa-house" aria-hidden="true"></i>
+          <AppIcon name="home-smile" />
           {{ t('maintenance.backHome') }}
         </router-link>
       </div>

@@ -1,24 +1,55 @@
-export const NOTIFICATION_TYPES = {
-  info: 'info',
-  action: 'action',
-  alert: 'alert',
-  error: 'error',
+export const NOTIFICATION_TABS = Object.freeze({ ALL: 'all', UNREAD: 'unread' })
+
+export const NOTIFICATION_CATEGORIES = Object.freeze({
+  ACTION_REQUIRED: 'action_required',
+  INFORMATIONAL: 'informational',
+  ALERT: 'alert',
+  ERROR: 'error',
+})
+
+export const NOTIFICATION_CATEGORY_ICONS = Object.freeze({
+  action_required: 'lightning',
+  informational: 'info-circle',
+  alert: 'warning-triangle',
+  error: 'warning-triangle',
+})
+
+export const NOTIFICATION_MODULE_ICONS = Object.freeze({
+  REG: 'building',
+  SELF: 'doc',
+  ACC: 'clipboard-check',
+  ADV: 'trophy',
+  EVD: 'folder',
+  PAY: 'credit-card',
+  CERT: 'award',
+  CNT: 'envelope',
+})
+
+export const NOTIFICATION_MODULES = Object.freeze([
+  'USR',
+  'REG',
+  'SEC',
+  'STD',
+  'SELF',
+  'ACC',
+  'ADV',
+  'CYC',
+  'EVD',
+  'INT',
+  'AI',
+  'PAY',
+  'FIN',
+  'CMS',
+  'CERT',
+  'CNT',
+])
+
+export const EDITABLE_NOTIFICATION_CHANNELS = Object.freeze(['email', 'sms'])
+
+export function notificationIconOf(notification) {
+  return (
+    NOTIFICATION_MODULE_ICONS[notification.module] ??
+    NOTIFICATION_CATEGORY_ICONS[notification.category] ??
+    NOTIFICATION_CATEGORY_ICONS.informational
+  )
 }
-
-export const NOTIFICATION_TYPE_ICONS = {
-  info: 'fa-solid fa-circle-info',
-  action: 'fa-solid fa-bolt',
-  alert: 'fa-solid fa-triangle-exclamation',
-  error: 'fa-solid fa-circle-exclamation',
-}
-
-export const NOTIFICATION_TYPE_VARIANTS = {
-  info: 'info',
-  action: 'success',
-  alert: 'warning',
-  error: 'danger',
-}
-
-export const NOTIFICATION_FILTERS = ['all', 'unread', 'action', 'info', 'alert', 'error']
-
-export const RESTRICTED_DETAIL_HIDDEN_ROLES = ['entity']

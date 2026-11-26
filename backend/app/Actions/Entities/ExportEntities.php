@@ -58,6 +58,7 @@ final readonly class ExportEntities
             'entity_type' => $filters->entityType?->value,
             'development_sector' => $filters->developmentSector?->value,
             'org_size' => $filters->orgSize?->value,
+            'level' => $filters->level?->value,
             'only_deleted' => $filters->onlyDeleted,
         ];
     }

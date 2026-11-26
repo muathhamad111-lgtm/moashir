@@ -1,0 +1,20 @@
+port 0
+unixsocket {{SOCKET}}
+unixsocketperm 660
+protected-mode yes
+daemonize no
+supervised no
+logfile ""
+loglevel notice
+databases 2
+dir {{DATA_DIR}}
+dbfilename dump.rdb
+save 3600 1 300 100 60 10000
+appendonly yes
+appendfsync everysec
+maxmemory {{MAXMEMORY}}
+maxmemory-policy noeviction
+timeout 0
+enable-protected-configs no
+enable-debug-command no
+enable-module-command no

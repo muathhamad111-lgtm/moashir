@@ -8,7 +8,13 @@ import {
   readBody,
 } from '../stores/integrations/integrationRejection'
 import { throttleTest } from '../stores/integrations/integrationTesting'
-import { aiResource, listModels, testAi, testAnswer, updateAi } from '../stores/integrations/aiIntegration'
+import {
+  aiResource,
+  listModels,
+  testAi,
+  testAnswer,
+  updateAi,
+} from '../stores/integrations/aiIntegration'
 
 const PATH = '/api/v1/settings/ai'
 

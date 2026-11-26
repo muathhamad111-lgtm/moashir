@@ -13,12 +13,14 @@ use App\Models\Assessments\EvidenceBundle;
 use App\Models\Assessments\EvidenceFile;
 use App\Models\Identity\User;
 use App\Services\Assessments\AssessmentRecordScope;
+use App\Services\Assessments\ReviewNoteAccess;
 use App\Services\Award\CommitteeSeating;
+use App\Services\Identity\RequestPathScope;
 use Illuminate\Auth\Access\Response;
 
 final readonly class AssessmentPolicy
 {
-    public function __construct(private AssessmentRecordScope $scope, private CommitteeSeating $committee) {}
+    public function __construct(private AssessmentRecordScope $scope, private CommitteeSeating $committee, private RequestPathScope $paths, private ReviewNoteAccess $notes) {}
 
     public function viewAny(User $actor): bool
     {
@@ -52,6 +54,11 @@ final readonly class AssessmentPolicy
     public function viewAdvancedCurrent(User $actor): bool
     {
         return $actor->entity_id !== null && $actor->can(PermissionKey::AssessmentAdvancedManage->value);
+    }
+
+    public function startAccredited(User $actor): bool
+    {
+        return $this->viewAccreditedCurrent($actor);
     }
 
     public function applyAdvanced(User $actor): bool
@@ -138,7 +145,7 @@ final readonly class AssessmentPolicy
 
     public function viewEvidenceBundle(User $actor, Assessment $assessment, EvidenceBundle $bundle): Response
     {
-        if ($bundle->assessment_id !== $assessment->id || (! $actor->isSuperAdmin() && ! $bundle->isRequestedBy($actor->id))) {
+        if ($bundle->assessment_id !== $assessment->id || ! $bundle->isRequestedBy($actor->id)) {
             return Response::denyAsNotFound();
         }
 
@@ -161,12 +168,12 @@ final readonly class AssessmentPolicy
             return Response::denyAsNotFound();
         }
 
-        if ($actor->can(PermissionKey::RequestsQueueView->value)) {
+        if ($this->followsQueueOf($actor, $assessment)) {
             return Response::allow();
         }
 
         if (! $actor->can(PermissionKey::RequestsAssignedView->value)) {
-            return Response::deny();
+            return $actor->can(PermissionKey::RequestsQueueView->value) ? Response::denyAsNotFound() : Response::deny();
         }
 
         return $this->scope->isReviewedBy($actor, $assessment) ? Response::allow() : Response::denyAsNotFound();
@@ -179,7 +186,16 @@ final readonly class AssessmentPolicy
 
     public function assign(User $actor, Assessment $assessment): Response
     {
-        if (! $assessment->path->isReviewed()) {
+        if (! $assessment->path->isReviewed() || ! $this->paths->covers($actor, $assessment->path)) {
+            return Response::denyAsNotFound();
+        }
+
+        return $actor->can(PermissionKey::RequestsAssign->value) ? Response::allow() : Response::deny();
+    }
+
+    public function remind(User $actor, Assessment $assessment): Response
+    {
+        if (! $assessment->isAccredited() || ! $this->paths->covers($actor, $assessment->path)) {
             return Response::denyAsNotFound();
         }
 
@@ -208,6 +224,25 @@ final readonly class AssessmentPolicy
         }
 
         return $access->canRead() ? Response::deny() : Response::denyAsNotFound();
+    }
+
+    /**
+     * The completion rounds of a review show each unit's earlier results, so a committee member, who evaluates
+     * blind, never reads them.
+     */
+    public function reviewRounds(User $actor, Assessment $assessment): Response
+    {
+        return $this->committee->sitsOn($actor, $assessment) ? Response::deny() : $this->review($actor, $assessment);
+    }
+
+    public function readReviewNotes(User $actor, Assessment $assessment): Response
+    {
+        return $this->notes->read($actor, $this->review($actor, $assessment));
+    }
+
+    public function writeReviewNotes(User $actor, Assessment $assessment): Response
+    {
+        return $this->notes->write($actor, $assessment, $this->readReviewNotes($actor, $assessment));
     }
 
     public function score(User $actor, Assessment $assessment): Response
@@ -241,7 +276,7 @@ final readonly class AssessmentPolicy
             return Response::denyAsNotFound();
         }
 
-        if ($actor->can(PermissionKey::RequestsCompletionReturn->value)) {
+        if ($actor->can(PermissionKey::RequestsCompletionReturn->value) && $this->paths->covers($actor, $assessment->path)) {
             return Response::allow();
         }
 
@@ -264,6 +299,11 @@ final readonly class AssessmentPolicy
         }
 
         return $assessment->path === $path && $actor->can($permission->value) ? Response::allow() : Response::deny();
+    }
+
+    private function followsQueueOf(User $actor, Assessment $assessment): bool
+    {
+        return $actor->can(PermissionKey::RequestsQueueView->value) && $this->paths->covers($actor, $assessment->path);
     }
 
     private function isActiveAssignee(User $actor, Assessment $assessment): bool

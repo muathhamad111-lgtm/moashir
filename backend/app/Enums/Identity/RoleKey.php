@@ -16,6 +16,17 @@ enum RoleKey: string
     case FinanceOfficer = 'finance_officer';
     case Entity = 'entity';
 
+    /**
+     * @return list<string>
+     */
+    public static function staffValues(): array
+    {
+        return array_values(array_map(
+            static fn (self $role): string => $role->value,
+            array_filter(self::cases(), static fn (self $role): bool => $role->isStaff()),
+        ));
+    }
+
     public function isStaff(): bool
     {
         return $this !== self::Entity;
@@ -44,6 +55,17 @@ enum RoleKey: string
             self::FinanceOfficer => 80,
             self::Entity => 90,
         };
+    }
+
+    /**
+     * The given roles in catalog order, so a user's roles read the same way in every response and export.
+     *
+     * @param  list<self>  $roles
+     * @return list<self>
+     */
+    public static function inCatalogOrder(array $roles): array
+    {
+        return array_values(array_filter(self::cases(), static fn (self $role): bool => in_array($role, $roles, true)));
     }
 
     /**

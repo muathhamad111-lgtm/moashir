@@ -89,19 +89,25 @@ describe('bag requests — evaluator directory + queue', () => {
 
 describe('bag requests — assignment', () => {
   it('assigns an awaiting request to an evaluator (awaiting-assignment → assigned)', async () => {
-    const assigned = await retryPost('/bag/requests/bag-req-7001/assign', { evaluatorId: EVALUATOR_IDS.HIND })
+    const assigned = await retryPost('/bag/requests/bag-req-7001/assign', {
+      evaluatorId: EVALUATOR_IDS.HIND,
+    })
     expect(assigned.body.data.status).toBe('assigned')
     expect(assigned.body.data.assignedEvaluatorId).toBe(EVALUATOR_IDS.HIND)
     expect(assigned.body.data.assignmentHistory.at(-1).action).toBe('assigned')
   })
 
   it('rejects an assignment to a non-evaluator id with a 422', async () => {
-    const res = await postUntilResolved('/bag/requests/bag-req-7001/assign', { evaluatorId: 999999 })
+    const res = await postUntilResolved('/bag/requests/bag-req-7001/assign', {
+      evaluatorId: 999999,
+    })
     expect(res.status).toBe(422)
   })
 
   it('reassign REQUIRES a reason (§10/§16) — 422 without it', async () => {
-    const res = await postUntilResolved('/bag/requests/bag-req-7003/reassign', { evaluatorId: EVALUATOR_IDS.DAVID })
+    const res = await postUntilResolved('/bag/requests/bag-req-7003/reassign', {
+      evaluatorId: EVALUATOR_IDS.DAVID,
+    })
     expect(res.status).toBe(422)
     expect(res.body.errors.reason).toBeTruthy()
   })
@@ -126,5 +132,15 @@ describe('bag requests — assignment', () => {
       reason: 'x',
     })
     expect(res.status).toBe(422)
+  })
+})
+
+// Request page v4.1: a Kit request carries its own number (KIT-YYYY-NNNNNN), found by search like any request number.
+describe('bag requests — number', () => {
+  it('numbers each Kit request and finds it by its number', async () => {
+    const { body } = await retryGet('/bag/requests/bag-req-7003')
+    expect(body.data.number).toBe('KIT-2026-000004')
+    const found = await retryGet('/bag/requests?search=kit-2026-000004')
+    expect(found.body.data.map((row) => row.id)).toEqual(['bag-req-7003'])
   })
 })

@@ -1,79 +1,50 @@
 import { computed, ref, shallowRef } from 'vue'
-import { useI18n } from 'vue-i18n'
 import { awardCycleService } from '@/services/awardCycleService'
-import { advancedService } from '@/services/advancedService'
 import { useAuthStore } from '@/stores/auth'
-import { usePermissions } from '@/composables/usePermissions'
-import { useToast } from '@/composables/useToast'
-import { PERMISSIONS } from '@/constants/permissionKeys'
-import { AWARD_CODES } from '@/constants/advanced'
+import { useAwardCycleChoice } from '@/composables/useAwardCycleChoice'
 
+// The public award intro: the running cycle for visitors and staff. A signed-in entity is sent to its award path
+// page before it gets here (router/awardEntry.js), where it applies and follows its requests (AJ-04).
 export function useAdvancedIntro() {
-  const { t } = useI18n()
   const auth = useAuthStore()
-  const toast = useToast()
-  const { can } = usePermissions()
   const cycleStatus = ref('loading')
-  const status = ref('idle')
-  const errorMessage = ref('')
   const cycle = shallowRef(null)
-  const current = shallowRef(null)
-  const applying = ref(false)
-  const rejection = shallowRef(null)
-
+  const openCycles = shallowRef([])
   const isAuthenticated = computed(() => auth.isAuthenticated)
-  const isEntity = computed(() => isAuthenticated.value && Boolean(auth.user?.entityId) && can(PERMISSIONS.ASSESSMENT_ADVANCED_MANAGE))
+  const choice = useAwardCycleChoice(
+    openCycles,
+    computed(() => cycle.value?.id ?? null),
+  )
+  const displayedCycle = computed(() => choice.selected.value ?? cycle.value)
 
-  async function loadCycle() {
+  async function loadOpen() {
+    try {
+      openCycles.value = (await awardCycleService.listOpen()).data ?? []
+    } catch {
+      openCycles.value = []
+    }
+  }
+
+  async function load() {
     cycleStatus.value = 'loading'
     try {
-      cycle.value = (await awardCycleService.getCurrent()).data
+      const [current] = await Promise.all([awardCycleService.getCurrent(), loadOpen()])
+      cycle.value = current.data
       cycleStatus.value = cycle.value ? 'ready' : 'empty'
     } catch {
       cycleStatus.value = 'error'
     }
   }
 
-  async function loadCurrent() {
-    if (!isEntity.value) return
-    status.value = 'loading'
-    errorMessage.value = ''
-    try {
-      current.value = (await advancedService.getCurrent()).data
-      status.value = 'ready'
-    } catch (error) {
-      errorMessage.value = error?.normalized?.message ?? ''
-      status.value = 'error'
-    }
+  return {
+    cycleStatus,
+    cycle,
+    openCycles,
+    displayedCycle,
+    showChooser: choice.showChooser,
+    selectedId: choice.selectedId,
+    selectCycle: choice.choose,
+    isAuthenticated,
+    load,
   }
-
-  function load() {
-    return Promise.all([loadCycle(), loadCurrent()])
-  }
-
-  function rejectionOf(error) {
-    const normalized = error?.normalized ?? {}
-    if (normalized.code === AWARD_CODES.CONDITIONS_FAILED) return { code: normalized.code, conditions: normalized.meta?.conditions ?? [] }
-    if (normalized.code === AWARD_CODES.REQUEST_EXISTS) return { code: normalized.code, assessmentId: normalized.meta?.assessmentId ?? null }
-    return { code: normalized.code ?? '', message: normalized.message ?? '' }
-  }
-
-  async function apply() {
-    if (applying.value || !current.value?.cycle) return null
-    applying.value = true
-    rejection.value = null
-    try {
-      const { data } = await advancedService.apply({ awardCycleId: current.value.cycle.id })
-      return data
-    } catch (error) {
-      rejection.value = rejectionOf(error)
-      toast.error(error?.normalized?.message || t('errors.unexpected'))
-      await loadCurrent()
-      return null
-    } finally {
-      applying.value = false
-    }
-  }
-
-  return { cycleStatus, status, errorMessage, cycle, current, applying, rejection, isAuthenticated, isEntity, load, loadCurrent, apply }
 }

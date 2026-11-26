@@ -56,3 +56,19 @@ it('knows the maximum of each scale', function (): void {
     expect(ScaleKind::OutOfTen->maximum())->toBe('10.00')
         ->and(ScaleKind::Relative->maximum())->toBe('100.00');
 });
+
+it('compares a percent with a threshold the way it is displayed', function (string $percent, string $threshold, bool $below): void {
+    expect(Percent::of($percent)->isDisplayedBelow(Percent::of($threshold)))->toBe($below);
+})->with([
+    'shown as the threshold' => ['59.9950', '60.00', false],
+    'shown below the threshold' => ['59.9949', '60.00', true],
+    'exactly the threshold' => ['60.0000', '60.00', false],
+    'zero threshold' => ['0.0000', '0.00', false],
+    'threshold off the display grid, shown below' => ['60.0049', '60.0030', true],
+    'threshold off the display grid, shown above' => ['60.0050', '60.0030', false],
+]);
+
+it('gives the lowest stored percent displayed as at least the threshold', function (): void {
+    expect(Percent::of('60.00')->lowestDisplayedAtLeast()->toDecimal())->toBe('59.9950')
+        ->and(Percent::of('0.00')->lowestDisplayedAtLeast()->toDecimal())->toBe('0.0000');
+});

@@ -19,7 +19,9 @@ const code = ref('')
 const localError = ref('')
 
 const qrSource = computed(() =>
-  props.enrollment.qrSvg ? `data:image/svg+xml;charset=utf-8,${encodeURIComponent(props.enrollment.qrSvg)}` : '',
+  props.enrollment.qrSvg
+    ? `data:image/svg+xml;charset=utf-8,${encodeURIComponent(props.enrollment.qrSvg)}`
+    : '',
 )
 
 const shownError = computed(() => localError.value || props.error)
@@ -37,7 +39,12 @@ function confirm() {
 <template>
   <form class="auth-mfa__form" novalidate @submit.prevent="confirm">
     <figure class="auth-mfa__qr">
-      <img v-if="qrSource" class="auth-mfa__qr-image" :src="qrSource" :alt="t('auth.mfa.enroll.qrAlt')" />
+      <img
+        v-if="qrSource"
+        class="auth-mfa__qr-image"
+        :src="qrSource"
+        :alt="t('auth.mfa.enroll.qrAlt')"
+      />
       <figcaption class="auth-mfa__qr-caption">{{ t('auth.mfa.enroll.qrHint') }}</figcaption>
     </figure>
 

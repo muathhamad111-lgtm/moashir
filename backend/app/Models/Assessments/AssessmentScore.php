@@ -7,7 +7,7 @@ namespace App\Models\Assessments;
 use App\Casts\PercentCast;
 use App\Enums\Assessments\ScoreLevel;
 use App\Enums\Assessments\ScorerRole;
-use App\Enums\Criteria\ScaleKind;
+use App\Enums\Criteria\ScoringType;
 use App\Exceptions\Persistence\AppendOnlyViolation;
 use App\Support\ValueObjects\Percent;
 use App\Support\ValueObjects\RawScore;
@@ -28,6 +28,7 @@ use Illuminate\Support\Carbon;
  * @property Percent $percent
  * @property int $version
  * @property string|null $change_reason
+ * @property int|null $completion_request_id
  * @property Carbon|null $superseded_at
  * @property Carbon $created_at
  */
@@ -40,7 +41,7 @@ final class AssessmentScore extends Model
      */
     protected $fillable = [
         'assessment_id', 'level', 'sub_criterion_id', 'guiding_point_id', 'scorer_user_id', 'scorer_role',
-        'raw_value', 'percent', 'version', 'change_reason',
+        'raw_value', 'percent', 'version', 'change_reason', 'completion_request_id',
     ];
 
     protected static function booted(): void
@@ -68,6 +69,7 @@ final class AssessmentScore extends Model
             'scorer_role' => ScorerRole::class,
             'percent' => PercentCast::class,
             'version' => 'integer',
+            'completion_request_id' => 'integer',
             'superseded_at' => 'datetime',
         ];
     }
@@ -86,8 +88,8 @@ final class AssessmentScore extends Model
         return (int) ($this->level === ScoreLevel::Sub ? $this->sub_criterion_id : $this->guiding_point_id);
     }
 
-    public function rawScore(ScaleKind $scale): RawScore
+    public function rawScore(ScoringType $type): RawScore
     {
-        return RawScore::on($scale, $this->raw_value);
+        return RawScore::on($type, $this->raw_value);
     }
 }

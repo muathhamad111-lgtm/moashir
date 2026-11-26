@@ -1,32 +1,48 @@
 <script setup>
-import { useI18n } from 'vue-i18n'
+import ExpandableSearch from './ExpandableSearch.vue'
+import FilterDialog from './FilterDialog.vue'
+import ColumnManager from './ColumnManager.vue'
+import { useFilterDraft } from '@/composables/useFilterDraft'
+import { useListCard } from '@/composables/useListCard'
 
-defineProps({
+const props = defineProps({
   search: { type: String, default: '' },
   searchPlaceholder: { type: String, default: '' },
+  filterState: { type: Object, default: null },
+  searchable: { type: Boolean, default: true },
 })
 
 const emit = defineEmits(['update:search'])
-const { t } = useI18n()
+const filterDraft = props.filterState ? useFilterDraft(props.filterState) : null
+// The list's «الأعمدة» menu sits here, between the filter and the export.
+const card = useListCard()
+if (card) card.hasToolbar = true
 </script>
 
 <template>
-  <div class="toolbar">
-    <div class="toolbar__search">
-      <input
-        class="field__control"
-        type="search"
-        :value="search"
-        :placeholder="searchPlaceholder || t('common.search')"
-        :aria-label="searchPlaceholder || t('common.search')"
-        @input="emit('update:search', $event.target.value)"
-      />
-    </div>
-    <div v-if="$slots.filters" class="toolbar__filters">
-      <slot name="filters" />
-    </div>
+  <div class="toolbar filter-toolbar">
     <div v-if="$slots.actions" class="toolbar__actions">
       <slot name="actions" />
+    </div>
+    <div class="filter-toolbar__controls">
+      <ExpandableSearch
+        v-if="searchable"
+        :model-value="search"
+        :placeholder="searchPlaceholder"
+        @update:model-value="emit('update:search', $event)"
+      />
+      <FilterDialog
+        v-if="$slots.filters && filterDraft"
+        :active-count="filterDraft.activeCount.value"
+        @open="filterDraft.load"
+        @apply="filterDraft.apply"
+        @reset="filterDraft.resetDraft"
+        @clear="filterDraft.clear"
+      >
+        <slot name="filters" :draft="filterDraft.draft" />
+      </FilterDialog>
+      <ColumnManager v-if="card?.columnChoice?.ordered.value.length" :choice="card.columnChoice" />
+      <slot name="export" />
     </div>
   </div>
 </template>

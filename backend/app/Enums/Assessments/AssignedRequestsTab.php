@@ -23,7 +23,7 @@ enum AssignedRequestsTab: string
             }),
             ...AdvancedAssessmentStatus::valuesOf(...match ($this) {
                 self::New => [AdvancedAssessmentStatus::Assigned],
-                self::InProgress => [AdvancedAssessmentStatus::UnderInitialAssessment],
+                self::InProgress => [AdvancedAssessmentStatus::UnderInitialAssessment, AdvancedAssessmentStatus::NeedsCompletion],
                 self::Completed => [AdvancedAssessmentStatus::AwaitingFiltering, AdvancedAssessmentStatus::QualifiedForCommittee, AdvancedAssessmentStatus::NotQualified],
             }),
         ]));

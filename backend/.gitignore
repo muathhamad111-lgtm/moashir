@@ -26,3 +26,7 @@ _ide_helper.php
 Homestead.json
 Homestead.yaml
 Thumbs.db
+
+# Hacen Maghreb (HacenType commercial licence): embedded in the PDFs, never published.
+# The deploy kit ships the backend from the working tree, so the servers still get them.
+/resources/documents/fonts/hacen-maghreb-*

@@ -18,6 +18,7 @@ final class UpdateGuidingPointRequest extends CriteriaFormRequest
             ...$this->localizedTextRules('description', 'sometimes', self::DESCRIPTION_MAX),
             ...$this->weightRules('sometimes'),
             ...$this->attachmentRules(),
+            ...$this->scoringTypeRules('scoring_type'),
             'active' => ['prohibited'],
         ];
     }
@@ -28,6 +29,7 @@ final class UpdateGuidingPointRequest extends CriteriaFormRequest
             $this->localizedText('description') ?? $current->description,
             $this->weight() ?? $current->weight,
             $this->attachments(),
+            $this->scoringType('scoring_type') ?? $current->scoring_type,
         );
     }
 }

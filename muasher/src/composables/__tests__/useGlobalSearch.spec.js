@@ -24,7 +24,11 @@ function results(groups) {
   return { data: { groups } }
 }
 
-const entityGroup = { type: 'entities', total: 1, items: [{ type: 'entities', key: 'entities:1', id: 1, title: 'جمعية' }] }
+const entityGroup = {
+  type: 'entities',
+  total: 1,
+  items: [{ type: 'entities', key: 'entities:1', id: 1, title: 'جمعية' }],
+}
 
 beforeEach(() => {
   vi.useFakeTimers()
@@ -78,7 +82,12 @@ describe('useGlobalSearch', () => {
   it('ignores a stale response that resolves after a newer query', async () => {
     let resolveFirst
     searchService.search
-      .mockImplementationOnce(() => new Promise((resolve) => { resolveFirst = resolve }))
+      .mockImplementationOnce(
+        () =>
+          new Promise((resolve) => {
+            resolveFirst = resolve
+          }),
+      )
       .mockResolvedValueOnce(results([]))
     const { api } = harness()
     api.query.value = 'نماء'
@@ -95,7 +104,9 @@ describe('useGlobalSearch', () => {
   })
 
   it('shows the error state and retries on demand', async () => {
-    searchService.search.mockRejectedValueOnce(new Error('offline')).mockResolvedValueOnce(results([entityGroup]))
+    searchService.search
+      .mockRejectedValueOnce(new Error('offline'))
+      .mockResolvedValueOnce(results([entityGroup]))
     const { api } = harness()
     api.query.value = 'عطاء'
     await nextTick()

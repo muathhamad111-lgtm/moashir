@@ -19,6 +19,14 @@ enum ScaleKind: string
         };
     }
 
+    public function scoringType(): ScoringType
+    {
+        return match ($this) {
+            self::OutOfTen => ScoringType::Score,
+            self::Relative => ScoringType::Relative,
+        };
+    }
+
     public function maximum(): string
     {
         return FixedPoint::format($this->maximumHundredths(), 2);

@@ -15,6 +15,11 @@ final class FileRejected extends ApiException
         return self::fieldError('file.content_mismatch', $field);
     }
 
+    public static function unsafeSvg(string $field): self
+    {
+        return self::fieldError('file.unsafe_svg', $field);
+    }
+
     public static function infected(string $field): self
     {
         return self::fieldError('file.infected', $field);
@@ -23,6 +28,16 @@ final class FileRejected extends ApiException
     public static function scanFailed(string $field): self
     {
         return self::fieldError('file.scan_failed', $field);
+    }
+
+    public static function passwordProtected(string $field): self
+    {
+        return self::fieldError('file.password_protected', $field);
+    }
+
+    public static function checkFailed(string $field): self
+    {
+        return self::fieldError('file.check_failed', $field);
     }
 
     public static function notClean(): self

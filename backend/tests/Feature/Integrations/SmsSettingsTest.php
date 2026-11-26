@@ -2,8 +2,6 @@
 
 declare(strict_types=1);
 
-use App\Contracts\SmsGateway;
-use App\Data\Integrations\SmsDriverSelection;
 use App\Data\Integrations\SmsMessage;
 use App\Enums\Audit\AuditEvent;
 use App\Enums\Identity\OtpChannel;
@@ -42,13 +40,6 @@ function fakeTaqnyatAccount(int $balanceStatus = 201, string $senderStatus = 'ac
     ]);
 }
 
-function useSettingsSmsGateway(): void
-{
-    config()->set('moashir.sms.driver', 'settings');
-    app()->forgetInstance(SmsDriverSelection::class);
-    app()->forgetInstance(SmsGateway::class);
-}
-
 it('shows both providers, the test numbers and the OTP template without secrets', function (): void {
     configureTaqnyat();
     signIn(systemAdmin());
@@ -66,8 +57,8 @@ it('shows both providers, the test numbers and the OTP template without secrets'
         ->assertJsonPath('data.providers.msegat.configured', false)
         ->assertJsonPath('data.providers.msegat.api_key.set', false)
         ->assertJsonPath('data.templates.0.key', 'otp_code')
-        ->assertJsonPath('data.templates.0.placeholders', ['code', 'minutes'])
-        ->assertJsonPath('data.templates.0.body.en', 'Your Moashir verification code is {code}. It is valid for {minutes} minutes.');
+        ->assertJsonPath('data.templates.0.placeholders', ['code', 'validity', 'minutes'])
+        ->assertJsonPath('data.templates.0.body.en', 'Your Moashir verification code is {code}. It is valid for {validity}.');
 
     assertNoSecretIn((string) $response->getContent());
 });
@@ -301,12 +292,14 @@ it('suppresses runtime messages to other numbers in test mode and sends to the a
     Http::assertSentCount(1);
 });
 
-it('sends sign-in codes by e-mail while no SMS provider is configured', function (): void {
+it('refuses mobile verification while no SMS provider is configured instead of falling back to e-mail', function (): void {
     Notification::fake();
     useSettingsSmsGateway();
     $user = User::factory()->withRole(RoleKey::Entity)->create(['phone' => '+966512345678']);
 
-    $this->postJson('/api/v1/auth/otp/request', ['email' => $user->email, 'channel' => 'sms'])->assertOk()->assertJsonPath('data.otp.channel', 'email');
+    signIn($user)->postJson('/api/v1/me/phone/verification')->assertStatus(503)->assertJsonPath('code', 'phone.sms_unavailable');
+
+    Notification::assertNothingSent();
 });
 
 it('keeps the SMS endpoints for the system administrator', function (RoleKey $role): void {

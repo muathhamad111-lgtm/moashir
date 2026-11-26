@@ -10,9 +10,24 @@ const props = defineProps({
 const { t } = useI18n()
 
 const rows = computed(() => [
-  { id: 'submission', label: t('cycles.dates.submission'), start: props.cycle.submissionStart, end: props.cycle.submissionEnd },
-  { id: 'committee', label: t('cycles.dates.committee'), start: props.cycle.committeeStart, end: props.cycle.committeeEnd },
-  { id: 'announcement', label: t('cycles.dates.announcement'), start: props.cycle.announcementAt, end: null },
+  {
+    id: 'submission',
+    label: t('cycles.dates.submission'),
+    start: props.cycle.submissionStart,
+    end: props.cycle.submissionEnd,
+  },
+  {
+    id: 'committee',
+    label: t('cycles.dates.committee'),
+    start: props.cycle.committeeStart,
+    end: props.cycle.committeeEnd,
+  },
+  {
+    id: 'announcement',
+    label: t('cycles.dates.announcement'),
+    start: props.cycle.announcementAt,
+    end: null,
+  },
 ])
 </script>
 

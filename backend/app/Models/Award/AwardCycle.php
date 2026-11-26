@@ -14,6 +14,7 @@ use App\Models\Criteria\CriteriaVersion;
 use App\Models\Entities\Region;
 use App\Models\Identity\User;
 use App\Support\ValueObjects\LocalizedText;
+use App\Support\ValueObjects\Money;
 use App\Support\ValueObjects\Percent;
 use Carbon\CarbonInterface;
 use Database\Factories\Award\AwardCycleFactory;
@@ -30,10 +31,11 @@ use Illuminate\Support\Carbon;
 /**
  * @property int $id
  * @property LocalizedText $name
+ * @property LocalizedText|null $description
  * @property int $year
  * @property AwardCycleStatus $status
  * @property int $criteria_version_id
- * @property ScaleKind $scale_kind
+ * @property ScaleKind|null $scale_kind
  * @property Carbon $submission_start
  * @property Carbon $submission_end
  * @property Carbon $committee_start
@@ -43,6 +45,7 @@ use Illuminate\Support\Carbon;
  * @property Percent $disqualification_score
  * @property int $initial_review_sla_days
  * @property bool $participation_certificate_enabled
+ * @property string $entry_fee
  * @property int $created_by_user_id
  * @property Carbon|null $opened_at
  * @property Carbon|null $submissions_closed_at
@@ -71,10 +74,15 @@ final class AwardCycle extends Model
      * @var list<string>
      */
     protected $fillable = [
-        'name', 'year', 'status', 'criteria_version_id', 'scale_kind', 'submission_start', 'submission_end',
+        'name', 'description', 'year', 'status', 'criteria_version_id', 'scale_kind', 'submission_start', 'submission_end',
         'committee_start', 'committee_end', 'announcement_at', 'min_entity_age_years', 'disqualification_score',
-        'initial_review_sla_days', 'participation_certificate_enabled', 'created_by_user_id',
+        'initial_review_sla_days', 'participation_certificate_enabled', 'created_by_user_id', 'entry_fee',
     ];
+
+    /**
+     * @var array<string, mixed>
+     */
+    protected $attributes = ['entry_fee' => '0.00'];
 
     /**
      * @return array<string, string>
@@ -83,6 +91,7 @@ final class AwardCycle extends Model
     {
         return [
             'name' => LocalizedTextCast::class,
+            'description' => LocalizedTextCast::class,
             'year' => 'integer',
             'status' => AwardCycleStatus::class,
             'criteria_version_id' => 'integer',
@@ -96,6 +105,7 @@ final class AwardCycle extends Model
             'disqualification_score' => PercentCast::class,
             'initial_review_sla_days' => 'integer',
             'participation_certificate_enabled' => 'boolean',
+            'entry_fee' => 'decimal:2',
             'created_by_user_id' => 'integer',
             'opened_at' => 'datetime',
             'submissions_closed_at' => 'datetime',
@@ -199,6 +209,21 @@ final class AwardCycle extends Model
         return $this->status->acceptsApplications()
             && $moment->greaterThanOrEqualTo($this->submission_start)
             && $moment->lessThanOrEqualTo($this->submission_end);
+    }
+
+    public function entryFee(): Money
+    {
+        return new Money($this->entry_fee);
+    }
+
+    public function acceptsEntryFeeChanges(): bool
+    {
+        return $this->status === AwardCycleStatus::Draft;
+    }
+
+    public function closedSubmissionsBefore(CarbonInterface $moment): bool
+    {
+        return $moment->greaterThan($this->submission_end);
     }
 
     public function covers(int $regionId): bool

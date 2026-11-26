@@ -30,5 +30,10 @@ function camelOfToken(token) {
 }
 
 export function toStatusCounts(raw, statuses) {
-  return Object.fromEntries(statuses.map((status) => [status, Number(raw?.[camelOfToken(toWireRequestStatus(status))] ?? 0)]))
+  return Object.fromEntries(
+    statuses.map((status) => [
+      status,
+      Number(raw?.[camelOfToken(toWireRequestStatus(status))] ?? 0),
+    ]),
+  )
 }

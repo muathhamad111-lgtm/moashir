@@ -24,10 +24,11 @@ it('creates a draft cycle with the settings defaults and makes the creating secr
     $region = Region::factory()->create();
     $secretary = awardSecretary();
 
-    $response = switchTo($secretary)->postJson('/api/v1/award/cycles', cyclePayload($version, $region))->assertCreated()
+    $response = switchTo($secretary)->postJson('/api/v1/award/cycles', cyclePayload($region))->assertCreated()
         ->assertJsonPath('data.status', 'draft')
+        ->assertJsonPath('data.criteria_version_id', $version->id)
         ->assertJsonPath('data.year', 2026)
-        ->assertJsonPath('data.scale_kind', 'of_10')
+        ->assertJsonPath('data.scale_kind', null)
         ->assertJsonPath('data.conditions.min_entity_age_years', 3)
         ->assertJsonPath('data.conditions.disqualification_score', '60.00')
         ->assertJsonPath('data.initial_review_sla_days', 14)
@@ -41,14 +42,13 @@ it('creates a draft cycle with the settings defaults and makes the creating secr
 
     expect(Audit::query()->where('event', AuditEvent::CycleCreated->value)->where('auditable_id', $cycle->id)->exists())->toBeTrue();
 
-    switchTo(systemAdmin())->postJson('/api/v1/award/cycles', cyclePayload($version, $region, [
-        'scale_kind' => 'relative',
+    switchTo(systemAdmin())->postJson('/api/v1/award/cycles', cyclePayload($region, [
         'min_entity_age_years' => 5,
         'disqualification_score' => '72.5',
         'initial_review_sla_days' => 10,
         'participation_certificate_enabled' => true,
     ]))->assertCreated()
-        ->assertJsonPath('data.scale_kind', 'relative')
+        ->assertJsonPath('data.scale_kind', null)
         ->assertJsonPath('data.conditions.min_entity_age_years', 5)
         ->assertJsonPath('data.conditions.disqualification_score', '72.50')
         ->assertJsonPath('data.participation_certificate_enabled', true)
@@ -56,9 +56,9 @@ it('creates a draft cycle with the settings defaults and makes the creating secr
 });
 
 it('refuses invalid cycle definitions', function (array $overrides, string $field): void {
-    $version = publishedAccreditedCriteria();
+    publishedAccreditedCriteria();
 
-    switchTo(systemAdmin())->postJson('/api/v1/award/cycles', cyclePayload($version, Region::factory()->create(), $overrides))
+    switchTo(systemAdmin())->postJson('/api/v1/award/cycles', cyclePayload(Region::factory()->create(), $overrides))
         ->assertUnprocessable()
         ->assertJsonValidationErrors($field);
 })->with([
@@ -69,28 +69,30 @@ it('refuses invalid cycle definitions', function (array $overrides, string $fiel
     'score out of range' => [['disqualification_score' => '120'], 'disqualification_score'],
     'score with three decimals' => [['disqualification_score' => '60.125'], 'disqualification_score'],
     'missing Arabic name' => [['name' => ['en' => 'Award 2026']], 'name.ar'],
+    'a chosen criteria version' => [['criteria_version_id' => 1], 'criteria_version_id'],
 ]);
 
-it('binds a cycle only to the published criteria version', function (): void {
-    publishedAccreditedCriteria();
-    $draft = draftVersion();
+it('refuses to create a cycle while no criteria version is published', function (): void {
+    draftVersion();
 
-    switchTo(systemAdmin())->postJson('/api/v1/award/cycles', cyclePayload($draft, Region::factory()->create()))
-        ->assertUnprocessable()
-        ->assertJsonPath('code', 'cycle.criteria_version_not_published');
+    switchTo(systemAdmin())->postJson('/api/v1/award/cycles', cyclePayload(Region::factory()->create()))
+        ->assertConflict()
+        ->assertJsonPath('code', 'cycle.no_published_criteria');
+
+    expect(AwardCycle::query()->count())->toBe(0);
 });
 
 it('lets only the cycle managers create cycles', function (RoleKey $role): void {
-    $version = publishedAccreditedCriteria();
+    publishedAccreditedCriteria();
 
-    switchTo(staffUser($role))->postJson('/api/v1/award/cycles', cyclePayload($version, Region::factory()->create()))->assertForbidden();
+    switchTo(staffUser($role))->postJson('/api/v1/award/cycles', cyclePayload(Region::factory()->create()))->assertForbidden();
 })->with([RoleKey::RequestFollower, RoleKey::FilteringOfficer, RoleKey::Assessor, RoleKey::CriteriaOfficer, RoleKey::FinanceOfficer]);
 
 it('refuses cycle management to entity accounts', function (): void {
-    $version = publishedAccreditedCriteria();
+    publishedAccreditedCriteria();
     $owner = ownerOf(entityWithOwner());
 
-    switchTo($owner)->postJson('/api/v1/award/cycles', cyclePayload($version, Region::factory()->create()))->assertForbidden();
+    switchTo($owner)->postJson('/api/v1/award/cycles', cyclePayload(Region::factory()->create()))->assertForbidden();
     test()->getJson('/api/v1/award/cycles')->assertForbidden();
 });
 
@@ -109,14 +111,15 @@ it('lists the cycles within the record scope of the reader', function (): void {
         ->assertJsonPath('meta.pagination.total', 2)
         ->assertJsonPath('meta.stats.by_status.draft', 2);
     switchTo(requestFollower())->getJson('/api/v1/award/cycles')->assertOk()->assertJsonPath('meta.pagination.total', 2);
-    switchTo($secretary)->getJson('/api/v1/award/cycles')->assertOk()->assertJsonPath('meta.pagination.total', 1)->assertJsonPath('data.0.id', $mine->id);
+    // Every Award Secretary reads every cycle (operator 2026-11-22: «الدورات والنتائج»); membership only scopes actions.
+    switchTo($secretary)->getJson('/api/v1/award/cycles')->assertOk()->assertJsonPath('meta.pagination.total', 2);
     switchTo($officer)->getJson('/api/v1/award/cycles')->assertOk()->assertJsonPath('meta.pagination.total', 1)->assertJsonPath('data.0.id', $other->id);
     switchTo($assessor)->getJson('/api/v1/award/cycles')->assertOk()->assertJsonPath('meta.pagination.total', 1);
-    switchTo(awardSecretary())->getJson('/api/v1/award/cycles')->assertOk()->assertJsonPath('meta.pagination.total', 0);
+    switchTo(awardSecretary())->getJson('/api/v1/award/cycles')->assertOk()->assertJsonPath('meta.pagination.total', 2);
     switchTo(systemAdmin())->getJson('/api/v1/award/cycles?filter[status]=closed')->assertOk()->assertJsonPath('meta.pagination.total', 0);
     test()->getJson('/api/v1/award/cycles?sort=name')->assertUnprocessable();
 
-    switchTo($secretary)->getJson("/api/v1/award/cycles/{$other->id}")->assertNotFound();
+    switchTo($secretary)->getJson("/api/v1/award/cycles/{$other->id}")->assertOk()->assertJsonPath('data.can_manage', false);
     switchTo($officer)->getJson("/api/v1/award/cycles/{$other->id}")->assertOk()->assertJsonPath('data.can_manage', false)->assertJsonMissingPath('data.members');
     switchTo(requestFollower())->getJson("/api/v1/award/cycles/{$other->id}")->assertOk()->assertJsonPath('data.members.0.id', $officer->id)->assertJsonPath('data.initial_assessors.0.id', $assessor->id);
 });
@@ -169,7 +172,8 @@ it('lets a secretary manage only the cycles they belong to', function (): void {
     $officer = filteringOfficer();
     addCycleMember($cycle, $officer, CycleMemberRole::FilteringOfficer);
 
-    switchTo(awardSecretary())->putJson("/api/v1/award/cycles/{$cycle->id}", ['year' => 2027])->assertNotFound();
+    // Operator 2026-11-22: every Award Secretary reads every cycle; only the cycle's own secretaries act (403, not 404).
+    switchTo(awardSecretary())->putJson("/api/v1/award/cycles/{$cycle->id}", ['year' => 2027])->assertForbidden();
     switchTo($officer)->putJson("/api/v1/award/cycles/{$cycle->id}", ['year' => 2027])->assertForbidden();
     switchTo($member)->putJson("/api/v1/award/cycles/{$cycle->id}", ['year' => 2027])->assertOk()->assertJsonPath('data.year', 2027);
 });
@@ -233,7 +237,7 @@ it('returns the default conditions and the staff candidates to the cycle manager
     $admin = systemAdmin();
 
     switchTo($admin)->getJson('/api/v1/award/cycles/default-conditions')->assertOk()
-        ->assertExactJson(['data' => ['min_entity_age_years' => 3, 'disqualification_score' => '60.00', 'initial_review_sla_days' => 14], 'meta' => [], 'errors' => null]);
+        ->assertExactJson(['data' => ['min_entity_age_years' => 3, 'disqualification_score' => '60.00', 'initial_review_sla_days' => 14, 'entry_fee' => '0.00'], 'meta' => [], 'errors' => null]);
     test()->getJson('/api/v1/award/cycles/candidates?role=initial_assessor')->assertOk()->assertJsonPath('data.0.id', $assessor->id)->assertJsonMissingPath('data.0.email');
     test()->getJson('/api/v1/award/cycles/candidates?role=filtering_officer')->assertOk()->assertJsonPath('data.0.id', $officer->id);
     test()->getJson('/api/v1/award/cycles/candidates?role=entity')->assertUnprocessable();
@@ -255,8 +259,8 @@ it('uses the assessment settings as the defaults of new cycles', function (): vo
         ->assertJsonPath('data.advanced_initial_review_sla_days', 21);
     test()->putJson('/api/v1/settings/assessment', ['advanced_disqualification_score' => '101'])->assertUnprocessable();
 
-    $version = publishedAccreditedCriteria();
-    switchTo($admin)->postJson('/api/v1/award/cycles', cyclePayload($version, Region::factory()->create()))->assertCreated()
+    publishedAccreditedCriteria();
+    switchTo($admin)->postJson('/api/v1/award/cycles', cyclePayload(Region::factory()->create()))->assertCreated()
         ->assertJsonPath('data.conditions.min_entity_age_years', 2)
         ->assertJsonPath('data.conditions.disqualification_score', '55.50')
         ->assertJsonPath('data.initial_review_sla_days', 21);
@@ -265,13 +269,13 @@ it('uses the assessment settings as the defaults of new cycles', function (): vo
 });
 
 it('reserves the participation certificate setting of a cycle to the System Administrator', function (): void {
-    $version = publishedAccreditedCriteria();
+    publishedAccreditedCriteria();
     $secretary = awardSecretary();
     $region = Region::factory()->create();
 
-    switchTo($secretary)->postJson('/api/v1/award/cycles', cyclePayload($version, $region, ['participation_certificate_enabled' => true]))
+    switchTo($secretary)->postJson('/api/v1/award/cycles', cyclePayload($region, ['participation_certificate_enabled' => true]))
         ->assertForbidden()->assertJsonPath('code', 'cycle.participation_setting_reserved');
-    $id = test()->postJson('/api/v1/award/cycles', cyclePayload($version, $region))->assertCreated()->json('data.id');
+    $id = test()->postJson('/api/v1/award/cycles', cyclePayload($region))->assertCreated()->json('data.id');
     test()->putJson("/api/v1/award/cycles/{$id}", ['participation_certificate_enabled' => true])->assertForbidden();
 
     switchTo(systemAdmin())->putJson("/api/v1/award/cycles/{$id}", ['participation_certificate_enabled' => true])->assertOk()

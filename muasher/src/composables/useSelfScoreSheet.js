@@ -9,13 +9,13 @@ import {
   unscoredUnits,
 } from '@/utils/assessments/scoreSheet'
 import { scoreSheetSchema } from '@/utils/assessments/scoreSheetSchema'
-
-const DEFAULT_MAXIMUM = '10.00'
+import { unitScoringType } from '@/utils/assessments/scoringTypes'
 
 export function useSelfScoreSheet({ form, units }) {
   const { t } = useI18n()
-  const maximum = computed(() => form.value?.scale?.maximum ?? DEFAULT_MAXIMUM)
-  const schema = computed(() => scoreSheetSchema(t, units.value, maximum.value))
+  const scale = computed(() => form.value?.scale ?? null)
+  const schema = computed(() => scoreSheetSchema(t, units.value, scale.value))
+  const typeOf = (node) => unitScoringType(node, scale.value)
   const sheet = useForm({ validationSchema: schema, keepValuesOnUnmount: true })
 
   const dirty = computed(() => sheet.meta.value.dirty)
@@ -46,5 +46,15 @@ export function useSelfScoreSheet({ form, units }) {
     return valid
   }
 
-  return { sheet, maximum, dirty, resetFrom, payload, missing, markMissing, applyServerErrors, isValid }
+  return {
+    sheet,
+    typeOf,
+    dirty,
+    resetFrom,
+    payload,
+    missing,
+    markMissing,
+    applyServerErrors,
+    isValid,
+  }
 }

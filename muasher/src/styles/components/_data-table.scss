@@ -1,25 +1,52 @@
+@use '../mixins' as *;
+
+// Every list shows its data in full: identifiers, names, statuses, dates and amounts never end in an
+// ellipsis. Each column takes its content's width; when the shown columns are wider than the card,
+// the table scrolls sideways inside it, with only the first column (what the row is) held in place;
+// the actions scroll with their row. A soft shadow marks each side that has more. Only free text (a message, a note) is
+// clamped to two lines, with the full text on hover. The viewer picks and orders the columns (ColumnManager).
+$table-note-max: 24rem;
+$table-sticky-below: 30rem;
+$table-edge-shadow-offset: 0.5rem;
+
 .table-wrap {
+  position: relative;
+  container: data-table / inline-size;
   inline-size: 100%;
   overflow-x: auto;
+  overscroll-behavior-inline: contain;
   border: var(--border-width) solid var(--theme-border);
   border-radius: var(--radius-lg);
+  --table-edge-shade: color-mix(in srgb, var(--theme-heading) 16%, transparent);
+  --table-edge-shadow-start: #{$table-edge-shadow-offset} 0 #{$table-edge-shadow-offset}
+    calc(#{$table-edge-shadow-offset} * -1) var(--table-edge-shade);
+
+  &:focus-visible {
+    @include focus-ring;
+  }
+}
+
+// The shadows fall toward the scrolled content: rightwards from the start in English, leftwards in Arabic.
+.table-wrap:dir(rtl) {
+  --table-edge-shadow-start: calc(#{$table-edge-shadow-offset} * -1) 0 #{$table-edge-shadow-offset}
+    calc(#{$table-edge-shadow-offset} * -1) var(--table-edge-shade);
 }
 
 .table {
   inline-size: 100%;
-  border-collapse: collapse;
+  border-collapse: separate;
+  border-spacing: 0;
   background-color: var(--theme-surface);
 }
 
 .table__head {
   background-color: var(--theme-surface-raised);
   font-size: var(--fs-sm);
-  font-weight: var(--fw-semibold);
+  font-weight: var(--fw-body);
   text-align: start;
 }
 
 .table__row {
-  border-block-end: var(--border-width) solid var(--theme-border);
   transition: background-color var(--t-fast) var(--ease);
 
   &:hover {
@@ -29,11 +56,388 @@
 
 .table__cell {
   padding-block: var(--space-3);
-  padding-inline: var(--space-4);
+  padding-inline: var(--space-3);
+  border-block-end: var(--border-width) solid var(--theme-border);
   text-align: start;
+  white-space: nowrap;
+}
+
+// Short columns (status, dates, amounts, codes, actions) keep to their content; the first column
+// and the text columns share the rest of the card.
+.table__cell--status,
+.table__cell--date,
+.table__cell--number,
+.table__cell--code,
+.table__cell--actions {
+  inline-size: 1%;
+}
+
+.table__cell--number {
+  text-align: end;
+}
+
+.table__cell--date,
+.table__cell--number,
+.table__cell--code {
+  font-variant-numeric: tabular-nums;
+}
+
+// Free text reads on up to two lines; DataTable shows the full text on hover or focus.
+.table tbody .table__cell--note {
+  min-inline-size: calc($table-note-max / 2);
+  max-inline-size: $table-note-max;
+  white-space: normal;
+
+  > .table__value {
+    display: -webkit-box;
+    overflow: hidden;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+  }
+}
+
+// Secondary detail in a cell (a last sign-in, a time): small, regular, muted, on one line.
+.table__meta {
+  color: var(--theme-text-muted);
+  font-size: var(--fs-xs);
+  font-weight: var(--fw-body);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+// The first column stays in view while the rest, actions included, scrolls under it; it carries the
+// row's background so the scrolled cells pass beneath.
+.table .table__cell:first-child {
+  position: sticky;
+  inset-inline-start: 0;
+  z-index: 1;
+  background-color: var(--theme-surface);
+  transition: box-shadow var(--t-fast) var(--ease);
+}
+
+.table .table__head .table__cell:first-child,
+.table .table__row:hover .table__cell:first-child {
+  background-color: var(--theme-surface-raised);
+}
+
+.table-wrap.has-more-start .table__cell:first-child {
+  box-shadow: var(--table-edge-shadow-start);
+}
+
+// The table's frame holds the shade at the end edge, which no pinned cell carries any more.
+.table-frame {
+  position: relative;
+}
+
+.table-frame__edge {
+  position: absolute;
+  inset-block: var(--border-width);
+  inset-inline-end: var(--border-width);
+  inline-size: var(--space-6);
+  border-start-end-radius: var(--radius-lg);
+  border-end-end-radius: var(--radius-lg);
+  background-image: linear-gradient(to left, var(--table-edge-shade), transparent);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity var(--t-fast) var(--ease);
+  --table-edge-shade: color-mix(in srgb, var(--theme-heading) 12%, transparent);
+
+  &:dir(rtl) {
+    background-image: linear-gradient(to right, var(--table-edge-shade), transparent);
+  }
+
+  &.is-visible {
+    opacity: 1;
+  }
+}
+
+// A list narrower than a phone column pins nothing.
+@container data-table (max-width: #{$table-sticky-below}) {
+  .table .table__cell:first-child {
+    position: static;
+    box-shadow: none;
+  }
 }
 
 .table--loading {
   opacity: var(--opacity-disabled);
   pointer-events: none;
+}
+
+// Row actions: direct icon buttons, then the "more" menu (three vertical dots).
+.row-actions {
+  @include flex(row, center, flex-start, var(--space-2));
+  flex-wrap: nowrap;
+}
+
+// Every table's "more actions" trigger reads as a clear bordered button, the same size as the row buttons.
+.table .row-actions .btn--icon,
+.table .dropdown-menu > .btn--icon {
+  @include flex-center;
+  inline-size: var(--size-toolbar-control);
+  block-size: var(--size-toolbar-control);
+  padding: 0;
+  border-color: var(--theme-border);
+  border-radius: var(--radius-md);
+  color: var(--theme-text);
+
+  .app-icon {
+    font-size: var(--icon-size-md);
+  }
+}
+
+.table .row-actions .row-actions__button--danger {
+  color: var(--theme-danger-text);
+
+  &:hover:not(:disabled) {
+    border-color: var(--theme-danger-text);
+  }
+}
+
+.table .row-actions .row-actions__button--success {
+  color: var(--theme-success-text);
+
+  &:hover:not(:disabled) {
+    border-color: var(--theme-success-text);
+  }
+}
+
+// A column may ask for a floor under its content width (`width: 'sm' | 'md' | 'lg' | 'xl'`).
+$table-column-widths: (
+  'sm': 6.5rem,
+  'md': 10rem,
+  'lg': 13rem,
+  'xl': 17rem,
+);
+
+@each $name, $width in $table-column-widths {
+  .table__head .table__cell--width-#{$name} {
+    min-inline-size: $width;
+  }
+}
+
+// A sortable heading: the label and its direction as one button; an unsorted column shows a
+// faint arrow so the header reads as clickable.
+.table__sort {
+  @include flex(row, center, flex-start, var(--space-1));
+  min-block-size: var(--size-target-min);
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  text-align: start;
+  cursor: pointer;
+
+  &:hover {
+    color: var(--theme-heading);
+  }
+
+  &:focus-visible {
+    @include focus-ring;
+  }
+}
+
+.table__sort-icon {
+  flex-shrink: 0;
+  opacity: 0.35;
+
+  .table__sort.is-sorted & {
+    opacity: 1;
+  }
+}
+
+// Stacked mode (`<DataTable stacked>`): when the list's own width is narrow — a phone, or a column
+// beside a side panel — each row reads as one block: the first column as its title, the other cells as
+// label/value lines, the actions last at full width. Keyed to the list's width, not the viewport, so a
+// table beside a panel at desktop stacks too instead of being cut off.
+$table-stack-below: 40rem;
+
+// The TTS shell pads cells and sizes buttons with `:root[data-shell='tts']` rules; the stacked block
+// repeats its own spacing inside the shell so it wins there too.
+@mixin stacked-cell-spacing {
+  padding: 0;
+}
+
+@mixin stacked-text-wrap {
+  white-space: normal;
+}
+
+@mixin stacked-action-size {
+  min-block-size: var(--size-touch-target);
+}
+
+@container data-table (max-width: #{$table-stack-below}) {
+  .table-wrap--stacked {
+    // A block holds every cell, so nothing needs holding in place; the line closes the block, not
+    // each of its cells.
+    .table .table__cell {
+      position: static;
+      inset-inline: auto;
+      border-block-end: 0;
+      box-shadow: none;
+    }
+
+    .table .table__row {
+      border-block-end: var(--border-width) solid var(--theme-border);
+    }
+
+    .table,
+    tbody {
+      display: block;
+    }
+
+    // A stacked list is as wide as the phone; the laptop minimum does not apply.
+    .table {
+      min-inline-size: 0;
+    }
+
+    // A stacked row has the phone's width to itself: its values wrap again.
+    tbody .table__cell {
+      white-space: normal;
+    }
+
+    // Column titles are read from each cell's label; only sortable headings stay, as a row of chips.
+    // A block box, since overflow (and so the hiding) does not apply to a table-header-group.
+    .table__head {
+      @include visually-hidden;
+      display: block;
+    }
+
+    .table__head:has(.table__cell--sortable) {
+      position: static;
+      display: block;
+      inline-size: auto;
+      block-size: auto;
+      margin: 0;
+      overflow: visible;
+      clip-path: none;
+      border-block-end: var(--border-width) solid var(--theme-border);
+
+      tr {
+        @include flex(row, center, flex-start, var(--space-2));
+        flex-wrap: wrap;
+        padding-block: var(--space-2);
+        padding-inline: var(--space-4);
+      }
+
+      .table__cell {
+        @include stacked-cell-spacing;
+        @include in-tts-shell {
+          @include stacked-cell-spacing;
+          border: 0;
+        }
+      }
+
+      .table__cell:not(.table__cell--sortable) {
+        @include visually-hidden;
+      }
+    }
+
+    .table__row {
+      @include flex(column, stretch, flex-start, var(--space-2));
+      padding: var(--space-4);
+    }
+
+    // A stacked cell spans the block; the laptop column widths do not apply.
+    .table tbody .table__cell {
+      @include stacked-cell-spacing;
+      display: grid;
+      inline-size: auto;
+      grid-template-columns: minmax(5rem, 35%) minmax(0, 1fr);
+      gap: var(--space-3);
+      align-items: baseline;
+
+      @include in-tts-shell {
+        @include stacked-cell-spacing;
+      }
+
+      &::before {
+        content: attr(data-label);
+        color: var(--theme-text-muted);
+        font-size: var(--fs-sm);
+      }
+    }
+
+    .table__value {
+      min-inline-size: 0;
+      overflow-wrap: anywhere;
+
+      // A long status badge («Qualified for national») may take two lines rather than overflow.
+      .badge {
+        @include stacked-text-wrap;
+        @include in-tts-shell {
+          @include stacked-text-wrap;
+        }
+      }
+    }
+
+    // The first column is the block's title: no label, full width.
+    .table tbody .table__cell:first-child {
+      grid-template-columns: minmax(0, 1fr);
+      font-weight: var(--fw-body);
+
+      &::before {
+        content: none;
+      }
+    }
+
+    // Dates stay on one line in a wide table; in a narrow block the time may wrap below the date.
+    .table__cell--date {
+      white-space: normal;
+
+      .table__value * {
+        @include stacked-text-wrap;
+        @include in-tts-shell {
+          @include stacked-text-wrap;
+        }
+      }
+    }
+
+    // Actions close the block at full width, each one a full-height touch target.
+    .table tbody .table__cell--actions {
+      grid-template-columns: minmax(0, 1fr);
+      inline-size: auto;
+      margin-block-start: var(--space-1);
+      white-space: normal;
+
+      &::before {
+        content: none;
+      }
+
+      // Labelled buttons fill the row; an icon-only menu (⋮) keeps its size at the row's end.
+      .table__value {
+        @include flex(row, center, flex-end, var(--space-2));
+        flex-wrap: wrap;
+      }
+
+      .table__value > :not(.dropdown-menu, .row-actions) {
+        flex-grow: 1;
+      }
+
+      .btn {
+        @include stacked-action-size;
+        @include in-tts-shell {
+          @include stacked-action-size;
+        }
+      }
+
+      .btn:not(.btn--icon) {
+        flex-grow: 1;
+      }
+
+      .btn--icon {
+        min-inline-size: var(--size-touch-target);
+      }
+
+      // A plain «open» link becomes a full-row, button-height target.
+      a:not(.btn) {
+        @include flex-center;
+        min-block-size: var(--size-touch-target);
+        border: var(--border-width) solid var(--theme-border);
+        border-radius: var(--radius-md);
+      }
+    }
+  }
 }

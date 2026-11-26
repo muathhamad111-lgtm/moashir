@@ -1,13 +1,15 @@
 <script setup>
 import { ref, useId } from 'vue'
+import AppIcon from '@/components/ui/AppIcon.vue'
 
 const props = defineProps({
   items: { type: Array, required: true },
   multiple: { type: Boolean, default: false },
+  initiallyOpen: { type: Array, default: () => [] },
 })
 
 const baseId = useId()
-const openIds = ref([])
+const openIds = ref([...props.initiallyOpen])
 
 function isOpen(item) {
   return openIds.value.includes(item.id)
@@ -47,8 +49,10 @@ function panelId(item) {
           :aria-controls="panelId(item)"
           @click="toggle(item)"
         >
-          <span>{{ item.title }}</span>
-          <i class="fa-solid fa-chevron-down accordion__chevron" aria-hidden="true"></i>
+          <slot name="title" :item="item">
+            <span>{{ item.title }}</span>
+          </slot>
+          <AppIcon name="chevron-down" class="accordion__chevron" />
         </button>
       </h3>
       <div

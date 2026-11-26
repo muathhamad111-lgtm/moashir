@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace App\Support\Award;
 
 use App\Data\Entities\EntityNotice;
+use App\Data\Notifications\NoticeText;
+use App\Enums\Assessments\AssessmentPath;
 use App\Enums\Notifications\NotificationCode;
 use App\Models\Award\AwardCycle;
 use App\Support\ValueObjects\LocalizedText;
@@ -30,14 +32,7 @@ final class AwardNotices
         ];
         $key = self::ROOT.$code->value.'.'.$audience;
 
-        return new EntityNotice(
-            $code,
-            LocalizedText::fromTranslationWith($key.'.title', $replacements),
-            LocalizedText::fromTranslationWith($key.'.body', $replacements),
-            $link,
-            true,
-            true,
-        );
+        return EntityNotice::fromText($code, new NoticeText($key, $replacements), $link, AssessmentPath::Advanced);
     }
 
     public static function moment(CarbonInterface $moment): string

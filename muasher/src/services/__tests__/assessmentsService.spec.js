@@ -20,6 +20,7 @@ const assessmentWire = {
   id: 9002,
   number: 'SLF-2026-000002',
   path: 'self',
+  pathLabel: { ar: 'التقييم الذاتي', en: 'Self assessment' },
   status: 'draft',
   isOpen: true,
   isFrozen: false,
@@ -27,7 +28,12 @@ const assessmentWire = {
   criteriaVersionId: 1,
   scaleKind: 'of-10',
   awardCycleId: null,
-  entity: { id: 5001, reference: 'ENT-005001', name: { ar: 'جمعية البر بالرياض', en: 'Al-Birr Charity — Riyadh' }, status: 'active' },
+  entity: {
+    id: 5001,
+    reference: 'ENT-005001',
+    name: { ar: 'جمعية البر بالرياض', en: 'Al-Birr Charity — Riyadh' },
+    status: 'active',
+  },
   result: null,
   createdAt: '2026-10-28T11:15:00+00:00',
   updatedAt: '2026-10-29T09:30:00+00:00',
@@ -50,6 +56,39 @@ function rejection(status, code, meta = {}) {
 }
 
 describe('assessmentsService (self assessment contract)', () => {
+  it('keeps the cycle, period, level, certificate and payment of a list row', async () => {
+    const certificate = {
+      id: 'c-1',
+      number: 'CRT-2026-000001',
+      level: 'gold',
+      validUntil: '2027-12-31',
+    }
+    apiClient.get.mockResolvedValue({
+      data: {
+        data: [
+          {
+            ...assessmentWire,
+            awardCycle: { id: 3, name: { ar: 'دورة 2026', en: '2026 cycle' } },
+            periodLabel: { ar: 'النصف الثاني 2026', en: 'H2 2026' },
+            level: 'gold',
+            certificate,
+            payment: { status: 'paid', reference: 'PAY-2026-000012', channel: 'mada' },
+          },
+        ],
+        meta: {},
+        errors: null,
+      },
+    })
+    const { data } = await assessmentsService.list()
+    expect(data[0]).toMatchObject({
+      awardCycle: { id: 3, name: { en: '2026 cycle' } },
+      periodLabel: { en: 'H2 2026' },
+      level: 'gold',
+      certificate: { number: 'CRT-2026-000001', validUntil: '2027-12-31' },
+      payment: { status: 'paid', reference: 'PAY-2026-000012' },
+    })
+  })
+
   it('reads the published criteria and treats 404 as an expected answer', async () => {
     apiClient.get.mockResolvedValue({ data: envelope })
     await assessmentsService.getPublishedCriteria()
@@ -61,16 +100,28 @@ describe('assessmentsService (self assessment contract)', () => {
   })
 
   it('lists with snake_case-ready params and maps every item', async () => {
-    apiClient.get.mockResolvedValue({ data: { data: [assessmentWire], meta: { pagination: { page: 1 } }, errors: null } })
+    apiClient.get.mockResolvedValue({
+      data: { data: [assessmentWire], meta: { pagination: { page: 1 } }, errors: null },
+    })
     const params = { 'filter[path]': 'self', 'filter[status]': 'draft', perPage: 1 }
     const { data, meta } = await assessmentsService.list(params)
     expect(apiClient.get).toHaveBeenCalledWith('/assessments', { params })
-    expect(data[0]).toEqual(assessmentWire)
+    expect(data[0]).toEqual({
+      ...assessmentWire,
+      awardCycle: null,
+      periodLabel: null,
+      level: null,
+      certificate: null,
+      payment: null,
+    })
     expect(meta.pagination.page).toBe(1)
     expect(logger.breadcrumb).toHaveBeenCalledWith(
       'service',
       'assessments.list',
-      expect.objectContaining({ entity: 'assessment', paramsShape: ['filter[path]', 'filter[status]', 'perPage'] }),
+      expect.objectContaining({
+        entity: 'assessment',
+        paramsShape: ['filter[path]', 'filter[status]', 'perPage'],
+      }),
     )
   })
 
@@ -88,12 +139,20 @@ describe('assessmentsService (self assessment contract)', () => {
 
   it('does not report the expected 409 draft_exists rejection as an error', async () => {
     apiClient.post.mockRejectedValue(rejection(409, 'self.draft_exists', { assessmentId: 9002 }))
-    await expect(assessmentsService.startSelf()).rejects.toMatchObject({ normalized: { code: 'self.draft_exists' } })
+    await expect(assessmentsService.startSelf()).rejects.toMatchObject({
+      normalized: { code: 'self.draft_exists' },
+    })
     expect(logger.error).not.toHaveBeenCalled()
   })
 
   it('maps the form with the scale kind from its canonical value', async () => {
-    apiClient.get.mockResolvedValue({ data: { data: { ...scoresWire, criteria: { versionNumber: 1, mains: [] } }, meta: {}, errors: null } })
+    apiClient.get.mockResolvedValue({
+      data: {
+        data: { ...scoresWire, criteria: { versionNumber: 1, mains: [] } },
+        meta: {},
+        errors: null,
+      },
+    })
     const { data } = await assessmentsService.getForm(9002)
     expect(apiClient.get).toHaveBeenCalledWith('/assessments/9002/form')
     expect(data.scale).toEqual({ kind: 'of-10', maximum: '10.00' })
@@ -113,24 +172,79 @@ describe('assessmentsService (self assessment contract)', () => {
 
   it('submits via POST and maps the result answer', async () => {
     apiClient.post.mockResolvedValue({
-      data: { data: { id: 9002, number: 'SLF-2026-000002', path: 'self', status: 'result-available', isFrozen: false, available: true, total: '6560.00', maxTotal: '8200.00', percent: '80.00', main: [], sub: [], points: [] }, meta: {}, errors: null },
+      data: {
+        data: {
+          id: 9002,
+          number: 'SLF-2026-000002',
+          path: 'self',
+          status: 'result-available',
+          isFrozen: false,
+          available: true,
+          total: '6560.00',
+          maxTotal: '8200.00',
+          percent: '80.00',
+          main: [],
+          sub: [],
+          points: [],
+        },
+        meta: {},
+        errors: null,
+      },
     })
     const { data } = await assessmentsService.submit(9002, { scores: { subs: {}, points: {} } })
-    expect(apiClient.post).toHaveBeenCalledWith('/assessments/9002/submit', { scores: { subs: {}, points: {} } })
+    expect(apiClient.post).toHaveBeenCalledWith('/assessments/9002/submit', {
+      scores: { subs: {}, points: {} },
+    })
     expect(data).toMatchObject({ available: true, percent: '80.00', maxTotal: '8200.00' })
   })
 
   it('keeps the Q-94 placeholder minimal', async () => {
-    apiClient.get.mockResolvedValue({ data: { data: { id: 9002, number: 'SLF-2026-000002', path: 'self', status: 'draft', isFrozen: false, available: false }, meta: {}, errors: null } })
+    apiClient.get.mockResolvedValue({
+      data: {
+        data: {
+          id: 9002,
+          number: 'SLF-2026-000002',
+          path: 'self',
+          status: 'draft',
+          isFrozen: false,
+          available: false,
+        },
+        meta: {},
+        errors: null,
+      },
+    })
     const { data } = await assessmentsService.getResult(9002)
     expect(apiClient.get).toHaveBeenCalledWith('/assessments/9002/result')
-    expect(data).toEqual({ id: 9002, number: 'SLF-2026-000002', path: 'self', status: 'draft', isFrozen: false, available: false })
+    expect(data).toEqual({
+      id: 9002,
+      number: 'SLF-2026-000002',
+      path: 'self',
+      status: 'draft',
+      isFrozen: false,
+      available: false,
+    })
+  })
+
+  it('keeps the scoring type of each result row, so an achievement reads as achieved', async () => {
+    const sub = { subId: 11, code: 'M1.1', rawValue: '1.00', scoringType: 'achievement' }
+    const point = { pointId: 7, code: 'M1.2.1', rawValue: '9.00', scoringType: 'score' }
+    apiClient.get.mockResolvedValue({
+      data: {
+        data: { id: 9001, status: 'completed', available: true, sub: [sub], points: [point] },
+      },
+    })
+    const { data } = await assessmentsService.getResult(9001)
+    expect(data.sub[0].scoringType).toBe('achievement')
+    expect(data.points[0].scoringType).toBe('score')
   })
 
   it('reports unexpected failures to GlitchTip and rethrows (never swallows)', async () => {
     const failure = new Error('boom')
     apiClient.get.mockRejectedValue(failure)
     await expect(assessmentsService.list()).rejects.toBe(failure)
-    expect(logger.error).toHaveBeenCalledWith(failure, expect.objectContaining({ action: 'assessments.list' }))
+    expect(logger.error).toHaveBeenCalledWith(
+      failure,
+      expect.objectContaining({ action: 'assessments.list' }),
+    )
   })
 })

@@ -5,12 +5,16 @@ declare(strict_types=1);
 namespace App\Actions\Identity;
 
 use App\Data\Audit\AuditEntry;
+use App\Data\Identity\NationalIdEntry;
 use App\Data\Identity\StaffUserData;
 use App\Enums\Audit\AuditEvent;
+use App\Enums\Identity\IdentityChangeSource;
 use App\Enums\Identity\UserStatus;
 use App\Models\Identity\User;
 use App\Services\Audit\AuditRecorder;
+use App\Services\Identity\NationalIdAssigner;
 use App\Services\Identity\RoleAssignmentGuard;
+use App\Support\ValueObjects\NationalId;
 use Illuminate\Support\Facades\DB;
 
 final readonly class InviteStaffUser
@@ -20,6 +24,7 @@ final readonly class InviteStaffUser
         private SyncUserRoles $syncRoles,
         private IssueInvitation $issueInvitation,
         private AuditRecorder $audit,
+        private NationalIdAssigner $nationalIds,
     ) {}
 
     public function handle(User $actor, StaffUserData $data): User
@@ -32,8 +37,13 @@ final readonly class InviteStaffUser
                 'email' => $data->email->value,
                 'phone' => $data->phone?->value,
                 'locale' => $data->locale,
+                'gender' => $data->gender,
             ]);
             $user->forceFill(['status' => UserStatus::Invited, 'mfa_required' => true])->save();
+
+            if ($data->nationalId instanceof NationalId) {
+                $this->nationalIds->assignFirst($user, $data->nationalId, new NationalIdEntry($actor, IdentityChangeSource::AdminEntry));
+            }
 
             $this->syncRoles->handle($actor, $user, $roles);
             $this->issueInvitation->handle($actor, $user);

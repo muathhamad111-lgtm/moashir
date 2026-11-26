@@ -153,6 +153,6 @@ it('denies text corrections to roles without criteria.manage', function (RoleKey
         'nodes' => [['type' => 'main', 'id' => mainOf($published, 'M1')->id, 'name' => ['ar' => 'القيادة', 'en' => 'Leadership']]],
     ])->assertForbidden();
 })->with([
-    'system administrator' => [RoleKey::SystemAdmin],
+    'request follower' => [RoleKey::RequestFollower],
     'content officer' => [RoleKey::ContentOfficer],
 ]);

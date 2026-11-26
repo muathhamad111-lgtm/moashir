@@ -1,6 +1,11 @@
 @use '../mixins' as *;
 
 body {
+  // viewport-fit=cover (index.html) lets the page reach the screen edges so bottom bars can sit on
+  // the home indicator; in landscape the notch side would then cover content. The insets are
+  // physical by nature (left/right of the device), so physical padding is right here. 0 elsewhere.
+  padding-left: env(safe-area-inset-left, 0px);
+  padding-right: env(safe-area-inset-right, 0px);
   background-color: var(--theme-bg);
   color: var(--theme-text);
   transition:

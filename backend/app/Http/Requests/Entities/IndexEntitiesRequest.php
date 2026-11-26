@@ -6,6 +6,7 @@ namespace App\Http\Requests\Entities;
 
 use App\Actions\Entities\ListEntities;
 use App\Data\Entities\EntityListFilters;
+use App\Enums\Certificates\EntityLevelFilter;
 use App\Enums\Entities\DevelopmentSector;
 use App\Enums\Entities\EntityStatus;
 use App\Enums\Entities\EntityType;
@@ -29,13 +30,14 @@ final class IndexEntitiesRequest extends FormRequest
     {
         return [
             'search' => ['nullable', 'string', 'max:100'],
-            'filter' => ['nullable', 'array:status,region_id,city_id,entity_type,development_sector,org_size,trashed'],
+            'filter' => ['nullable', 'array:status,region_id,city_id,entity_type,development_sector,org_size,level,trashed'],
             'filter.status' => ['nullable', Rule::enum(EntityStatus::class)],
             'filter.region_id' => ['nullable', 'integer', 'min:1'],
             'filter.city_id' => ['nullable', 'integer', 'min:1'],
             'filter.entity_type' => ['nullable', Rule::enum(EntityType::class)],
             'filter.development_sector' => ['nullable', Rule::enum(DevelopmentSector::class)],
             'filter.org_size' => ['nullable', Rule::enum(OrgSize::class)],
+            'filter.level' => ['nullable', Rule::enum(EntityLevelFilter::class)],
             'filter.trashed' => ['nullable', Rule::in(['only'])],
             'sort' => ['nullable', Rule::in(ListEntities::SORTABLE)],
             'page' => ['nullable', 'integer', 'min:1'],
@@ -56,6 +58,7 @@ final class IndexEntitiesRequest extends FormRequest
             $this->wantsDeletedEntities(),
             $this->filled('sort') ? $this->string('sort')->toString() : '-created_at',
             $this->integer('per_page', 15),
+            EntityLevelFilter::tryFrom($this->filterValue('level')),
         );
     }
 

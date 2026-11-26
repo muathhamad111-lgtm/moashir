@@ -4,17 +4,39 @@ import { formatGovernanceGrade } from '@/utils/governanceGrade'
 import { localizedText } from '@/utils/localizedText'
 import { withLatinNumerals } from '@/utils/numerals'
 
-const LTR_FIELDS = new Set(['reference', 'officialEmail', 'phone', 'nameEn', 'governanceGrade'])
+const LTR_FIELDS = new Set([
+  'reference',
+  'levelCertificateNumber',
+  'vatNumber',
+  'officialEmail',
+  'phone',
+  'nameEn',
+  'governanceGrade',
+  'unifiedNumber',
+  'licenseNumber',
+  'foundedOn',
+  'websiteUrl',
+])
+const LINK_FIELDS = new Set(['websiteUrl'])
+const SECURE_LINK = /^https:\/\/[^\s]+$/
 const FREE_TEXT_FIELDS = new Set(['deactivationReason', 'deletionReason'])
 
 export function useEntityDisplay() {
   const { t, locale } = useI18n()
 
   const yesNo = (value) => t(value ? 'common.yes' : 'common.no')
-  const count = (value) => (value === null || value === undefined ? '' : new Intl.NumberFormat(withLatinNumerals(locale.value)).format(value))
+  const count = (value) =>
+    value === null || value === undefined
+      ? ''
+      : new Intl.NumberFormat(withLatinNumerals(locale.value)).format(value)
   const date = (value) => (value ? formatDate(value, locale.value, { dateStyle: 'medium' }) : '')
-  const dateTime = (value) => (value ? formatDate(value, locale.value, { dateStyle: 'medium', timeStyle: 'short' }) : '')
+  const dateTime = (value) =>
+    value ? formatDate(value, locale.value, { dateStyle: 'medium', timeStyle: 'short' }) : ''
   const enumLabel = (group, value) => (value ? t(`entities.enums.${group}.${value}`) : '')
+  const governanceGrade = (entity) => {
+    if (entity.hasGovernanceGrade === false) return t('entities.display.noGovernanceGrade')
+    return formatGovernanceGrade(entity.governanceGrade) || t('entities.display.notSet')
+  }
 
   const FORMATTERS = {
     reference: (entity) => entity.reference,
@@ -27,12 +49,26 @@ export function useEntityDisplay() {
     developmentSector: (entity) => enumLabel('developmentSector', entity.developmentSector),
     orgSize: (entity) => enumLabel('orgSize', entity.orgSize),
     foundingYear: (entity) => (entity.foundingYear ? String(entity.foundingYear) : ''),
+    unifiedNumber: (entity) => entity.unifiedNumber,
+    licenseNumber: (entity) => entity.licenseNumber,
+    levelCertificateNumber: (entity) => entity.levelCertificateNumber,
+    levelValidUntil: (entity) => date(entity.levelValidUntil),
+    vatNumber: (entity) => entity.vatNumber,
+    vatRegistered: (entity) => yesNo(entity.vatRegistered),
+    profileCompleted: (entity) => yesNo(entity.profileCompleted),
+    billingComplete: (entity) => yesNo(entity.billingComplete),
+    approvedAt: (entity) => date(entity.approvedAt),
+    foundedOn: (entity) => entity.foundedOn,
+    websiteUrl: (entity) => entity.websiteUrl,
     region: (entity) => localizedText(entity.region?.name, locale.value),
     city: (entity) => localizedText(entity.city?.name, locale.value),
-    governanceGrade: (entity) => formatGovernanceGrade(entity.governanceGrade),
+    governanceGrade,
     employeesCount: (entity) => count(entity.employeesCount),
     annualBeneficiariesCount: (entity) => count(entity.annualBeneficiariesCount),
-    hasStrategicPlan: (entity) => yesNo(entity.hasStrategicPlan),
+    hasStrategicPlan: (entity) =>
+      entity.hasStrategicPlan === null || entity.hasStrategicPlan === undefined
+        ? ''
+        : yesNo(entity.hasStrategicPlan),
     marketingConsent: (entity) => yesNo(entity.marketingConsent),
     createdAt: (entity) => date(entity.createdAt),
     verifiedAt: (entity) => date(entity.verifiedAt),
@@ -54,8 +90,22 @@ export function useEntityDisplay() {
         value: value || t('entities.display.notProvided'),
         ltr: LTR_FIELDS.has(key),
         free: FREE_TEXT_FIELDS.has(key),
+        href: LINK_FIELDS.has(key) && SECURE_LINK.test(value ?? '') ? value : null,
       }))
   }
 
-  return { rowsOf, date, dateTime, enumLabel, localized: (content) => localizedText(content, locale.value) }
+  // One field of a list row: empty when the row does not carry it (a narrower resource).
+  function valueOf(entity, key) {
+    return entity[key] === null || entity[key] === undefined ? '' : FORMATTERS[key](entity)
+  }
+
+  return {
+    rowsOf,
+    valueOf,
+    isLtr: (key) => LTR_FIELDS.has(key),
+    date,
+    dateTime,
+    enumLabel,
+    localized: (content) => localizedText(content, locale.value),
+  }
 }

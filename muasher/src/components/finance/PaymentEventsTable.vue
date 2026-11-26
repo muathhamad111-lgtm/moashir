@@ -4,7 +4,9 @@ import { useI18n } from 'vue-i18n'
 import DataTable from '@/components/data-list/DataTable.vue'
 import Badge from '@/components/ui/Badge.vue'
 import { ROUTE_NAMES } from '@/constants/routeNames'
+import { EVENT_RESULT_VARIANTS } from '@/constants/finance'
 import { formatDate } from '@/utils/datetime'
+import { COLUMN_KINDS } from '@/utils/tableColumns'
 
 defineProps({
   items: { type: Array, required: true },
@@ -15,8 +17,6 @@ defineProps({
 const emit = defineEmits(['retry'])
 const { t, te, locale } = useI18n()
 
-const RESULT_VARIANTS = { applied: 'success', pending: 'warning', ignored: 'muted', rejected: 'danger', unmatched: 'warning', late_payment: 'danger' }
-
 const columns = computed(() => [
   { key: 'createdAt', label: t('finance.fields.date') },
   { key: 'source', label: t('finance.events.source') },
@@ -25,10 +25,22 @@ const columns = computed(() => [
   { key: 'mode', label: t('finance.events.mode') },
   { key: 'result', label: t('finance.events.result') },
   { key: 'providerRef', label: t('finance.events.providerRef') },
+  { key: 'entity', label: t('finance.events.columns.entity') },
+  { key: 'processedAt', label: t('finance.events.columns.processedAt') },
+  { key: 'errorCode', label: t('finance.events.columns.errorCode'), kind: COLUMN_KINDS.CODE },
+  { key: 'signature', label: t('finance.events.columns.signature'), kind: COLUMN_KINDS.STATUS },
 ])
 
 function dateOf(value) {
-  return formatDate(value, locale.value, { dateStyle: 'medium', timeStyle: 'short', timeZone: 'Asia/Riyadh' })
+  return formatDate(value, locale.value, {
+    dateStyle: 'medium',
+    timeStyle: 'short',
+    timeZone: 'Asia/Riyadh',
+  })
+}
+
+function entityOf(payment) {
+  return payment?.entityName?.[locale.value] || payment?.entityName?.ar || ''
 }
 
 function typeOf(value) {
@@ -38,6 +50,7 @@ function typeOf(value) {
 
 <template>
   <DataTable
+    table-key="finance-payment-events"
     :columns="columns"
     :items="items"
     :status="status"
@@ -45,25 +58,60 @@ function typeOf(value) {
     :empty-title="t('finance.events.emptyTitle')"
     @retry="emit('retry')"
   >
-    <template #cell-createdAt="{ item }"><span class="transactions-table__date">{{ dateOf(item.createdAt) }}</span></template>
+    <template #cell-createdAt="{ item }"
+      ><span class="transactions-table__date">{{ dateOf(item.createdAt) }}</span></template
+    >
     <template #cell-source="{ item }">{{ t(`finance.events.sources.${item.source}`) }}</template>
     <template #cell-eventType="{ item }">
       <span class="payment-events__type">
         {{ typeOf(item.eventType) }}
-        <Badge v-if="item.signatureValid === true" variant="success">{{ t('finance.events.signed') }}</Badge>
+        <Badge v-if="item.signatureValid === true" variant="success">{{
+          t('finance.events.signed')
+        }}</Badge>
       </span>
     </template>
     <template #cell-payment="{ item }">
-      <RouterLink v-if="item.payment" class="transactions-table__link" :to="{ name: ROUTE_NAMES.FINANCE_TRANSACTION, params: { id: item.payment.id } }">
+      <RouterLink
+        v-if="item.payment"
+        class="transactions-table__link"
+        :to="{ name: ROUTE_NAMES.FINANCE_TRANSACTION, params: { id: item.payment.id } }"
+      >
         <bdi dir="ltr">{{ item.payment.reference }}</bdi>
       </RouterLink>
       <span v-else class="transactions-table__muted">{{ t('finance.events.unmatched') }}</span>
     </template>
-    <template #cell-mode="{ item }">{{ item.mode ? t(`finance.filters.modes.${item.mode}`) : t('finance.common.none') }}</template>
+    <template #cell-mode="{ item }">{{
+      item.mode ? t(`finance.filters.modes.${item.mode}`) : t('finance.common.none')
+    }}</template>
     <template #cell-result="{ item }">
-      <Badge v-if="item.result" :variant="RESULT_VARIANTS[item.result] ?? 'muted'">{{ t(`finance.events.results.${item.result}`) }}</Badge>
-      <span v-if="item.errorCode" class="payment-events__error"><bdi dir="ltr">{{ item.errorCode }}</bdi></span>
+      <Badge v-if="item.result" :variant="EVENT_RESULT_VARIANTS[item.result] ?? 'muted'">{{
+        t(`finance.events.results.${item.result}`)
+      }}</Badge>
+      <span v-if="item.errorCode" class="payment-events__error"
+        ><bdi dir="ltr">{{ item.errorCode }}</bdi></span
+      >
     </template>
-    <template #cell-providerRef="{ item }"><code class="payment-events__ref" dir="ltr">{{ item.providerRef ?? t('finance.common.none') }}</code></template>
+    <template #cell-providerRef="{ item }"
+      ><code class="payment-events__ref" dir="ltr">{{
+        item.providerRef ?? t('finance.common.none')
+      }}</code></template
+    >
+    <template #cell-entity="{ item }">{{ entityOf(item.payment) }}</template>
+    <template #cell-processedAt="{ item }"
+      ><span v-if="item.processedAt" class="transactions-table__date">{{
+        dateOf(item.processedAt)
+      }}</span></template
+    >
+    <template #cell-errorCode="{ item }"
+      ><bdi v-if="item.errorCode" dir="ltr">{{ item.errorCode }}</bdi></template
+    >
+    <template #cell-signature="{ item }">
+      <Badge v-if="item.signatureValid === true" variant="success">{{
+        t('finance.events.signed')
+      }}</Badge>
+      <Badge v-else-if="item.signatureValid === false" variant="danger">{{
+        t('finance.events.columns.unsigned')
+      }}</Badge>
+    </template>
   </DataTable>
 </template>

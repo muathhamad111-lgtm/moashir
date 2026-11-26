@@ -24,7 +24,8 @@ export function lengthError(value, { min = 0, max, attribute }) {
 }
 
 export function reasonError(reason, { required = false, min = REASON.MIN } = {}) {
-  if (reason === undefined || reason === null || reason === '') return required ? [fieldMessage('validation.required', {}, 'reason')] : null
+  if (reason === undefined || reason === null || reason === '')
+    return required ? [fieldMessage('validation.required', {}, 'reason')] : null
   return lengthError(reason, { min, max: REASON.MAX, attribute: 'reason' })
 }
 

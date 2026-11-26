@@ -35,7 +35,12 @@ const REGIONS = [
       { id: 2, code: 'diriyah', name: { ar: 'الدرعية', en: 'Diriyah' } },
     ],
   },
-  { id: 2, code: 'makkah', name: { ar: 'منطقة مكة المكرمة', en: 'Makkah Region' }, cities: [{ id: 12, code: 'jeddah', name: { ar: 'جدة', en: 'Jeddah' } }] },
+  {
+    id: 2,
+    code: 'makkah',
+    name: { ar: 'منطقة مكة المكرمة', en: 'Makkah Region' },
+    cities: [{ id: 12, code: 'jeddah', name: { ar: 'جدة', en: 'Jeddah' } }],
+  },
 ]
 
 beforeEach(() => {
@@ -51,7 +56,11 @@ describe('useEntityOptions', () => {
       { value: 'waqf', label: 'Waqf' },
     ])
     const arabic = harness(useEntityOptions, 'ar')
-    expect(arabic.entityTypeOptions.value.map((option) => option.label)).toEqual(['جمعية أهلية', 'مؤسسة أهلية', 'وقف'])
+    expect(arabic.entityTypeOptions.value.map((option) => option.label)).toEqual([
+      'جمعية أهلية',
+      'مؤسسة أهلية',
+      'وقف',
+    ])
     expect(arabic.strategicPlanOptions.value.map((option) => option.value)).toEqual(['yes', 'no'])
   })
 })

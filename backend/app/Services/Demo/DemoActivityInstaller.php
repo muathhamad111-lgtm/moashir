@@ -14,17 +14,21 @@ final readonly class DemoActivityInstaller
         private DemoPriceInstaller $prices,
         private DemoCycleInstaller $cycle,
         private DemoPaymentInstaller $payments,
+        private DemoBankTransferInstaller $bankTransfers,
+        private DemoInsightsInstaller $insights,
     ) {}
 
     public function install(DemoPeople $people): DemoActivity
     {
-        $this->prices->install($people->staffMember(RoleKey::SystemAdmin));
+        $systemAdmin = $people->staffMember(RoleKey::SystemAdmin);
+        $this->prices->install($systemAdmin);
         $cycle = $this->cycle->install($people->staffMember(RoleKey::AwardSecretary));
-        [$paidEntity, $pendingEntity] = $people->entityOwners;
+        [$paidEntity, $pendingEntity, $settledEntity] = $people->entityOwners;
+        $insights = $this->insights->installWithNewDemo($people);
 
         return new DemoActivity($cycle, [
-            $this->payments->installPaid($paidEntity),
-            $this->payments->installOpen($pendingEntity),
-        ]);
+            $this->payments->installPaid($paidEntity->user),
+            ...$this->bankTransfers->install($systemAdmin, $people->staffMember(RoleKey::FinanceOfficer), $pendingEntity, $settledEntity),
+        ], $insights->accreditedResults);
     }
 }

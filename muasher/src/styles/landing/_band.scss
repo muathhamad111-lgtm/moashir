@@ -1,0 +1,121 @@
+@use 'tokens' as *;
+
+.lp-band {
+  padding-block: 0 20px;
+
+  &__box {
+    --lp-btn: #{$lp-aqua};
+    --lp-btn-ink: #{$lp-dark};
+    --lp-ink: #{$lp-ink-on-dark};
+    --lp-line-strong: rgba(217, 247, 247, 0.3);
+
+    position: relative;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 28px;
+    padding: clamp(36px, 5vw, 60px) clamp(28px, 5vw, 64px);
+    overflow: hidden;
+    isolation: isolate;
+    border-radius: 24px;
+    color: $lp-ink-on-dark;
+    background:
+      radial-gradient(70% 140% at 0% 100%, rgba(41, 145, 145, 0.45), transparent 60%),
+      linear-gradient(120deg, $lp-dark 0%, $lp-dark-3 55%, $lp-dark 100%);
+
+    &::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      z-index: -1;
+      opacity: 0.55;
+      background-image: lp-pattern($lp-aqua, 0.5, 1.3, 96, 84);
+      background-size: 96px 84px;
+      animation: lp-band-drift 18s linear infinite;
+      mask-image: linear-gradient(90deg, #000, transparent 55%);
+    }
+
+    &::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      z-index: -1;
+      background: linear-gradient(
+        105deg,
+        transparent 35%,
+        rgba(217, 247, 247, 0.09) 50%,
+        transparent 65%
+      );
+      background-size: 250% 100%;
+      animation: lp-band-sheen 6s ease-in-out infinite;
+    }
+
+    .lp-btn--line {
+      color: $lp-ink-on-dark;
+      border-color: rgba(217, 247, 247, 0.3);
+      background: rgba(10, 35, 37, 0.4);
+
+      &:hover {
+        color: $lp-dark;
+        border-color: $lp-aqua;
+        background: $lp-aqua;
+      }
+    }
+
+    .lp-cta-pair {
+      position: relative;
+    }
+  }
+
+  &__arrow {
+    position: absolute;
+    z-index: -1;
+    inset-inline-end: -40px;
+    top: 50%;
+    width: clamp(160px, 22vw, 280px);
+    translate: 0 -50%;
+    fill: none;
+    stroke: rgba(152, 216, 211, 0.22);
+    stroke-width: 2.2;
+    pointer-events: none;
+
+    &--two {
+      inset-inline-end: 70px;
+      width: clamp(110px, 14vw, 180px);
+      stroke: rgba(152, 216, 211, 0.12);
+      translate: 0 -30%;
+    }
+  }
+
+  &__text {
+    h2 {
+      font-size: clamp(1.5rem, 2.8vw, 2.2rem);
+      color: $lp-ink-on-dark;
+    }
+
+    p {
+      margin-block-start: 6px;
+      font-size: 1.05rem;
+      color: $lp-ink-2-on-dark;
+    }
+  }
+}
+
+@keyframes lp-band-drift {
+  to {
+    background-position: 96px -84px;
+  }
+}
+
+@keyframes lp-band-sheen {
+  0%,
+  20% {
+    background-position: 130% 0;
+  }
+
+  60%,
+  100% {
+    background-position: -30% 0;
+  }
+}

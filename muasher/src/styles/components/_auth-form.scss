@@ -17,7 +17,7 @@
 .auth-form__title {
   margin: 0;
   font-size: var(--fs-2xl);
-  font-weight: var(--fw-bold);
+  font-weight: var(--fw-heading);
   color: var(--theme-heading);
 }
 
@@ -25,6 +25,10 @@
   margin: 0;
   color: var(--theme-text-muted);
   font-size: var(--fs-sm);
+}
+
+.auth-form__panel {
+  @include flex(column, stretch, flex-start, var(--space-6));
 }
 
 .auth-form__body {
@@ -46,7 +50,7 @@
 .auth-form__legend {
   padding: 0;
   font-size: var(--fs-sm);
-  font-weight: var(--fw-semibold);
+  font-weight: var(--fw-heading);
   color: var(--theme-accent-text);
 }
 
@@ -75,15 +79,6 @@
   font-size: var(--fs-sm);
 }
 
-.auth-form__notice {
-  margin: 0;
-  padding: var(--space-4);
-  border-radius: var(--radius-md);
-  background-color: var(--color-warning-soft);
-  color: var(--color-warning);
-  font-size: var(--fs-sm);
-}
-
 .auth-form__switch {
   margin: 0;
   text-align: center;
@@ -93,7 +88,7 @@
 
 .auth-form__link {
   color: var(--theme-accent-text);
-  font-weight: var(--fw-semibold);
+  font-weight: var(--fw-emphasis);
   background: none;
   border: 0;
   padding: 0;
@@ -111,70 +106,6 @@
   &:disabled {
     opacity: var(--opacity-disabled);
     cursor: not-allowed;
-  }
-}
-
-.auth-form__demo {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-2);
-  padding: var(--space-4);
-  border-radius: var(--radius-md);
-  border: var(--border-width) dashed var(--theme-border);
-  background-color: var(--theme-surface);
-}
-
-.auth-form__demo-title {
-  margin: 0;
-  font-size: var(--fs-sm);
-  font-weight: var(--fw-semibold);
-  color: var(--theme-heading);
-}
-
-.auth-form__demo-hint {
-  margin: 0;
-  font-size: var(--fs-xs);
-  color: var(--theme-text-muted);
-}
-
-.auth-form__demo-grid {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--space-2);
-  margin-block-start: var(--space-2);
-}
-
-.auth-form__modes {
-  @include flex(row, stretch, flex-start, var(--space-1));
-  padding: var(--space-1);
-  border-radius: var(--radius-md);
-  background-color: var(--theme-surface);
-  border: var(--border-width) solid var(--theme-border);
-  flex-wrap: wrap;
-}
-
-.auth-form__mode {
-  flex: 1 1 auto;
-  padding-block: var(--space-2);
-  padding-inline: var(--space-3);
-  border: 0;
-  border-radius: var(--radius-sm);
-  background: none;
-  color: var(--theme-text-muted);
-  font-size: var(--fs-sm);
-  font-weight: var(--fw-medium);
-  cursor: pointer;
-  transition:
-    background-color var(--t-fast) var(--ease),
-    color var(--t-fast) var(--ease);
-
-  &.is-active {
-    background-color: var(--theme-accent);
-    color: var(--theme-on-accent);
-  }
-
-  &:focus-visible {
-    @include focus-ring;
   }
 }
 
@@ -204,5 +135,111 @@
 }
 
 .auth-otp__cooldown {
+  @include flex(row, center, center, var(--space-2));
   color: var(--theme-text-muted);
+}
+
+// Drains with the resend cooldown; the attribute steps each second and the stroke eases between.
+.otp-resend-ring {
+  flex: none;
+  inline-size: 20px;
+  block-size: 20px;
+  rotate: -90deg;
+
+  circle {
+    fill: none;
+    stroke-width: 3.5;
+  }
+}
+
+.otp-resend-ring__track {
+  stroke: var(--theme-border);
+}
+
+.otp-resend-ring__fill {
+  stroke: var(--theme-accent-text);
+  stroke-linecap: round;
+
+  @include motion-safe {
+    transition: stroke-dashoffset 1s linear;
+  }
+}
+
+.auth-otp__verified {
+  @include flex(row, center, center, var(--space-2));
+  margin: 0;
+  color: var(--theme-success-text);
+  font-weight: var(--fw-body);
+}
+
+.auth-otp__tick {
+  display: inline-grid;
+  flex: none;
+  place-items: center;
+  inline-size: 24px;
+  block-size: 24px;
+  border-radius: 50%;
+  background-color: var(--theme-success-text);
+  color: var(--theme-surface);
+  font-size: var(--fs-sm);
+
+  @include motion-safe {
+    animation: auth-otp-tick-pop 460ms 280ms var(--ease-spring) both;
+  }
+}
+
+.auth-otp__verified-text {
+  @include motion-safe {
+    animation: auth-otp-fade-in 300ms 420ms var(--ease-out) both;
+  }
+}
+
+@keyframes auth-otp-tick-pop {
+  from {
+    opacity: 0;
+    scale: 0.3;
+  }
+}
+
+@keyframes auth-otp-fade-in {
+  from {
+    opacity: 0;
+    translate: 0 4px;
+  }
+}
+
+.auth-otp__target {
+  font-weight: var(--fw-body);
+  color: var(--theme-heading);
+}
+
+.auth-otp__target-line {
+  margin: 0;
+  font-size: var(--fs-sm);
+}
+
+.auth-otp__tile {
+  @include flex-center;
+  inline-size: var(--size-icon-tile);
+  block-size: var(--size-icon-tile);
+  margin-block-end: var(--space-3);
+  border-radius: var(--radius-xl);
+  background-color: var(--theme-accent-soft);
+  color: var(--theme-accent-text);
+  font-size: var(--icon-size-lg);
+}
+
+.auth-otp__ended {
+  @include flex(column, stretch, flex-start, var(--space-6));
+}
+
+.auth-otp__password {
+  @include flex(row, center, center, var(--space-2));
+  display: inline-flex;
+}
+
+.auth-form__forgot {
+  align-self: flex-end;
+  padding-block: var(--space-1);
+  font-size: var(--fs-sm);
 }

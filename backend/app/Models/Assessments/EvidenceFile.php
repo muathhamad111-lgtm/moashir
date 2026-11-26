@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Models\Assessments;
 
+use App\Enums\Assessments\EvidenceLevel;
 use App\Enums\Assessments\EvidenceStatus;
 use App\Enums\Files\MalwareScanStatus;
 use App\Models\Concerns\HasPublicId;
@@ -18,7 +19,8 @@ use Illuminate\Support\Carbon;
  * @property int $id
  * @property string $public_id
  * @property int $assessment_id
- * @property string $sub_code
+ * @property string|null $main_code
+ * @property string|null $sub_code
  * @property string|null $attachment_key
  * @property int $stored_file_id
  * @property EvidenceStatus $status
@@ -37,7 +39,7 @@ final class EvidenceFile extends Model
     /**
      * @var list<string>
      */
-    protected $fillable = ['assessment_id', 'sub_code', 'attachment_key', 'stored_file_id', 'status', 'uploaded_by_user_id'];
+    protected $fillable = ['assessment_id', 'main_code', 'sub_code', 'attachment_key', 'stored_file_id', 'status', 'uploaded_by_user_id'];
 
     /**
      * @return array<string, string>
@@ -70,6 +72,20 @@ final class EvidenceFile extends Model
         return $this->belongsTo(StoredFile::class)->withTrashed();
     }
 
+    public static function ownerColumn(EvidenceLevel $level): string
+    {
+        return $level === EvidenceLevel::Main ? 'main_code' : 'sub_code';
+    }
+
+    /**
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function ofOwner(Builder $query, EvidenceLevel $level, string $code): void
+    {
+        $query->where(self::ownerColumn($level), $code);
+    }
+
     /**
      * @param  Builder<self>  $query
      */
@@ -86,6 +102,19 @@ final class EvidenceFile extends Model
     protected function scannedClean(Builder $query): void
     {
         $query->whereHas('storedFile', static fn (Builder $file): Builder => $file->where('malware_scan_status', MalwareScanStatus::Clean));
+    }
+
+    public function level(): EvidenceLevel
+    {
+        return $this->main_code === null ? EvidenceLevel::Sub : EvidenceLevel::Main;
+    }
+
+    /**
+     * The code of the main criterion or sub-criterion the file belongs to.
+     */
+    public function ownerCode(): string
+    {
+        return $this->main_code ?? (string) $this->sub_code;
     }
 
     public function isPresent(): bool

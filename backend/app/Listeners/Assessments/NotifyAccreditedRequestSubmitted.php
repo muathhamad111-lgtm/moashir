@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 namespace App\Listeners\Assessments;
 
+use App\Data\Mail\AccreditedProgress;
 use App\Enums\Identity\RoleKey;
+use App\Enums\Notifications\AccreditedJourneyStage;
 use App\Enums\Notifications\NotificationCode;
 use App\Events\Assessments\AccreditedRequestSubmitted;
 use App\Services\Entities\EntityNotifier;
@@ -25,7 +27,7 @@ final readonly class NotifyAccreditedRequestSubmitted
             RequestNotices::FOR_ENTITY,
             $assessment,
             AssessmentLinks::accreditedForm(),
-        ));
+        )->withProgress(new AccreditedProgress(AccreditedJourneyStage::Assignment)));
         $this->notifier->toRole(RoleKey::RequestFollower, RequestNotices::for(
             NotificationCode::AccreditedSubmitted,
             RequestNotices::FOR_STAFF,

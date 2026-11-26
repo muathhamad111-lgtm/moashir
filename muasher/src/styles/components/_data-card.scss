@@ -1,0 +1,76 @@
+@use '../mixins' as *;
+
+// A list in one white card on the grey page: the toolbar, a hairline, the table, then the
+// pagination footer. The table loses its own frame inside the card.
+.data-card {
+  @include flex(column, stretch, flex-start);
+  min-inline-size: 0;
+  border: var(--border-width) solid var(--theme-border);
+  border-radius: var(--card-radius, var(--radius-lg));
+  background-color: var(--theme-surface-solid);
+}
+
+.data-card__toolbar {
+  padding-block: var(--space-4);
+  padding-inline: var(--space-5);
+  border-block-end: var(--border-width) solid var(--theme-border);
+
+  > .filter-toolbar {
+    padding-block: 0;
+  }
+}
+
+.data-card > .table-wrap {
+  border: 0;
+  border-radius: 0;
+
+  &:last-child {
+    border-end-start-radius: inherit;
+    border-end-end-radius: inherit;
+  }
+}
+
+// The lead: a notice strip across the card's top, then quick filters, above the toolbar.
+.data-card__lead {
+  @include flex(column, stretch, flex-start);
+  min-inline-size: 0;
+  border-block-end: var(--border-width) solid var(--theme-border);
+  border-start-start-radius: inherit;
+  border-start-end-radius: inherit;
+
+  &:empty {
+    display: none;
+  }
+}
+
+// Notices that belong to the list (an outcome, a conflict, a bulk bar) sit inside the card's gutter.
+.data-card > :not(.data-card__lead, .data-card__toolbar, .data-card__footer, .table-wrap) {
+  margin-block: var(--space-4) 0;
+  margin-inline: var(--space-5);
+}
+
+.data-card__footer {
+  @include flex(row, center, center, var(--space-3));
+  padding-block: var(--space-3);
+  padding-inline: var(--space-5);
+  border-block-start: var(--border-width) solid var(--theme-border);
+
+  &:empty {
+    display: none;
+  }
+
+  > .pagination {
+    margin: 0;
+  }
+}
+
+// A table without a list toolbar keeps its «الأعمدة» menu on a bar of its own above it.
+.table-columns-bar {
+  @include flex(row, center, flex-end, var(--space-2));
+  margin-block-end: var(--space-3);
+}
+
+.data-card > .table-columns-bar {
+  margin-block: var(--space-3) 0;
+  margin-inline: var(--space-5);
+}

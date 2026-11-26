@@ -1,0 +1,42 @@
+@use '../mixins' as *;
+
+.form-panel {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  padding: var(--space-4);
+  border-radius: var(--radius-lg);
+  border: var(--border-width) solid var(--theme-border);
+  background-color: var(--theme-surface);
+}
+
+.form-panel__header {
+  @include flex(column, flex-start, flex-start, var(--space-1));
+}
+
+.form-panel__title {
+  margin: 0;
+  font-size: var(--fs-md);
+  font-weight: var(--fw-heading);
+  color: var(--theme-heading);
+}
+
+.form-panel__subtitle {
+  margin: 0;
+  font-size: var(--fs-sm);
+  color: var(--theme-text-muted);
+}
+
+.form-panel__fields {
+  min-inline-size: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.form-panel__footer {
+  @include flex(row, center, flex-start, var(--space-2));
+  flex-wrap: wrap;
+  padding-block-start: var(--space-3);
+  border-block-start: var(--border-width) solid var(--theme-border);
+}

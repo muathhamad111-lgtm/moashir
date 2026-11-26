@@ -1,0 +1,56 @@
+// A soft pill tag: tinted with the path colour, no frame or side bar, icon in the path colour.
+.path-badge {
+  --path-edge: var(--theme-border-strong);
+  --path-text: var(--theme-text);
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  max-inline-size: 100%;
+  padding-block: var(--space-0);
+  padding-inline: var(--space-2) var(--space-3);
+  border: 0;
+  border-radius: var(--radius-pill);
+  background-color: color-mix(in srgb, var(--path-edge) var(--path-fill-strength), transparent);
+  color: var(--path-text);
+  font-size: var(--fs-xs);
+  font-weight: var(--fw-emphasis);
+  line-height: var(--lh-base);
+  white-space: nowrap;
+  vertical-align: middle;
+}
+
+.path-badge__icon {
+  flex-shrink: 0;
+  color: var(--path-edge);
+  font-size: var(--fs-sm);
+}
+
+.path-badge__label {
+  min-inline-size: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.path-badge--compact {
+  padding-inline: var(--space-2);
+}
+
+.path-badge--self {
+  --path-edge: var(--path-self-edge);
+  --path-text: var(--path-self-text);
+}
+
+.path-badge--accredited {
+  --path-edge: var(--path-accredited-edge);
+  --path-text: var(--path-accredited-text);
+}
+
+.path-badge--advanced {
+  --path-edge: var(--path-advanced-edge);
+  --path-text: var(--path-advanced-text);
+}
+
+.path-badge--bag {
+  --path-edge: var(--path-bag-edge);
+  --path-text: var(--path-bag-text);
+}

@@ -19,7 +19,7 @@ return [
         Str::slug((string) env('APP_NAME', 'moashir'), '_').'_horizon:'
     ),
 
-    'middleware' => ['web'],
+    'middleware' => ['web', 'session.timeouts', 'mfa', 'password.current'],
 
     'waits' => [
         'redis:default' => 60,

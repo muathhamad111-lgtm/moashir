@@ -3,7 +3,9 @@
 declare(strict_types=1);
 
 use App\Contracts\Integrations\HostResolver;
+use App\Contracts\SmsGateway;
 use App\Data\Integrations\CredentialChanges;
+use App\Data\Integrations\SmsDriverSelection;
 use App\Enums\Audit\AuditEvent;
 use App\Enums\Identity\RoleKey;
 use App\Enums\Integrations\IntegrationMode;
@@ -118,6 +120,13 @@ function configureOpenAi(array $public = [], array $state = []): IntegrationCred
 function configureAnthropic(array $public = [], array $state = []): IntegrationCredential
 {
     return storeCredential(IntegrationProvider::Anthropic, null, ['model' => 'claude-sonnet-4-6', ...$public], ['api_key' => FAKE_ANTHROPIC_KEY], $state);
+}
+
+function useSettingsSmsGateway(): void
+{
+    config()->set('moashir.sms.driver', 'settings');
+    app()->forgetInstance(SmsDriverSelection::class);
+    app()->forgetInstance(SmsGateway::class);
 }
 
 function setIntegrationSetting(SettingKey $key, mixed $value): void

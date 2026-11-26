@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Database\Factories\Criteria;
 
+use App\Enums\Criteria\ScoringType;
 use App\Models\Criteria\GuidingPoint;
 use App\Models\Criteria\SubCriterion;
 use App\Support\ValueObjects\Weight;
@@ -28,6 +29,7 @@ final class GuidingPointFactory extends Factory
             'code' => 'P'.$position,
             'description' => ['ar' => 'اعتماد لائحة حوكمة تحدد الأدوار والمسؤوليات.', 'en' => 'An approved governance charter defining roles and responsibilities.'],
             'weight' => Weight::of('250.00'),
+            'scoring_type' => ScoringType::Score,
             'is_active' => true,
             'sort_order' => $position,
         ];

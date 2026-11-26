@@ -7,6 +7,7 @@ namespace App\Actions\Entities;
 use App\Data\Entities\ProfileChangeEntry;
 use App\Data\Entities\StaffProfileChangeEntry;
 use App\Data\Identity\StaffActor;
+use App\Enums\Entities\ProfileSection;
 use App\Models\Entities\Entity;
 use App\Services\Identity\StaffActorReader;
 use Illuminate\Pagination\LengthAwarePaginator;
@@ -18,9 +19,9 @@ final readonly class ListStaffEntityProfileChanges
     /**
      * @return LengthAwarePaginator<int, StaffProfileChangeEntry>
      */
-    public function handle(Entity $entity, int $perPage): LengthAwarePaginator
+    public function handle(Entity $entity, int $perPage, ?ProfileSection $section = null): LengthAwarePaginator
     {
-        $page = $this->changes->handle($entity, $perPage);
+        $page = $this->changes->handle($entity, $perPage, $section);
         $authors = $this->staffActors->for($this->staffUserIdsOf($page->getCollection()->all()));
 
         return $page->through(static fn (ProfileChangeEntry $entry): StaffProfileChangeEntry => new StaffProfileChangeEntry(

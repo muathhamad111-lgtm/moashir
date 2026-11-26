@@ -1,6 +1,8 @@
-import { EVALUATION_TYPES } from '@/constants/criteria'
+import { EVALUATION_TYPES, SCORING_TYPES } from '@/constants/criteria'
 import { SCALE_KINDS, SCORE_LEVELS } from '@/constants/assessment'
+import { toCanonicalStatus } from '@/utils/canonicalStatus'
 import { toHundredths } from '@/utils/weight'
+import { isAchievement, unitScoringType } from '@/utils/assessments/scoringTypes'
 
 export const PERCENT_HUNDRED = 1000000
 const EARNED_DISPLAY_DIVISOR = 1000000
@@ -13,8 +15,26 @@ const SCALE_MAXIMUM_HUNDREDTHS = {
   [SCALE_KINDS.RELATIVE]: 10000,
 }
 
+const TYPE_MAXIMUM_HUNDREDTHS = {
+  [SCORING_TYPES.RELATIVE]: 10000,
+  [SCORING_TYPES.SCORE]: 1000,
+  [SCORING_TYPES.ACHIEVEMENT]: 100,
+}
+
+export const ACHIEVED_HUNDREDTHS = TYPE_MAXIMUM_HUNDREDTHS[SCORING_TYPES.ACHIEVEMENT]
+
 export function scaleMaximumHundredths(scaleKind) {
   return SCALE_MAXIMUM_HUNDREDTHS[scaleKind]
+}
+
+export function stampedTypeOf(unit, scaleKind) {
+  return unitScoringType(unit, { kind: scaleKind })
+}
+
+export function acceptsRawHundredths(raw, unit, scaleKind) {
+  const type = stampedTypeOf(unit, scaleKind)
+  if (raw > TYPE_MAXIMUM_HUNDREDTHS[type]) return false
+  return !isAchievement(type) || raw % ACHIEVED_HUNDREDTHS === 0
 }
 
 export function divideHalfUp(numerator, denominator) {
@@ -40,14 +60,32 @@ export function parseRawHundredths(text) {
   return Number(parts[1]) * 100 + Number(fraction.slice(0, RAW_DECIMALS).padEnd(RAW_DECIMALS, '0'))
 }
 
-export function rawPercent(hundredths, scaleKind) {
-  return Math.floor((hundredths * PERCENT_HUNDRED) / scaleMaximumHundredths(scaleKind))
+function percentOfMaximum(hundredths, maximum) {
+  return Math.floor((hundredths * PERCENT_HUNDRED) / maximum)
 }
 
-export const displayPercent = (tenThousandths) => formatFixed(divideHalfUp(tenThousandths, PERCENT_DISPLAY_DIVISOR), 2)
-export const displayEarned = (hundredMillionths) => formatFixed(divideHalfUp(hundredMillionths, EARNED_DISPLAY_DIVISOR), 2)
+export function rawPercent(hundredths, scaleKind) {
+  return percentOfMaximum(hundredths, scaleMaximumHundredths(scaleKind))
+}
+
+export function unitRawPercent(hundredths, unit, scaleKind) {
+  return percentOfMaximum(hundredths, TYPE_MAXIMUM_HUNDREDTHS[stampedTypeOf(unit, scaleKind)])
+}
+
+export const displayPercent = (tenThousandths) =>
+  formatFixed(divideHalfUp(tenThousandths, PERCENT_DISPLAY_DIVISOR), 2)
+export const displayEarned = (hundredMillionths) =>
+  formatFixed(divideHalfUp(hundredMillionths, EARNED_DISPLAY_DIVISOR), 2)
 export const decimalRaw = (hundredths) => formatFixed(hundredths, RAW_DECIMALS)
 export const decimalWeight = (hundredths) => formatFixed(Math.max(0, hundredths), 2)
+
+export function scaleResource(scaleKind) {
+  if (!scaleKind) return null
+  return {
+    kind: toCanonicalStatus(scaleKind),
+    maximum: decimalRaw(scaleMaximumHundredths(scaleKind)),
+  }
+}
 
 function percentOf(hundredMillionths, weightHundredths) {
   if (weightHundredths <= 0) return 0
@@ -62,25 +100,40 @@ function scoresPoints(sub) {
   return sub.evaluationType === EVALUATION_TYPES.GUIDING_POINTS
 }
 
+function unitOf(level, node) {
+  return { level, id: node.id, code: node.code, scoringType: node.scoringType ?? null }
+}
+
 export function scorableUnits(tree) {
   return tree.mains.flatMap((main) =>
     main.subs.flatMap((sub) =>
       scoresPoints(sub)
-        ? sub.points.map((point) => ({ level: SCORE_LEVELS.POINT, id: point.id, code: point.code }))
-        : [{ level: SCORE_LEVELS.SUB, id: sub.id, code: sub.code }],
+        ? sub.points.map((point) => unitOf(SCORE_LEVELS.POINT, point))
+        : [unitOf(SCORE_LEVELS.SUB, sub)],
     ),
   )
 }
 
 function scoredUnit(level, node, sheet, scaleKind) {
   const raw = sheet.get(unitKey(level, node.id)) ?? null
-  const percent = raw === null ? 0 : rawPercent(raw, scaleKind)
+  const percent = raw === null ? 0 : unitRawPercent(raw, node, scaleKind)
   const weight = toHundredths(node.weight)
-  return { id: node.id, code: node.code, weight, raw, percent, earned: percent * Math.max(0, weight) }
+  return {
+    id: node.id,
+    code: node.code,
+    scoringType: stampedTypeOf(node, scaleKind),
+    weight,
+    raw,
+    percent,
+    earned: percent * Math.max(0, weight),
+  }
 }
 
 function normalizedEarned(subWeight, points) {
-  const weighted = points.reduce((total, point) => total + point.percent * Math.max(0, point.weight), 0)
+  const weighted = points.reduce(
+    (total, point) => total + point.percent * Math.max(0, point.weight),
+    0,
+  )
   const pointWeights = points.reduce((total, point) => total + Math.max(0, point.weight), 0)
   if (pointWeights === 0 || subWeight <= 0) return 0
   return multiplyDivideHalfUp(weighted, subWeight, pointWeights)
@@ -88,12 +141,26 @@ function normalizedEarned(subWeight, points) {
 
 function subResult(sub, sheet, scaleKind) {
   if (!scoresPoints(sub)) {
-    return { ...scoredUnit(SCORE_LEVELS.SUB, sub, sheet, scaleKind), evaluationType: sub.evaluationType, points: [] }
+    return {
+      ...scoredUnit(SCORE_LEVELS.SUB, sub, sheet, scaleKind),
+      evaluationType: sub.evaluationType,
+      points: [],
+    }
   }
   const points = sub.points.map((point) => scoredUnit(SCORE_LEVELS.POINT, point, sheet, scaleKind))
   const weight = toHundredths(sub.weight)
   const earned = normalizedEarned(weight, points)
-  return { id: sub.id, code: sub.code, weight, evaluationType: sub.evaluationType, raw: null, percent: percentOf(earned, weight), earned, points }
+  return {
+    id: sub.id,
+    code: sub.code,
+    scoringType: sub.scoringType ?? null,
+    weight,
+    evaluationType: sub.evaluationType,
+    raw: null,
+    percent: percentOf(earned, weight),
+    earned,
+    points,
+  }
 }
 
 function mainResult(main, sheet, scaleKind) {

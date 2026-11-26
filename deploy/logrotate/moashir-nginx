@@ -1,0 +1,18 @@
+/var/log/moashir/nginx/*.log {
+    daily
+    rotate 400
+    maxage 400
+    dateext
+    dateformat -%Y%m%d
+    olddir /var/log/moashir/archive/nginx
+    createolddir 0700 root root
+    missingok
+    notifempty
+    compress
+    delaycompress
+    create 0640 www-data root
+    sharedscripts
+    postrotate
+        if [ -s /run/nginx.pid ]; then kill -USR1 "$(cat /run/nginx.pid)"; fi
+    endscript
+}

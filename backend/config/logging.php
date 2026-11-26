@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use App\Support\Monitoring\RedactSensitiveLogData;
 use Monolog\Handler\NullHandler;
 use Monolog\Handler\StreamHandler;
 use Monolog\Handler\SyslogUdpHandler;
@@ -29,6 +30,7 @@ return [
             'path' => storage_path('logs/laravel.log'),
             'level' => env('LOG_LEVEL', 'debug'),
             'replace_placeholders' => true,
+            'tap' => [RedactSensitiveLogData::class],
         ],
 
         'daily' => [
@@ -37,6 +39,7 @@ return [
             'level' => env('LOG_LEVEL', 'debug'),
             'max_files' => env('LOG_DAILY_DAYS', 14),
             'replace_placeholders' => true,
+            'tap' => [RedactSensitiveLogData::class],
         ],
 
         'mail' => [
@@ -54,6 +57,7 @@ return [
             'level' => env('LOG_LEVEL', 'debug'),
             'max_files' => 3,
             'replace_placeholders' => true,
+            'tap' => [RedactSensitiveLogData::class],
         ],
 
         'slack' => [
@@ -86,6 +90,7 @@ return [
             ],
             'formatter' => env('LOG_STDERR_FORMATTER'),
             'processors' => [PsrLogMessageProcessor::class],
+            'tap' => [RedactSensitiveLogData::class],
         ],
 
         'syslog' => [
@@ -93,12 +98,14 @@ return [
             'level' => env('LOG_LEVEL', 'debug'),
             'facility' => env('LOG_SYSLOG_FACILITY', LOG_USER),
             'replace_placeholders' => true,
+            'tap' => [RedactSensitiveLogData::class],
         ],
 
         'errorlog' => [
             'driver' => 'errorlog',
             'level' => env('LOG_LEVEL', 'debug'),
             'replace_placeholders' => true,
+            'tap' => [RedactSensitiveLogData::class],
         ],
 
         'null' => [

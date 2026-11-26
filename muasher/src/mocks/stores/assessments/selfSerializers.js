@@ -1,5 +1,6 @@
+import { cycleRefOf } from '../award/cycleRef'
 import { SCORE_LEVELS } from '@/constants/assessment'
-import { toCanonicalStatus } from '@/utils/canonicalStatus'
+import { pathLabelOf } from '../../fixtures/pathLabels'
 import { entitySummary } from '../entitySerializers'
 import { findMain, findPoint, findSub } from '../criteriaStore'
 import { boundTree, entityOf, exposesResult, isFrozen, isOpen, sheetOf } from './assessmentsStore'
@@ -7,15 +8,17 @@ import { criteriaUpdateOf } from './criteriaMoves'
 import { statusHistoryOf } from './statusHistory'
 import { readsEveryAssessment } from './assessmentAccess'
 import { isMaskedFor, maskedStatus, visibleTransitions } from '../award/statusMask'
+import { requestPaymentOf } from '../accredited/requestPayments'
+import { availableTabsOf, pathRowFieldsOf } from '../periodic/requestPeriods'
 import {
   decimalRaw,
   decimalWeight,
   displayEarned,
   displayPercent,
-  rawPercent,
-  scaleMaximumHundredths,
+  scaleResource,
   scorableUnits,
   unitKey,
+  unitRawPercent,
 } from './selfScoring'
 
 function resultSummary(result) {
@@ -32,6 +35,7 @@ export function assessmentResource(record) {
     id: record.id,
     number: record.number,
     path: record.path,
+    pathLabel: pathLabelOf(record.path),
     status: maskedStatus(record),
     isOpen: isOpen(record) || isMaskedFor(record),
     isFrozen: isFrozen(record),
@@ -39,12 +43,14 @@ export function assessmentResource(record) {
     criteriaVersionId: record.criteriaVersionId,
     scaleKind: record.scaleKind,
     awardCycleId: record.awardCycleId ?? null,
+    awardCycle: cycleRefOf(record.awardCycleId),
     entity: entitySummary(entityOf(record)),
     result: exposesResult(record) ? resultSummary(record.result) : null,
     createdAt: record.createdAt,
     updatedAt: record.updatedAt,
     submittedAt: record.submittedAt,
     completedAt: record.completedAt,
+    ...pathRowFieldsOf(record, requestPaymentOf),
   }
 }
 
@@ -56,47 +62,61 @@ function scoresByLevel(record, units) {
     if (raw === undefined) return
     byLevel[unit.level][String(unit.id)] = {
       rawValue: decimalRaw(raw),
-      percent: displayPercent(rawPercent(raw, record.scaleKind)),
+      percent: displayPercent(unitRawPercent(raw, unit, record.scaleKind)),
     }
   })
   return { subs: byLevel[SCORE_LEVELS.SUB], points: byLevel[SCORE_LEVELS.POINT] }
 }
 
-export function scoresResource(record) {
+export function scoringProgressOf(record) {
   const units = scorableUnits(boundTree(record))
   const sheet = sheetOf(record)
   return {
+    scored: units.filter((unit) => sheet.has(unitKey(unit.level, unit.id))).length,
+    required: units.length,
+  }
+}
+
+export function scoresResource(record) {
+  const units = scorableUnits(boundTree(record))
+  return {
     assessment: assessmentResource(record),
-    scale: {
-      kind: toCanonicalStatus(record.scaleKind),
-      maximum: decimalRaw(scaleMaximumHundredths(record.scaleKind)),
-    },
+    scale: scaleResource(record.scaleKind),
     scores: scoresByLevel(record, units),
-    progress: {
-      scored: units.filter((unit) => sheet.has(unitKey(unit.level, unit.id))).length,
-      required: units.length,
-    },
+    progress: scoringProgressOf(record),
   }
 }
 
 export function recordResource(record, viewer) {
   const visible = { ...record, transitions: visibleTransitions(record, viewer) }
-  return { ...assessmentResource(record), statusHistory: statusHistoryOf(visible, { staffView: readsEveryAssessment(viewer) }) }
+  return {
+    ...assessmentResource(record),
+    statusHistory: statusHistoryOf(visible, { staffView: readsEveryAssessment(viewer) }),
+    ...availableTabsOf(record),
+  }
 }
 
 export function formResource(record) {
-  return { ...scoresResource(record), criteria: boundTree(record), criteriaUpdate: criteriaUpdateOf(record) }
+  return {
+    ...scoresResource(record),
+    criteria: boundTree(record),
+    criteriaUpdate: criteriaUpdateOf(record),
+  }
 }
 
 function figures(node) {
-  return { weight: decimalWeight(node.weight), earned: displayEarned(node.earned), percent: displayPercent(node.percent) }
+  return {
+    weight: decimalWeight(node.weight),
+    earned: displayEarned(node.earned),
+    percent: displayPercent(node.percent),
+  }
 }
 
 function nullableRaw(raw) {
   return raw === null ? null : decimalRaw(raw)
 }
 
-function mainRows(result) {
+export function mainRows(result) {
   return result.mains.map((main) => ({
     criterionId: main.id,
     code: main.code,
@@ -113,13 +133,14 @@ export function subRows(result) {
       code: sub.code,
       name: findSub(sub.id)?.name ?? null,
       evaluationType: sub.evaluationType,
+      scoringType: sub.scoringType ?? null,
       rawValue: nullableRaw(sub.raw),
       ...figures(sub),
     })),
   )
 }
 
-function pointRows(result) {
+export function pointRows(result) {
   return result.mains.flatMap((main) =>
     main.subs.flatMap((sub) =>
       sub.points.map((point) => ({
@@ -127,6 +148,7 @@ function pointRows(result) {
         subCriterionId: sub.id,
         code: point.code,
         description: findPoint(point.id)?.description ?? null,
+        scoringType: point.scoringType ?? null,
         rawValue: nullableRaw(point.raw),
         ...figures(point),
       })),
@@ -135,7 +157,14 @@ function pointRows(result) {
 }
 
 function resultIdentity(record) {
-  return { id: record.id, number: record.number, path: record.path, status: maskedStatus(record), isFrozen: isFrozen(record) }
+  return {
+    id: record.id,
+    number: record.number,
+    path: record.path,
+    pathLabel: pathLabelOf(record.path),
+    status: maskedStatus(record),
+    isFrozen: isFrozen(record),
+  }
 }
 
 export function resultResource(record) {
@@ -167,6 +196,7 @@ export function requestSearchHit(record) {
     id: record.id,
     number: record.number,
     path: record.path,
+    pathLabel: pathLabelOf(record.path),
     status: record.status,
     isFrozen: isFrozen(record),
     entity: entitySummary(entityOf(record)),

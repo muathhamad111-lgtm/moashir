@@ -1,5 +1,14 @@
 import { findCity, findRegion } from './regionsStore'
 import { findEntity, hasCompleteProfile, isDeleted, referenceOf } from './entitiesStore'
+import { hasCompleteBilling, profileCompletionOf, profileSectionsOf } from './entityProfileSections'
+import { findFile } from './finance/financeState'
+import { signedDownloadOf } from './finance/signedFiles'
+import { entityLevelFields, hasOpenAccreditedRequest } from './entityLevels'
+import { lastAccreditedAssessmentOf } from './entityLastAssessment'
+import { entityDocumentsOf } from './entityDocuments'
+import { sessionCan } from './sessionPermissions'
+
+const MANAGE_ENTITIES = 'entities.manage'
 
 export const ENTITY_ACCESS = { FULL: 'full', CONTACT: 'contact', NONE: 'none' }
 
@@ -29,14 +38,50 @@ export function entityProfileOf(entity) {
     foundingYear: entity.foundingYear,
     region: place(findRegion(entity.regionId)),
     city: place(findCity(entity.cityId)),
+    hasGovernanceGrade: entity.hasGovernanceGrade ?? null,
     governanceGrade: entity.governanceGrade,
     employeesCount: entity.employeesCount,
     annualBeneficiariesCount: entity.annualBeneficiariesCount,
     hasStrategicPlan: entity.hasStrategicPlan,
+    unifiedNumber: entity.unifiedNumber ?? null,
+    licenseNumber: entity.licenseNumber ?? null,
+    foundedOn: entity.foundedOn ?? null,
+    websiteUrl: entity.websiteUrl ?? null,
     profileCompleted: hasCompleteProfile(entity),
     verifiedAt: entity.verifiedAt,
     createdAt: entity.createdAt,
   }
+}
+
+function vatCertificateOf(entity) {
+  const certificate = entity.vatCertificate
+  return certificate
+    ? {
+        id: certificate.id,
+        name: certificate.name,
+        sizeBytes: certificate.sizeBytes,
+        uploadedAt: certificate.uploadedAt,
+      }
+    : null
+}
+
+export function entityBillingOf(entity) {
+  return {
+    addressBuildingNumber: entity.addressBuildingNumber ?? null,
+    addressStreet: entity.addressStreet ?? null,
+    addressDistrict: entity.addressDistrict ?? null,
+    addressCity: entity.addressCity ?? null,
+    addressPostalCode: entity.addressPostalCode ?? null,
+    addressAdditionalNumber: entity.addressAdditionalNumber ?? null,
+    addressShortCode: entity.addressShortCode ?? null,
+    vatRegistered: entity.vatRegistered ?? null,
+    vatNumber: entity.vatNumber ?? null,
+    vatCertificate: vatCertificateOf(entity),
+  }
+}
+
+function entityBilling(entity) {
+  return { ...entityBillingOf(entity), billingComplete: hasCompleteBilling(entity) }
 }
 
 function entityContact(entity) {
@@ -44,6 +89,7 @@ function entityContact(entity) {
     authorizedPersonName: entity.owner.name,
     officialEmail: entity.owner.email,
     phone: entity.owner.phone,
+    phoneVerified: Boolean(entity.owner.phoneVerifiedAt),
   }
 }
 
@@ -58,25 +104,54 @@ function pendingChange(change) {
     : null
 }
 
-export function ownEntityResource(entity, awaitingChange = null) {
+export function ownEntityResource(
+  entity,
+  { awaitingChange = null, canEdit = false, pendingProfileChange = null } = {},
+) {
   return {
     ...entitySummary(entity),
     ...entityProfileOf(entity),
     ...entityContact(entity),
+    ...entityBilling(entity),
     marketingConsent: entity.marketingConsentAt !== null,
     marketingConsentAt: entity.marketingConsentAt,
     pendingEmailChange: pendingChange(awaitingChange),
+    pendingProfileChange,
+    documents: entityDocumentsOf(entity),
+    logo: entity.logo ? { ...entity.logo } : null,
+    canEdit,
+    profileSections: profileSectionsOf(entity),
+    profileCompletion: profileCompletionOf(entity),
   }
 }
 
-function staffEntityResource(entity) {
+export function staffLogoOf(entity, viewer) {
+  const file = entity.logo ? findFile(entity.logo.id) : null
+  if (!file || !viewer) return null
+  return {
+    id: file.id,
+    url: signedDownloadOf(viewer, file).url,
+    uploadedAt: entity.logo.uploadedAt,
+  }
+}
+
+function staffEntityResource(entity, viewer) {
   return {
     ...entitySummary(entity),
+    ...entityLevelFields(entity),
+    hasOpenAccreditedRequest: hasOpenAccreditedRequest(entity.id),
+    lastAccreditedAssessment: lastAccreditedAssessmentOf(entity.id),
     ...entityProfileOf(entity),
     ...entityContact(entity),
+    ...entityBilling(entity),
+    logo: staffLogoOf(entity, viewer),
+    ...(sessionCan(MANAGE_ENTITIES) ? { documents: entityDocumentsOf(entity) } : {}),
     marketingConsent: entity.marketingConsentAt !== null,
     deactivatedAt: entity.deactivatedAt,
     deactivationReason: entity.deactivationReason,
+    approvedAt: entity.approvedAt ?? null,
+    rejectedAt: entity.rejectedAt ?? null,
+    rejectionReason: entity.rejectionReason ?? null,
     verificationRemindedAt: entity.verificationRemindedAt,
     isDeleted: isDeleted(entity),
     isFrozen: isDeleted(entity),
@@ -88,8 +163,18 @@ function staffEntityResource(entity) {
 
 const VARIANTS = {
   [ENTITY_ACCESS.FULL]: staffEntityResource,
-  [ENTITY_ACCESS.CONTACT]: (entity) => ({ ...entitySummary(entity), ...entityContact(entity) }),
-  [ENTITY_ACCESS.NONE]: (entity) => ({ ...entitySummary(entity), isDeleted: isDeleted(entity) }),
+  [ENTITY_ACCESS.CONTACT]: (entity) => ({
+    ...entitySummary(entity),
+    ...entityLevelFields(entity),
+    ...entityContact(entity),
+    region: place(findRegion(entity.regionId)),
+    createdAt: entity.createdAt,
+  }),
+  [ENTITY_ACCESS.NONE]: (entity) => ({
+    ...entitySummary(entity),
+    ...entityLevelFields(entity),
+    isDeleted: isDeleted(entity),
+  }),
 }
 
 export function entityResourceFor(access) {
@@ -98,7 +183,11 @@ export function entityResourceFor(access) {
 
 export function deletionImpactResource(openRequests, kept, { frozen = false } = {}) {
   return {
-    openRequests: openRequests.map((request) => ({ ...request, cycleId: request.cycleId ?? null, isFrozen: frozen })),
+    openRequests: openRequests.map((request) => ({
+      ...request,
+      cycleId: request.cycleId ?? null,
+      isFrozen: frozen,
+    })),
     openRequestsCount: openRequests.length,
     requiresConfirmation: openRequests.length > 0,
     keptOnPermanentDeletion: [...kept],
@@ -123,31 +212,4 @@ export function emailChangeResource(change) {
 
 export function ownEmailChangeResource(change) {
   return { status: change.status, policy: change.policy, newEmail: maskEmail(change.newEmail) }
-}
-
-export function privacyRequestResource(request) {
-  const entity = findEntity(request.entityId)
-  return {
-    id: request.id,
-    entity: entity ? entitySummary(entity) : null,
-    kind: request.kind,
-    status: request.status,
-    details: request.details,
-    createdBy: request.createdBy,
-    decidedBy: request.decidedBy,
-    decisionNote: request.decisionNote,
-    decidedAt: request.decidedAt,
-    createdAt: request.createdAt,
-  }
-}
-
-export function cityResource(city) {
-  return {
-    id: city.id,
-    regionId: city.regionId,
-    code: city.code,
-    name: { ...city.name },
-    sortOrder: city.sortOrder,
-    isActive: city.isActive,
-  }
 }

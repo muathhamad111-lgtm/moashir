@@ -13,11 +13,14 @@ use App\Enums\Identity\RoleKey;
 use App\Models\Assessments\Assessment;
 use App\Models\Award\AwardCycleMember;
 use App\Models\Identity\User;
+use App\Services\Identity\RequestPathScope;
 use Illuminate\Database\Eloquent\Builder;
 
-final class AssessmentRecordScope
+final readonly class AssessmentRecordScope
 {
     private const array GLOBAL_READER_ROLES = [RoleKey::SystemAdmin, RoleKey::RequestFollower];
+
+    public function __construct(private RequestPathScope $paths) {}
 
     public function accessOf(User $user, Assessment $assessment): AssessmentAccess
     {
@@ -25,7 +28,7 @@ final class AssessmentRecordScope
             return AssessmentAccess::Owner;
         }
 
-        if ($this->readsEveryAssessment($user)) {
+        if ($this->readsEveryAssessment($user) && $this->paths->covers($user, $assessment->path)) {
             return AssessmentAccess::ReadOnly;
         }
 
@@ -72,6 +75,8 @@ final class AssessmentRecordScope
     public function restrict(Builder $query, User $user): void
     {
         if ($this->readsEveryAssessment($user)) {
+            $this->restrictToFollowedPaths($query, $user);
+
             return;
         }
 
@@ -81,13 +86,38 @@ final class AssessmentRecordScope
             return;
         }
 
+        $query->where(fn (Builder $visible): Builder => $this->ownWork($visible, $user));
+    }
+
+    /**
+     * @param  Builder<Assessment>  $query
+     */
+    private function restrictToFollowedPaths(Builder $query, User $user): void
+    {
+        $excluded = $this->paths->excludedPathsFor($user);
+
+        if ($excluded === []) {
+            return;
+        }
+
+        $query->where(fn (Builder $visible): Builder => $visible
+            ->whereNotIn('path', array_map(static fn (AssessmentPath $path): string => $path->value, $excluded))
+            ->orWhere(fn (Builder $own): Builder => $this->ownWork($own, $user)));
+    }
+
+    /**
+     * @param  Builder<Assessment>  $visible
+     * @return Builder<Assessment>
+     */
+    private function ownWork(Builder $visible, User $user): Builder
+    {
         $reviews = $user->can(PermissionKey::RequestsAssignedView->value);
         $members = $user->can(PermissionKey::AssessmentHistoryView->value);
 
-        $query->where(fn (Builder $visible): Builder => $visible
+        return $visible
             ->when($reviews, static fn (Builder $reviewed): Builder => $reviewed->orWhere(static fn (Builder $inner): Builder => $inner->reviewedBy($user->id)))
             ->when($members, fn (Builder $member): Builder => $member->orWhere(fn (Builder $inner): Builder => $this->visibleToMember($inner, $user->id)))
-            ->when(! $reviews && ! $members, static fn (Builder $none): Builder => $none->whereRaw('false')));
+            ->when(! $reviews && ! $members, static fn (Builder $none): Builder => $none->whereRaw('false'));
     }
 
     /**

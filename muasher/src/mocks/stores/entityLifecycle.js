@@ -24,6 +24,28 @@ export function deactivate(entity, reason) {
   return entity
 }
 
+export function approve(entity) {
+  assertNotFrozen(entity)
+  if (!['pending-review', 'rejected'].includes(entity.status))
+    throw entityReject.illegalTransition()
+  entity.status = 'active'
+  entity.approvedAt = new Date().toISOString()
+  entity.rejectedAt = null
+  entity.rejectionReason = null
+  return entity
+}
+
+export function reject(entity, reason) {
+  assertNotFrozen(entity)
+  if (!['pending-verification', 'pending-review'].includes(entity.status)) {
+    throw entityReject.illegalTransition()
+  }
+  entity.status = 'rejected'
+  entity.rejectedAt = new Date().toISOString()
+  entity.rejectionReason = reason
+  return entity
+}
+
 export function reactivate(entity) {
   assertNotFrozen(entity)
   assertStatus(entity, 'deactivated')
@@ -64,14 +86,19 @@ function sameNumbers(left, right) {
 
 function acknowledges(instruction, openNumbers) {
   if (!openNumbers.length) return true
-  return instruction.confirmOpenRequests === true && sameNumbers(instruction.acknowledgedRequestNumbers ?? [], openNumbers)
+  return (
+    instruction.confirmOpenRequests === true &&
+    sameNumbers(instruction.acknowledgedRequestNumbers ?? [], openNumbers)
+  )
 }
 
 export function softDelete(entity, instruction) {
   if (isDeleted(entity)) throw entityReject.illegalTransition()
   const openNumbers = entity.openRequests.map((request) => request.number)
   if (!acknowledges(instruction, openNumbers)) {
-    throw entityReject.openRequestsConfirmationRequired(entity.openRequests.map((request) => ({ ...request, cycleId: null, isFrozen: false })))
+    throw entityReject.openRequestsConfirmationRequired(
+      entity.openRequests.map((request) => ({ ...request, cycleId: null, isFrozen: false })),
+    )
   }
   entity.deletedAt = new Date().toISOString()
   entity.deletionReason = instruction.reason
@@ -88,7 +115,11 @@ export function restore(entity) {
 }
 
 function referenceMatches(entity, confirmation) {
-  return String(confirmation ?? '').trim().toUpperCase() === referenceOf(entity)
+  return (
+    String(confirmation ?? '')
+      .trim()
+      .toUpperCase() === referenceOf(entity)
+  )
 }
 
 export function permanentlyDelete(entity, { confirmation, disclaimerAcknowledged }) {

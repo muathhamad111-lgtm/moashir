@@ -40,9 +40,12 @@ enum AwardCycleStatus: string
         return $this !== self::Closed;
     }
 
+    /**
+     * Filtering decisions run from the opening of submissions until the results are approved (operator, 2026-11-22).
+     */
     public function allowsFilteringDecisions(): bool
     {
-        return $this === self::SubmissionClosed || $this->isCommitteeStage();
+        return $this === self::SubmissionOpen || $this === self::SubmissionClosed || $this->isCommitteeStage();
     }
 
     public function isCommitteeStage(): bool

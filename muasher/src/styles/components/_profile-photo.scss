@@ -1,0 +1,54 @@
+@use '../mixins' as *;
+
+.profile-photo__body {
+  @include flex(row, center, flex-start, var(--space-4));
+  flex-wrap: wrap;
+}
+
+.profile-photo__preview {
+  @include flex-center;
+  flex-shrink: 0;
+  overflow: hidden;
+  inline-size: var(--size-profile-logo);
+  block-size: var(--size-profile-logo);
+  border: var(--border-width) solid var(--theme-border);
+  border-radius: var(--radius-circle);
+  background-color: var(--theme-tint);
+  color: var(--theme-accent-text);
+
+  .account-avatar__icon {
+    font-size: var(--fs-3xl);
+  }
+}
+
+.profile-photo__details {
+  @include flex(column, flex-start, flex-start, var(--space-2));
+  flex: 1;
+  min-inline-size: 0;
+}
+
+.profile-photo__hint,
+.profile-photo__rules {
+  margin: 0;
+  color: var(--theme-text-secondary);
+  font-size: var(--fs-sm);
+}
+
+.profile-photo__rules {
+  font-size: var(--fs-xs);
+}
+
+.profile-photo__error {
+  margin: 0;
+  color: var(--theme-danger-text);
+  font-size: var(--fs-sm);
+}
+
+.profile-photo__actions {
+  @include flex(row, center, flex-start, var(--space-2));
+  flex-wrap: wrap;
+}
+
+.profile-photo__input {
+  @include visually-hidden;
+}

@@ -1,5 +1,6 @@
 import { fromCanonicalStatus } from '@/utils/canonicalStatus'
 import { toRequestStatus } from './accreditedStatus'
+import { toCertificateSummary } from './paths'
 
 export function toEntitySummary(entity) {
   if (!entity) return null
@@ -13,7 +14,11 @@ export function toEntitySummary(entity) {
 
 function toResultSummary(result) {
   if (!result) return null
-  return { total: result.total ?? null, maxTotal: result.maxTotal ?? null, percent: result.percent ?? null }
+  return {
+    total: result.total ?? null,
+    maxTotal: result.maxTotal ?? null,
+    percent: result.percent ?? null,
+  }
 }
 
 export function toAssessment(raw = {}) {
@@ -21,6 +26,7 @@ export function toAssessment(raw = {}) {
     id: raw.id ?? null,
     number: raw.number ?? '',
     path: raw.path ?? null,
+    pathLabel: raw.pathLabel ?? null,
     status: toRequestStatus(raw.status),
     isOpen: raw.isOpen === true,
     isFrozen: raw.isFrozen === true,
@@ -37,9 +43,29 @@ export function toAssessment(raw = {}) {
   }
 }
 
+// A list row adds what the staff tables may show: the cycle, period, level, certificate and the
+// payment (the server sends the payment only to a viewer allowed to see it).
+export function toAssessmentListRow(raw = {}) {
+  return {
+    ...toAssessment(raw),
+    awardCycle: raw.awardCycle
+      ? { id: raw.awardCycle.id ?? null, name: raw.awardCycle.name }
+      : null,
+    periodLabel: raw.periodLabel ?? null,
+    level: raw.level ?? null,
+    certificate: toCertificateSummary(raw.certificate),
+    payment: raw.payment?.status
+      ? { status: raw.payment.status, reference: raw.payment.reference ?? null }
+      : null,
+  }
+}
+
 function toActorStaff(raw) {
   if (!raw) return null
-  return { name: raw.name ?? null, roles: (raw.roles ?? []).map((role) => ({ key: role.key, label: role.label ?? null })) }
+  return {
+    name: raw.name ?? null,
+    roles: (raw.roles ?? []).map((role) => ({ key: role.key, label: role.label ?? null })),
+  }
 }
 
 function toStatusChange(raw) {
@@ -50,11 +76,18 @@ function toStatusChange(raw) {
     at: raw.at ?? null,
     actor: raw.actor ?? null,
   }
-  return Object.hasOwn(raw, 'actorStaff') ? { ...change, actorStaff: toActorStaff(raw.actorStaff) } : change
+  return Object.hasOwn(raw, 'actorStaff')
+    ? { ...change, actorStaff: toActorStaff(raw.actorStaff) }
+    : change
 }
 
 export function toAssessmentRecord(raw = {}) {
-  return { ...toAssessment(raw), statusHistory: (raw.statusHistory ?? []).map(toStatusChange) }
+  return {
+    ...toAssessment(raw),
+    level: raw.level ?? null,
+    certificate: toCertificateSummary(raw.certificate),
+    statusHistory: (raw.statusHistory ?? []).map(toStatusChange),
+  }
 }
 
 function toUpdateItem(raw) {
@@ -77,7 +110,7 @@ export function toCriteriaUpdate(raw) {
   }
 }
 
-function toScoreMap(scores) {
+export function toScoreMap(scores) {
   return Object.fromEntries(
     Object.entries(scores ?? {}).map(([id, score]) => [
       id,
@@ -89,14 +122,20 @@ function toScoreMap(scores) {
 export function toAssessmentScores(raw = {}) {
   return {
     assessment: toAssessment(raw.assessment),
-    scale: { kind: fromCanonicalStatus(raw.scale?.kind ?? null), maximum: raw.scale?.maximum ?? null },
+    scale: raw.scale
+      ? { kind: fromCanonicalStatus(raw.scale.kind ?? null), maximum: raw.scale.maximum ?? null }
+      : null,
     scores: { subs: toScoreMap(raw.scores?.subs), points: toScoreMap(raw.scores?.points) },
     progress: { scored: raw.progress?.scored ?? 0, required: raw.progress?.required ?? 0 },
   }
 }
 
 export function toAssessmentForm(raw = {}) {
-  return { ...toAssessmentScores(raw), criteria: raw.criteria ?? null, criteriaUpdate: toCriteriaUpdate(raw.criteriaUpdate) }
+  return {
+    ...toAssessmentScores(raw),
+    criteria: raw.criteria ?? null,
+    criteriaUpdate: toCriteriaUpdate(raw.criteriaUpdate),
+  }
 }
 
 export function toAssessmentResult(raw = {}) {

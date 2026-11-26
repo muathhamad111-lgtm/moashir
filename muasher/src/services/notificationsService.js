@@ -1,40 +1,57 @@
 import { apiClient } from '@/api/client'
-import { payloadShape } from '@/utils/payloadShape'
-import { serviceRequest } from './serviceRequest'
+import { domainRequests } from './domainRequest'
+import { toNotification, toNotificationPreference } from './mappers/notifications'
+
+const { read, write } = domainRequests('notifications', 'notification')
+
+function mapList(request, mapper) {
+  return request.then((envelope) => ({ ...envelope, data: (envelope.data ?? []).map(mapper) }))
+}
+
+function mapItem(request, mapper) {
+  return request.then((envelope) => ({ ...envelope, data: mapper(envelope.data) }))
+}
 
 export const notificationsService = {
   list(params = {}) {
-    return serviceRequest('notifications.list', () => apiClient.get('/notifications', { params }), {
-      entity: 'notification',
-      paramsShape: payloadShape(params),
-    })
-  },
-  unreadCount(params = {}) {
-    return serviceRequest(
-      'notifications.unreadCount',
-      () => apiClient.get('/notifications/unread-count', { params }),
-      { entity: 'notification', paramsShape: payloadShape(params) },
+    return mapList(
+      read('list', () => apiClient.get('/notifications', { params }), params),
+      toNotification,
     )
   },
-  getAudit(id) {
-    return serviceRequest(
-      'notifications.getAudit',
-      () => apiClient.get(`/notifications/${id}/audit`),
-      { entity: 'notification' },
-    )
+  unreadCount() {
+    return read('unreadCount', () => apiClient.get('/notifications/unread-count'))
   },
   markRead(id) {
-    return serviceRequest(
-      'notifications.markRead',
-      () => apiClient.patch(`/notifications/${id}/read`),
-      { entity: 'notification' },
+    return mapItem(
+      write('markRead', () => apiClient.patch(`/notifications/${id}/read`)),
+      toNotification,
+    )
+  },
+  archive(id) {
+    return mapItem(
+      write('archive', () => apiClient.patch(`/notifications/${id}/archive`)),
+      toNotification,
     )
   },
   markAllRead(payload = {}) {
-    return serviceRequest(
-      'notifications.markAllRead',
-      () => apiClient.post('/notifications/read-all', payload),
-      { entity: 'notification', payloadShape: payloadShape(payload) },
+    return write('markAllRead', () => apiClient.post('/notifications/read-all', payload), payload)
+  },
+  getPreferences() {
+    return mapList(
+      read('getPreferences', () => apiClient.get('/me/notification-preferences')),
+      toNotificationPreference,
+    )
+  },
+  updatePreferences(preferences) {
+    const payload = { preferences }
+    return mapList(
+      write(
+        'updatePreferences',
+        () => apiClient.put('/me/notification-preferences', payload),
+        payload,
+      ),
+      toNotificationPreference,
     )
   },
 }

@@ -21,31 +21,55 @@ export function formatRelativeTime(value, locale, now = new Date()) {
   return formatter.format(elapsedSeconds, 'second')
 }
 
+function dayKeyOf(date, timeZone) {
+  return new Intl.DateTimeFormat('en-CA', { timeZone }).format(date)
+}
+
 export function formatDate(value, locale, options = { dateStyle: 'medium' }) {
   const date = value instanceof Date ? value : new Date(value)
-  return new Intl.DateTimeFormat(withLatinNumerals(locale), options).format(date)
+  const { dateStyle, timeStyle, timeZone } = options
+  if (!dateStyle) return new Intl.DateTimeFormat(withLatinNumerals(locale), options).format(date)
+  const day = dayKeyOf(date, timeZone)
+  if (!timeStyle) return day
+  const time = new Intl.DateTimeFormat(withLatinNumerals(locale), { timeStyle, timeZone }).format(
+    date,
+  )
+  return `${day} ${time}`
 }
 
 export function formatHijriDate(value, locale) {
   const date = value instanceof Date ? value : new Date(value)
-  return new Intl.DateTimeFormat(`${locale === 'en' ? 'en' : 'ar-SA'}-u-ca-islamic-umalqura-nu-latn`, {
-    dateStyle: 'long',
-    timeZone: 'Asia/Riyadh',
-  }).format(date)
+  return new Intl.DateTimeFormat(
+    `${locale === 'en' ? 'en' : 'ar-SA'}-u-ca-islamic-umalqura-nu-latn`,
+    {
+      dateStyle: 'long',
+      timeZone: 'Asia/Riyadh',
+    },
+  ).format(date)
 }
 
 const RIYADH = 'Asia/Riyadh'
 
 export function formatRiyadhDateTime(value, locale) {
-  return value ? formatDate(value, locale, { dateStyle: 'medium', timeStyle: 'short', timeZone: RIYADH }) : ''
+  return value
+    ? formatDate(value, locale, { dateStyle: 'medium', timeStyle: 'short', timeZone: RIYADH })
+    : ''
 }
 
 export function formatRiyadhDate(value, locale) {
   return value ? formatDate(value, locale, { dateStyle: 'medium', timeZone: RIYADH }) : ''
 }
 
+export function formatRiyadhTime(value, locale) {
+  return value ? formatDate(value, locale, { timeStyle: 'short', timeZone: RIYADH }) : ''
+}
+
+export function formatRiyadhLongDate(value, locale) {
+  return value ? formatDate(value, locale, { dateStyle: 'long', timeZone: RIYADH }) : ''
+}
+
 export function riyadhDateKey(value) {
-  return new Intl.DateTimeFormat('en-CA', { timeZone: RIYADH }).format(value instanceof Date ? value : new Date(value))
+  return dayKeyOf(value instanceof Date ? value : new Date(value), RIYADH)
 }
 
 export function endOfRiyadhDay(dateKey) {
@@ -54,4 +78,8 @@ export function endOfRiyadhDay(dateKey) {
 
 export function startOfRiyadhDay(dateKey) {
   return new Date(`${dateKey}T00:00:00+03:00`).toISOString()
+}
+
+export function isoDate(value) {
+  return value ? riyadhDateKey(value) : ''
 }

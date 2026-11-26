@@ -38,6 +38,10 @@
   .modal--lg & {
     inline-size: min(90vw, var(--size-modal-lg));
   }
+
+  .modal--xl & {
+    inline-size: min(94vw, var(--size-modal-xl));
+  }
 }
 
 .modal__header {
@@ -46,12 +50,29 @@
   border-block-end: var(--border-width) solid var(--theme-border);
 }
 
+.modal__heading {
+  @include flex(column, stretch, flex-start, var(--space-1));
+  min-inline-size: 0;
+}
+
 .modal__title {
   font-size: var(--fs-lg);
-  font-weight: var(--fw-semibold);
+  font-weight: var(--fw-heading);
+  color: var(--theme-heading);
+}
+
+.modal__subtitle {
+  font-size: var(--fs-sm);
+  color: var(--theme-text-muted);
+  overflow-wrap: anywhere;
 }
 
 .modal__close {
+  @include flex-center;
+  flex-shrink: 0;
+  min-inline-size: var(--size-touch-target);
+  min-block-size: var(--size-touch-target);
+  border-radius: var(--radius-md);
   color: var(--theme-text-muted);
   transition: color var(--t-fast) var(--ease);
 
@@ -68,8 +89,266 @@
   padding: var(--space-4);
 }
 
+.modal__message {
+  color: var(--theme-text);
+  line-height: var(--lh-relaxed);
+  overflow-wrap: anywhere;
+}
+
 .modal__footer {
-  @include flex(row, center, flex-end, var(--space-3));
+  @include flex(row, center, flex-start, var(--space-3));
+  flex-wrap: wrap;
   padding: var(--space-4);
   border-block-start: var(--border-width) solid var(--theme-border);
+}
+
+.modal__icon {
+  @include flex-center;
+  flex-shrink: 0;
+  inline-size: var(--size-icon-tile);
+  block-size: var(--size-icon-tile);
+  border-radius: var(--radius-circle);
+  color: var(--theme-accent-text);
+  background-color: var(--theme-accent-soft);
+}
+
+.modal__icon--warning {
+  color: var(--theme-warning-text);
+  background-color: var(--theme-warning-soft);
+}
+
+.modal__icon--danger {
+  color: var(--theme-danger-text);
+  background-color: var(--theme-danger-soft);
+}
+
+.modal__icon--success {
+  color: var(--theme-success-text);
+  background-color: var(--theme-success-soft);
+}
+
+.modal--centered {
+  .modal__header {
+    position: relative;
+    flex-direction: column;
+    justify-content: center;
+    gap: var(--space-3);
+    padding-block: var(--space-6) var(--space-2);
+    padding-inline: var(--space-6);
+    border-block-end: 0;
+    text-align: center;
+  }
+
+  .modal__heading {
+    align-items: center;
+  }
+
+  .modal__close {
+    position: absolute;
+    inset-block-start: var(--space-2);
+    inset-inline-end: var(--space-2);
+  }
+
+  .modal__body {
+    padding-block: 0 var(--space-2);
+    padding-inline: var(--space-6);
+    text-align: center;
+  }
+
+  .modal__message {
+    color: var(--theme-text-muted);
+  }
+
+  .modal__footer {
+    flex-wrap: nowrap;
+    padding-block: var(--space-4) var(--space-6);
+    padding-inline: var(--space-6);
+    border-block-start: 0;
+
+    > .btn {
+      flex: 1 1 0;
+      min-inline-size: 0;
+    }
+  }
+}
+
+.modal__fields {
+  @include flex(column, stretch, flex-start, var(--space-4));
+  margin-block-start: var(--space-4);
+  text-align: start;
+}
+
+.modal--drawer {
+  z-index: var(--z-drawer);
+  padding: 0;
+
+  &.is-open {
+    justify-content: flex-end;
+    align-items: stretch;
+  }
+
+  .modal__panel {
+    inline-size: min(100vw, var(--size-modal-sm));
+    max-block-size: none;
+    block-size: 100%;
+    border-block: 0;
+    border-inline-end: 0;
+    border-radius: 0;
+  }
+
+  // A drawer that holds a full editor (the criteria sheet) asks for the large width.
+  &.modal--lg .modal__panel {
+    inline-size: min(100vw, var(--size-modal-lg));
+  }
+}
+
+// The phone navigation drawer slides in from the reading start (right in Arabic, left in English).
+.modal--drawer-start {
+  &.is-open {
+    justify-content: flex-start;
+  }
+
+  .modal__panel {
+    border-inline-start: 0;
+    border-inline-end: var(--border-width) solid var(--theme-border);
+
+    @include motion-safe {
+      animation: modal-drawer-start-in var(--t-base) var(--ease);
+    }
+  }
+}
+
+@keyframes modal-drawer-start-in {
+  from {
+    transform: translateX(var(--modal-drawer-start-from, -100%));
+  }
+}
+
+[dir='rtl'] .modal--drawer-start {
+  --modal-drawer-start-from: 100%;
+}
+
+// A bottom sheet (phones): full width at the bottom edge, rounded top, a drag handle, and room for
+// the home indicator. Its actions keep their own colours (a destructive one stays red).
+.modal--sheet {
+  z-index: var(--z-drawer);
+  padding: 0;
+
+  &.is-open {
+    align-items: flex-end;
+    justify-content: center;
+  }
+
+  // The body scrolls between the fixed header and footer, so the actions stay in reach.
+  .modal__panel {
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    inline-size: 100%;
+    max-block-size: var(--size-sheet-max-block);
+    padding-block-end: env(safe-area-inset-bottom, 0px);
+    border-block-end: 0;
+    border-inline: 0;
+    border-radius: var(--radius-2xl) var(--radius-2xl) 0 0;
+
+    @include motion-safe {
+      animation: modal-sheet-in var(--t-base) var(--ease);
+    }
+  }
+
+  .modal__header {
+    padding-block-start: 0;
+  }
+
+  .modal__body {
+    flex: 1;
+    min-block-size: 0;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+  }
+
+  .filter-dialog__fields {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+@keyframes modal-sheet-in {
+  from {
+    transform: translateY(100%);
+  }
+}
+
+.modal__handle {
+  @include flex-center;
+  block-size: var(--space-6);
+  cursor: grab;
+  touch-action: none;
+
+  &::before {
+    content: '';
+    inline-size: var(--space-10);
+    block-size: var(--space-1);
+    border-radius: var(--radius-pill);
+    background-color: var(--theme-text-muted);
+  }
+}
+
+// A create form in short steps (FormSteps): progress, the step's fields, then Back / Next.
+.form-steps__list {
+  @include flex(row, stretch, flex-start, var(--space-2));
+  margin: 0;
+  margin-block-end: var(--space-4);
+  padding: 0;
+  list-style: none;
+}
+
+.form-steps__step {
+  @include flex(column, stretch, flex-start, var(--space-1));
+  flex: 1;
+  min-inline-size: 0;
+  font-size: var(--fs-xs);
+  color: var(--theme-text-muted);
+
+  &.is-current {
+    color: var(--theme-heading);
+    font-weight: var(--fw-emphasis);
+  }
+}
+
+.form-steps__bar {
+  block-size: var(--space-1);
+  border-radius: var(--radius-pill);
+  background-color: var(--theme-border);
+
+  .is-done &,
+  .is-current & {
+    background-color: var(--theme-accent-text);
+  }
+}
+
+.form-steps__label {
+  @include truncate(1);
+}
+
+.form-steps__form {
+  @include flex(column, stretch, flex-start, var(--space-4));
+}
+
+.form-steps__footer {
+  @include flex(row, center, flex-start, var(--space-2));
+}
+
+.form-steps__spacer {
+  flex: 1;
+}
+
+.form-steps__error {
+  @include flex(row, flex-start, flex-start, var(--space-2));
+  margin: 0;
+  padding-block: var(--space-2);
+  padding-inline: var(--space-3);
+  border-radius: var(--radius-md);
+  background-color: var(--color-danger-soft);
+  color: var(--color-danger-strong);
+  font-size: var(--fs-sm);
 }

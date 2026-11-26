@@ -70,6 +70,10 @@ export const reject = {
     new CriteriaRejection(422, 'criteria.clone_source_invalid', {
       fields: { cloneFromVersionId: [fieldMessage('criteria.clone_source_invalid')] },
     }),
+  draftCyclesFollowPublished: () =>
+    new CriteriaRejection(422, 'criteria.draft_cycles_follow_published', {
+      fields: { draftCycles: [fieldMessage('criteria.draft_cycles_follow_published')] },
+    }),
   scopeRequired: () =>
     new CriteriaRejection(422, 'criteria.scope_required', {
       fields: { scope: [fieldMessage('criteria.scope_required')] },
@@ -97,17 +101,20 @@ export const reject = {
       },
       params: { weight, shares },
     }),
+  notAChild: (index) =>
+    new CriteriaRejection(422, 'criteria.node_not_a_child', {
+      fields: { [`weights.${index}.id`]: [fieldMessage('criteria.node_not_a_child')] },
+    }),
+  childrenExceedParent: (total, capacity) =>
+    new CriteriaRejection(422, 'criteria.weights_exceed_parent', {
+      fields: { weights: [fieldMessage('criteria.weights_exceed_parent', { total, capacity })] },
+      meta: { total, capacity },
+      params: { total, capacity },
+    }),
+  distributedEqually: () => new CriteriaRejection(409, 'criteria.weights_distributed_equally'),
   subEvaluatedDirectly: () =>
     new CriteriaRejection(422, 'criteria.sub_evaluated_directly', {
       fields: { evaluationType: [fieldMessage('criteria.sub_evaluated_directly')] },
-    }),
-  pointsConfirmRequired: (count) =>
-    new CriteriaRejection(422, 'criteria.points_confirm_required', {
-      fields: {
-        confirmDeletePoints: [fieldMessage('criteria.points_confirm_required', { count })],
-      },
-      meta: { impact: { pointCount: count } },
-      params: { count },
     }),
   orderIncomplete: () =>
     new CriteriaRejection(422, 'order.incomplete', {

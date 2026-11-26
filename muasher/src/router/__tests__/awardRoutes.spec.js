@@ -8,12 +8,16 @@ import { ROUTE_NAMES as R } from '@/constants/routeNames'
 import { ROLES } from '@/constants/roles'
 import { sessionUserFor } from '@/test-utils/session'
 
-async function visit(path) {
+async function landOn(path) {
   const router = createRouter({ history: createMemoryHistory(), routes })
   setupGuards(router)
   await router.push(path)
   await router.isReady()
-  return router.currentRoute.value.name
+  return router.currentRoute.value
+}
+
+async function visit(path) {
+  return (await landOn(path)).name
 }
 
 function signIn(roles, extra = {}) {
@@ -29,10 +33,21 @@ describe('award routes — the links of the award notifications', () => {
     useAuthStore().clearSession()
     expect(await visit('/assessment/advanced')).toBe(R.ASSESSMENT_ADVANCED)
     signIn([ROLES.ENTITY])
+    expect(await visit('/assessment/advanced')).toBe(R.PATHS_AWARD)
     expect(await visit('/assessment/advanced/form/9201')).toBe(R.ASSESSMENT_ADVANCED_FORM)
     expect(await visit('/admin/award/cycles')).toBe(R.ERRORS_FORBIDDEN)
     signIn([ROLES.REQUEST_FOLLOWER])
     expect(await visit('/assessment/advanced/form/9201')).toBe(R.ERRORS_FORBIDDEN)
+  })
+
+  it('keeps the staff results screens and the entity result page apart (AJ-23)', async () => {
+    signIn([ROLES.ENTITY])
+    expect(await visit('/admin/award/results')).toBe(R.ERRORS_FORBIDDEN)
+    expect(await visit('/admin/award/cycles/31/results')).toBe(R.ERRORS_FORBIDDEN)
+    expect(await visit('/admin/award/cycles/31/results/national')).toBe(R.ERRORS_FORBIDDEN)
+    expect(await visit('/assessment/advanced/result/9204')).toBe(R.ASSESSMENT_ADVANCED_RESULT)
+    signIn([ROLES.REQUEST_FOLLOWER], { permissions: ['assessment.advanced.manage'] })
+    expect(await visit('/assessment/advanced/result/9204')).toBe(R.ERRORS_FORBIDDEN)
   })
 
   it('lets the cycle managers create cycles and the readers open them', async () => {
@@ -40,9 +55,48 @@ describe('award routes — the links of the award notifications', () => {
     expect(await visit('/admin/award/cycles')).toBe(R.AWARD_CYCLES)
     expect(await visit('/admin/award/cycles/new')).toBe(R.AWARD_CYCLE_NEW)
     expect(await visit('/admin/award/cycles/31')).toBe(R.AWARD_CYCLE)
+    expect(await visit('/admin/award/cycles/31/setup')).toBe(R.AWARD_CYCLE_SETUP)
     signIn([ROLES.REQUEST_FOLLOWER])
     expect(await visit('/admin/award/cycles/31')).toBe(R.AWARD_CYCLE)
+    expect(await visit('/admin/award/cycles/31/setup')).toBe(R.AWARD_CYCLE_SETUP)
     expect(await visit('/admin/award/cycles/new')).toBe(R.ERRORS_FORBIDDEN)
+  })
+
+  it('opens the cycle page from a notice link instead of the setup wizard, keeping the query (B2.1)', async () => {
+    signIn([ROLES.SYSTEM_ADMIN])
+    const cyclePage = await landOn('/admin/award/cycles/31?from=notice')
+    expect(cyclePage.fullPath).toBe('/admin/award/cycles/31?from=notice')
+    expect(cyclePage.name).toBe(R.AWARD_CYCLE)
+    expect((await landOn('/admin/award/cycles/31/setup?step=dates')).query).toEqual({
+      step: 'dates',
+    })
+    expect((await landOn('/admin/award/cycles/new')).fullPath).toBe('/admin/award/cycles/new')
+  })
+
+  it('opens every stage of a cycle inside the one cycle page', async () => {
+    signIn([ROLES.AWARD_SECRETARY])
+    for (const stage of [
+      '',
+      '/filtering',
+      '/committee',
+      '/secretary',
+      '/results',
+      '/results/national',
+    ]) {
+      const landed = await landOn(`/admin/award/cycles/31${stage}`)
+      expect(landed.matched[0].path).toBe('/admin/award/cycles/:id(\\d+)')
+      expect(landed.matched).toHaveLength(2)
+    }
+    const standalone = {
+      '/setup': R.AWARD_CYCLE_SETUP,
+      '/filtering/9205': R.AWARD_FILTERING_DETAIL,
+      '/secretary/9205': R.AWARD_SECRETARY_REVIEW,
+    }
+    for (const [page, name] of Object.entries(standalone)) {
+      const landed = await landOn(`/admin/award/cycles/31${page}`)
+      expect(landed.name).toBe(name)
+      expect(landed.matched).toHaveLength(1)
+    }
   })
 
   it('gives the filtering screens to the filtering readers only and denies unknown permission keys', async () => {
@@ -60,5 +114,19 @@ describe('award routes — the links of the award notifications', () => {
     signIn([ROLES.AWARD_SECRETARY])
     expect(await visit('/admin/award/committee/manage')).toBe(R.AWARD_COMMITTEE_MANAGEMENT)
     expect(await visit('/admin/award/secretary')).toBe(R.AWARD_SECRETARY)
+  })
+
+  it('opens the roster, desk and results to their readers and the committee work to seated assessors only', async () => {
+    signIn([ROLES.AWARD_SECRETARY])
+    expect(await visit('/admin/award/cycles/31/committee')).toBe(R.AWARD_COMMITTEE_ROSTER)
+    expect(await visit('/admin/award/cycles/31/secretary')).toBe(R.AWARD_SECRETARY_DESK)
+    expect(await visit('/admin/award/cycles/31/secretary/9205')).toBe(R.AWARD_SECRETARY_REVIEW)
+    expect(await visit('/admin/award/cycles/31/results')).toBe(R.AWARD_RESULTS_BOARD)
+    expect(await visit('/admin/award/cycles/31/results/national')).toBe(R.AWARD_NATIONAL)
+    expect(await visit('/admin/committee/assignments')).toBe(R.ERRORS_FORBIDDEN)
+    signIn([ROLES.REQUEST_FOLLOWER])
+    expect(await visit('/admin/award/cycles/31/committee')).toBe(R.AWARD_COMMITTEE_ROSTER)
+    expect(await visit('/admin/award/cycles/31/secretary')).toBe(R.ERRORS_FORBIDDEN)
+    expect(await visit('/admin/award/cycles/31/results')).toBe(R.ERRORS_FORBIDDEN)
   })
 })

@@ -8,7 +8,6 @@
   gap: var(--space-4);
 }
 
-.reason-dialog__message,
 .entity-delete__intro,
 .entity-delete__hint,
 .entity-delete__none {
@@ -33,7 +32,7 @@
 .permanent-delete__heading {
   margin: 0;
   font-size: var(--fs-base);
-  font-weight: var(--fw-semibold);
+  font-weight: var(--fw-heading);
   color: var(--theme-heading);
 }
 
@@ -44,7 +43,7 @@
   background-color: var(--color-warning-soft);
   color: var(--theme-text);
   font-size: var(--fs-sm);
-  font-weight: var(--fw-medium);
+  font-weight: var(--fw-body);
 }
 
 .permanent-delete__warning {
@@ -55,7 +54,7 @@
   background-color: var(--color-danger-soft);
   color: var(--theme-text);
 
-  .fa-solid {
+  .app-icon {
     color: var(--color-danger);
     font-size: var(--fs-xl);
   }
@@ -63,7 +62,7 @@
 
 .permanent-delete__warning-text {
   margin: 0;
-  font-weight: var(--fw-semibold);
+  font-weight: var(--fw-body);
 }
 
 .permanent-delete__kept {

@@ -41,10 +41,19 @@ export function seedBagProduct() {
         { ar: 'متابعة النتائج', en: 'Track results' },
       ],
       outputs: [
-        { ar: 'خريطة فجوات مرتبطة بمعايير التقييم', en: 'A gap map tied to the assessment criteria' },
+        {
+          ar: 'خريطة فجوات مرتبطة بمعايير التقييم',
+          en: 'A gap map tied to the assessment criteria',
+        },
         { ar: 'خطة مراحل بأولويات واضحة', en: 'A staged plan with clear priorities' },
-        { ar: 'نماذج وأدلة وقوائم تحقق مساندة', en: 'Supporting templates, guides, and checklists' },
-        { ar: 'سجل تقدم ومقارنة قبل/بعد عند إعادة التقييم', en: 'A progress log and a before/after comparison at re-assessment' },
+        {
+          ar: 'نماذج وأدلة وقوائم تحقق مساندة',
+          en: 'Supporting templates, guides, and checklists',
+        },
+        {
+          ar: 'سجل تقدم ومقارنة قبل/بعد عند إعادة التقييم',
+          en: 'A progress log and a before/after comparison at re-assessment',
+        },
       ],
       eligibilityNote: {
         ar: 'يشترط وجود نتيجة تقييم معتمد مكتملة لبدء بناء الحقيبة. التقييم الذاتي والمتقدم لا يُستخدمان كمرجع.',

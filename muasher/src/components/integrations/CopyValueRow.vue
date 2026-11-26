@@ -21,7 +21,7 @@ const { t } = useI18n()
       <BaseButton
         variant="ghost"
         size="sm"
-        :icon="copied ? 'fa-solid fa-check' : 'fa-solid fa-copy'"
+        :icon="copied ? 'check' : 'copy'"
         :aria-label="t('integrations.copy.copyLabel', { label })"
         @click="emit('copy')"
       >

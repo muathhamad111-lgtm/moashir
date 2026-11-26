@@ -37,8 +37,10 @@ async function associationFileFrom(form) {
   const file = form.get('file')
   const errors = fieldErrors()
   if (!(file instanceof Blob)) errors.add('file', 'field.required')
-  else if (file.size > FILE_MAX_KILOBYTES * 1024) errors.add('file', 'field.file_size', { max: FILE_MAX_KILOBYTES })
-  else if (!FILE_TYPES.includes(file.type) || !PRINTABLE_TEXT.test(await file.text())) errors.add('file', 'field.file_type')
+  else if (file.size > FILE_MAX_KILOBYTES * 1024)
+    errors.add('file', 'field.file_size', { max: FILE_MAX_KILOBYTES })
+  else if (!FILE_TYPES.includes(file.type) || !PRINTABLE_TEXT.test(await file.text()))
+    errors.add('file', 'field.file_type')
   errors.throwIfAny()
   const bytes = await file.arrayBuffer()
   return { sizeBytes: file.size, sha256: hexOf(await crypto.subtle.digest('SHA-256', bytes)) }
@@ -57,7 +59,9 @@ export const paymentIntegrationHandlers = [
     PATH,
     integrationRoute(async ({ request }) => {
       const actor = payer()
-      return envelope(updatePayment(await readBody(request), actor, { superAdmin: actorIsSuperAdmin() }))
+      return envelope(
+        updatePayment(await readBody(request), actor, { superAdmin: actorIsSuperAdmin() }),
+      )
     }),
   ),
 
@@ -77,7 +81,11 @@ export const paymentIntegrationHandlers = [
       const actor = payer()
       const body = await readBody(request)
       throttleTest(actor, 'payment:webhook')
-      return envelope(registerWebhook(body, actor, { superAdmin: actorIsSuperAdmin() }), {}, { status: 201 })
+      return envelope(
+        registerWebhook(body, actor, { superAdmin: actorIsSuperAdmin() }),
+        {},
+        { status: 201 },
+      )
     }),
   ),
 

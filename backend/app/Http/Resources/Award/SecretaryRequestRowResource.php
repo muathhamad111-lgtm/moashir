@@ -8,6 +8,7 @@ use App\Models\Assessments\Assessment;
 use App\Models\Assessments\AssessmentResultSnapshot;
 use App\Models\Award\CommitteeAverage;
 use App\Models\Entities\Region;
+use App\Support\Assessments\ReviewClockPresenter;
 use App\Support\Entities\EntityPresenter;
 use App\Support\ScalarValue;
 use Illuminate\Http\Request;
@@ -40,7 +41,7 @@ final class SecretaryRequestRowResource extends JsonResource
                 'completed' => ScalarValue::int($assessment->getAttribute('completed_assignments_count')),
                 'pending_substitutions' => ScalarValue::int($assessment->getAttribute('pending_substitutions_count')),
             ],
-            'submitted_at' => $assessment->submitted_at?->toIso8601String(),
+            ...ReviewClockPresenter::of($assessment),
         ];
     }
 

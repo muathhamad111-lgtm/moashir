@@ -4,23 +4,6 @@ import { toWesternDigits } from '@/utils/numerals'
 const YES = 'yes'
 const NO = 'no'
 
-export const PROFILE_FIELDS = [
-  'name.ar',
-  'name.en',
-  'authorizedPersonName',
-  'phone',
-  'entityType',
-  'developmentSector',
-  'orgSize',
-  'foundingYear',
-  'regionId',
-  'cityId',
-  'governanceGrade',
-  'employeesCount',
-  'annualBeneficiariesCount',
-  'hasStrategicPlan',
-]
-
 function text(value) {
   return value === null || value === undefined ? '' : String(value)
 }
@@ -34,9 +17,30 @@ function localPhone(phone) {
   return phone ? phone.replace(/^\+966/, '0') : ''
 }
 
+function answerValue(value) {
+  if (value === null || value === undefined) return ''
+  return value ? YES : NO
+}
+
+// Only an entity that said it has no grade starts ticked; any other starts with the grade required.
+function gradeAnswerValue(value) {
+  return value === false ? NO : YES
+}
+
+function answerPayload(value) {
+  if (value === YES) return true
+  return value === NO ? false : null
+}
+
+export function unifiedNumberPayload(value) {
+  const unifiedNumber = toWesternDigits(value)
+  return unifiedNumber ? { unifiedNumber } : {}
+}
+
 export function emptyProfileValues() {
   return {
     name: { ar: '', en: '' },
+    unifiedNumber: '',
     authorizedPersonName: '',
     phone: '',
     entityType: '',
@@ -45,6 +49,7 @@ export function emptyProfileValues() {
     foundingYear: '',
     regionId: '',
     cityId: '',
+    hasGovernanceGrade: YES,
     governanceGrade: '',
     employeesCount: '',
     annualBeneficiariesCount: '',
@@ -55,6 +60,7 @@ export function emptyProfileValues() {
 export function profileFormValues(entity) {
   return {
     name: { ar: text(entity.name?.ar), en: text(entity.name?.en) },
+    unifiedNumber: text(entity.unifiedNumber),
     authorizedPersonName: text(entity.authorizedPersonName),
     phone: localPhone(entity.phone),
     entityType: text(entity.entityType),
@@ -63,10 +69,11 @@ export function profileFormValues(entity) {
     foundingYear: text(entity.foundingYear),
     regionId: text(entity.region?.id),
     cityId: text(entity.city?.id),
+    hasGovernanceGrade: gradeAnswerValue(entity.hasGovernanceGrade),
     governanceGrade: text(entity.governanceGrade),
     employeesCount: text(entity.employeesCount),
     annualBeneficiariesCount: text(entity.annualBeneficiariesCount),
-    hasStrategicPlan: entity.hasStrategicPlan ? YES : NO,
+    hasStrategicPlan: answerValue(entity.hasStrategicPlan),
   }
 }
 
@@ -82,32 +89,39 @@ export function profilePayload(values) {
     foundingYear: Number(toWesternDigits(values.foundingYear)),
     regionId: Number(values.regionId),
     cityId: Number(values.cityId),
-    governanceGrade: governanceGradePayload(values.governanceGrade),
+    hasGovernanceGrade: answerPayload(values.hasGovernanceGrade),
+    governanceGrade:
+      values.hasGovernanceGrade === YES ? governanceGradePayload(values.governanceGrade) : null,
     employeesCount: optionalNumber(values.employeesCount),
     annualBeneficiariesCount: optionalNumber(values.annualBeneficiariesCount),
-    hasStrategicPlan: values.hasStrategicPlan === YES,
+    hasStrategicPlan: answerPayload(values.hasStrategicPlan),
   }
+}
+
+function foundingYearOf(foundedOn) {
+  return Number(foundedOn.slice(0, 4))
+}
+
+function optionalText(value) {
+  const text = toWesternDigits(value)
+  return text === '' ? null : text
 }
 
 export function registrationPayload(values, terms) {
   const payload = {
     ...profilePayload(values),
+    ...unifiedNumberPayload(values.unifiedNumber),
+    foundingYear: foundingYearOf(values.foundedOn),
+    foundedOn: values.foundedOn,
+    licenseNumber: optionalText(values.licenseNumber),
+    licenseCertificate: values.licenseCertificate,
+    authorizationLetter: values.authorizationLetter,
     officialEmail: values.officialEmail.trim(),
+    emailVerificationToken: values.emailVerificationToken,
     password: values.password,
     passwordConfirmation: values.passwordConfirmation,
     termsVersionId: terms.terms.id,
     termsAccepted: values.termsAccepted === true,
-    marketingConsent: values.marketingConsent === true,
   }
   return terms.privacy ? { ...payload, privacyVersionId: terms.privacy.id } : payload
-}
-
-function valueAt(values, path) {
-  return path.split('.').reduce((current, key) => current?.[key], values)
-}
-
-export function profileChanges(before, after, fields = PROFILE_FIELDS) {
-  return fields
-    .filter((field) => text(valueAt(before, field)).trim() !== text(valueAt(after, field)).trim())
-    .map((field) => ({ field, before: text(valueAt(before, field)), after: text(valueAt(after, field)) }))
 }

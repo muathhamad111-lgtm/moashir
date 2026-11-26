@@ -7,9 +7,9 @@ use App\Enums\Identity\PermissionModule;
 use App\Enums\Identity\RoleKey;
 use App\Services\Identity\DefaultPermissionMatrix;
 
-it('defines 83 unique permission keys in the module.resource.action format', function (): void {
-    expect(PermissionKey::values())->toHaveCount(83)
-        ->and(array_unique(PermissionKey::values()))->toHaveCount(83);
+it('defines 95 unique permission keys in the module.resource.action format', function (): void {
+    expect(PermissionKey::values())->toHaveCount(95)
+        ->and(array_unique(PermissionKey::values()))->toHaveCount(95);
 
     foreach (PermissionKey::cases() as $key) {
         expect($key->value)->toMatch('/^[a-z_]+(\.[a-z_]+){1,3}$/');
@@ -21,7 +21,6 @@ it('places the keys in their catalog modules', function (PermissionKey $key, Per
 })->with([
     [PermissionKey::NotificationsView, PermissionModule::Dashboard],
     [PermissionKey::EntitiesDelete, PermissionModule::Entity],
-    [PermissionKey::PrivacyRequestsManage, PermissionModule::Privacy],
     [PermissionKey::AssessmentScoreManage, PermissionModule::Requests],
     [PermissionKey::AssessmentSelfManage, PermissionModule::Assessment],
     [PermissionKey::CertificatesManage, PermissionModule::Reports],
@@ -30,11 +29,21 @@ it('places the keys in their catalog modules', function (PermissionKey $key, Per
     [PermissionKey::PaymentsOwnCreate, PermissionModule::Finance],
 ]);
 
-it('marks exactly the ten independent grantable keys', function (): void {
+it('marks exactly the fifteen independent grantable keys', function (): void {
     $grantable = array_values(array_filter(PermissionKey::cases(), static fn (PermissionKey $key): bool => $key->isGrantable()));
 
-    expect($grantable)->toHaveCount(10)
-        ->and($grantable)->toContain(PermissionKey::BagPlanApprove, PermissionKey::EntitiesDelete, PermissionKey::DashboardExecutiveView);
+    expect($grantable)->toHaveCount(15)
+        ->and($grantable)->toContain(PermissionKey::BagPlanApprove, PermissionKey::EntitiesDelete, PermissionKey::DashboardExecutiveView, PermissionKey::DashboardStorageView, PermissionKey::ContactMessagesManage, PermissionKey::FinanceTransfersReview, PermissionKey::SettingsPricesManage, PermissionKey::UsersIdentityChangesReview);
+});
+
+it('seeds the bank-transfer review to the finance officer as a confidential, grantable, unlocked key', function (): void {
+    $matrix = new DefaultPermissionMatrix;
+
+    expect($matrix->for(RoleKey::FinanceOfficer))->toContain(PermissionKey::FinanceTransfersReview)
+        ->and($matrix->for(RoleKey::SystemAdmin))->not->toContain(PermissionKey::FinanceTransfersReview)
+        ->and(PermissionKey::FinanceTransfersReview->module())->toBe(PermissionModule::Finance)
+        ->and(PermissionKey::FinanceTransfersReview->isConfidential())->toBeTrue()
+        ->and(PermissionKey::FinanceTransfersReview->isLocked())->toBeFalse();
 });
 
 it('hard-locks the branding permission to the system administrator', function (): void {
@@ -85,4 +94,20 @@ it('marks only the entity role as not assignable and the award roles as cycle sc
         ->and(RoleKey::FilteringOfficer->isCycleScoped())->toBeTrue()
         ->and(RoleKey::Assessor->isCycleScoped())->toBeFalse()
         ->and(RoleKey::values())->not->toContain('super_admin');
+});
+
+it('grants the internal review notes to the assessor, the requests follower and the system administrator only', function (): void {
+    $matrix = new DefaultPermissionMatrix;
+    $notes = ['requests.notes.read', 'requests.notes.write'];
+
+    foreach (RoleKey::cases() as $role) {
+        $granted = array_values(array_intersect(array_map(static fn (PermissionKey $key): string => $key->value, $matrix->for($role)), $notes));
+        $expected = in_array($role, [RoleKey::Assessor, RoleKey::RequestFollower, RoleKey::SystemAdmin], true) ? $notes : [];
+
+        expect($granted)->toBe($expected);
+    }
+
+    expect(PermissionKey::RequestsNotesRead->module())->toBe(PermissionModule::Requests)
+        ->and(PermissionKey::RequestsNotesWrite->isConfidential())->toBeTrue()
+        ->and(PermissionKey::RequestsNotesWrite->isGrantable())->toBeFalse();
 });

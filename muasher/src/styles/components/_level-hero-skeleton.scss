@@ -1,0 +1,106 @@
+@use '../mixins' as *;
+
+.level-hero__skeleton {
+  display: grid;
+  grid-column: 1 / -1;
+  gap: var(--space-6);
+
+  @include respond-to('xl') {
+    grid-template-columns: minmax(0, 10fr) minmax(0, 11fr);
+    gap: var(--space-8);
+  }
+}
+
+.level-hero__skeleton-identity,
+.level-hero__skeleton-score {
+  @include flex(row, center, flex-start, var(--space-6));
+}
+
+.level-hero__skeleton-progress {
+  @include flex(column, stretch, center, var(--space-8));
+
+  @include respond-to('xl') {
+    padding-inline-start: var(--space-8);
+    border-inline-start: var(--border-width) solid var(--glass-stroke);
+  }
+}
+
+.level-hero__skeleton-lines {
+  @include flex(column, flex-start, flex-start, var(--space-3));
+  flex: 1;
+  min-inline-size: 0;
+}
+
+.level-hero__bone {
+  display: block;
+  max-inline-size: 100%;
+  block-size: var(--space-3);
+  border-radius: var(--radius-pill);
+  background-color: var(--glass-stroke);
+
+  &--medal {
+    flex-shrink: 0;
+    inline-size: var(--size-emblem-hero-s);
+    block-size: var(--size-emblem-hero-s);
+    border-radius: var(--radius-circle);
+
+    @include respond-to('md') {
+      inline-size: var(--size-emblem-l);
+      block-size: var(--size-emblem-l);
+    }
+
+    @include respond-to('xl') {
+      inline-size: var(--size-emblem-hero);
+      block-size: var(--size-emblem-hero);
+    }
+  }
+
+  &--name {
+    inline-size: calc(var(--space-28) * 2);
+    block-size: var(--space-10);
+    border-radius: var(--radius-md);
+  }
+
+  &--chip {
+    inline-size: calc(var(--space-24) * 2);
+    block-size: var(--size-badge-m);
+  }
+
+  &--meta {
+    block-size: var(--space-4);
+  }
+
+  &--meta,
+  &--track {
+    inline-size: 100%;
+  }
+
+  &--action {
+    inline-size: calc(var(--space-28) + var(--space-7));
+    block-size: var(--size-touch-target);
+    border-radius: var(--radius-md);
+  }
+
+  &--figure {
+    flex-shrink: 0;
+    inline-size: calc(var(--space-28) + var(--space-5));
+    block-size: var(--space-14);
+    border-radius: var(--radius-md);
+  }
+
+  &--caption {
+    inline-size: var(--space-24);
+  }
+
+  &--line {
+    inline-size: calc(var(--space-24) * 2);
+  }
+
+  &--title {
+    inline-size: var(--space-20);
+  }
+
+  &--track {
+    block-size: var(--space-2);
+  }
+}

@@ -16,7 +16,7 @@
   block-size: var(--space-5);
   flex-shrink: 0;
   margin-block-start: var(--space-0);
-  border: var(--border-width-thick) solid var(--theme-border);
+  border: var(--border-width-thick) solid var(--theme-input-border);
   border-radius: var(--radius-sm);
   background-color: var(--theme-surface);
   cursor: inherit;
@@ -50,4 +50,13 @@
 
 .checkbox__label {
   line-height: var(--lh-base);
+}
+
+.checkbox__description {
+  margin: 0;
+  margin-block-start: var(--space-1);
+  padding-inline-start: calc(var(--space-5) + var(--space-2));
+  color: var(--theme-text-secondary);
+  font-size: var(--fs-sm);
+  line-height: var(--lh-relaxed);
 }

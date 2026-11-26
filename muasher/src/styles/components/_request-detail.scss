@@ -31,32 +31,53 @@
   color: var(--theme-heading);
 }
 
+.review-page__number {
+  margin-inline-start: var(--space-2);
+  font-family: var(--font-latin);
+  font-size: var(--fs-lg);
+  font-weight: var(--fw-figure);
+  color: var(--theme-text-muted);
+  white-space: nowrap;
+}
+
+.request-detail__heading {
+  @include flex(row, flex-end, space-between, var(--space-4));
+  flex-wrap: wrap;
+  inline-size: 100%;
+}
+
+.request-detail__identity {
+  @include flex(column, flex-start, flex-start, var(--space-2));
+  min-inline-size: 0;
+}
+
+.request-detail__reference {
+  font-family: var(--font-latin);
+  font-size: var(--fs-sm);
+  font-weight: var(--fw-body);
+  color: var(--theme-text-muted);
+}
+
 .request-detail__number {
+  @include flex(row, center, flex-start, var(--space-2));
+  flex-wrap: wrap;
   margin: 0;
   color: var(--theme-text-muted);
 }
 
-.request-detail__loading,
-.request-detail__main,
-.request-detail__aside {
+.request-detail__loading {
   @include flex(column, stretch, flex-start, var(--space-4));
-}
-
-.request-detail__layout {
-  display: grid;
-  gap: var(--space-5);
-  grid-template-columns: 1fr;
-
-  @include respond-to(lg) {
-    grid-template-columns: minmax(0, 1fr) minmax(0, var(--size-panel));
-    align-items: start;
-  }
 }
 
 .review-page__title-row {
   @include flex(row, flex-end, space-between, var(--space-3));
   flex-wrap: wrap;
   inline-size: 100%;
+}
+
+.review-page__actions {
+  @include flex(row, center, flex-end, var(--space-2));
+  flex-wrap: wrap;
 }
 
 .request-facts {
@@ -92,12 +113,115 @@
   color: var(--theme-text-muted);
 }
 
-.request-actions__buttons {
-  @include flex(column, stretch, flex-start, var(--space-2));
+// Request record (admin review 2026-11-20): actions at the header's end, the data block, then tabs.
+.request-actions {
+  @include flex(row, center, flex-end, var(--space-2));
+  flex-wrap: wrap;
+  margin-inline-start: auto;
 }
 
-.request-actions__note {
-  margin-block: var(--space-3) 0;
-  font-size: var(--fs-xs);
+.request-facts__item--wide {
+  grid-column: 1 / -1;
+}
+
+.request-facts__entity {
+  @include flex(row, center, flex-start, var(--space-2));
+  flex-wrap: wrap;
+  font-size: var(--fs-base);
+  font-weight: var(--fw-body);
+}
+
+.request-facts__entity-link {
+  color: var(--theme-accent-text);
+
+  &:focus-visible {
+    @include focus-ring;
+  }
+}
+
+.request-overview,
+.request-log {
+  display: grid;
+  gap: var(--space-4);
+  grid-template-columns: minmax(0, 1fr);
+  padding-block-start: var(--space-4);
+
+  @include respond-to(lg) {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    align-items: start;
+  }
+}
+
+// The per-criterion bars (design §B.3.4) and the self result's summary take the full width.
+.request-overview > .self-breakdown,
+.request-overview > .result-pending,
+.request-overview > .self-result__summary {
+  grid-column: 1 / -1;
+}
+
+.request-detail__completions {
+  @include flex(column, stretch, flex-start, var(--space-4));
+  padding-block-start: var(--space-4);
+}
+
+.request-result__percent {
+  margin: 0;
+  font-family: var(--font-heading);
+  font-size: var(--fs-3xl);
+  font-weight: var(--fw-figure);
+  color: var(--theme-heading);
+}
+
+.request-result__total {
+  margin-block: var(--space-1) 0;
+  font-size: var(--fs-sm);
   color: var(--theme-text-muted);
+}
+
+// Award request screens (operator 2026-11-22): one column at full width, no fixed side column. History sits at the
+// end and only when it has entries; the decisions sit in a bar at the end of the page (sticky on desktop).
+.award-detail__body {
+  @include flex(column, stretch, flex-start, var(--space-4));
+}
+
+.award-detail__history {
+  summary {
+    font-weight: var(--fw-emphasis);
+    color: var(--theme-heading);
+    cursor: pointer;
+  }
+
+  &[open] summary {
+    margin-block-end: var(--space-3);
+  }
+}
+
+.award-action-bar {
+  @include flex(row, center, space-between, var(--space-3));
+  flex-wrap: wrap;
+  padding: var(--space-3) var(--space-4);
+  border: var(--border-width) solid var(--theme-border);
+  border-radius: var(--radius-lg);
+  background-color: var(--theme-surface);
+  box-shadow: var(--shadow-md);
+
+  .cycle-actions__note {
+    margin: 0;
+  }
+}
+
+// The request record (layout A): one max content width for the page; the overview's facts card spans it, and every
+// tab keeps the same top spacing.
+.request-detail {
+  max-inline-size: 72rem;
+}
+
+.request-overview__data {
+  grid-column: 1 / -1;
+}
+
+.request-detail__panel {
+  display: grid;
+  gap: var(--space-4);
+  padding-block-start: var(--space-4);
 }

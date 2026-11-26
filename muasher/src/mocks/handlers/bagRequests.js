@@ -38,6 +38,7 @@ function entityName(id) {
 function toRow(r) {
   return {
     id: r.id,
+    number: r.number,
     entityId: r.entityId,
     entityName: entityName(r.entityId),
     status: r.status,
@@ -58,7 +59,10 @@ function toRow(r) {
 function toDetail(r) {
   return {
     ...toRow(r),
-    assignmentHistory: r.assignmentHistory.map((h) => ({ ...h, evaluatorName: evaluatorName(h.evaluatorId) })),
+    assignmentHistory: r.assignmentHistory.map((h) => ({
+      ...h,
+      evaluatorName: evaluatorName(h.evaluatorId),
+    })),
   }
 }
 
@@ -78,6 +82,7 @@ function matchesSearch(r, needle) {
     (name.ar ?? '').toLowerCase().includes(needle) ||
     (name.en ?? '').toLowerCase().includes(needle) ||
     r.id.toLowerCase().includes(needle) ||
+    (r.number ?? '').toLowerCase().includes(needle) ||
     String(r.assignedEvaluatorId ?? '').includes(needle)
   )
 }
@@ -139,13 +144,21 @@ export const bagRequestsHandlers = [
     const body = await req.json().catch(() => ({}))
     const evaluatorId = Number(body.evaluatorId)
     if (!evaluatorId || !usersFixture.some((u) => u.id === evaluatorId && isEvaluator(u))) {
-      return errorResponse('Choose an active evaluator', 422, { evaluatorId: ['Choose an active evaluator.'] })
+      return errorResponse('Choose an active evaluator', 422, {
+        evaluatorId: ['Choose an active evaluator.'],
+      })
     }
     r.assignedEvaluatorId = evaluatorId
     r.assignedBy = 'request_follower'
     r.assignedAt = new Date().toISOString()
     r.status = 'assigned'
-    r.assignmentHistory.push({ id: nextHistoryId(), evaluatorId, action: 'assigned', reason: null, at: r.assignedAt })
+    r.assignmentHistory.push({
+      id: nextHistoryId(),
+      evaluatorId,
+      action: 'assigned',
+      reason: null,
+      at: r.assignedAt,
+    })
     return envelope(toDetail(r))
   }),
 
@@ -161,15 +174,25 @@ export const bagRequestsHandlers = [
     const evaluatorId = Number(body.evaluatorId)
     const reason = (body.reason ?? '').trim()
     if (!evaluatorId || !usersFixture.some((u) => u.id === evaluatorId && isEvaluator(u))) {
-      return errorResponse('Choose an active evaluator', 422, { evaluatorId: ['Choose an active evaluator.'] })
+      return errorResponse('Choose an active evaluator', 422, {
+        evaluatorId: ['Choose an active evaluator.'],
+      })
     }
     if (!reason) {
-      return errorResponse('A reassignment reason is required', 422, { reason: ['A reassignment reason is required.'] })
+      return errorResponse('A reassignment reason is required', 422, {
+        reason: ['A reassignment reason is required.'],
+      })
     }
     r.assignedEvaluatorId = evaluatorId
     r.assignedAt = new Date().toISOString()
     if (r.status === 'awaiting-assignment') r.status = 'assigned'
-    r.assignmentHistory.push({ id: nextHistoryId(), evaluatorId, action: 'reassigned', reason, at: r.assignedAt })
+    r.assignmentHistory.push({
+      id: nextHistoryId(),
+      evaluatorId,
+      action: 'reassigned',
+      reason,
+      at: r.assignedAt,
+    })
     return envelope(toDetail(r))
   }),
 ]

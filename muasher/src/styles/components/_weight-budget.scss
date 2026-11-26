@@ -30,7 +30,7 @@
   dd {
     margin: 0;
     font-size: var(--fs-lg);
-    font-weight: var(--fw-bold);
+    font-weight: var(--fw-body);
     color: var(--theme-heading);
     font-variant-numeric: tabular-nums;
   }
@@ -72,7 +72,7 @@
   padding-block: var(--space-2);
   padding-inline: var(--space-3);
   border-radius: var(--radius-md);
-  font-weight: var(--fw-medium);
+  font-weight: var(--fw-figure);
 }
 
 .weight-budget__note {

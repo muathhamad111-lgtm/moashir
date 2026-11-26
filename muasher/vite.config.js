@@ -4,13 +4,14 @@ import { fileURLToPath, URL } from 'node:url'
 import { defineConfig } from 'vite'
 import vue from '@vitejs/plugin-vue'
 import vueDevTools from 'vite-plugin-vue-devtools'
-import { fontAwesome } from './vite-plugins/fontAwesome'
 import { apiProxy } from './vite-plugins/apiProxy'
+import { buildPosture } from './vite-plugins/buildPosture'
+import { licensedFonts } from './vite-plugins/licensedFonts'
 
 const proxy = apiProxy(process.env.MOASHIR_API_PROXY_TARGET)
 
 export default defineConfig({
-  plugins: [vue(), vueDevTools(), fontAwesome()],
+  plugins: [buildPosture(), licensedFonts(), vue(), vueDevTools()],
   define: {
     __VUE_I18N_FULL_INSTALL__: true,
     __VUE_I18N_LEGACY_API__: false,

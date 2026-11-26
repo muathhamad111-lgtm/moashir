@@ -5,11 +5,17 @@ declare(strict_types=1);
 namespace App\Http\Resources\Assessments;
 
 use App\Data\Assessments\RequestDetail;
+use App\Http\Resources\Entities\EntityLogoResource;
 use App\Models\Assessments\AssessmentAssignment;
 use App\Models\Assessments\AssessmentCompletionRequest;
+use App\Models\Entities\Entity;
+use App\Models\Files\StoredFile;
+use App\Models\Identity\User;
 use App\Support\Assessments\CompletionRequestPresenter;
+use App\Support\Assessments\RequestPaymentPresenter;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
+use Illuminate\Support\Facades\Gate;
 
 /**
  * @property-read RequestDetail $resource
@@ -26,14 +32,46 @@ final class RequestDetailResource extends JsonResource
 
         return [
             ...new RequestQueueItemResource($assessment)->toArray($request),
-            'payment' => ['paid' => $detail->isPaid],
+            'entity' => [...RequestQueueItemResource::entityOf($assessment), 'logo' => $this->logoOf($assessment->entity, $request)],
+            'has_certificates' => $detail->hasCertificates,
+            'payment' => $this->paymentOf($detail, $request),
             'record' => new AssessmentRecordResource($detail->record)->toArray($request),
             'assignment_history' => array_map(fn (AssessmentAssignment $assignment): array => $this->assignmentOf($assignment, $detail->revealsStaffIdentities), $detail->assignments),
             'completion_requests' => array_map(
-                static fn (AssessmentCompletionRequest $completion): ?array => CompletionRequestPresenter::present($completion, null),
+                static fn (AssessmentCompletionRequest $completion): ?array => CompletionRequestPresenter::present($completion, $detail->subs),
                 $detail->completionRequests,
             ),
         ];
+    }
+
+    /**
+     * The entity's logo for the record header: only for a viewer who may open it (the same rule as its download link).
+     *
+     * @return array{id: string, url: string|null, uploaded_at: string}|null
+     */
+    private function logoOf(Entity $entity, Request $request): ?array
+    {
+        $viewer = $request->user();
+
+        if (! $entity->logo instanceof StoredFile || ! $viewer instanceof User || Gate::forUser($viewer)->denies('viewLogo', $entity)) {
+            return null;
+        }
+
+        return new EntityLogoResource($entity->logo)->toArray($request);
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    private function paymentOf(RequestDetail $detail, Request $request): array
+    {
+        $paid = ['paid' => $detail->isPaid];
+
+        if (! $detail->revealsStaffIdentities || ! RequestPaymentPresenter::revealsDetailsTo($request->user())) {
+            return $paid;
+        }
+
+        return [...$paid, ...(RequestPaymentPresenter::of($detail->record->assessment->payment, $request->user()) ?? [])];
     }
 
     /**

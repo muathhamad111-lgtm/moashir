@@ -8,7 +8,7 @@
 .review-page__eyebrow {
   margin-block-end: var(--space-1);
   font-size: var(--fs-sm);
-  font-weight: var(--fw-medium);
+  font-weight: var(--fw-body);
   color: var(--theme-accent-text);
 }
 
@@ -25,12 +25,11 @@
 }
 
 .request-filters {
-  @include flex(row, center, flex-start, var(--space-3));
-  flex-wrap: wrap;
+  display: contents;
 }
 
 .request-queue__link {
-  font-weight: var(--fw-semibold);
+  font-weight: var(--fw-emphasis);
   color: var(--theme-accent-text);
 
   &:focus-visible {
@@ -47,4 +46,52 @@
 .request-queue__due {
   @include flex(row, center, flex-start, var(--space-2));
   flex-wrap: wrap;
+}
+
+.request-queue__actions {
+  @include flex(row, center, flex-end, var(--space-2));
+  flex-wrap: nowrap;
+}
+
+.request-queue__entity {
+  @include flex(row, center, flex-start, var(--space-2));
+  flex-wrap: wrap;
+}
+
+.assigned-request__entity {
+  display: block;
+  font-weight: var(--fw-emphasis);
+  color: var(--theme-heading);
+}
+
+.assigned-request__number {
+  display: block;
+  font-size: var(--fs-sm);
+  white-space: nowrap;
+  color: var(--theme-text-secondary);
+}
+
+// Kept narrow so the request column (entity name) gets the room.
+.assigned-request__progress {
+  inline-size: 8rem;
+}
+
+.assigned-request__actions {
+  @include flex(row, center, flex-start, var(--space-2));
+  flex-wrap: nowrap;
+  white-space: nowrap;
+}
+
+// Request list (admin review 2026-11-20): the merged request column. Two lines: the number with
+// the entity's level, then the entity's name.
+.request-queue__request {
+  @include flex(column, flex-start, flex-start, var(--space-1));
+}
+
+.request-queue__entity-name {
+  color: var(--theme-text-muted);
+}
+
+.request-queue__assessor {
+  @include flex(column, flex-start, flex-start, var(--space-1));
 }

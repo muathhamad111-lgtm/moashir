@@ -6,7 +6,7 @@ namespace App\Http\Requests\Criteria;
 
 use App\Data\Criteria\PublishInstruction;
 use App\Enums\Criteria\CriteriaEditScope;
-use App\Enums\Criteria\DraftCyclesChoice;
+use App\Exceptions\Criteria\CriteriaVersionRejected;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
@@ -21,7 +21,6 @@ final class PublishCriteriaVersionRequest extends FormRequest
             'confirm' => ['accepted'],
             'scope' => ['nullable', Rule::enum(CriteriaEditScope::class)],
             'reason' => ['nullable', 'string', 'min:10', 'max:1000'],
-            'draft_cycles' => ['nullable', Rule::enum(DraftCyclesChoice::class)],
         ];
     }
 
@@ -30,7 +29,13 @@ final class PublishCriteriaVersionRequest extends FormRequest
         return new PublishInstruction(
             $this->enum('scope', CriteriaEditScope::class),
             $this->filled('reason') ? $this->string('reason')->trim()->toString() : null,
-            $this->enum('draft_cycles', DraftCyclesChoice::class) ?? DraftCyclesChoice::Keep,
         );
+    }
+
+    protected function passedValidation(): void
+    {
+        if ($this->exists('draft_cycles')) {
+            throw CriteriaVersionRejected::draftCyclesFollowPublished();
+        }
     }
 }

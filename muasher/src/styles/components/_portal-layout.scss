@@ -1,0 +1,140 @@
+@use '../mixins' as *;
+@use '../tokens' as *;
+
+.portal-layout {
+  --tts-sidebar-offset: calc(var(--tts-page-top) + var(--tts-header-height) + var(--tts-body-gap));
+  @include flex(column, stretch, flex-start, var(--tts-body-gap));
+  min-block-size: var(--size-screen);
+  padding-block: var(--tts-page-top) calc(var(--size-mobile-tab-bar) + var(--space-4));
+  padding-inline: var(--tts-page-gutter);
+  background-color: var(--content-bg);
+
+  @include respond-to('lg') {
+    --tts-page-gutter: #{$tts-page-gutter};
+    --tts-page-top: #{$tts-page-top};
+    padding-block-end: var(--space-8);
+  }
+
+  &--mobile-task {
+    padding-block-end: calc(var(--size-mobile-action-bar) + var(--space-4));
+
+    @include respond-to('lg') {
+      padding-block-end: var(--space-8);
+    }
+  }
+}
+
+.portal-layout__body {
+  @include flex(row, flex-start, flex-start, var(--tts-body-gap));
+  flex: 1;
+  min-inline-size: 0;
+
+  @include respond-to('lg') {
+    gap: #{$tts-body-gap-lg};
+  }
+}
+
+.portal-layout__skip {
+  position: absolute;
+  inset-inline-start: var(--space-4);
+  inset-block-start: var(--space-4);
+  z-index: var(--z-toast);
+  padding-block: var(--space-2);
+  padding-inline: var(--space-4);
+  border-radius: var(--radius-md);
+  background-color: var(--theme-accent);
+  color: var(--theme-on-accent);
+  transform: translateY(-200%);
+  transition: transform var(--t-fast) var(--ease);
+
+  &:focus {
+    transform: translateY(0);
+  }
+}
+
+.portal-layout .portal-layout__nav {
+  display: none;
+
+  @include respond-to('lg') {
+    display: flex;
+  }
+}
+
+.portal-layout__column {
+  @include flex(column, stretch, flex-start, var(--tts-body-gap));
+  flex: 1;
+  min-inline-size: 0;
+}
+
+.portal-layout__strip {
+  .portal-layout--mobile-task & {
+    display: none;
+
+    @include respond-to('lg') {
+      display: block;
+    }
+  }
+}
+
+// The one content container of the entity portal, same rule as `.app-layout__content`: it fills
+// the column beside the side nav; pages and bands set no outer width of their own.
+.portal-layout__main {
+  flex: 1;
+  min-inline-size: 0;
+
+  &:focus {
+    outline: none;
+  }
+}
+
+.portal-layout__tabs {
+  @include respond-to('lg') {
+    display: none;
+  }
+}
+
+.portal-footer {
+  border-block-start: var(--border-width) solid var(--theme-border);
+  background-color: transparent;
+}
+
+.portal-footer__inner {
+  @include flex(column, flex-start, space-between, var(--space-3));
+  @include portal-gutter;
+  padding-block: var(--space-6);
+  font-size: var(--fs-xs);
+  color: var(--theme-text-muted);
+
+  @include respond-to('md') {
+    flex-direction: row;
+    align-items: center;
+  }
+}
+
+.portal-footer__copy {
+  margin: 0;
+}
+
+.portal-footer__links {
+  @include flex(row, center, flex-start, var(--space-4));
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.portal-footer__link {
+  padding: 0;
+  border: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+
+  &:hover {
+    color: var(--theme-accent-text);
+  }
+
+  &:focus-visible {
+    @include focus-ring;
+  }
+}

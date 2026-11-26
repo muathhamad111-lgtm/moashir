@@ -10,6 +10,7 @@ use App\Models\Assessments\Assessment;
 use App\Models\Assessments\AssessmentStatusTransition;
 use App\Models\Audit\Audit;
 use App\Models\Award\AwardCycle;
+use App\Models\Award\AwardCycleAssessor;
 use App\Models\Award\AwardCycleReminder;
 use App\Notifications\Entities\EntityNotification;
 use App\Notifications\Identity\SecurityAlertNotification;
@@ -32,6 +33,7 @@ it('opens a draft cycle on request and announces it to the entities and the staf
     $follower = requestFollower();
     $admin = systemAdmin();
     $otherAdmin = systemAdmin();
+    linkInitialAssessor($cycle, assessorUser());
 
     switchTo($admin)->postJson("/api/v1/award/cycles/{$cycle->id}/open")->assertOk()
         ->assertJsonPath('data.status', 'submission_open')
@@ -51,6 +53,7 @@ it('runs only one cycle at a time while further cycles may be prepared as drafts
     $version = publishedAccreditedCriteria();
     $running = openAwardCycle($version);
     $next = draftAwardCycle($version);
+    linkInitialAssessor($next, assessorUser());
 
     switchTo(systemAdmin())->postJson("/api/v1/award/cycles/{$next->id}/open")->assertConflict()
         ->assertJsonPath('code', 'cycle.another_open')
@@ -80,6 +83,7 @@ it('opens and closes the submissions on the cycle dates and expires the unsubmit
     ]);
     $secretary = awardSecretary();
     addCycleMember($cycle, $secretary, CycleMemberRole::AwardSecretary);
+    linkInitialAssessor($cycle, assessorUser());
 
     Artisan::call('moashir:award:advance-cycles');
     expect($cycle->refresh()->status)->toBe(AwardCycleStatus::Draft);
@@ -216,4 +220,53 @@ it('shows the running cycle publicly without internal settings', function (): vo
 
     expect(AwardCycle::query()->count())->toBe(2)
         ->and(Assessment::query()->count())->toBe(0);
+});
+
+it('refuses to open a cycle that links no initial assessor, so its requests could not be assigned', function (): void {
+    $version = publishedAccreditedCriteria();
+    $cycle = draftAwardCycle($version);
+    $assessor = assessorUser();
+
+    switchTo(requestFollower())->postJson("/api/v1/award/cycles/{$cycle->id}/open")->assertForbidden();
+    // An assessor linked to no cycle cannot see this one, so it answers as missing (AwardCyclePolicy::manage).
+    switchTo(assessorUser())->postJson("/api/v1/award/cycles/{$cycle->id}/open")->assertNotFound();
+    switchTo(systemAdmin())->postJson("/api/v1/award/cycles/{$cycle->id}/open")->assertUnprocessable()
+        ->assertJsonPath('code', 'cycle.no_initial_assessors')
+        ->assertJsonPath('message', __('errors.cycle.no_initial_assessors', [], 'ar'))
+        ->assertJsonPath('errors.initial_assessor_ids.0', __('errors.cycle.no_initial_assessors', [], 'ar'))
+        ->assertJsonStructure(['message', 'code', 'errors' => ['initial_assessor_ids']]);
+    expect($cycle->refresh()->status)->toBe(AwardCycleStatus::Draft)
+        ->and(Audit::query()->where('event', AuditEvent::CycleOpened->value)->count())->toBe(0);
+    linkInitialAssessor($cycle, $assessor);
+    AwardCycleAssessor::query()->where('award_cycle_id', $cycle->id)->update(['is_active' => false]);
+    test()->postJson("/api/v1/award/cycles/{$cycle->id}/open")->assertUnprocessable()->assertJsonPath('code', 'cycle.no_initial_assessors');
+
+    AwardCycleAssessor::query()->where('award_cycle_id', $cycle->id)->update(['is_active' => true]);
+    test()->postJson("/api/v1/award/cycles/{$cycle->id}/open")->assertOk()->assertJsonPath('data.status', 'submission_open');
+});
+
+it('keeps a scheduled cycle without initial assessors closed and alerts its secretaries and administrators once', function (): void {
+    $version = publishedAccreditedCriteria();
+    $cycle = draftAwardCycle($version, [
+        'submission_start' => '2026-11-01 09:00:00',
+        'submission_end' => '2026-11-10 09:00:00',
+    ]);
+    $secretary = awardSecretary();
+    addCycleMember($cycle, $secretary, CycleMemberRole::AwardSecretary);
+    $admin = systemAdmin();
+
+    Date::setTestNow('2026-11-01 09:00:00');
+    Artisan::call('moashir:award:advance-cycles');
+    Date::setTestNow('2026-11-01 09:01:00');
+    Artisan::call('moashir:award:advance-cycles');
+
+    expect($cycle->refresh()->status)->toBe(AwardCycleStatus::Draft)
+        ->and(Notification::sent($secretary, EntityNotification::class)->filter(static fn (EntityNotification $sent): bool => $sent->notice->code === NotificationCode::CycleOpenBlocked)->count())->toBe(1)
+        ->and(Notification::sent($admin, EntityNotification::class)->filter(static fn (EntityNotification $sent): bool => $sent->notice->code === NotificationCode::CycleOpenBlocked)->count())->toBe(1)
+        ->and(Audit::query()->where('event', AuditEvent::CycleOpenBlocked->value)->where('auditable_id', $cycle->id)->count())->toBe(1)
+        ->and(Notification::sent(requestFollower(), EntityNotification::class))->toHaveCount(0);
+
+    linkInitialAssessor($cycle, assessorUser());
+    Artisan::call('moashir:award:advance-cycles');
+    expect($cycle->refresh()->status)->toBe(AwardCycleStatus::SubmissionOpen);
 });

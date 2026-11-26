@@ -30,7 +30,10 @@ const server = setupServer(
     record(request)
     if (mismatchesLeft > 0) {
       mismatchesLeft -= 1
-      return HttpResponse.json({ message: 'CSRF token mismatch.', code: 'csrf.token_mismatch', errors: {} }, { status: 419 })
+      return HttpResponse.json(
+        { message: 'CSRF token mismatch.', code: 'csrf.token_mismatch', errors: {} },
+        { status: 419 },
+      )
     }
     return HttpResponse.json({ data: { ok: true }, meta: {}, errors: null })
   }),

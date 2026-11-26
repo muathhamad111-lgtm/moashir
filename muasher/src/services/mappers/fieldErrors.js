@@ -6,11 +6,3 @@ export function renameFieldErrors(error, aliases) {
   )
   return error
 }
-
-export async function withFieldAliases(request, aliases) {
-  try {
-    return await request
-  } catch (error) {
-    throw renameFieldErrors(error, aliases)
-  }
-}

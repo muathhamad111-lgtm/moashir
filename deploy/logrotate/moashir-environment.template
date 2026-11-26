@@ -1,0 +1,10 @@
+{{LOG_DIR}}/*.log {
+    su {{APP_USER}} {{APP_USER}}
+    daily
+    rotate 14
+    missingok
+    notifempty
+    compress
+    delaycompress
+    copytruncate
+}

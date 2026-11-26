@@ -7,6 +7,7 @@ namespace App\Services\Entities;
 use App\Data\Entities\CitySeed;
 use App\Data\Entities\RegionSeed;
 use App\Support\ScalarValue;
+use App\Support\ValueObjects\Coordinates;
 use App\Support\ValueObjects\LocalizedText;
 use InvalidArgumentException;
 
@@ -41,7 +42,7 @@ final class RegionSeedSource
         $cities = [];
 
         foreach ($this->records($data, 'cities') as $position => $city) {
-            $cities[] = new CitySeed($this->code($city), $this->name($city), $position + 1);
+            $cities[] = new CitySeed($this->code($city), $this->name($city), $position + 1, $this->coordinates($city));
         }
 
         return new RegionSeed($this->code($data), $this->name($data), $sortOrder, $cities);
@@ -59,6 +60,21 @@ final class RegionSeedSource
         }
 
         return $code;
+    }
+
+    /**
+     * @param  array<array-key, mixed>  $data
+     */
+    private function coordinates(array $data): ?Coordinates
+    {
+        $latitude = $data['latitude'] ?? null;
+        $longitude = $data['longitude'] ?? null;
+
+        if (! is_numeric($latitude) || ! is_numeric($longitude)) {
+            return null;
+        }
+
+        return new Coordinates((float) $latitude, (float) $longitude);
     }
 
     /**

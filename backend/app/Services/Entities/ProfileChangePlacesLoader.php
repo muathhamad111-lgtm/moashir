@@ -8,6 +8,7 @@ use App\Data\Entities\ProfileChangePlaces;
 use App\Enums\Entities\EntityProfileField;
 use App\Models\Entities\City;
 use App\Models\Entities\EntityProfileChange;
+use App\Models\Entities\EntityProfileChangeRequest;
 use App\Models\Entities\Region;
 use App\Support\Entities\EntityPresenter;
 use Illuminate\Database\Eloquent\Builder;
@@ -33,6 +34,17 @@ final class ProfileChangePlacesLoader
         }
 
         return new ProfileChangePlaces($this->placesIn(Region::query(), $regionIds), $this->placesIn(City::query(), $cityIds));
+    }
+
+    public function forRequest(EntityProfileChangeRequest $request): ProfileChangePlaces
+    {
+        $values = [$request->base_values, $request->proposed];
+        $idsOf = static fn (EntityProfileField $field): array => array_values(array_filter(array_column($values, $field->value), is_int(...)));
+
+        return new ProfileChangePlaces(
+            $this->placesIn(Region::query(), $idsOf(EntityProfileField::Region)),
+            $this->placesIn(City::query(), $idsOf(EntityProfileField::City)),
+        );
     }
 
     /**

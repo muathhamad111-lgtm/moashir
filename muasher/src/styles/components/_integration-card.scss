@@ -1,6 +1,7 @@
 @use '../mixins' as *;
 
 .integration-card {
+  --field-label-backdrop: var(--theme-surface-solid);
   @include flex(column, stretch, flex-start, var(--space-4));
   padding: var(--space-5);
   border: var(--border-width) solid var(--theme-border);
@@ -21,7 +22,7 @@
 .integration-card__title {
   margin: 0;
   font-size: var(--fs-lg);
-  font-weight: var(--fw-semibold);
+  font-weight: var(--fw-heading);
   color: var(--theme-heading);
 }
 
@@ -57,7 +58,7 @@
 }
 
 .last-test__outcome {
-  font-weight: var(--fw-semibold);
+  font-weight: var(--fw-body);
   color: var(--theme-text);
 }
 

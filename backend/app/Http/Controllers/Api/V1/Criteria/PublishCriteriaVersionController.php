@@ -25,7 +25,7 @@ final class PublishCriteriaVersionController
             'affected_open_count' => $outcome->editEvent->affected_open_count ?? 0,
             'change_count' => $outcome->changeCount,
             'effect' => $outcome->effect?->toArray(),
-            'award_cycles' => [...($outcome->cycles?->toArray() ?? []), 'draft_cycles' => $request->instruction()->draftCycles->value, 'moved_cycle_ids' => $outcome->movedCycleIds],
+            'award_cycles' => [...($outcome->cycles?->toArray() ?? []), 'moved_cycle_ids' => $outcome->movedCycleIds],
         ]);
     }
 }

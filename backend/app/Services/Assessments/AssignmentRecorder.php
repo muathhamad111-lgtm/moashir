@@ -27,7 +27,7 @@ final class AssignmentRecorder
         return $assignment;
     }
 
-    public function handOver(Assessment $locked, AssessmentAssignment $current, User $assessor, User $assignedBy, string $reason): AssessmentAssignment
+    public function handOver(Assessment $locked, AssessmentAssignment $current, User $assessor, User $assignedBy, ?string $reason): AssessmentAssignment
     {
         $this->close($current, AssignmentStatus::Reassigned, $reason);
 

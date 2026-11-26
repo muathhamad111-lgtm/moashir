@@ -1,4 +1,8 @@
 export const PROFILE_FIELD_LABELS = Object.freeze({
+  logo: { ar: 'شعار الجهة', en: 'Entity logo' },
+  vat_certificate: { ar: 'شهادة التسجيل الضريبي', en: 'VAT registration certificate' },
+  license_certificate: { ar: 'شهادة الترخيص', en: 'Licence certificate' },
+  authorization_letter: { ar: 'خطاب التفويض', en: 'Authorization letter' },
   name: { ar: 'اسم الجهة', en: 'Entity name' },
   entity_type: { ar: 'نوع الجهة', en: 'Entity type' },
   development_sector: { ar: 'القطاع التنموي', en: 'Development sector' },
@@ -6,14 +10,40 @@ export const PROFILE_FIELD_LABELS = Object.freeze({
   founding_year: { ar: 'سنة التأسيس', en: 'Founding year' },
   region_id: { ar: 'المنطقة', en: 'Region' },
   city_id: { ar: 'المدينة', en: 'City' },
+  has_governance_grade: { ar: 'وجود درجة الحوكمة', en: 'Has a governance score' },
   governance_grade: { ar: 'درجة الحوكمة', en: 'Governance grade' },
   employees_count: { ar: 'عدد الموظفين', en: 'Number of employees' },
   annual_beneficiaries_count: { ar: 'عدد المستفيدين سنويًا', en: 'Annual beneficiaries' },
   has_strategic_plan: { ar: 'الخطة الاستراتيجية', en: 'Strategic plan' },
+  unified_number: { ar: 'الرقم الوطني الموحد', en: 'Unified national number' },
+  license_number: { ar: 'رقم الترخيص', en: 'Licence number' },
+  founded_on: { ar: 'تاريخ التأسيس', en: 'Founding date' },
+  website_url: { ar: 'الموقع الإلكتروني', en: 'Website' },
+  authorized_person_name: {
+    ar: 'الشخص المفوّض بإدارة الحساب',
+    en: 'Authorized account manager',
+  },
+  phone: { ar: 'رقم الجوال', en: 'Mobile number' },
+  marketing_consent: { ar: 'أخبار المنصة وعروضها', en: 'Platform news and offers' },
+  address_building_number: { ar: 'رقم المبنى', en: 'Building number' },
+  address_street: { ar: 'الشارع', en: 'Street' },
+  address_district: { ar: 'الحي', en: 'District' },
+  address_city: { ar: 'المدينة (العنوان الوطني)', en: 'City (national address)' },
+  address_postal_code: { ar: 'الرمز البريدي', en: 'Postal code' },
+  address_additional_number: { ar: 'الرقم الإضافي', en: 'Additional number' },
+  address_short_code: { ar: 'العنوان المختصر', en: 'Short address' },
+  vat_registered: { ar: 'التسجيل في ضريبة القيمة المضافة', en: 'VAT registration' },
+  vat_number: { ar: 'الرقم الضريبي', en: 'VAT registration number' },
 })
 
-const SYSTEM_ADMIN_ROLE = { key: 'system_admin', label: { ar: 'مدير النظام', en: 'System Administrator' } }
-const FOLLOWER_ROLE = { key: 'request_follower', label: { ar: 'متابع طلبات التقييم', en: 'Assessment Requests Follower' } }
+const SYSTEM_ADMIN_ROLE = {
+  key: 'system_admin',
+  label: { ar: 'مدير النظام', en: 'System Administrator' },
+}
+const FOLLOWER_ROLE = {
+  key: 'request_follower',
+  label: { ar: 'متابع طلبات التقييم', en: 'Assessment Requests Follower' },
+}
 
 export const profileChangesFixture = [
   {
@@ -55,6 +85,26 @@ export const profileChangesFixture = [
     changedBy: 'system',
     staff: null,
     changedAt: '2026-10-28T05:00:00Z',
+  },
+  {
+    id: 9006,
+    entityId: 6003,
+    field: 'license_number',
+    oldValue: '880600',
+    newValue: '8806003',
+    changedBy: 'staff',
+    staff: { name: 'منيرة بنت خالد العتيبي', roles: [SYSTEM_ADMIN_ROLE] },
+    changedAt: '2026-11-02T08:10:00Z',
+  },
+  {
+    id: 9007,
+    entityId: 6003,
+    field: 'founded_on',
+    oldValue: null,
+    newValue: '2018-03-01',
+    changedBy: 'entity',
+    staff: null,
+    changedAt: '2026-11-03T06:45:00Z',
   },
   {
     id: 9005,

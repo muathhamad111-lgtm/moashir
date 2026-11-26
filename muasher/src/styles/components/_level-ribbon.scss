@@ -1,0 +1,102 @@
+@use '../mixins' as *;
+
+// On a phone the percent takes its own line under the level, so the name, number and date keep
+// their width; from `sm` up the ribbon reads on one row.
+.level-ribbon {
+  @include flex(row, center, flex-start, var(--space-4));
+  flex-wrap: wrap;
+  padding: var(--space-4);
+  border: var(--border-width) solid var(--glass-stroke);
+  border-radius: var(--radius-xl);
+  background: var(--stage-gradient);
+  box-shadow: var(--elevation-e2);
+  color: var(--band-ink);
+
+  .level-emblem {
+    background-color: transparent;
+    box-shadow: 0 0 var(--space-6) var(--level-glow);
+  }
+
+  @include respond-to(sm) {
+    flex-wrap: nowrap;
+    padding-inline: var(--space-6);
+  }
+
+  .level-emblem--placeholder {
+    border-color: var(--glass-stroke);
+    background-color: var(--glass-fill);
+    color: var(--band-ink);
+    box-shadow: none;
+  }
+}
+
+.level-ribbon__copy {
+  @include flex(column, flex-start, center, var(--space-0));
+  flex: 1;
+  min-inline-size: 0;
+
+  p {
+    margin: 0;
+  }
+}
+
+.level-ribbon__eyebrow {
+  color: var(--level-on-band);
+  font-size: var(--fs-xs);
+  font-weight: var(--fw-body);
+}
+
+.level-ribbon__name {
+  @include flex(row, center, flex-start, var(--space-2));
+  flex-wrap: wrap;
+  color: var(--level-on-band);
+  font-family: var(--font-heading);
+  font-size: var(--fs-xl);
+  font-weight: var(--fw-emphasis);
+}
+
+.level-ribbon__meta {
+  @include flex(row, center, flex-start, var(--space-2));
+  flex-wrap: wrap;
+  color: var(--band-ink-muted);
+  font-size: var(--fs-xs);
+
+  bdi {
+    white-space: nowrap;
+  }
+}
+
+.level-ribbon__percent {
+  flex-basis: 100%;
+  color: var(--band-ink);
+  font-family: var(--font-latin);
+  font-size: var(--fs-2xl);
+  font-weight: var(--fw-figure);
+
+  @include respond-to(sm) {
+    flex-basis: auto;
+  }
+}
+
+.level-ribbon__chip {
+  @include flex(row, center, center);
+  min-block-size: var(--size-badge-s);
+  padding-inline: var(--space-3);
+  border: var(--border-width) solid var(--glass-stroke);
+  border-radius: var(--radius-pill);
+  background-color: var(--glass-fill);
+  color: var(--band-ink);
+  font-size: var(--fs-xs);
+  font-weight: var(--fw-emphasis);
+}
+
+.level-ribbon--expired {
+  .level-emblem {
+    opacity: var(--opacity-expired-seal);
+    box-shadow: none;
+  }
+
+  .level-ribbon__name {
+    color: var(--band-ink-muted);
+  }
+}

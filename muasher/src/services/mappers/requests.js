@@ -1,4 +1,5 @@
-import { QUEUE_STATUSES } from '@/constants/accredited'
+import { toCamelKey } from '@/api/caseMapping'
+import { QUEUE_STAGE_LIST, QUEUE_STATUSES } from '@/constants/accredited'
 import { ADVANCED_QUEUE_STATUSES } from '@/constants/advanced'
 import { toAssessmentRecord, toEntitySummary } from './assessments'
 import { toCompletionRequest } from './accredited'
@@ -27,7 +28,17 @@ export function toPlace(raw) {
 
 export function toCycleSummary(raw) {
   if (!raw) return null
-  return { id: raw.id ?? null, name: raw.name ?? null, status: raw.status ?? null }
+  return {
+    id: raw.id ?? null,
+    name: raw.name ?? null,
+    year: raw.year ?? null,
+    status: raw.status ?? null,
+  }
+}
+
+function toQueueEntity(raw) {
+  const entity = toEntitySummary(raw)
+  return entity ? { ...entity, level: raw.level ?? null, lastLevel: raw.lastLevel ?? null } : null
 }
 
 export function toQueueRow(raw = {}) {
@@ -35,10 +46,12 @@ export function toQueueRow(raw = {}) {
     id: raw.id ?? null,
     number: raw.number ?? '',
     path: raw.path ?? null,
+    pathLabel: raw.pathLabel ?? null,
     status: toRequestStatus(raw.status),
     isFrozen: raw.isFrozen === true,
-    entity: toEntitySummary(raw.entity),
+    entity: toQueueEntity(raw.entity),
     assessor: toPerson(raw.assessor),
+    isReassigned: raw.isReassigned === true,
     assignedAt: raw.assignedAt ?? null,
     completionDeadline: raw.completionDeadline ?? null,
     awardCycle: toCycleSummary(raw.awardCycle),
@@ -47,9 +60,32 @@ export function toQueueRow(raw = {}) {
   }
 }
 
+// A queue row adds the entity's progress while it still prepares the request.
+export function toQueueListRow(raw = {}) {
+  return {
+    ...toQueueRow(raw),
+    openedAt: raw.openedAt ?? null,
+    lastActivityAt: raw.lastActivityAt ?? null,
+    progress: toProgressSummary(raw.progress),
+    payment: toRequestPayment(raw.payment),
+    periodLabel: raw.periodLabel ?? null,
+    lastRemindedAt: raw.lastRemindedAt ?? null,
+  }
+}
+
+// The client camel-cases the keys (`awaiting_assignment` arrives as `awaitingAssignment`).
+function toStageCounts(raw = {}) {
+  return Object.fromEntries(QUEUE_STAGE_LIST.map((stage) => [stage, raw[toCamelKey(stage)] ?? 0]))
+}
+
 export function toQueueStats(raw) {
   if (!raw) return null
-  return { total: raw.total ?? 0, byStatus: toStatusCounts(raw.byStatus, STATS_STATUSES), overdue: raw.overdue ?? 0 }
+  return {
+    total: raw.total ?? 0,
+    byStatus: toStatusCounts(raw.byStatus, STATS_STATUSES),
+    byStage: toStageCounts(raw.byStage),
+    overdue: raw.overdue ?? 0,
+  }
 }
 
 function toAssignment(raw) {
@@ -62,13 +98,59 @@ function toAssignment(raw) {
     endedAt: raw.endedAt ?? null,
   }
   if (!Object.hasOwn(raw, 'reason')) return assignment
-  return { ...assignment, assignedBy: toPerson(raw.assignedBy), reason: raw.reason ?? null, endReason: raw.endReason ?? null }
+  return {
+    ...assignment,
+    assignedBy: toPerson(raw.assignedBy),
+    reason: raw.reason ?? null,
+    endReason: raw.endReason ?? null,
+  }
+}
+
+function toRequestReceipt(raw) {
+  if (!raw) return null
+  return {
+    id: raw.id ?? null,
+    number: raw.number ?? null,
+    status: raw.status ?? null,
+    isTest: raw.isTest === true,
+  }
+}
+
+export function toRequestPayment(raw) {
+  if (!raw?.status) return null
+  return {
+    id: raw.id ?? null,
+    reference: raw.reference ?? null,
+    channel: raw.channel ?? null,
+    status: raw.status ?? null,
+    isTest: raw.isTest === true,
+    paidAt: raw.paidAt ?? null,
+    receipt: toRequestReceipt(raw.receipt),
+  }
+}
+
+export function toProgressSummary(raw) {
+  if (!raw) return null
+  return { complete: raw.subsComplete ?? 0, total: raw.subsTotal ?? 0 }
+}
+
+// The entity's logo on the request record header: a short-lived link, or null when the viewer may not open it.
+function toEntityLogo(raw) {
+  return raw
+    ? { id: raw.id ?? null, url: raw.url ?? null, uploadedAt: raw.uploadedAt ?? null }
+    : null
 }
 
 export function toRequestDetail(raw = {}) {
+  const row = toQueueRow(raw)
   return {
-    ...toQueueRow(raw),
-    payment: { paid: raw.payment?.paid === true },
+    ...row,
+    entity: row.entity ? { ...row.entity, logo: toEntityLogo(raw.entity?.logo) } : null,
+    hasCertificates: raw.hasCertificates === true,
+    payment: {
+      paid: raw.payment?.paid === true,
+      details: raw.payment?.reference ? toRequestPayment(raw.payment) : null,
+    },
     record: toAssessmentRecord(raw.record),
     assignmentHistory: (raw.assignmentHistory ?? []).map(toAssignment),
     completionRequests: (raw.completionRequests ?? []).map(toCompletionRequest),
@@ -84,12 +166,41 @@ export function toAssignedRow(raw = {}) {
     id: raw.id ?? null,
     number: raw.number ?? '',
     path: raw.path ?? null,
+    pathLabel: raw.pathLabel ?? null,
     status: toRequestStatus(raw.status),
-    entity: raw.entity ? { ...toEntitySummary(raw.entity), region: toPlace(raw.entity.region) } : null,
+    entity: raw.entity
+      ? { ...toEntitySummary(raw.entity), region: toPlace(raw.entity.region) }
+      : null,
     assignedAt: raw.assignedAt ?? null,
     startedAt: raw.startedAt ?? null,
     completionDeadline: raw.completionDeadline ?? null,
     awardCycle: toCycleSummary(raw.awardCycle),
+    reviewProgress: toReviewProgress(raw.reviewProgress),
     ...toClock(raw),
+  }
+}
+
+function toReviewProgress(raw) {
+  return raw ? { scored: raw.scored ?? 0, required: raw.required ?? 0 } : null
+}
+
+export function toQueuePathCount(raw = {}) {
+  return {
+    path: raw.path ?? null,
+    pathLabel: raw.pathLabel ?? null,
+    total: raw.total ?? 0,
+    awaitingAssignment: raw.awaitingAssignment ?? 0,
+    overdue: raw.overdue ?? 0,
+    preparing: raw.preparing ?? 0,
+  }
+}
+
+export function toAssignedPathCount(raw = {}) {
+  return {
+    path: raw.path ?? null,
+    pathLabel: raw.pathLabel ?? null,
+    new: raw.new ?? 0,
+    inProgress: raw.inProgress ?? 0,
+    completed: raw.completed ?? 0,
   }
 }

@@ -8,4 +8,5 @@ enum DemoRecordKind: string
 {
     case Entity = 'entity';
     case User = 'user';
+    case InsightsAssessment = 'insights_assessment';
 }

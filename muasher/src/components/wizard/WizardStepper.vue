@@ -1,5 +1,6 @@
 <script setup>
 import { useI18n } from 'vue-i18n'
+import AppIcon from '@/components/ui/AppIcon.vue'
 
 const props = defineProps({
   steps: { type: Array, required: true },
@@ -20,7 +21,7 @@ function stepState(index) {
 }
 
 function select(index) {
-  if (!props.clickable || index === props.currentIndex) return
+  if (!props.clickable || props.steps[index].disabled || index === props.currentIndex) return
   emit('select', index)
 }
 </script>
@@ -37,12 +38,12 @@ function select(index) {
         type="button"
         class="wizard__button"
         :aria-current="index === currentIndex ? 'step' : undefined"
-        :disabled="!clickable || undefined"
+        :disabled="!clickable || steps[index].disabled || undefined"
         @click="select(index)"
       >
         <span class="wizard__marker" aria-hidden="true">
-          <i v-if="index < currentIndex" class="fa-solid fa-check" aria-hidden="true"></i>
-          <i v-else-if="step.valid === false" class="fa-solid fa-exclamation" aria-hidden="true"></i>
+          <AppIcon v-if="index < currentIndex" name="check" />
+          <AppIcon v-else-if="step.valid === false" name="warning-triangle" />
           <template v-else>{{ index + 1 }}</template>
         </span>
         <span class="wizard__label">{{ step.label }}</span>

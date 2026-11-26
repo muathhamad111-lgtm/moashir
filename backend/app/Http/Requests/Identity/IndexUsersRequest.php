@@ -8,6 +8,7 @@ use App\Actions\Identity\ListStaffUsers;
 use App\Data\Identity\UserListFilters;
 use App\Enums\Identity\RoleKey;
 use App\Enums\Identity\UserStatus;
+use App\Enums\Nda\NdaUserStatus;
 use App\Support\ValueObjects\SearchTerm;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
@@ -21,9 +22,10 @@ final class IndexUsersRequest extends FormRequest
     {
         return [
             'search' => ['nullable', 'string', 'max:100'],
-            'filter' => ['nullable', 'array:role,status'],
+            'filter' => ['nullable', 'array:role,status,nda'],
             'filter.role' => ['nullable', Rule::enum(RoleKey::class)],
             'filter.status' => ['nullable', Rule::enum(UserStatus::class)],
+            'filter.nda' => ['nullable', Rule::in([NdaUserStatus::Pending->value])],
             'sort' => ['nullable', Rule::in(ListStaffUsers::SORTABLE)],
             'page' => ['nullable', 'integer', 'min:1'],
             'per_page' => ['nullable', 'integer', 'min:1', 'max:100'],
@@ -41,6 +43,7 @@ final class IndexUsersRequest extends FormRequest
             is_string($status) ? UserStatus::tryFrom($status) : null,
             $this->filled('sort') ? $this->string('sort')->toString() : 'name',
             $this->integer('per_page', 15),
+            $this->input('filter.nda') === NdaUserStatus::Pending->value,
         );
     }
 }

@@ -23,8 +23,17 @@ final readonly class EntityProfileData
         public ?string $governanceGrade,
         public ?int $employeesCount,
         public ?int $annualBeneficiariesCount,
-        public bool $hasStrategicPlan,
+        public ?bool $hasStrategicPlan,
+        public EntityRegistryUpdate $registry = new EntityRegistryUpdate,
     ) {}
+
+    /**
+     * A validated profile always answers the governance question, and only a "yes" answer carries a grade.
+     */
+    public function hasGovernanceGrade(): bool
+    {
+        return $this->governanceGrade !== null;
+    }
 
     /**
      * @return array<string, mixed>
@@ -39,15 +48,12 @@ final readonly class EntityProfileData
             EntityProfileField::FoundingYear->value => $this->foundingYear,
             EntityProfileField::Region->value => $this->regionId,
             EntityProfileField::City->value => $this->cityId,
+            EntityProfileField::HasGovernanceGrade->value => $this->hasGovernanceGrade(),
             EntityProfileField::GovernanceGrade->value => $this->governanceGrade,
             EntityProfileField::EmployeesCount->value => $this->employeesCount,
             EntityProfileField::AnnualBeneficiariesCount->value => $this->annualBeneficiariesCount,
             EntityProfileField::HasStrategicPlan->value => $this->hasStrategicPlan,
+            ...$this->registry->toAttributes(),
         ];
-    }
-
-    public function isComplete(): bool
-    {
-        return $this->governanceGrade !== null && $this->employeesCount !== null && $this->annualBeneficiariesCount !== null;
     }
 }

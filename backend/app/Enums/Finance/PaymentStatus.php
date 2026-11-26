@@ -8,24 +8,23 @@ enum PaymentStatus: string
 {
     case Created = 'created';
     case Pending = 'pending';
+    case UnderReview = 'under_review';
     case Paid = 'paid';
     case Failed = 'failed';
+    case Rejected = 'rejected';
     case Cancelled = 'cancelled';
     case Refunded = 'refunded';
 
-    public function allowsTransitionTo(self $next): bool
-    {
-        return in_array($next, $this->nextStates(), true);
-    }
+    private const array OPEN = [self::Created, self::Pending, self::UnderReview];
 
     public function isOpen(): bool
     {
-        return in_array($this, [self::Created, self::Pending], true);
+        return in_array($this, self::OPEN, true);
     }
 
     public function isConcluded(): bool
     {
-        return in_array($this, [self::Paid, self::Failed, self::Refunded], true);
+        return in_array($this, [self::Paid, self::Failed, self::Rejected, self::Refunded], true);
     }
 
     public function hasBeenPaid(): bool
@@ -34,24 +33,11 @@ enum PaymentStatus: string
     }
 
     /**
-     * @return list<self>
-     */
-    private function nextStates(): array
-    {
-        return match ($this) {
-            self::Created => [self::Pending, self::Cancelled],
-            self::Pending => [self::Paid, self::Failed, self::Cancelled],
-            self::Paid => [self::Refunded],
-            self::Failed, self::Cancelled, self::Refunded => [],
-        };
-    }
-
-    /**
      * @return list<string>
      */
     public static function openValues(): array
     {
-        return [self::Created->value, self::Pending->value];
+        return array_map(static fn (self $status): string => $status->value, self::OPEN);
     }
 
     /**

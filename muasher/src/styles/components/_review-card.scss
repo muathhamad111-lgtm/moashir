@@ -1,0 +1,647 @@
+@use '../mixins' as *;
+
+// The assessor's review workspace, revision 2 (design/admin-ux §B.3.1): a criteria strip, the
+// score facing each title with its evidence under it, folded CV and feedback, a sticky action bar.
+// Only the assessor page uses these classes; the committee keeps the shared review-sub styles.
+
+// ── Criteria strip ─────────────────────────────────────────────────────────────
+.review-strip {
+  position: sticky;
+  inset-block-start: var(--tts-sidebar-offset, 0);
+  z-index: var(--z-sticky);
+  padding: var(--space-2);
+  border: var(--border-width) solid var(--theme-border);
+  border-radius: var(--radius-lg);
+  background-color: var(--theme-surface);
+}
+
+.review-strip__list {
+  display: flex;
+  gap: var(--space-2);
+  margin: 0;
+  padding: 0;
+  overflow-x: auto;
+  list-style: none;
+  scroll-snap-type: x proximity;
+
+  > li {
+    flex: 1 0 9.5rem;
+    scroll-snap-align: start;
+  }
+}
+
+.review-strip__step {
+  @include flex(row, center, flex-start, var(--space-2));
+  inline-size: 100%;
+  block-size: 100%;
+  padding: var(--space-2);
+  border: var(--border-width) solid var(--theme-border);
+  border-radius: var(--radius-md);
+  background-color: var(--theme-surface);
+  color: var(--theme-text);
+  text-align: start;
+  cursor: pointer;
+
+  &:hover {
+    border-color: var(--theme-accent);
+  }
+
+  &:focus-visible {
+    @include focus-ring;
+  }
+
+  &.is-complete {
+    border-color: var(--theme-success-soft);
+    background-color: var(--theme-success-soft);
+  }
+
+  &.is-partial {
+    border-color: var(--theme-warning-soft);
+    background-color: var(--theme-warning-soft);
+  }
+
+  &.is-current {
+    border-color: var(--theme-accent);
+    box-shadow: 0 0 0 1px var(--theme-accent);
+  }
+}
+
+.review-strip__marker {
+  @include flex(row, center, center);
+  flex: none;
+  inline-size: 1.75rem;
+  block-size: 1.75rem;
+  border: var(--border-width) solid var(--theme-border);
+  border-radius: var(--radius-pill);
+  background-color: var(--theme-surface);
+  font-size: var(--fs-xs);
+  font-weight: var(--fw-body);
+
+  .is-complete & {
+    border-color: var(--theme-success-text);
+    background-color: var(--theme-success-text);
+    color: var(--color-white);
+  }
+
+  .is-partial & {
+    border-color: var(--theme-warning-text);
+    color: var(--theme-warning-text);
+  }
+}
+
+.review-strip__text {
+  @include flex(column, flex-start, flex-start, var(--space-0));
+  min-inline-size: 0;
+}
+
+.review-strip__name {
+  display: -webkit-box;
+  overflow: hidden;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  font-size: var(--fs-sm);
+  font-weight: var(--fw-emphasis);
+  line-height: var(--lh-tight);
+  color: var(--theme-heading);
+}
+
+.review-strip__meta {
+  font-size: var(--fs-xs);
+  color: var(--theme-text-secondary);
+}
+
+// ── Criterion header and cards ─────────────────────────────────────────────────
+.review-criterion {
+  @include flex(column, stretch, flex-start, var(--space-4));
+}
+
+.review-criterion__head {
+  @include flex(row, center, space-between, var(--space-3));
+  flex-wrap: wrap;
+  padding: var(--space-4);
+  border: var(--border-width) solid var(--theme-border);
+  border-radius: var(--radius-lg);
+  background-color: var(--theme-surface);
+}
+
+.review-criterion__position {
+  margin: 0;
+  font-size: var(--fs-sm);
+  color: var(--theme-text-secondary);
+}
+
+.review-criterion__title {
+  margin: 0;
+  font-size: var(--fs-xl);
+  font-weight: var(--fw-heading);
+  color: var(--theme-heading);
+}
+
+.review-criterion__subs {
+  @include flex(column, stretch, flex-start, var(--space-4));
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.review-card.review-sub {
+  gap: 0;
+  padding: 0;
+  overflow: hidden;
+  border: var(--border-width) solid var(--theme-border);
+  border-radius: var(--radius-lg);
+  background-color: var(--theme-surface);
+
+  &:not(:last-child) {
+    border-block-end: var(--border-width) solid var(--theme-border);
+  }
+}
+
+// The title on the start side, the score (or the indicator count) facing it on the end side.
+.review-card__head,
+.review-item__head {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: var(--space-3);
+  align-items: start;
+
+  @include respond-to('md') {
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    align-items: center;
+  }
+}
+
+.review-card__head {
+  padding: var(--space-4);
+
+  .review-card.is-scored > & {
+    background-color: var(--theme-success-soft);
+  }
+}
+
+.review-card__control,
+.review-card__count,
+.review-item__control {
+  grid-column: 1 / -1;
+  justify-self: start;
+
+  @include respond-to('md') {
+    grid-column: auto;
+    justify-self: end;
+  }
+}
+
+.review-card__heading,
+.review-item__text {
+  min-inline-size: 0;
+}
+
+.review-card__title {
+  @include flex(row, center, flex-start, var(--space-2));
+  flex-wrap: wrap;
+  margin: 0;
+  font-size: var(--fs-lg);
+  font-weight: var(--fw-heading);
+  color: var(--theme-heading);
+}
+
+.review-card__meta,
+.review-item__meta {
+  @include flex(row, center, flex-start, var(--space-1) var(--space-3));
+  flex-wrap: wrap;
+  margin: var(--space-1) 0 0;
+  font-size: var(--fs-sm);
+  color: var(--theme-text-secondary);
+}
+
+.review-card__count {
+  padding: var(--space-1) var(--space-3);
+  border-radius: var(--radius-pill);
+  background-color: var(--theme-surface-raised);
+  font-size: var(--fs-sm);
+  font-weight: var(--fw-figure);
+  color: var(--theme-text);
+}
+
+.review-card__body {
+  @include flex(column, stretch, flex-start, var(--space-4));
+  padding: var(--space-4);
+  border-block-start: var(--border-width) solid var(--theme-border);
+}
+
+.review-card__section {
+  @include flex(column, stretch, flex-start, var(--space-2));
+}
+
+.review-card__label {
+  margin: 0;
+  font-size: var(--fs-sm);
+  font-weight: var(--fw-body);
+  color: var(--theme-text-secondary);
+}
+
+.review-card__items {
+  @include flex(column, stretch, flex-start, var(--space-3));
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+// A circle before each title: empty while it waits, a green check once scored.
+.review-state {
+  @include flex(row, center, center);
+  flex: none;
+  inline-size: 1.75rem;
+  block-size: 1.75rem;
+  border: var(--border-width-thick) dashed var(--theme-border-strong);
+  border-radius: var(--radius-pill);
+  color: var(--color-white);
+
+  &.is-done {
+    border-style: solid;
+    border-color: var(--theme-success-text);
+    background-color: var(--theme-success-text);
+  }
+}
+
+// ── Indicator rows ─────────────────────────────────────────────────────────────
+.review-item {
+  @include flex(column, stretch, flex-start, var(--space-3));
+  padding: var(--space-3) var(--space-4);
+  border: var(--border-width) solid var(--theme-border);
+  border-radius: var(--radius-md);
+  background-color: var(--theme-surface);
+
+  &.is-scored {
+    border-color: var(--theme-success-soft);
+    background-color: var(--theme-success-soft);
+  }
+}
+
+.review-item__title {
+  margin: 0;
+  font-weight: var(--fw-heading);
+  color: var(--theme-heading);
+}
+
+.review-item__sr {
+  @include visually-hidden;
+}
+
+// ── Score controls ─────────────────────────────────────────────────────────────
+.review-score {
+  @include flex(row, center, flex-end, var(--space-2));
+  flex-wrap: wrap;
+}
+
+.review-score__percent {
+  min-inline-size: 3.5rem;
+  padding: var(--space-1) var(--space-2);
+  border-radius: var(--radius-md);
+  background-color: var(--theme-surface-raised);
+  font-weight: var(--fw-figure);
+  text-align: center;
+  color: var(--theme-heading);
+}
+
+.review-score__unsaved {
+  padding: var(--space-1) var(--space-2);
+  border-radius: var(--radius-md);
+  background-color: var(--theme-warning-soft);
+  font-size: var(--fs-xs);
+  font-weight: var(--fw-figure);
+  color: var(--theme-warning-text);
+}
+
+.review-score__box {
+  @include flex(row, center, flex-start, 0);
+  border: var(--border-width) solid var(--theme-border);
+  border-radius: var(--radius-md);
+  background-color: var(--theme-surface);
+  direction: ltr;
+
+  &:focus-within {
+    border-color: var(--theme-accent);
+  }
+
+  &.has-error {
+    border-color: var(--theme-danger-text);
+  }
+}
+
+.review-score__step {
+  @include flex(row, center, center);
+  inline-size: var(--size-touch-target);
+  block-size: var(--size-touch-target);
+  border: 0;
+  background: transparent;
+  color: var(--theme-text);
+  cursor: pointer;
+
+  &:disabled {
+    opacity: var(--opacity-disabled);
+    cursor: not-allowed;
+  }
+
+  &:focus-visible {
+    @include focus-ring;
+  }
+}
+
+.review-score__label {
+  @include visually-hidden;
+}
+
+.review-score__input {
+  inline-size: 3.5rem;
+  border: 0;
+  background: transparent;
+  font-size: var(--fs-lg);
+  font-weight: var(--fw-figure);
+  text-align: center;
+  color: var(--theme-heading);
+
+  &:focus {
+    outline: none;
+  }
+}
+
+.review-score__max {
+  padding-inline-end: var(--space-1);
+  font-size: var(--fs-sm);
+  color: var(--theme-text-secondary);
+}
+
+.review-score__error {
+  flex-basis: 100%;
+  text-align: end;
+}
+
+.review-achievement {
+  @include flex(row, center, flex-end, var(--space-2));
+  flex-wrap: wrap;
+}
+
+.review-achievement__options {
+  @include flex(row, center, flex-end, var(--space-2));
+}
+
+.review-achievement__option {
+  @include flex(row, center, center, var(--space-2));
+  min-block-size: var(--size-touch-target);
+  padding-inline: var(--space-4);
+  border: var(--border-width) solid var(--theme-border);
+  border-radius: var(--radius-md);
+  background-color: var(--theme-surface);
+  font-weight: var(--fw-body);
+  color: var(--theme-text);
+  cursor: pointer;
+
+  &:focus-visible {
+    @include focus-ring;
+  }
+
+  &:disabled {
+    opacity: var(--opacity-disabled);
+    cursor: not-allowed;
+  }
+}
+
+.review-achievement__option--achieved[aria-checked='true'] {
+  border-color: var(--theme-success-text);
+  background-color: var(--theme-success-text);
+  color: var(--color-white);
+}
+
+.review-achievement__option--notAchieved[aria-checked='true'] {
+  border-color: var(--theme-danger-text);
+  background-color: var(--theme-danger-soft);
+  color: var(--theme-danger-text);
+}
+
+// ── Evidence rows ──────────────────────────────────────────────────────────────
+.review-rows {
+  @include flex(column, stretch, flex-start, var(--space-2));
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.review-rows__row {
+  display: grid;
+  gap: var(--space-2);
+  align-items: center;
+  padding: var(--space-2) var(--space-3);
+  border: var(--border-width) solid var(--theme-border);
+  border-radius: var(--radius-md);
+  background-color: var(--theme-surface);
+
+  @include respond-to('md') {
+    grid-template-columns: minmax(0, 2fr) minmax(0, 3fr);
+  }
+}
+
+.review-rows__name {
+  @include flex(row, center, flex-start, var(--space-2));
+  flex-wrap: wrap;
+  margin: 0;
+  font-size: var(--fs-sm);
+  font-weight: var(--fw-emphasis);
+  color: var(--theme-heading);
+}
+
+.review-rows__missing {
+  @include flex(row, center, flex-start, var(--space-2));
+  margin: 0;
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius-md);
+  background-color: var(--theme-danger-soft);
+  font-size: var(--fs-sm);
+  color: var(--theme-danger-text);
+}
+
+// Each file on one line inside its row: type, name, size, download.
+.review-rows__files {
+  grid-template-columns: minmax(0, 1fr);
+  margin: 0;
+
+  // On a narrow column the name keeps its room: the card wraps instead of hiding it.
+  .review-evidence__card {
+    flex-wrap: wrap;
+    padding-block: var(--space-1);
+
+    @include respond-to('md') {
+      flex-wrap: nowrap;
+    }
+  }
+
+  .review-evidence__meta {
+    flex: 1 1 8rem;
+    flex-direction: row;
+    align-items: baseline;
+    gap: var(--space-2);
+  }
+
+  .review-evidence__size {
+    display: inline;
+    flex: none;
+    margin: 0;
+    font-size: var(--fs-xs);
+    color: var(--theme-text-secondary);
+  }
+}
+
+// ── Folded text and feedback ───────────────────────────────────────────────────
+.review-folded {
+  padding: var(--space-3);
+  border-radius: var(--radius-md);
+  background-color: var(--theme-surface-raised);
+}
+
+.review-folded__title {
+  margin: 0 0 var(--space-1);
+  font-size: var(--fs-sm);
+  font-weight: var(--fw-heading);
+  color: var(--theme-text-secondary);
+}
+
+.review-folded__text {
+  margin: 0;
+  line-height: var(--lh-relaxed);
+  color: var(--theme-text);
+  white-space: pre-line;
+
+  &.is-folded {
+    display: -webkit-box;
+    overflow: hidden;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+  }
+}
+
+.review-folded__empty {
+  margin: 0;
+  font-size: var(--fs-sm);
+  color: var(--theme-text-secondary);
+}
+
+.review-folded__toggle {
+  margin-block-start: var(--space-1);
+  padding: 0;
+  border: 0;
+  background: none;
+  font-weight: var(--fw-body);
+  color: var(--theme-accent-text);
+  text-decoration: underline;
+  cursor: pointer;
+
+  &:focus-visible {
+    @include focus-ring;
+  }
+}
+
+.review-feedback-fold {
+  border: var(--border-width) solid var(--theme-border);
+  border-radius: var(--radius-md);
+
+  > .review-feedback {
+    padding: 0 var(--space-4) var(--space-4);
+  }
+}
+
+.review-feedback-fold__summary {
+  @include flex(row, center, flex-start, var(--space-2));
+  padding: var(--space-3) var(--space-4);
+  cursor: pointer;
+  list-style: none;
+
+  &::-webkit-details-marker {
+    display: none;
+  }
+
+  &:focus-visible {
+    @include focus-ring;
+  }
+}
+
+.review-feedback-fold__chevron {
+  transition: transform var(--t-fast) var(--ease);
+
+  .review-feedback-fold[open] & {
+    transform: rotate(180deg);
+  }
+}
+
+.review-feedback-fold__title {
+  font-weight: var(--fw-heading);
+  color: var(--theme-heading);
+}
+
+.review-feedback-fold__count {
+  margin-inline-start: auto;
+  font-size: var(--fs-sm);
+  color: var(--theme-text-secondary);
+}
+
+// ── Sticky action bar ──────────────────────────────────────────────────────────
+.review-actions--sticky {
+  @include respond-to('md') {
+    position: sticky;
+    inset-block-end: var(--space-4);
+    z-index: var(--z-sticky);
+  }
+}
+
+.review-actions__nav,
+.review-actions__main {
+  @include flex(row, center, flex-start, var(--space-2));
+  flex-wrap: wrap;
+}
+
+// A long criterion name in «التالي: …» shortens instead of wrapping the bar.
+.review-actions__next {
+  display: inline-block;
+  max-inline-size: 13rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  vertical-align: bottom;
+}
+
+// An indicator of a directly evaluated sub-criterion: text and evidence, no score of its own.
+.review-item--descriptive {
+  gap: var(--space-2);
+}
+
+.review-card__hint {
+  margin: 0;
+  font-size: var(--fs-sm);
+  color: var(--theme-text-muted);
+}
+
+// An achievement item marked «غير متحقق» reads red, so met and unmet items differ at a glance (operator 2026-11-22).
+// CSS only: the card follows the checked «غير متحقق» option of its own achievement control.
+.review-card.is-scored:has(
+    > .review-card__head .review-achievement__option--notAchieved[aria-checked='true']
+  ) {
+  border-color: var(--color-danger-light);
+
+  > .review-card__head {
+    background-color: var(--theme-danger-soft);
+  }
+
+  > .review-card__head .review-state.is-done {
+    border-color: var(--theme-danger-text);
+    background-color: var(--theme-danger-text);
+
+    svg {
+      display: none;
+    }
+
+    &::after {
+      content: '×';
+      font-weight: var(--fw-figure);
+      line-height: 1;
+    }
+  }
+}

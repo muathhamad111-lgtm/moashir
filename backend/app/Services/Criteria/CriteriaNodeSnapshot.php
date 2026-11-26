@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace App\Services\Criteria;
 
-use App\Models\Criteria\AttachmentRequirement;
 use App\Models\Criteria\GuidingPoint;
 use App\Models\Criteria\MainCriterion;
 use App\Models\Criteria\SubCriterion;
+use App\Support\Criteria\AttachmentRequirementShape;
 
 final class CriteriaNodeSnapshot
 {
@@ -23,6 +23,8 @@ final class CriteriaNodeSnapshot
             'weight' => $main->weight->toDecimal(),
             'distribute_equally' => $main->distribute_equally,
             'group' => $main->group->value,
+            'default_scoring_type' => $main->default_scoring_type->value,
+            'attachments' => $this->attachmentsOf($main),
             'active' => $main->is_active,
             'order' => $main->sort_order,
         ];
@@ -40,6 +42,8 @@ final class CriteriaNodeSnapshot
             'weight' => $sub->weight->toDecimal(),
             'distribute_equally' => $sub->distribute_equally,
             'evaluation_type' => $sub->evaluation_type->value,
+            'scoring_type' => $sub->scoring_type->value,
+            'default_point_scoring_type' => $sub->default_point_scoring_type->value,
             'has_cv' => $sub->has_cv,
             'assessor_note_label' => $sub->assessor_note_label?->toArray(),
             'active' => $sub->is_active,
@@ -56,7 +60,8 @@ final class CriteriaNodeSnapshot
         return [
             'code' => $point->code,
             'description' => $point->description->toArray(),
-            'weight' => $point->weight->toDecimal(),
+            'weight' => $point->weight?->toDecimal(),
+            'scoring_type' => $point->scoring_type->value,
             'active' => $point->is_active,
             'order' => $point->sort_order,
             'attachments' => $this->attachmentsOf($point),
@@ -64,18 +69,14 @@ final class CriteriaNodeSnapshot
     }
 
     /**
-     * @return list<array{key: string, name: array{ar: string, en: string}, required: bool}>
+     * @return list<array<string, mixed>>
      */
-    private function attachmentsOf(SubCriterion|GuidingPoint $owner): array
+    private function attachmentsOf(MainCriterion|SubCriterion|GuidingPoint $owner): array
     {
         $requirements = $owner->relationLoaded('attachmentRequirements')
             ? $owner->attachmentRequirements
             : $owner->attachmentRequirements()->get();
 
-        return array_values($requirements->map(static fn (AttachmentRequirement $requirement): array => [
-            'key' => $requirement->key,
-            'name' => $requirement->name->toArray(),
-            'required' => $requirement->is_required,
-        ])->all());
+        return array_values($requirements->map(AttachmentRequirementShape::of(...))->all());
     }
 }

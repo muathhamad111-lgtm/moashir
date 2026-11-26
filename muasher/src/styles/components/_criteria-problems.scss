@@ -18,7 +18,7 @@
 .criteria-problems__title {
   margin: 0;
   font-size: var(--fs-base);
-  font-weight: var(--fw-bold);
+  font-weight: var(--fw-heading);
 }
 
 .criteria-problems__list {
@@ -42,17 +42,6 @@
   color: var(--theme-text);
 }
 
-.criteria-problems__code {
-  padding-block: var(--space-1);
-  padding-inline: var(--space-2);
-  border-radius: var(--radius-sm);
-  background-color: var(--theme-surface-raised);
-  border: var(--border-width) solid var(--theme-border);
-  font-family: var(--font-latin);
-  font-weight: var(--fw-semibold);
-  direction: ltr;
-}
-
 .criteria-problems__text {
   flex: 1 1 var(--size-control-min);
   font-size: var(--fs-sm);
@@ -62,7 +51,7 @@
   @include flex(row, center, flex-start, var(--space-1));
   min-block-size: var(--size-touch-target);
   color: var(--theme-accent-text);
-  font-weight: var(--fw-semibold);
+  font-weight: var(--fw-body);
   text-decoration: underline;
 
   &:focus-visible {

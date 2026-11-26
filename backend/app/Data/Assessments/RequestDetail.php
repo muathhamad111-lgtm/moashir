@@ -19,5 +19,7 @@ final readonly class RequestDetail
         public array $completionRequests,
         public bool $revealsStaffIdentities,
         public bool $isPaid,
+        public ?BoundSubCriteria $subs,
+        public bool $hasCertificates,
     ) {}
 }

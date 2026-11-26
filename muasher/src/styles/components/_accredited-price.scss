@@ -7,7 +7,7 @@
 .accredited-price__title {
   margin: 0;
   font-size: var(--fs-lg);
-  font-weight: var(--fw-semibold);
+  font-weight: var(--fw-heading);
   color: var(--theme-heading);
 }
 
@@ -28,7 +28,7 @@
   font-size: var(--fs-sm);
   color: var(--theme-text);
 
-  i {
+  .app-icon {
     margin-block-start: var(--space-1);
     color: var(--color-info);
   }

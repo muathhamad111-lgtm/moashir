@@ -23,25 +23,32 @@ const { submitting, submit } = useManualSettle(props.transaction.id, {
   },
 })
 
-const statusOptions = computed(() => MANUAL_SETTLE_RULES.STATUSES.map((value) => ({ value, label: t(`finance.settle.statuses.${value}`) })))
+const statusOptions = computed(() =>
+  MANUAL_SETTLE_RULES.STATUSES.map((value) => ({
+    value,
+    label: t(`finance.settle.statuses.${value}`),
+  })),
+)
 </script>
 
 <template>
   <FormModal
     :model-value="modelValue"
     :title="t('finance.settle.title')"
+    :subtitle="transaction.reference"
     :busy="submitting"
     :submit-label="t('finance.settle.submit')"
     @update:model-value="emit('update:modelValue', $event)"
     @submit="submit"
   >
     <div class="settle-form">
-      <p class="settle-form__lead" role="note">
-        <i class="fa-solid fa-user-shield" aria-hidden="true"></i>
-        {{ t('finance.settle.lead', { reference: transaction.reference }) }}
-      </p>
       <FieldRadio name="status" :label="t('finance.settle.status')" :options="statusOptions" />
-      <FieldInput name="providerPaymentId" :label="t('finance.settle.providerPaymentId')" :hint="t('finance.settle.providerPaymentIdHint')" input-dir="ltr" />
+      <FieldInput
+        name="providerPaymentId"
+        :label="t('finance.settle.providerPaymentId')"
+        :hint="t('finance.settle.providerPaymentIdHint')"
+        input-dir="ltr"
+      />
       <FieldTextarea
         name="reason"
         :label="t('finance.settle.reason')"

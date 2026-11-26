@@ -8,22 +8,27 @@ import {
   subsOf,
   versionWithStatus,
 } from './criteriaStore'
-import { activeTotal, scoresGuidingPoints } from './criteriaRules'
+import { activeTotal } from './criteriaRules'
 
 const PUBLIC_MODEL_FIELDS = ['id', 'code', 'order', 'group', 'name', 'description']
 
-function attachmentResource(item) {
+function attachmentShape(item) {
   return {
-    id: item.id,
     key: item.key,
     name: { ...item.name },
+    guidance: item.guidance ? { ...item.guidance } : null,
     required: item.required,
-    order: item.order,
+    allowedTypes: item.allowedTypes ? [...item.allowedTypes] : null,
+    maxFiles: item.maxFiles ?? null,
   }
 }
 
+function attachmentResource(item) {
+  return { id: item.id, ...attachmentShape(item), order: item.order }
+}
+
 function treeAttachment(item) {
-  return { key: item.key, name: { ...item.name }, required: item.required }
+  return attachmentShape(item)
 }
 
 export function versionResource(version) {
@@ -49,6 +54,11 @@ export function versionSummary(version) {
         versionNumber: version.versionNumber,
         status: version.status,
         label: version.label,
+        activeWeightTotal: fromHundredths(
+          mainsOf(version.id)
+            .filter((main) => main.active)
+            .reduce((total, main) => total + main.weight, 0),
+        ),
       }
     : null
 }
@@ -65,6 +75,8 @@ export function mainResource(main) {
     weight: fromHundredths(main.weight),
     distributeEqually: main.distributeEqually,
     group: main.group,
+    defaultScoringType: main.defaultScoringType,
+    attachments: attachmentsOf('main', main.id).map(attachmentResource),
     active: main.active,
     order: main.order,
     subCount: subs.length,
@@ -87,6 +99,8 @@ export function subResource(sub) {
     weight: fromHundredths(sub.weight),
     distributeEqually: sub.distributeEqually,
     evaluationType: sub.evaluationType,
+    scoringType: sub.scoringType,
+    defaultPointScoringType: sub.defaultPointScoringType,
     hasCv: sub.hasCv,
     assessorNoteLabel: sub.assessorNoteLabel ? { ...sub.assessorNoteLabel } : null,
     attachments: attachmentsOf('sub', sub.id).map(attachmentResource),
@@ -106,7 +120,8 @@ export function pointResource(point) {
     subCriterionId: point.subId,
     code: point.code,
     description: { ...point.description },
-    weight: fromHundredths(point.weight),
+    weight: point.weight === null ? null : fromHundredths(point.weight),
+    scoringType: point.scoringType,
     active: point.active,
     order: point.order,
     attachments: attachmentsOf('point', point.id).map(attachmentResource),
@@ -119,7 +134,8 @@ function treePoint(point) {
     code: point.code,
     order: point.order,
     description: { ...point.description },
-    weight: fromHundredths(point.weight),
+    weight: point.weight === null ? null : fromHundredths(point.weight),
+    scoringType: point.scoringType,
     attachments: attachmentsOf('point', point.id).map(treeAttachment),
   }
 }
@@ -133,14 +149,13 @@ function treeSub(sub) {
     description: sub.description ? { ...sub.description } : null,
     weight: fromHundredths(sub.weight),
     evaluationType: sub.evaluationType,
+    scoringType: sub.scoringType,
     hasCv: sub.hasCv,
     assessorNoteLabel: sub.assessorNoteLabel ? { ...sub.assessorNoteLabel } : null,
     attachments: attachmentsOf('sub', sub.id).map(treeAttachment),
-    points: scoresGuidingPoints(sub)
-      ? pointsOf(sub.id)
-          .filter((point) => point.active)
-          .map(treePoint)
-      : [],
+    points: pointsOf(sub.id)
+      .filter((point) => point.active)
+      .map(treePoint),
   }
 }
 
@@ -153,6 +168,7 @@ function treeMain(main) {
     name: { ...main.name },
     description: main.description ? { ...main.description } : null,
     weight: fromHundredths(main.weight),
+    attachments: attachmentsOf('main', main.id).map(treeAttachment),
     subs: subsOf(main.id)
       .filter((sub) => sub.active)
       .map(treeSub),
@@ -170,6 +186,21 @@ export function versionTree(version) {
     publishedAt: version.publishedAt,
     totalWeight: fromHundredths(activeTotal(mains)),
     mains: mains.filter((main) => main.active).map(treeMain),
+  }
+}
+
+export function workspaceTree(version) {
+  const mains = mainsOf(version.id)
+  return {
+    version: versionResource(version),
+    activeWeightTotal: fromHundredths(activeTotal(mains)),
+    mains: mains.map((main) => ({
+      ...mainResource(main),
+      subs: subsOf(main.id).map((sub) => ({
+        ...subResource(sub),
+        points: pointsOf(sub.id).map(pointResource),
+      })),
+    })),
   }
 }
 

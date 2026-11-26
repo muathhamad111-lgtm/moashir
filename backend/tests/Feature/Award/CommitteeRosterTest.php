@@ -200,7 +200,8 @@ it('lets only the committee managers of the cycle change the roster', function (
     $seat = seatOf($scenario['cycle'], $scenario['assessors'][0]);
     $otherCycleSecretary = awardSecretary();
 
-    switchTo($otherCycleSecretary)->postJson(committeePath($scenario['cycle'], "members/{$seat->id}/disable"), ['reason' => COMMITTEE_DISABLE_REASON])->assertNotFound();
+    // Operator 2026-11-22: every Award Secretary reads every cycle; only the cycle's own secretaries act (403, not 404).
+    switchTo($otherCycleSecretary)->postJson(committeePath($scenario['cycle'], "members/{$seat->id}/disable"), ['reason' => COMMITTEE_DISABLE_REASON])->assertForbidden();
     switchTo($scenario['assessors'][0])->postJson(committeePath($scenario['cycle'], "members/{$seat->id}/disable"), ['reason' => COMMITTEE_DISABLE_REASON])->assertForbidden();
     switchTo(superAdmin())->postJson(committeePath($scenario['cycle'], "members/{$seat->id}/disable"), ['reason' => COMMITTEE_DISABLE_REASON])->assertOk();
     expect(Assessment::query()->count())->toBeGreaterThan(0);

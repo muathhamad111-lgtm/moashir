@@ -1,28 +1,35 @@
 import { ref } from 'vue'
 import { assessmentsService } from '@/services/assessmentsService'
+import { usePagination } from '@/composables/usePagination'
 
-const RECENT_LIMIT = 10
+const PER_PAGE = 15
 
+// Every assessment request of one entity, newest first, a page at a time.
 export function useEntityAssessments(entityId) {
+  const paginator = usePagination({ perPage: PER_PAGE })
   const status = ref('loading')
   const items = ref([])
-  const total = ref(0)
 
   async function load() {
     status.value = 'loading'
     try {
-      const { data, meta } = await assessmentsService.list({
+      const envelope = await assessmentsService.list({
         'filter[entityId]': entityId.value,
         sort: '-created_at',
-        perPage: RECENT_LIMIT,
+        ...paginator.toParams(),
       })
-      items.value = data
-      total.value = meta?.pagination?.total ?? data.length
-      status.value = data.length ? 'success' : 'empty'
+      items.value = envelope.data
+      paginator.applyMeta(envelope.meta)
+      status.value = items.value.length ? 'success' : 'empty'
     } catch {
       status.value = 'error'
     }
   }
 
-  return { status, items, total, load }
+  function goTo(page) {
+    paginator.setPage(page)
+    return load()
+  }
+
+  return { status, items, pagination: paginator.pagination, load, goTo }
 }

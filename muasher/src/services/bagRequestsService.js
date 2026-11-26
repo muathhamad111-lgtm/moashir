@@ -4,11 +4,9 @@ import { serviceRequest } from './serviceRequest'
 
 export const bagRequestsService = {
   list(params = {}) {
-    return serviceRequest(
-      'bagRequests.list',
-      () => apiClient.get('/bag/requests', { params }),
-      { entity: 'bagRequests' },
-    )
+    return serviceRequest('bagRequests.list', () => apiClient.get('/bag/requests', { params }), {
+      entity: 'bagRequests',
+    })
   },
 
   listEvaluators(params = {}) {
@@ -28,11 +26,9 @@ export const bagRequestsService = {
   },
 
   get(requestId) {
-    return serviceRequest(
-      'bagRequests.get',
-      () => apiClient.get(`/bag/requests/${requestId}`),
-      { entity: 'bagRequests' },
-    )
+    return serviceRequest('bagRequests.get', () => apiClient.get(`/bag/requests/${requestId}`), {
+      entity: 'bagRequests',
+    })
   },
 
   assign(requestId, payload) {

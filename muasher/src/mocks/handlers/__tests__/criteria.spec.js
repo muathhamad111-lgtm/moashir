@@ -66,11 +66,15 @@ describe('criteria mock — authorization mirrors the backend abilities', () => 
     expect(denied.body.code).toBe('forbidden')
   })
 
-  it('lets the System Administrator read and publish but never edit the tree', async () => {
+  it('lets the System Administrator open a draft and edit the tree like the Criteria Officer', async () => {
     as(SYSTEM_ADMIN)
     expect((await call('GET', '/criteria/mains')).status).toBe(200)
-    expect((await call('POST', '/criteria/versions', {})).status).toBe(403)
-    expect((await call('PUT', '/criteria/mains/1', { weight: '10' })).status).toBe(403)
+    expect((await call('POST', '/criteria/versions', {})).status).toBe(201)
+    const created = await call('POST', '/criteria/mains', {
+      name: { ar: 'معيار', en: 'Criterion' },
+      weight: '10',
+    })
+    expect(created.status).toBe(201)
   })
 })
 
@@ -103,6 +107,34 @@ describe('criteria mock — versions and the published seed', () => {
     const mains = await draftMains()
     expect(mains[0]).toMatchObject({ code: 'M1', versionId: draft.id })
     expect(mains[0].id).not.toBe(1)
+  })
+
+  it('serves the whole draft tree with inactive nodes for the workspace', async () => {
+    const draft = await openDraft()
+    const firstMain = (await draftMains())[0]
+    await call('PATCH', `/criteria/mains/${firstMain.id}/active`, { active: false })
+    const tree = await call('GET', `/criteria/versions/${draft.id}/tree`)
+    expect(tree.status).toBe(200)
+    expect(tree.body.data.version).toMatchObject({ id: draft.id, status: 'draft' })
+    expect(tree.body.data.mains).toHaveLength(9)
+    expect(tree.body.data.mains[0]).toMatchObject({ code: 'M1', active: false })
+    expect(tree.body.data.mains[0].subs[0].points.length).toBeGreaterThan(0)
+  })
+
+  it('stores the scoring types and applies one to every indicator of a sub-criterion', async () => {
+    await openDraft()
+    const main = (await draftMains())[0]
+    const detail = await call('GET', `/criteria/mains/${main.id}`)
+    const guided = detail.body.data.subs.find((sub) => sub.evaluationType === 'guiding-points')
+    expect(guided).toMatchObject({ scoringType: 'score', defaultPointScoringType: 'score' })
+    const path = `/criteria/subs/${guided.id}/points/scoring-type`
+    const applied = await call('PUT', path, { scoringType: 'achievement' })
+    expect(applied.status).toBe(200)
+    expect(applied.body.data.sub.defaultPointScoringType).toBe('achievement')
+    expect(applied.body.data.points.every((point) => point.scoringType === 'achievement')).toBe(
+      true,
+    )
+    expect((await call('PUT', path, {})).status).toBe(422)
   })
 
   it('discards a draft but never a published version', async () => {
@@ -149,22 +181,70 @@ describe('criteria mock — weight guards', () => {
     expect(detail.body.data.subs.map((sub) => sub.weight)).toEqual(['333.34', '333.33', '333.33'])
   })
 
-  it('needs a confirmation with the point count before switching to direct evaluation', async () => {
+  it('saves several sub-criterion weights in one atomic request', async () => {
+    await openDraft()
+    const [main] = await draftMains()
+    const subs = (await call('GET', `/criteria/mains/${main.id}`)).body.data.subs
+    const over = await call('PUT', `/criteria/mains/${main.id}/subs/weights`, {
+      weights: [{ id: subs[2].id, weight: '400.00' }],
+    })
+    expect(over.status).toBe(422)
+    expect(over.body).toMatchObject({
+      code: 'criteria.weights_exceed_parent',
+      meta: { total: '1150.00', capacity: '1000.00' },
+    })
+    const saved = await call('PUT', `/criteria/mains/${main.id}/subs/weights`, {
+      weights: [
+        { id: subs[0].id, weight: '450.00' },
+        { id: subs[2].id, weight: '200.00' },
+      ],
+    })
+    expect(saved.status).toBe(200)
+    expect(saved.body.data.map((sub) => sub.weight)).toEqual(['450.00', '350.00', '200.00'])
+  })
+
+  it('saves guiding-point weights in one request and refuses them under equal distribution', async () => {
+    await openDraft()
+    const [main] = await draftMains()
+    const subs = (await call('GET', `/criteria/mains/${main.id}`)).body.data.subs
+    const points = (await call('GET', `/criteria/subs/${subs[1].id}`)).body.data.points
+    const saved = await call('PUT', `/criteria/subs/${subs[1].id}/points/weights`, {
+      weights: [
+        { id: points[0].id, weight: '150.00' },
+        { id: points[1].id, weight: '200.00' },
+      ],
+    })
+    expect(saved.body.data.map((point) => point.weight)).toEqual(['150.00', '200.00'])
+    const foreign = await call('PUT', `/criteria/subs/${subs[0].id}/points/weights`, {
+      weights: [{ id: points[0].id, weight: '100.00' }],
+    })
+    expect(foreign.body.code).toBe('criteria.weights_distributed_equally')
+  })
+
+  it('keeps the indicators without weights on direct evaluation and splits them equally back', async () => {
     await openDraft()
     const [main] = await draftMains()
     const sub = (await call('GET', `/criteria/mains/${main.id}`)).body.data.subs[0]
-    const warned = await call('PATCH', `/criteria/subs/${sub.id}/evaluation-type`, {
+    const direct = await call('PATCH', `/criteria/subs/${sub.id}/evaluation-type`, {
       evaluationType: 'direct',
     })
-    expect(warned.body).toMatchObject({
-      code: 'criteria.points_confirm_required',
-      meta: { impact: { pointCount: 3 } },
+    expect(direct.body.data).toMatchObject({ evaluationType: 'direct', pointCount: 3 })
+    const unweighted = (await call('GET', `/criteria/subs/${sub.id}`)).body.data.points
+    expect(unweighted.map((point) => point.weight)).toEqual([null, null, null])
+
+    const added = await call('POST', `/criteria/subs/${sub.id}/points`, {
+      description: { ar: 'مؤشر وصفي', en: 'Descriptive indicator' },
+      weight: '50.00',
     })
-    const switched = await call('PATCH', `/criteria/subs/${sub.id}/evaluation-type`, {
-      evaluationType: 'direct',
-      confirmDeletePoints: true,
+    expect(added.status).toBe(201)
+    expect(added.body.data.point.weight).toBeNull()
+
+    const back = await call('PATCH', `/criteria/subs/${sub.id}/evaluation-type`, {
+      evaluationType: 'guiding-points',
     })
-    expect(switched.body.data).toMatchObject({ evaluationType: 'direct', pointCount: 0 })
+    expect(back.body.data).toMatchObject({ distributeEqually: true, pointCount: 4 })
+    const shared = (await call('GET', `/criteria/subs/${sub.id}`)).body.data.points
+    expect(shared.every((point) => point.weight !== null)).toBe(true)
   })
 
   it('rejects an incomplete reorder', async () => {
@@ -195,6 +275,90 @@ describe('criteria mock — publish with scope and text corrections', () => {
       problem: 'weights_mismatch',
       expectedWeight: '1000.00',
       actualWeight: '750.00',
+    })
+  })
+
+  it('blocks a publish while guiding points use less than their sub-criterion weight', async () => {
+    const draft = await openDraft()
+    const [main] = await draftMains()
+    const sub = (await call('GET', `/criteria/mains/${main.id}`)).body.data.subs[1]
+    const points = (await call('GET', `/criteria/subs/${sub.id}`)).body.data.points
+    await call('PATCH', `/criteria/points/${points[0].id}/active`, { active: false })
+    as(SYSTEM_ADMIN)
+    const rejected = await call('POST', `/criteria/versions/${draft.id}/publish`, {
+      confirm: true,
+      scope: 'all',
+    })
+    expect(rejected.status).toBe(422)
+    expect(rejected.body.meta.problems[0]).toMatchObject({
+      nodeType: 'sub',
+      nodeId: sub.id,
+      problem: 'points_below_sub',
+    })
+  })
+
+  it('previews the changes of a draft and the open requests each scope moves', async () => {
+    const draft = await openDraft()
+    const [main] = await draftMains()
+    const renamed = await call('PUT', `/criteria/mains/${main.id}`, {
+      name: { ar: 'القيادة المؤسسية', en: 'Institutional leadership' },
+      weight: '1000.00',
+    })
+    expect(renamed.status).toBe(200)
+    const { status, body } = await call('GET', `/criteria/versions/${draft.id}/changes`)
+    expect(status).toBe(200)
+    expect(body.data).toMatchObject({
+      replaces: { id: 1, versionNumber: 1 },
+      changeCount: 1,
+      scoreAffectingCount: 0,
+    })
+    expect(body.data.changes[0]).toMatchObject({
+      nodeType: 'main',
+      code: main.code,
+      change: 'modified',
+      fields: ['name'],
+      scoreAffecting: false,
+      label: { en: 'Institutional leadership' },
+    })
+    expect(body.data.reboundOpenAssessments.map((entry) => entry.scope)).toEqual([
+      'all',
+      'new_only',
+      'reset_open',
+    ])
+    const onPublished = await call('GET', '/criteria/versions/1/changes')
+    expect(onPublished.status).toBe(409)
+  })
+
+  it('records a structural publication in the edit history, newest first', async () => {
+    const draft = await openDraft()
+    as(SYSTEM_ADMIN)
+    await call('POST', `/criteria/versions/${draft.id}/publish`, { confirm: true, scope: 'all' })
+    const { status, body } = await call('GET', '/criteria/edit-events')
+    expect(status).toBe(200)
+    expect(body.data[0]).toMatchObject({
+      kind: 'structural',
+      scope: 'all',
+      fromVersion: { id: 1, versionNumber: 1 },
+      toVersion: { id: draft.id },
+    })
+  })
+
+  it('keeps the change list of a publication in its edit event, like the API', async () => {
+    const draft = await openDraft()
+    const [main] = await draftMains()
+    await call('PUT', `/criteria/mains/${main.id}`, {
+      name: { ar: 'القيادة المؤسسية', en: 'Institutional leadership' },
+      weight: '1000.00',
+    })
+    as(SYSTEM_ADMIN)
+    await call('POST', `/criteria/versions/${draft.id}/publish`, { confirm: true, scope: 'all' })
+    const { body } = await call('GET', '/criteria/edit-events')
+    expect(body.data[0].changes).toHaveLength(1)
+    expect(body.data[0].changes[0]).toMatchObject({
+      code: main.code,
+      change: 'modified',
+      fields: ['name'],
+      label: { en: 'Institutional leadership' },
     })
   })
 
@@ -271,7 +435,7 @@ describe('criteria mock — STD notifications, published tree and public model',
       (item) => item.code === 'STD-01' && item.body.en.includes('Sustainability'),
     )
     expect(notice).toMatchObject({
-      read: false,
+      readAt: null,
       link: expect.stringMatching(/^\/admin\/settings\/criteria\/\d+$/),
     })
     expect(notice.actorId).toBeUndefined()

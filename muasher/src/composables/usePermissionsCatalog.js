@@ -20,7 +20,7 @@ export function usePermissionsCatalog() {
   }
 
   const groupFilterOptions = computed(() => [
-    { value: '', label: t('permissions.filters.allGroups') },
+    { value: '', label: t('dataList.filter.all') },
     ...PERMISSION_MODULES.map((module) => ({ value: module, label: groupLabel(module) })),
   ])
 

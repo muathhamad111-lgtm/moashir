@@ -26,7 +26,10 @@ it('tells which cycles run and which can close', function (): void {
         ->and(Status::SubmissionOpen->isClosable())->toBeFalse()
         ->and(Status::SubmissionClosed->isClosable())->toBeTrue()
         ->and(Status::SubmissionClosed->allowsFilteringDecisions())->toBeTrue()
-        ->and(Status::SubmissionOpen->allowsFilteringDecisions())->toBeFalse();
+        ->and(Status::SubmissionOpen->allowsFilteringDecisions())->toBeTrue()
+        ->and(Status::AwaitingSecretary->allowsFilteringDecisions())->toBeTrue()
+        ->and(Status::Draft->allowsFilteringDecisions())->toBeFalse()
+        ->and(Status::Approved->allowsFilteringDecisions())->toBeFalse();
 });
 
 it('locks the cycle fields by stage', function (Status $status, string $field, bool $editable): void {
@@ -34,8 +37,8 @@ it('locks the cycle fields by stage', function (Status $status, string $field, b
 
     $editable ? expect($check())->toBeNull() : expect($check)->toThrow(AwardRejected::class, 'cycle.field_locked');
 })->with([
-    'criteria of a draft' => [Status::Draft, 'criteria_version_id', true],
-    'criteria of an open cycle' => [Status::SubmissionOpen, 'criteria_version_id', false],
+    'entry fee of a draft' => [Status::Draft, 'entry_fee', true],
+    'entry fee of an open cycle' => [Status::SubmissionOpen, 'entry_fee', false],
     'submission start of an open cycle' => [Status::SubmissionOpen, 'submission_start', false],
     'submission end of an open cycle' => [Status::SubmissionOpen, 'submission_end', true],
     'regions after the submissions' => [Status::SubmissionClosed, 'region_ids', false],
@@ -44,4 +47,6 @@ it('locks the cycle fields by stage', function (Status $status, string $field, b
     'committee dates during the committee assessment' => [Status::CommitteeAssessment, 'committee_start', false],
     'name of a running cycle' => [Status::CommitteeAssessment, 'name', true],
     'name of a closed cycle' => [Status::Closed, 'name', false],
+    'description of a running cycle' => [Status::CommitteeAssessment, 'description', true],
+    'description of a closed cycle' => [Status::Closed, 'description', false],
 ]);

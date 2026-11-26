@@ -9,6 +9,8 @@ const props = defineProps({
   hint: { type: String, default: '' },
   rows: { type: Number, default: 3 },
   required: { type: Boolean, default: false },
+  disabled: { type: Boolean, default: false },
+  inputDir: { type: String, default: 'auto' },
 })
 
 const { value, errorMessage, handleBlur } = useField(toRef(props, 'name'))
@@ -21,9 +23,10 @@ const { value, errorMessage, handleBlur } = useField(toRef(props, 'name'))
     :label="label"
     :hint="hint"
     :rows="rows"
-    input-dir="auto"
+    :input-dir="inputDir"
     :error="errorMessage"
     :required="required"
+    :disabled="disabled"
     @blur="handleBlur"
   />
 </template>

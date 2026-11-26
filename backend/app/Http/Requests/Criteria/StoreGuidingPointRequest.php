@@ -18,6 +18,7 @@ final class StoreGuidingPointRequest extends CriteriaFormRequest
             ...$this->localizedTextRules('description', 'required', self::DESCRIPTION_MAX),
             ...$this->weightRules('nullable'),
             ...$this->attachmentRules(),
+            ...$this->scoringTypeRules('scoring_type'),
             'active' => ['sometimes', 'boolean'],
         ];
     }
@@ -28,6 +29,7 @@ final class StoreGuidingPointRequest extends CriteriaFormRequest
             $this->localizedText('description') ?? LocalizedText::fromArray([]),
             $this->weight(),
             $this->attachments(),
+            $this->scoringType('scoring_type'),
         );
     }
 

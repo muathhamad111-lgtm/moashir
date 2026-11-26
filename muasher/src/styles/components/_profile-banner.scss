@@ -1,0 +1,47 @@
+@use '../mixins' as *;
+
+.profile-banner {
+  padding-block: var(--space-3) 0;
+  padding-inline: var(--space-4);
+
+  @include respond-to('md') {
+    padding-inline: var(--space-8);
+  }
+}
+
+.profile-banner__inner {
+  @include flex(row, center, flex-start, var(--space-3));
+  flex-wrap: wrap;
+  padding-block: var(--space-2);
+  padding-inline: var(--space-4);
+  border: var(--border-width) solid var(--color-warning);
+  border-radius: var(--radius-lg);
+  background-color: var(--color-warning-soft);
+}
+
+.profile-banner__icon {
+  flex-shrink: 0;
+  color: var(--theme-warning-text);
+}
+
+.profile-banner__text {
+  @include flex(row, baseline, flex-start, var(--space-1) var(--space-3));
+  flex: 1;
+  flex-wrap: wrap;
+  min-inline-size: 0;
+  margin: 0;
+  color: var(--theme-heading);
+  font-size: var(--fs-sm);
+}
+
+.profile-banner__title {
+  font-weight: var(--fw-heading);
+}
+
+.profile-banner__progress {
+  color: var(--theme-text-muted);
+}
+
+.profile-banner__action {
+  flex-shrink: 0;
+}

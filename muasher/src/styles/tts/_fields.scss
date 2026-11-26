@@ -1,0 +1,149 @@
+@use '../mixins' as *;
+@use '../tokens' as *;
+
+.field__control,
+.dropdown-combobox {
+  @include in-tts-shell {
+    min-block-size: $tts-field-height;
+    padding-inline: var(--space-4);
+    // Operator decision (2026-11-17): the light TTS field border (1.7:1), an accepted
+    // exception to WCAG 1.4.11; labels above every field name the control.
+    border-color: tts-neutral(200);
+    border-radius: $tts-radius-field;
+    background-color: $tts-white;
+    color: tts-neutral(600);
+    font-size: $tts-fs-sm;
+  }
+}
+
+.field {
+  @include in-tts-shell {
+    gap: var(--space-2);
+  }
+}
+
+.field__label,
+.field--floated .field__label {
+  @include in-tts-shell {
+    position: static;
+    order: -1;
+    max-inline-size: none;
+    padding: 0;
+    overflow: visible;
+    white-space: normal;
+    background: none;
+    color: tts-neutral(600);
+    font-size: $tts-fs-sm;
+    font-weight: var(--fw-body);
+    line-height: $tts-lh-label-sm;
+    pointer-events: auto;
+  }
+}
+
+.field--floated.field--focused .field__label {
+  @include in-tts-shell {
+    color: tts-neutral(600);
+  }
+}
+
+.field__control {
+  @include in-tts-shell {
+    padding-block: var(--space-2);
+  }
+}
+
+.field__hint {
+  @include in-tts-shell {
+    color: tts-neutral(500);
+    font-size: $tts-fs-xxs;
+  }
+}
+
+.field__error,
+.field--error .field__label,
+.field--required .field__label::after {
+  @include in-tts-shell {
+    color: tts-status('danger', 'text');
+    font-size: $tts-fs-xxs;
+  }
+}
+
+.field--required .field__label::after {
+  @include in-tts-shell {
+    font-size: inherit;
+  }
+}
+
+.field--error .field__control {
+  @include in-tts-shell {
+    border-color: tts-status('danger', 'text');
+  }
+}
+
+.checkbox__input {
+  @include in-tts-shell {
+    inline-size: $tts-checkbox-size;
+    block-size: $tts-checkbox-size;
+    border-width: var(--border-width);
+    border-color: tts-neutral(400);
+    border-radius: $tts-radius-checkbox;
+  }
+}
+
+.radio__input {
+  @include in-tts-shell {
+    inline-size: $tts-checkbox-size;
+    block-size: $tts-checkbox-size;
+    border-width: var(--border-width);
+    border-color: tts-neutral(400);
+  }
+}
+
+.checkbox__label,
+.radio__label {
+  @include in-tts-shell {
+    color: tts-neutral(600);
+    font-size: $tts-fs-sm;
+  }
+}
+
+.toggle-switch {
+  @include in-tts-shell {
+    border-color: tts-neutral(50);
+    border-radius: $tts-radius-control;
+  }
+}
+
+.toggle-switch__track {
+  @include in-tts-shell {
+    --size-switch-width: #{$tts-switch-width};
+    --size-switch-height: #{$tts-switch-height};
+    border-radius: var(--radius-pill);
+    background-color: tts-neutral(400);
+
+    &:has(.toggle-switch__input:checked) {
+      background-color: var(--brand-primary-text);
+    }
+  }
+}
+
+.toggle-switch__thumb {
+  @include in-tts-shell {
+    border-radius: var(--radius-circle);
+    box-shadow: none;
+  }
+}
+
+.toggle-switch__input:checked + .toggle-switch__thumb {
+  @include in-tts-shell {
+    color: var(--brand-primary-text);
+  }
+}
+
+// Labels sit above the field in the TTS shell, so a dropdown's placeholder (such as
+// «الكل» in a filter) stays visible instead of waiting for a floated label.
+.dropdown-combobox__input::placeholder {
+  @include in-tts-shell {
+    color: tts-neutral(500);
+  }
+}

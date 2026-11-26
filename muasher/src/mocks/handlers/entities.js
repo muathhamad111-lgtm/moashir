@@ -3,34 +3,73 @@ import { http } from '../contract/http'
 import { envelope } from '../contract/responses'
 import { requestLocale } from '../contract/locale'
 import { paginate } from '../contract/pagination'
-import { actorWith, entityReject, entityRoute, readJson, signedInUser } from '../stores/entityRejection'
-import { ENTITY_PERMISSIONS as P, accessOf, hasFullAccess, ownEntityOf, viewableEntity } from '../stores/entityAccess'
-import { ENTITY_ACCESS, entityResourceFor, ownEntityResource } from '../stores/entitySerializers'
+import {
+  actorWith,
+  entityReject,
+  entityRoute,
+  fieldError,
+  readJson,
+  signedInUser,
+} from '../stores/entityRejection'
+import {
+  ENTITY_PERMISSIONS as P,
+  accessOf,
+  hasFullAccess,
+  ownEntityOf,
+  viewableEntity,
+} from '../stores/entityAccess'
+import { ENTITY_ACCESS, entityResourceFor } from '../stores/entitySerializers'
 import { entityStats, filtersFrom, queryEntities } from '../stores/entityQueries'
-import { applyProfile, isDeleted, setMarketingConsent } from '../stores/entitiesStore'
-import { assertOwnProfile, assertProfile, assertReason, contactFrom, profileFrom } from '../stores/entityValidation'
-import { awaitingChangeOf } from '../stores/entityEmailChanges'
+import { LEVEL_FILTERS } from '../stores/entityLevels'
+import { applyProfile, isDeleted } from '../stores/entitiesStore'
+import { applyUnifiedNumber } from '../stores/entityUnifiedNumber'
+import { acceptEntityLogo } from '../stores/entityLogo'
+import { acceptVatCertificate, vatCertificateFileOf } from '../stores/entityBilling'
+import {
+  acceptEntityDocument,
+  acceptStaffLetter,
+  changeKindOf,
+  documentKeyOf,
+  entityDocumentFileOf,
+} from '../stores/entityDocuments'
+import {
+  mayHoldVatCertificate,
+  proposeFile,
+  proposeFileRemoval,
+  proposeSection,
+} from '../stores/profileChangeRequests'
+import { findFile } from '../stores/finance/financeState'
+import { signedDownloadOf } from '../stores/finance/signedFiles'
+import { assertProfile, assertReason, contactFrom, profileFrom } from '../stores/entityValidation'
 import { sessionCan } from '../stores/sessionPermissions'
 import { entitiesCsv, exportFileName } from '../stores/entityCsv'
 import { recordProfileChanges } from '../stores/profileChangesStore'
+import { readFormOrJson } from '../stores/registrationForm'
+import { ownEditableEntity, ownEntityActor, ownResource } from '../stores/ownEntity'
+import { PROFILE_SECTION_KEYS } from '../stores/entityProfileSections'
+import { assertFreshRevision, assertSection, snapshotOf } from '../stores/entitySectionSaves'
 
-function ownEntityActor(permission) {
-  const user = signedInUser()
-  if (!user.entityId || !sessionCan(permission)) throw entityReject.forbidden()
-  return user
-}
-
-function ownResource(entity) {
-  return ownEntityResource(entity, awaitingChangeOf(entity.id))
-}
+const ACCEPTED = 202
 
 function staffResource(user, entity) {
-  return entityResourceFor(accessOf(user))(entity)
+  return entityResourceFor(accessOf(user))(entity, user)
+}
+
+async function saveSection({ params, request }) {
+  if (!PROFILE_SECTION_KEYS.includes(params.section)) throw entityReject.notFound()
+  const { user, entity } = ownEditableEntity()
+  const body = await readJson(request)
+  assertSection(params.section, body, entity)
+  assertFreshRevision(params.section, body, entity)
+  proposeSection(entity, params.section, body, user)
+  return envelope(ownResource(entity), { section: params.section }, { status: ACCEPTED })
 }
 
 function listFilters(request) {
   const filters = filtersFrom(new URL(request.url).searchParams)
   if (filters.trashed && !sessionCan(P.DELETE)) throw entityReject.forbidden()
+  if (filters.level !== null && !LEVEL_FILTERS.includes(filters.level))
+    throw entityReject.validation({ 'filter.level': [fieldError('filter.level_invalid')] })
   return filters
 }
 
@@ -48,6 +87,21 @@ function statsFor(user, filters) {
   return accessOf(user) === ENTITY_ACCESS.NONE ? { total: 0 } : entityStats(filters)
 }
 
+async function saveStaffEdit(params, body) {
+  const user = manager()
+  const entity = viewableEntity(user, params.id)
+  assertProfile(body, entity.id)
+  assertReason(body)
+  if (isDeleted(entity)) throw entityReject.deleted()
+  const letter = await acceptStaffLetter(entity, body)
+  const before = snapshotOf(entity)
+  applyProfile(entity, profileFrom(body), contactFrom(body))
+  applyUnifiedNumber(entity, body)
+  if (letter) entity.authorizationLetter = letter
+  recordProfileChanges(entity, before, entity, { actor: user, isStaff: true })
+  return envelope(staffResource(user, entity))
+}
+
 export const entitiesHandlers = [
   http.get(
     '/api/v1/entities/me',
@@ -57,18 +111,89 @@ export const entitiesHandlers = [
     }),
   ),
 
-  http.put(
-    '/api/v1/entities/me',
+  http.patch('/api/v1/entities/me/profile/:section', entityRoute(saveSection)),
+
+  http.post(
+    '/api/v1/entities/me/logo',
     entityRoute(async ({ request }) => {
-      const user = ownEntityActor(P.PROFILE_EDIT)
-      const entity = ownEntityOf(user)
-      const body = await readJson(request)
-      assertOwnProfile(body)
-      const before = { ...entity, name: { ...entity.name } }
-      applyProfile(entity, profileFrom(body), contactFrom(body))
-      recordProfileChanges(entity, before, entity, { actor: user, isStaff: false })
-      setMarketingConsent(entity, body.marketingConsent)
-      return envelope(ownResource(entity))
+      const { user, entity } = ownEditableEntity()
+      const form = await request.formData()
+      proposeFile(entity, 'logo', await acceptEntityLogo(user, form.get('file')), user)
+      return envelope(ownResource(entity), {}, { status: ACCEPTED })
+    }),
+  ),
+
+  http.delete(
+    '/api/v1/entities/me/logo',
+    entityRoute(() => {
+      const { user, entity } = ownEditableEntity()
+      proposeFileRemoval(entity, 'logo', user)
+      return envelope(ownResource(entity), {}, { status: ACCEPTED })
+    }),
+  ),
+
+  http.post(
+    '/api/v1/entities/me/vat-certificate',
+    entityRoute(async ({ request }) => {
+      const { user, entity } = ownEditableEntity()
+      if (!mayHoldVatCertificate(entity)) throw entityReject.vatNotRegistered()
+      const form = await request.formData()
+      proposeFile(entity, 'vat_certificate', await acceptVatCertificate(form.get('file')), user)
+      return envelope(ownResource(entity), {}, { status: ACCEPTED })
+    }),
+  ),
+
+  http.delete(
+    '/api/v1/entities/me/vat-certificate',
+    entityRoute(() => {
+      const { user, entity } = ownEditableEntity()
+      proposeFileRemoval(entity, 'vat_certificate', user)
+      return envelope(ownResource(entity), {}, { status: ACCEPTED })
+    }),
+  ),
+
+  http.post(
+    '/api/v1/entities/me/vat-certificate/download',
+    entityRoute(() => {
+      const user = ownEntityActor(P.PROFILE_VIEW)
+      const file = vatCertificateFileOf(ownEntityOf(user), findFile)
+      return envelope(signedDownloadOf(user, file))
+    }),
+  ),
+
+  http.post(
+    '/api/v1/entities/me/documents/:document',
+    entityRoute(async ({ params, request }) => {
+      const key = documentKeyOf(params.document, { uploadable: true })
+      const { user, entity } = ownEditableEntity()
+      const form = await request.formData()
+      proposeFile(
+        entity,
+        changeKindOf(key),
+        await acceptEntityDocument(key, form.get('file')),
+        user,
+      )
+      return envelope(ownResource(entity), {}, { status: ACCEPTED })
+    }),
+  ),
+
+  http.post(
+    '/api/v1/entities/me/documents/:document/download',
+    entityRoute(({ params }) => {
+      const user = ownEntityActor(P.PROFILE_VIEW)
+      const file = entityDocumentFileOf(ownEntityOf(user), documentKeyOf(params.document))
+      return envelope(signedDownloadOf(user, file))
+    }),
+  ),
+
+  http.post(
+    '/api/v1/entities/:id/documents/:document/download',
+    entityRoute(({ params }) => {
+      const user = actorWith(P.MANAGE)
+      const entity = viewableEntity(user, params.id)
+      return envelope(
+        signedDownloadOf(user, entityDocumentFileOf(entity, documentKeyOf(params.document))),
+      )
     }),
   ),
 
@@ -77,9 +202,15 @@ export const entitiesHandlers = [
     entityRoute(({ request }) => {
       const user = actorWith(P.VIEW)
       const filters = listFilters(request)
-      const { items, pagination } = paginate(visibleTo(user, filters), new URL(request.url).searchParams)
+      const { items, pagination } = paginate(
+        visibleTo(user, filters),
+        new URL(request.url).searchParams,
+      )
       const stats = statsFor(user, filters)
-      return envelope(items.map((entity) => staffResource(user, entity)), { pagination, stats })
+      return envelope(
+        items.map((entity) => staffResource(user, entity)),
+        { pagination, stats },
+      )
     }),
   ),
 
@@ -109,17 +240,18 @@ export const entitiesHandlers = [
 
   http.put(
     '/api/v1/entities/:id',
+    entityRoute(async ({ params, request }) =>
+      saveStaffEdit(params, await readFormOrJson(request)),
+    ),
+  ),
+
+  // The staff edit with a new authorization letter: multipart, sent as a POST that names the PUT method.
+  http.post(
+    '/api/v1/entities/:id',
     entityRoute(async ({ params, request }) => {
-      const user = manager()
-      const entity = viewableEntity(user, params.id)
-      const body = await readJson(request)
-      assertProfile(body)
-      assertReason(body)
-      if (isDeleted(entity)) throw entityReject.deleted()
-      const before = { ...entity, name: { ...entity.name } }
-      applyProfile(entity, profileFrom(body), contactFrom(body))
-      recordProfileChanges(entity, before, entity, { actor: user, isStaff: true })
-      return envelope(staffResource(user, entity))
+      const body = await readFormOrJson(request)
+      if (body._method !== 'PUT') throw entityReject.notFound()
+      return saveStaffEdit(params, body)
     }),
   ),
 ]

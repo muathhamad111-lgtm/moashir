@@ -1,5 +1,6 @@
 <script setup>
 import { computed } from 'vue'
+import AppIcon from '@/components/ui/AppIcon.vue'
 
 const props = defineProps({
   message: { type: Object, required: true },
@@ -24,14 +25,14 @@ const text = computed(() => {
     ]"
   >
     <span class="chat-message__role" aria-hidden="true">
-      <i :class="isUser ? 'fa-solid fa-user' : 'fa-solid fa-robot'"></i>
+      <AppIcon :name="isUser ? 'user' : 'robot'" />
     </span>
     <div class="chat-message__bubble">
       <span class="chat-message__sender">
         {{ isUser ? $t('ai.you') : $t('ai.assistant') }}
       </span>
       <p v-if="isMiss" class="chat-message__text chat-message__text--miss">
-        <i class="fa-solid fa-circle-info" aria-hidden="true"></i>
+        <AppIcon name="info-circle" />
         {{ $t('ai.kbMiss') }}
       </p>
       <p v-else class="chat-message__text">{{ text }}</p>

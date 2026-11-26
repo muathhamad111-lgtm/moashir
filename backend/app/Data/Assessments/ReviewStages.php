@@ -19,10 +19,10 @@ final readonly class ReviewStages
         public ReviewedAssessmentState $declinedIncomplete,
     ) {}
 
-    public function afterCompletionExpiry(CompletionExpiryOutcome $outcome): ReviewedAssessmentState
+    public function afterCompletionExpiry(CompletionExpiryOutcome $outcome, ?ReviewedAssessmentState $resumesTo = null): ReviewedAssessmentState
     {
         return match ($outcome) {
-            CompletionExpiryOutcome::ContinueAsSubmitted => $this->afterCompletion,
+            CompletionExpiryOutcome::ContinueAsSubmitted => $resumesTo ?? $this->afterCompletion,
             CompletionExpiryOutcome::Decline => $this->declinedIncomplete,
         };
     }

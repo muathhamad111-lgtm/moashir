@@ -1,8 +1,11 @@
 <script setup>
+import { ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import Card from '@/components/ui/Card.vue'
 import Badge from '@/components/ui/Badge.vue'
 import RawScoreField from '@/components/assessment/RawScoreField.vue'
+import CriterionStepCounter from '@/components/assessment/CriterionStepCounter.vue'
+import IndicatorGuidance from '@/components/assessment/IndicatorGuidance.vue'
 import { EVALUATION_TYPES } from '@/constants/criteria'
 import { SCORE_LEVELS } from '@/constants/assessment'
 import { savedScoreOf, scoreFieldName } from '@/utils/assessments/scoreSheet'
@@ -10,12 +13,15 @@ import { localizedText } from '@/utils/localizedText'
 
 defineProps({
   main: { type: Object, required: true },
+  step: { type: Number, required: true },
+  total: { type: Number, required: true },
   scores: { type: Object, required: true },
-  maximum: { type: String, required: true },
+  typeOf: { type: Function, required: true },
   disabled: { type: Boolean, default: false },
 })
 
 const { t, locale } = useI18n()
+const title = ref(null)
 
 function text(content) {
   return localizedText(content, locale.value)
@@ -28,17 +34,20 @@ function usesPoints(sub) {
 function unit(level, node) {
   return { level, id: node.id }
 }
+
+function focusTitle() {
+  title.value?.focus()
+}
+
+defineExpose({ focusTitle })
 </script>
 
 <template>
   <Card class="self-main">
     <template #header>
       <div class="self-main__head">
-        <h2 class="self-main__title">
-          <span class="self-main__code u-ltr">{{ main.code }}</span>
-          {{ text(main.name) }}
-        </h2>
-        <Badge variant="info">{{ t('assessment.self.tree.mainMeta', { weight: main.weight }) }}</Badge>
+        <CriterionStepCounter :step="step" :total="total" />
+        <h2 ref="title" class="self-main__title" tabindex="-1">{{ text(main.name) }}</h2>
       </div>
     </template>
 
@@ -47,12 +56,13 @@ function unit(level, node) {
     <ul class="self-main__subs">
       <li v-for="sub in main.subs" :key="sub.id" class="self-main__sub">
         <div class="self-main__sub-head">
-          <h3 class="self-main__sub-title">
-            <span class="self-main__code u-ltr">{{ sub.code }}</span>
-            {{ text(sub.name) }}
-          </h3>
+          <h3 class="self-main__sub-title">{{ text(sub.name) }}</h3>
           <Badge :variant="usesPoints(sub) ? 'info' : 'muted'">
-            {{ usesPoints(sub) ? t('assessment.self.tree.points', { count: sub.points.length }) : t('assessment.self.tree.direct') }}
+            {{
+              usesPoints(sub)
+                ? t('assessment.self.tree.points', { count: sub.points.length })
+                : t('assessment.self.tree.direct')
+            }}
           </Badge>
         </div>
         <p v-if="sub.description" class="self-main__sub-description">{{ text(sub.description) }}</p>
@@ -60,15 +70,12 @@ function unit(level, node) {
         <template v-if="usesPoints(sub)">
           <p class="self-main__hint">{{ t('assessment.self.pointsHint') }}</p>
           <ul class="self-main__points">
-            <li v-for="point in sub.points" :key="point.id" class="self-main__point">
-              <p class="self-main__point-text">
-                <span class="self-main__code u-ltr">{{ point.code }}</span>
-                {{ text(point.description) }}
-              </p>
+            <li v-for="(point, index) in sub.points" :key="point.id" class="self-main__point">
+              <p class="self-main__point-text">{{ text(point.description) }}</p>
               <RawScoreField
                 :name="scoreFieldName(unit(SCORE_LEVELS.POINT, point))"
-                :label="t('assessment.self.pointScoreLabel', { code: point.code })"
-                :maximum="maximum"
+                :label="t('assessment.self.pointScoreLabel', { number: index + 1 })"
+                :scoring-type="typeOf(point)"
                 :saved="savedScoreOf(scores, unit(SCORE_LEVELS.POINT, point))"
                 :disabled="disabled"
               />
@@ -76,14 +83,20 @@ function unit(level, node) {
           </ul>
         </template>
 
-        <RawScoreField
-          v-else
-          :name="scoreFieldName(unit(SCORE_LEVELS.SUB, sub))"
-          :label="t('assessment.self.directLabel', { name: text(sub.name) })"
-          :maximum="maximum"
-          :saved="savedScoreOf(scores, unit(SCORE_LEVELS.SUB, sub))"
-          :disabled="disabled"
-        />
+        <template v-else>
+          <IndicatorGuidance
+            v-if="sub.points.length"
+            :points="sub.points"
+            :title="t('assessment.self.directIndicatorsHint')"
+          />
+          <RawScoreField
+            :name="scoreFieldName(unit(SCORE_LEVELS.SUB, sub))"
+            :label="t('assessment.self.directLabel', { name: text(sub.name) })"
+            :scoring-type="typeOf(sub)"
+            :saved="savedScoreOf(scores, unit(SCORE_LEVELS.SUB, sub))"
+            :disabled="disabled"
+          />
+        </template>
       </li>
     </ul>
   </Card>

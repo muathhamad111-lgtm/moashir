@@ -1,7 +1,6 @@
 @use '../mixins' as *;
 
-.cycles-page,
-.cycle-editor {
+.cycles-page {
   @include flex(column, stretch, flex-start, var(--space-5));
 }
 
@@ -13,12 +12,11 @@
 .cycles-page__eyebrow {
   margin-block-end: var(--space-1);
   font-size: var(--fs-sm);
-  font-weight: var(--fw-medium);
+  font-weight: var(--fw-body);
   color: var(--theme-accent-text);
 }
 
-.cycles-page__title,
-.cycle-editor__title {
+.cycles-page__title {
   margin: 0;
   font-size: var(--fs-3xl);
   color: var(--theme-heading);
@@ -33,12 +31,11 @@
 }
 
 .cycle-filters {
-  @include flex(row, center, flex-start, var(--space-3));
-  flex-wrap: wrap;
+  display: contents;
 }
 
 .cycle-table__link {
-  font-weight: var(--fw-semibold);
+  font-weight: var(--fw-emphasis);
   color: var(--theme-accent-text);
 
   &:focus-visible {
@@ -56,10 +53,6 @@
   color: var(--theme-text-muted);
 }
 
-.cycle-editor__header {
-  @include flex(column, flex-start, flex-start, var(--space-2));
-}
-
 .cycle-editor__back {
   @include flex(row, center, flex-start, var(--space-2));
   min-block-size: var(--size-touch-target);
@@ -71,43 +64,28 @@
   }
 }
 
-.cycle-editor__title-row {
-  @include flex(row, center, flex-start, var(--space-3));
-  flex-wrap: wrap;
-}
-
-.cycle-editor__loading,
-.cycle-editor__aside {
-  @include flex(column, stretch, flex-start, var(--space-4));
-}
-
-.cycle-editor__layout {
-  display: grid;
-  gap: var(--space-5);
-  grid-template-columns: 1fr;
-
-  @include respond-to(lg) {
-    grid-template-columns: minmax(0, 1fr) minmax(0, var(--size-panel));
-    align-items: start;
-  }
-}
-
 .cycle-form {
   @include flex(column, stretch, flex-start, var(--space-5));
 }
 
 .cycle-form__section {
   @include flex(column, stretch, flex-start, var(--space-4));
+  min-inline-size: 0;
   margin: 0;
-  padding: var(--space-4);
-  border: var(--border-width) solid var(--theme-border);
-  border-radius: var(--radius-lg);
+  padding: 0;
+  border: 0;
+
+  @include respond-to(sm) {
+    padding: var(--space-4);
+    border: var(--border-width) solid var(--theme-border);
+    border-radius: var(--radius-lg);
+  }
 }
 
 .cycle-form__legend {
   padding-inline: var(--space-2);
   font-size: var(--fs-lg);
-  font-weight: var(--fw-semibold);
+  font-weight: var(--fw-heading);
   color: var(--theme-heading);
 }
 
@@ -117,10 +95,26 @@
   color: var(--theme-text-muted);
 }
 
+.cycle-form__note {
+  @include flex(row, center, flex-start, var(--space-2));
+  margin: 0;
+  font-size: var(--fs-sm);
+  color: var(--theme-text-muted);
+}
+
 .cycle-form__grid {
   display: grid;
   gap: var(--space-4);
   grid-template-columns: repeat(auto-fit, minmax(var(--size-control-min), 1fr));
+
+  // Date fields need room for day, month, year and the calendar button: two columns only when both fit.
+  &--dates {
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, var(--size-date-field-min)), 1fr));
+
+    .field__hint {
+      white-space: pre-line;
+    }
+  }
 }
 
 .cycle-form__actions,
@@ -153,7 +147,7 @@
 }
 
 .cycle-blocked__link {
-  font-weight: var(--fw-semibold);
+  font-weight: var(--fw-emphasis);
   color: var(--theme-accent-text);
 
   &:focus-visible {
@@ -170,6 +164,6 @@
 .cycle-staff__subtitle {
   margin: 0;
   font-size: var(--fs-base);
-  font-weight: var(--fw-semibold);
+  font-weight: var(--fw-heading);
   color: var(--theme-heading);
 }

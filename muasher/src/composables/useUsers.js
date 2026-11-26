@@ -1,6 +1,7 @@
 import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { ROLES } from '@/constants/roles'
+import { USER_STATUS_LIST } from '@/constants/users'
 
 export const ROLE_ORDER = [
   ROLES.SYSTEM_ADMIN,
@@ -11,7 +12,6 @@ export const ROLE_ORDER = [
   ROLES.AWARD_SECRETARY,
   ROLES.CONTENT_OFFICER,
   ROLES.FINANCE_OFFICER,
-  ROLES.ENTITY,
 ]
 
 const ROLE_CAPABILITY_KEYS = {
@@ -38,14 +38,18 @@ export function useUsers() {
   )
 
   const roleFilterOptions = computed(() => [
-    { value: '', label: t('users.filters.allRoles') },
+    { value: '', label: t('dataList.filter.all') },
     ...roleOptions.value,
   ])
 
   const statusFilterOptions = computed(() => [
-    { value: '', label: t('users.filters.allStatuses') },
-    { value: 'active', label: t('status.active') },
-    { value: 'inactive', label: t('status.inactive') },
+    { value: '', label: t('dataList.filter.all') },
+    ...USER_STATUS_LIST.map((status) => ({ value: status, label: t(`users.statuses.${status}`) })),
+  ])
+
+  const ndaFilterOptions = computed(() => [
+    { value: '', label: t('dataList.filter.all') },
+    { value: 'pending', label: t('nda.statuses.pending') },
   ])
 
   function roleCapabilities(role) {
@@ -58,6 +62,7 @@ export function useUsers() {
     roleOptions,
     roleFilterOptions,
     statusFilterOptions,
+    ndaFilterOptions,
     roleCapabilities,
   }
 }

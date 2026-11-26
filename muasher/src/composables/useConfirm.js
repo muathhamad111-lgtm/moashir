@@ -1,4 +1,5 @@
 import { reactive, readonly } from 'vue'
+import { decisionVariantOf } from '@/utils/decisionVariant'
 
 const state = reactive({
   isOpen: false,
@@ -6,17 +7,26 @@ const state = reactive({
   message: '',
   confirmLabel: '',
   cancelLabel: '',
-  variant: 'primary',
+  variant: decisionVariantOf(),
+  icon: '',
 })
 
 let resolver = null
 
-function confirm({ title = '', message = '', confirmLabel = '', cancelLabel = '', variant = 'primary' }) {
+function confirm({
+  title = '',
+  message = '',
+  confirmLabel = '',
+  cancelLabel = '',
+  variant = '',
+  icon = '',
+}) {
   state.title = title
   state.message = message
   state.confirmLabel = confirmLabel
   state.cancelLabel = cancelLabel
-  state.variant = variant
+  state.variant = decisionVariantOf(variant)
+  state.icon = icon
   state.isOpen = true
   return new Promise((resolve) => {
     resolver = resolve

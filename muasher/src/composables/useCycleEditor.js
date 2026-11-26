@@ -1,6 +1,5 @@
 import { computed, ref, shallowRef } from 'vue'
 import { awardCycleService } from '@/services/awardCycleService'
-import { assessmentsService } from '@/services/assessmentsService'
 import { regionsService } from '@/services/regionsService'
 import { toCamelKey } from '@/api/caseMapping'
 import { cycleFormValues, lockedCycleFields } from '@/utils/award/cycleForm'
@@ -29,15 +28,24 @@ export function useCycleEditor(cycleId) {
   const errorMessage = ref('')
   const cycle = shallowRef(null)
   const defaults = shallowRef(null)
-  const published = shallowRef(null)
   const regions = ref([])
-  const running = shallowRef(null)
   const serverLocked = ref([])
 
   const isNew = computed(() => !cycleId.value)
-  const initialValues = computed(() => cycleFormValues(cycle.value, { defaults: defaults.value, published: published.value }))
-  const locked = computed(() => new Set([...lockedCycleFields(cycle.value?.status), ...serverLocked.value]))
-  const blockingCycle = computed(() => (running.value && running.value.id !== cycle.value?.id ? running.value : null))
+  const initialValues = computed(() => cycleFormValues(cycle.value, { defaults: defaults.value }))
+  const feeLocked = computed(() =>
+    cycle.value && !cycle.value.entryFeeEditable ? ['entryFee'] : [],
+  )
+  const locked = computed(
+    () =>
+      new Set([
+        ...lockedCycleFields(cycle.value?.status),
+        ...feeLocked.value,
+        ...(cycle.value?.thresholdLocked ? ['disqualificationScore'] : []),
+        ...serverLocked.value,
+      ]),
+  )
+  const openBlock = computed(() => cycle.value?.openBlock ?? null)
 
   async function loadCycle() {
     if (isNew.value) {
@@ -52,15 +60,11 @@ export function useCycleEditor(cycleId) {
     errorMessage.value = ''
     serverLocked.value = []
     try {
-      const [, regionList, tree, current] = await Promise.all([
+      const [, regionList] = await Promise.all([
         loadCycle(),
         optional(regionsService.listRegions()),
-        optional(assessmentsService.getPublishedCriteria()),
-        optional(awardCycleService.getCurrent()),
       ])
       regions.value = regionList ?? []
-      published.value = tree ? { versionId: tree.versionId, versionNumber: tree.versionNumber, scaleKind: tree.scaleKind } : null
-      running.value = current
       status.value = 'ready'
     } catch (error) {
       errorMessage.value = error?.normalized?.message ?? ''
@@ -76,5 +80,18 @@ export function useCycleEditor(cycleId) {
     serverLocked.value = [...new Set([...serverLocked.value, ...(fields ?? []).map(toCamelKey)])]
   }
 
-  return { status, errorMessage, cycle, defaults, published, regions, running, blockingCycle, isNew, initialValues, locked, load, apply, lockFields }
+  return {
+    status,
+    errorMessage,
+    cycle,
+    defaults,
+    regions,
+    openBlock,
+    isNew,
+    initialValues,
+    locked,
+    load,
+    apply,
+    lockFields,
+  }
 }

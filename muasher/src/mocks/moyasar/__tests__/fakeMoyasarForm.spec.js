@@ -6,11 +6,23 @@ import { SANDBOX_OUTCOME_ORDER, moyasarSandboxTexts } from '@/mocks/fixtures/moy
 
 const fulfilled = []
 const server = setupServer(
-  http.post('https://api.moyasar.com/v1/payment_intents/:intent/fulfill', async ({ params, request }) => {
-    const body = await request.json()
-    fulfilled.push({ intent: params.intent, body })
-    return HttpResponse.json({ id: 'mock_pay_42', status: 'paid', amount: 115000, currency: 'SAR', source: { type: 'creditcard', message: 'APPROVED' } }, { status: 201 })
-  }),
+  http.post(
+    'https://api.moyasar.com/v1/payment_intents/:intent/fulfill',
+    async ({ params, request }) => {
+      const body = await request.json()
+      fulfilled.push({ intent: params.intent, body })
+      return HttpResponse.json(
+        {
+          id: 'mock_pay_42',
+          status: 'paid',
+          amount: 115000,
+          currency: 'SAR',
+          source: { type: 'creditcard', message: 'APPROVED' },
+        },
+        { status: 201 },
+      )
+    },
+  ),
 )
 
 function sandbox() {
@@ -57,9 +69,14 @@ describe('local fake of the Moyasar form', () => {
     expect(options.element.querySelector('input')).toBeNull()
     options.element.querySelector('form').dispatchEvent(new Event('submit', { cancelable: true }))
     await settle()
-    expect(fulfilled[0]).toMatchObject({ intent: 'mock_pi_1', body: { client_secret: 'mock_pi_1_secret_mock', metadata: { moashir_payment_id: 'p-1' } } })
+    expect(fulfilled[0]).toMatchObject({
+      intent: 'mock_pi_1',
+      body: { client_secret: 'mock_pi_1_secret_mock', metadata: { moashir_payment_id: 'p-1' } },
+    })
     expect(onCompleted).toHaveBeenCalledWith(expect.objectContaining({ id: 'mock_pay_42' }))
-    expect(target.location.assign).toHaveBeenCalledWith('https://moashir.example.sa/payments/p-1/return?id=mock_pay_42&status=paid&message=APPROVED')
+    expect(target.location.assign).toHaveBeenCalledWith(
+      'https://moashir.example.sa/payments/p-1/return?id=mock_pay_42&status=paid&message=APPROVED',
+    )
   })
 
   it('stays on the form with an error when the platform verification fails', async () => {
@@ -70,6 +87,8 @@ describe('local fake of the Moyasar form', () => {
     await settle()
     expect(target.location.assign).not.toHaveBeenCalled()
     expect(options.element.querySelector('.fake-moyasar__error').hidden).toBe(false)
-    expect(options.element.querySelector('.fake-moyasar__error').textContent).toBe(moyasarSandboxTexts.en.interrupted)
+    expect(options.element.querySelector('.fake-moyasar__error').textContent).toBe(
+      moyasarSandboxTexts.en.interrupted,
+    )
   })
 })

@@ -4,8 +4,10 @@ declare(strict_types=1);
 
 namespace Database\Seeders;
 
+use App\Enums\Identity\AssessorQualification;
 use App\Enums\Identity\RoleKey;
 use App\Models\Identity\User;
+use App\Models\Identity\UserAssessorQualification;
 use Illuminate\Database\Seeder;
 
 final class LocalStaffSeeder extends Seeder
@@ -27,6 +29,17 @@ final class LocalStaffSeeder extends Seeder
             $user = User::query()->firstOrNew(['email' => $member['email']]);
             $user->forceFill(['name' => $member['name'], 'status' => 'active', 'mfa_required' => true, 'email_verified_at' => now()])->save();
             $user->syncRoles([$member['role']->value]);
+
+            if ($member['role'] === RoleKey::Assessor) {
+                $this->qualifyForEveryPath($user);
+            }
+        }
+    }
+
+    private function qualifyForEveryPath(User $user): void
+    {
+        foreach (AssessorQualification::cases() as $qualification) {
+            UserAssessorQualification::query()->firstOrCreate(['user_id' => $user->id, 'qualification' => $qualification]);
         }
     }
 }

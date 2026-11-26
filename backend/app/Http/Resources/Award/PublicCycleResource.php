@@ -26,6 +26,7 @@ final class PublicCycleResource extends JsonResource
         return [
             'id' => $cycle->id,
             'name' => $cycle->name->toArray(),
+            'description' => $cycle->description?->toArray(),
             'year' => $cycle->year,
             'status' => $cycle->status->value,
             'is_accepting_applications' => $cycle->acceptsApplicationsAt(Date::now()),

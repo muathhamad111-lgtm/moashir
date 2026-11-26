@@ -1,73 +1,174 @@
-import { describe, expect, it, beforeAll, afterAll, afterEach } from 'vitest'
+import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it } from 'vitest'
 import { setupServer } from 'msw/node'
 import { usersHandlers } from '@/mocks/handlers/users'
-import { MOCK_API_BASE, mockFetch } from '@/test-utils/mockApi'
+import { resetStaffUsers } from '@/mocks/stores/staffUsers'
+import { MOCK_API_BASE, clearMockSession, seedMockSession, wireFetch } from '@/test-utils/mockApi'
 
 const server = setupServer(...usersHandlers)
-const BASE = MOCK_API_BASE
+const ADMIN = { id: 1, roles: ['system_admin'] }
+const SECRETARY_ONLY = { id: 19, roles: ['award_secretary'] }
+const LIST_KEYS = [
+  'assessor_qualifications',
+  'created_at',
+  'email',
+  'entity_id',
+  'id',
+  'last_login_at',
+  'mfa_enabled',
+  'name',
+  'national_id_changed_at_acceptance_at',
+  'nda_status',
+  'request_scope',
+  'roles',
+  'status',
+]
+const PERSONAL_KEYS = ['gender', 'national_id_masked', 'phone']
+const REASON = 'إيقاف الحساب بقرار إداري لحين استكمال الإجراءات.'
 
 async function call(method, path, body) {
-  const init = { method }
+  const init = { method, headers: { 'accept-language': 'en' } }
   if (body !== undefined) {
-    init.headers = { 'content-type': 'application/json' }
+    init.headers['content-type'] = 'application/json'
     init.body = JSON.stringify(body)
   }
-  const res = await mockFetch(`${BASE}${path}`, init)
-  return { ok: res.ok, status: res.status, body: await res.json() }
-}
-
-async function retry(method, path, body, tries = 25) {
-  let last
-  for (let i = 0; i < tries; i += 1) {
-    last = await call(method, path, body)
-    if (last.ok) return last
-  }
-  throw new Error(`step failed: ${method} ${path} (status ${last?.status})`)
+  const response = await wireFetch(`${MOCK_API_BASE}${path}`, init)
+  const text = await response.text()
+  return { status: response.status, body: text ? JSON.parse(text) : null }
 }
 
 beforeAll(() => server.listen({ onUnhandledRequest: 'error' }))
-afterEach(() => server.resetHandlers())
+beforeEach(() => {
+  resetStaffUsers()
+  seedMockSession(ADMIN)
+})
+afterEach(() => {
+  server.resetHandlers()
+  clearMockSession()
+})
 afterAll(() => server.close())
 
-describe('users mock — multi-role directory (note 6)', () => {
-  it('lists users carrying a roles[] array', async () => {
-    const { body } = await retry('GET', '/users?per_page=50')
-    expect(body.data.length).toBeGreaterThan(0)
-    for (const user of body.data) {
-      expect(Array.isArray(user.roles)).toBe(true)
-    }
-    const multi = body.data.find((u) => u.roles.length > 1)
-    expect(multi).toBeTruthy()
+describe('users mock — real contract', () => {
+  it('lists staff users only with the exact keys, stats and pagination', async () => {
+    const { status, body } = await call('GET', '/users?per_page=50')
+    expect(status).toBe(200)
+    expect(Object.keys(body.data[0]).sort()).toEqual(LIST_KEYS)
+    expect(body.data.some((user) => user.roles.includes('entity'))).toBe(false)
+    expect(Object.keys(body.meta.stats).sort()).toEqual([
+      'active',
+      'by_role',
+      'invited',
+      'locked',
+      'suspended',
+      'total',
+    ])
+    expect(body.meta.pagination).toMatchObject({ page: 1, per_page: 50 })
   })
 
-  it('counts a multi-role user under each of its roles in the stats', async () => {
-    const { body } = await retry('GET', '/users?per_page=50')
-    const byRole = body.meta.stats.byRole
-    const total = Object.values(byRole).reduce((sum, n) => sum + n, 0)
-    const roleCount = body.meta.stats.total
-    expect(total).toBeGreaterThan(roleCount)
+  it('keeps the personal fields off the list and on the single-user record', async () => {
+    const { body } = await call('GET', '/users?per_page=50')
+    const record = await call('GET', `/users/${body.data[0].id}`)
+    expect(PERSONAL_KEYS.filter((key) => key in body.data[0])).toEqual([])
+    expect(PERSONAL_KEYS.every((key) => key in record.body.data)).toBe(true)
   })
 
-  it('filters by any role a user holds (filter[role])', async () => {
-    const { body } = await retry('GET', '/users?filter[role]=filtering_officer&perPage=50')
-    expect(body.data.length).toBeGreaterThan(0)
-    for (const user of body.data) {
-      expect(user.roles).toContain('filtering_officer')
-    }
-    expect(body.data.some((u) => u.roles.includes('request_follower'))).toBe(true)
+  it('filters by role and status and refuses unknown filters', async () => {
+    const byRole = await call('GET', '/users?filter[role]=filtering_officer&per_page=50')
+    expect(byRole.body.data.every((user) => user.roles.includes('filtering_officer'))).toBe(true)
+    const invited = await call('GET', '/users?filter[status]=invited')
+    expect(invited.body.data.map((user) => user.status)).toEqual(['invited'])
+    expect((await call('GET', '/users?filter[status]=inactive')).status).toBe(422)
   })
 
-  it('creates and updates a user with multiple roles', async () => {
-    const created = await retry('POST', '/users', {
-      name: 'Test Multi',
-      email: `multi${Math.floor(1)}@muasher.sa`,
+  it('invites, updates and validates staff users', async () => {
+    const created = await call('POST', '/users', {
+      name: 'نورة بنت سالم العنزي',
+      email: 'noura.alanazi@moashir.example.sa',
+      gender: 'female',
+      national_id: '١٠٠٠٠٠٠٥٠٥',
       roles: ['award_secretary', 'system_admin'],
-      status: 'active',
     })
-    expect(created.body.data.roles).toEqual(['award_secretary', 'system_admin'])
-    const updated = await retry('PUT', `/users/${created.body.data.id}`, {
+    expect(created.status).toBe(201)
+    expect(created.body.data).toMatchObject({
+      status: 'invited',
+      mfa_enabled: false,
+      gender: 'female',
+      national_id_masked: '••••••0505',
+      roles: ['award_secretary', 'system_admin'],
+    })
+    const updated = await call('PUT', `/users/${created.body.data.id}`, {
       roles: ['award_secretary'],
     })
     expect(updated.body.data.roles).toEqual(['award_secretary'])
+    const duplicate = await call('POST', '/users', {
+      name: 'اسم مكرر',
+      email: 'noura.alanazi@moashir.example.sa',
+      gender: 'male',
+      roles: ['assessor'],
+    })
+    expect(duplicate.status).toBe(422)
+    expect(Object.keys(duplicate.body.errors)).toEqual(['email'])
+    const invalid = await call('POST', '/users', {
+      name: 'اسم ثالث',
+      email: 'third.user@moashir.example.sa',
+      gender: 'other',
+      national_id: '3000000008',
+      roles: ['assessor'],
+    })
+    expect(Object.keys(invalid.body.errors).sort()).toEqual(['gender', 'national_id'])
+    const locked = await call('PUT', `/users/${created.body.data.id}`, {
+      national_id: '1000000506',
+    })
+    expect(locked.status).toBe(409)
+  })
+
+  it('suspends with a reason, reactivates, unlocks, resets MFA and resends invitations', async () => {
+    expect((await call('POST', '/users/2/suspend', {})).status).toBe(422)
+    const suspended = await call('POST', '/users/2/suspend', { reason: REASON })
+    expect(suspended.body.data.status).toBe('suspended')
+    expect((await call('POST', '/users/2/suspend', { reason: REASON })).body.code).toBe(
+      'state.transition_illegal',
+    )
+    expect((await call('POST', '/users/2/activate', {})).body.data.status).toBe('active')
+    expect((await call('POST', '/users/14/unlock', {})).body.data.status).toBe('active')
+    expect(
+      (await call('POST', '/users/2/mfa/reset', { reason: REASON })).body.data.mfa_enabled,
+    ).toBe(false)
+    expect((await call('POST', '/users/4/invitation/resend')).status).toBe(202)
+    expect((await call('POST', '/users/2/invitation/resend')).status).toBe(409)
+  })
+
+  it('e-mails an active user a reset link once a minute, never a suspended one or the own account', async () => {
+    expect((await call('POST', '/users/3/password/reset-link')).status).toBe(202)
+    const repeated = await call('POST', '/users/3/password/reset-link')
+    expect(repeated.status).toBe(429)
+    expect(repeated.body.code).toBe('user.password_reset_recently_sent')
+    expect((await call('POST', '/users/4/password/reset-link')).body.code).toBe(
+      'state.transition_illegal',
+    )
+    expect((await call('POST', '/users/1/password/reset-link')).body.code).toBe('user.self')
+  })
+
+  it('ends the sessions of another user, cancels a pending invitation and exports the list', async () => {
+    expect((await call('POST', '/users/2/sessions/revoke', {})).body.data.status).toBe('active')
+    expect((await call('POST', '/users/1/sessions/revoke', {})).body.code).toBe('user.self')
+    expect((await call('DELETE', '/users/2/invitation')).body.code).toBe('state.transition_illegal')
+    expect((await call('DELETE', '/users/4/invitation')).status).toBe(204)
+    expect((await call('GET', '/users/4')).status).toBe(404)
+    const exported = await wireFetch(`${MOCK_API_BASE}/users/export?filter[status]=active`, {
+      headers: { 'accept-language': 'en' },
+    })
+    expect(exported.headers.get('content-type')).toContain('text/csv')
+    const csv = await exported.text()
+    expect(csv.split('\n')[0]).toContain('name,email,roles,status')
+    expect(Number(exported.headers.get('x-export-row-count'))).toBeGreaterThan(0)
+  })
+
+  it('refuses actions on the own account and denies readers without the permission', async () => {
+    const self = await call('POST', '/users/1/suspend', { reason: REASON })
+    expect(self.status).toBe(422)
+    expect(self.body.code).toBe('user.self')
+    seedMockSession(SECRETARY_ONLY)
+    expect((await call('GET', '/users')).status).toBe(403)
+    expect((await call('GET', '/users/99999')).status).toBe(403)
   })
 })

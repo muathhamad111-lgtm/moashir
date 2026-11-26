@@ -160,6 +160,100 @@ return [
     'uuid' => 'The :attribute field must be a valid UUID.',
 
     'custom' => [
+        'address_building_number' => [
+            'regex' => 'The building number has 4 digits (0-9), e.g. 7421.',
+        ],
+        'address_postal_code' => [
+            'regex' => 'The postal code has 5 digits (0-9), e.g. 12214.',
+        ],
+        'address_additional_number' => [
+            'regex' => 'The additional number has 4 digits (0-9), e.g. 3365.',
+        ],
+        'address_short_code' => [
+            'regex' => 'The short address is 4 Latin letters followed by 4 digits, e.g. RRRD2929.',
+        ],
+        'vat_number' => [
+            'regex' => 'The VAT registration number has 15 Western digits (0-9) with no spaces, and starts and ends with 3.',
+            'required_if_accepted' => 'Enter the VAT registration number because the entity is registered for VAT.',
+            'prohibited_if_declined' => 'Remove the VAT registration number because the entity is not registered for VAT.',
+        ],
+        'overview_period' => [
+            'too_long' => 'A custom period cannot be longer than :days days.',
+            'future' => 'A period that has not started yet cannot be chosen.',
+            'before_first' => 'The boards have no data before their first month.',
+        ],
+        'vat_registration_number' => [
+            'regex' => 'The VAT registration number has 15 Western digits (0-9) with no spaces, and starts and ends with 3.',
+        ],
+        'gap_thresholds' => [
+            'ascending' => 'The critical-gap threshold must be above zero and below the strength threshold, and the strength threshold cannot exceed 100.',
+        ],
+        'maturity_bands' => [
+            'ascending' => 'The maturity band starts must be above zero, rise from Developing to Mature and Leading, and not exceed 100.',
+        ],
+        'name' => [
+            'requires_correction_request' => 'The name of an account in use changes only through a name correction request, approved by a second reviewer.',
+        ],
+        'national_id' => [
+            'digits' => 'The national ID or Iqama number has digits only, no letters or symbols.',
+            'length' => 'The national ID or Iqama number has exactly 10 digits.',
+            'prefix' => 'The national ID or Iqama number starts with 1 or 2.',
+        ],
+        'iban' => [
+            'format' => 'A Saudi IBAN has 24 characters: SA, two check digits, the bank code and 18 letters or digits.',
+            'checksum' => 'This IBAN is not valid: its check digits do not match the rest of the number. Check it character by character.',
+            'unique' => 'This IBAN is already registered for another bank account on the platform.',
+        ],
+        'rejection_reason' => [
+            'note_required' => 'Write a note that explains the rejection when you choose "Other reason".',
+        ],
+        'payment_ids' => [
+            'max' => 'You can approve or reject at most :max transfers at once.',
+        ],
+        'ordered_ids' => [
+            'complete' => 'Order all the listed bank accounts, each one once.',
+        ],
+        'identifier' => [
+            'format' => 'Enter your official e-mail, your Saudi mobile number (05XXXXXXXX) or your entity\'s unified national number (10 digits).',
+        ],
+        'entity_sign_in_code_channels' => [
+            'email_required' => 'E-mail must stay allowed: every entity can always receive its sign-in code by e-mail.',
+            'sms_unavailable' => 'Configure the SMS gateway before allowing sign-in codes by text message.',
+        ],
+        'unified_number' => [
+            'regex' => 'The unified national number must contain exactly 10 digits (0-9).',
+            'unique' => 'This unified national number is already registered for another entity on the platform. Check the number or contact the platform team.',
+        ],
+        'license_certificate' => [
+            'required' => 'Upload the licence certificate as a PDF.',
+            'extensions' => 'The licence certificate must be a PDF file.',
+            'mimes' => 'The licence certificate must be a PDF file.',
+            'max' => 'The licence certificate must not be larger than 5 MB.',
+        ],
+        'authorization_letter' => [
+            'required' => 'Upload the authorization letter as a PDF.',
+            'extensions' => 'The authorization letter must be a PDF file.',
+            'mimes' => 'The authorization letter must be a PDF file.',
+            'max' => 'The authorization letter must not be larger than 5 MB.',
+        ],
+        'license_number' => [
+            'regex' => 'The licence number must contain 3 to 20 digits (0-9) only.',
+            'unique' => 'This licence number is already registered for another entity on the platform. Check the number or contact the platform team.',
+        ],
+        'founded_on' => [
+            'after_or_equal' => 'The founding date must be on or after 1900-01-01.',
+            'before_or_equal' => 'The founding date cannot be in the future.',
+            'date_format' => 'Write the founding date as YYYY-MM-DD, for example 2012-03-01.',
+        ],
+        'website_url' => [
+            'https' => 'The website must be a full address starting with https://, for example https://www.example.sa.',
+        ],
+        'file' => [
+            'dimensions' => 'Each side of the image must be between :min_width and :max_width pixels.',
+        ],
+        'level_thresholds' => [
+            'ascending' => 'The level minimums must be greater than zero and rise from bronze to silver, gold and diamond.',
+        ],
         'secret' => [
             'clear' => 'To remove the stored :attribute, send {"clear": true}.',
             'format' => 'The :attribute has an invalid format.',
@@ -168,6 +262,26 @@ return [
         ],
         'host' => [
             'hostname' => 'The :attribute must be a valid host name.',
+        ],
+        'link' => [
+            'safe' => 'The :attribute must be a site path starting with /, an anchor starting with #, a mailto: address or an https:// link.',
+            'https' => 'The :attribute must be a full link starting with https://.',
+        ],
+        'icon' => [
+            'font_awesome' => 'The :attribute must be a Font Awesome class such as fa-solid fa-chart-line.',
+        ],
+        'rich_text' => [
+            'markup' => 'HTML tags are not allowed in the :attribute. Use the simple format for headings, lists and tables.',
+        ],
+        'meta' => [
+            'object' => 'The :attribute must be an object of named fields.',
+            'bounded' => 'The :attribute is too large or too deeply nested (at most :max KB, 5 levels, field names of letters, digits and underscores).',
+        ],
+        'key' => [
+            'unknown' => 'This field is not part of the settings.',
+        ],
+        'kpi_number' => [
+            'format' => 'The :attribute must be a number with at most 14 digits before the decimal point and 4 after it.',
         ],
         'apple_pay_file' => [
             'content' => 'The file must be the plain-text domain association file downloaded from Moyasar.',
@@ -187,6 +301,16 @@ return [
         'terms_version_id' => [
             'not_current' => 'You must accept the current version of the terms and conditions.',
         ],
+        'notification_channels' => [
+            'core' => 'A core notification is always sent; its channels cannot be switched off.',
+            'audience' => 'This notification does not reach that audience.',
+        ],
+        'notification_text' => [
+            'unknown_variable' => 'The variable :variable is not available for this notification.',
+            'required_variable' => 'Keep the variable :variable; this core notification needs it.',
+            'fixed_part' => 'The button of a core notification cannot be changed.',
+            'sms_too_long' => 'The text message is too long: keep it within :count messages.',
+        ],
         'q' => [
             'searchable' => 'The search term must contain at least :min letters or digits.',
         ],
@@ -196,20 +320,83 @@ return [
         'city_id' => [
             'not_in_region' => 'Choose an active city of the selected region.',
         ],
+        'criteria_version_id' => [
+            'prohibited' => 'The platform sets the criteria version of a cycle: it follows the published version while the cycle is a draft and is fixed when submissions open.',
+        ],
+        'official_email' => [
+            'prohibited' => 'The official e-mail is changed from "Change e-mail", not from this section.',
+        ],
         'new_email' => [
             'same_as_current' => 'The new e-mail must be different from the current one.',
         ],
+        'path_settings' => [
+            'not_applicable' => 'This setting does not apply to the self assessment path.',
+            'name_fixed' => 'The path name is fixed and cannot be edited.',
+        ],
         'price' => [
             'format' => 'The :attribute must be an amount in riyals written with two decimals, for example 1500.00.',
-            'positive' => 'The :attribute must be greater than zero.',
+            'moved' => 'Prices are now edited in the path prices settings.',
+        ],
+        'effective_from' => [
+            'window' => 'Choose a date from :min to :max.',
         ],
         'vat_rate' => [
-            'format' => 'The :attribute must be a percentage between 0 and 100 with at most two decimals, for example 15.00.',
+            'format' => 'The :attribute must be a percentage between 0 and 100 with at most two decimals, e.g. 15.00.',
         ],
     ],
 
     'attributes' => [
+        'address_building_number' => 'building number',
+        'address_street' => 'street',
+        'address_district' => 'district',
+        'address_city' => 'city',
+        'address_postal_code' => 'postal code',
+        'address_additional_number' => 'additional number',
+        'address_short_code' => 'short address',
+        'vat_registered' => 'VAT registration',
+        'vat_number' => 'VAT registration number',
+        'primary_color' => 'primary color',
+        'secondary_color' => 'secondary color',
+        'meta.availability' => 'availability',
+        'vat_registration_number' => 'VAT registration number',
+        'gap_thresholds' => 'strengths and gaps thresholds',
+        'gap_thresholds.critical_below' => 'critical-gap threshold',
+        'gap_thresholds.strength_from' => 'strength threshold',
+        'maturity_bands' => 'maturity band bounds',
+        'maturity_bands.developing_from' => 'start of the Developing band',
+        'maturity_bands.mature_from' => 'start of the Mature band',
+        'maturity_bands.leading_from' => 'start of the Leading band',
+        'summary' => 'assessor summary',
+        'main_criterion_code' => 'main criterion code',
+        'text.ar' => 'Arabic text',
+        'text.en' => 'English text',
+        'bank_name' => 'bank name',
+        'bank_name.ar' => 'Arabic bank name',
+        'bank_name.en' => 'English bank name',
+        'account_holder_name' => 'account holder name',
+        'account_holder_name.ar' => 'Arabic account holder name',
+        'account_holder_name.en' => 'English account holder name',
+        'iban' => 'IBAN',
+        'national_id' => 'national ID or Iqama number',
+        'account_number' => 'account number',
+        'payer_note' => 'note to entities',
+        'payer_note.ar' => 'Arabic note to entities',
+        'payer_note.en' => 'English note to entities',
+        'channels' => 'payment channels',
+        'bank_account_id' => 'bank account',
+        'proof' => 'bank transfer receipt',
+        'rejection_reason' => 'rejection reason',
+        'payment_ids' => 'selected transfers',
+        'accredited_issuance_enabled' => 'accredited certificate issuance',
+        'level_thresholds' => 'level minimums',
+        'level_thresholds.bronze' => 'bronze level minimum',
+        'level_thresholds.silver' => 'silver level minimum',
+        'level_thresholds.gold' => 'gold level minimum',
+        'level_thresholds.diamond' => 'diamond level minimum',
+        'issue_certificate' => 'issue the certificate',
         'award_cycle_id' => 'award cycle',
+        'month' => 'month',
+        'quarter' => 'quarter',
         'year' => 'year',
         'submission_start' => 'submission start',
         'submission_end' => 'submission end',
@@ -311,7 +498,7 @@ return [
         'attachments.*.required' => 'attachment requirement',
         'ordered_ids' => 'order',
         'ordered_ids.*' => 'item',
-        'confirm_delete_points' => 'guiding points deletion confirmation',
+        'confirm_delete_points' => 'indicators deletion confirmation',
         'clone_from_version_id' => 'source version',
         'confirm' => 'confirmation',
         'scope' => 'scope',
@@ -329,9 +516,18 @@ return [
         'development_sector' => 'development sector',
         'org_size' => 'organization size',
         'founding_year' => 'founding year',
+        'license_number' => 'licence number',
+        'license_certificate' => 'licence certificate',
+        'authorization_letter' => 'authorization letter',
+        'unified_number' => 'unified national number',
+        'identifier' => 'e-mail, mobile number or unified national number',
+        'entity_sign_in_code_channels' => 'sign-in code channels',
+        'founded_on' => 'founding date',
+        'website_url' => 'website',
         'region_id' => 'region',
         'city_id' => 'city',
         'governance_grade' => 'governance grade',
+        'has_governance_grade' => 'governance score answer',
         'employees_count' => 'number of employees',
         'annual_beneficiaries_count' => 'annual number of beneficiaries',
         'has_strategic_plan' => 'strategic plan',
@@ -360,8 +556,8 @@ return [
         'scores' => 'scores',
         'scores.subs' => 'sub-criterion scores',
         'scores.subs.*' => 'sub-criterion score',
-        'scores.points' => 'guiding point scores',
-        'scores.points.*' => 'guiding point score',
+        'scores.points' => 'indicator scores',
+        'scores.points.*' => 'indicator score',
         'accredited_price' => 'accredited assessment price before VAT',
         'bag_price' => 'Quick Excellence Kit price before VAT',
         'vat_rate' => 'VAT rate',

@@ -46,6 +46,17 @@ it('lists the main criteria of the draft with their weight summary', function ()
         ->assertJsonPath('meta.pagination.total', 1);
 });
 
+it('reports the total weight of the active main criteria whatever the list filters', function (): void {
+    $draft = balancedDraft();
+    mainIn($draft, 'M2', '500.00', 2);
+    mainIn($draft, 'M3', '300.00', 3)->forceFill(['is_active' => false])->save();
+    signIn(criteriaOfficer());
+
+    $this->getJson('/api/v1/criteria/mains?filter[active]=false')->assertOk()
+        ->assertJsonPath('meta.pagination.total', 1)
+        ->assertJsonPath('meta.version.active_weight_total', '1500.00');
+});
+
 it('falls back to the published version and accepts an explicit version', function (): void {
     $published = publishVersion(balancedDraft());
     $other = draftVersion();
@@ -277,6 +288,18 @@ it('shows a main criterion with its sub-criteria', function (): void {
         ->assertJsonPath('data.subs.1.available_weight', '400.00');
 });
 
+it('lets the System Administrator manage the criteria tree of a draft', function (): void {
+    $draft = balancedDraft();
+    $administrator = systemAdmin();
+    signIn($administrator);
+
+    $created = $this->postJson('/api/v1/criteria/mains', mainPayload())->assertCreated()->assertJsonPath('data.version_id', $draft->id);
+    $this->putJson('/api/v1/criteria/mains/'.$created->json('data.id'), ['weight' => '700'])->assertOk()->assertJsonPath('data.weight', '700.00');
+    $this->patchJson('/api/v1/criteria/mains/'.$created->json('data.id').'/active', ['active' => false])->assertOk();
+
+    expect(Audit::query()->where('event', AuditEvent::CriteriaMainCreated->value)->where('user_id', $administrator->id)->exists())->toBeTrue();
+});
+
 it('denies main criterion writes to roles without criteria.manage', function (RoleKey $role): void {
     $main = mainOf(balancedDraft(), 'M1');
     signIn(staffUser($role));
@@ -287,7 +310,7 @@ it('denies main criterion writes to roles without criteria.manage', function (Ro
     $this->postJson('/api/v1/criteria/mains/reorder', ['ordered_ids' => [$main->id]])->assertForbidden();
     $this->deleteJson('/api/v1/criteria/mains/'.$main->id)->assertForbidden();
 })->with([
-    'system administrator' => [RoleKey::SystemAdmin],
+    'request follower' => [RoleKey::RequestFollower],
     'assessor' => [RoleKey::Assessor],
     'content officer' => [RoleKey::ContentOfficer],
 ]);

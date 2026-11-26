@@ -94,6 +94,17 @@ it('limits the finance officer to name and contact fields', function (): void {
     $this->getJson("/api/v1/entities/{$entity->id}")->assertOk()->assertJsonMissingPath('data.employees_count');
 });
 
+it('lists the region and the registration date of each entity to the contact viewer', function (): void {
+    $entity = entityWithOwner();
+    signIn(staffUser(RoleKey::FinanceOfficer));
+
+    $this->getJson('/api/v1/entities')
+        ->assertOk()
+        ->assertJsonPath('data.0.region', ['id' => $entity->region->id, 'code' => $entity->region->code, 'name' => $entity->region->name->toArray()])
+        ->assertJsonPath('data.0.created_at', $entity->created_at->toIso8601String())
+        ->assertJsonMissingPath('data.0.city');
+});
+
 it('shows no entity to roles whose scope is limited to their own assignments', function (RoleKey $role): void {
     $entity = entityWithOwner();
     signIn(staffUser($role));
@@ -195,11 +206,10 @@ it('blocks the sign-in of a deactivated entity', function (): void {
     $entity = entityWithOwner(static fn ($factory) => $factory->deactivated());
     $owner = ownerOf($entity);
 
-    $this->postJson('/api/v1/auth/login', ['email' => $owner->email, 'mode' => 'password', 'password' => defaultPassword()])
+    signInWith($owner->email, defaultPassword())
         ->assertForbidden()
         ->assertJsonPath('code', 'account_deactivated');
 
-    $this->postJson('/api/v1/auth/otp/request', ['email' => $owner->email, 'channel' => 'email'])->assertOk();
     Notification::assertNotSentTo($owner, OtpCodeNotification::class);
 });
 
@@ -292,5 +302,16 @@ it('requires authentication for every staff entity endpoint', function (string $
     ['POST', '/api/v1/entities/{id}/restore'],
     ['DELETE', '/api/v1/entities/{id}/permanent'],
     ['POST', '/api/v1/entities/export'],
+]);
+
+it('no longer offers the personal-data export, the data-subject requests or the address tools', function (string $method, string $uri): void {
+    $entity = entityWithOwner();
+
+    switchTo(systemAdmin())->json($method, str_replace('{id}', (string) $entity->id, $uri), ['reason' => 'سبب موثق للطلب لدى الإدارة.'])->assertNotFound();
+})->with([
     ['POST', '/api/v1/entities/{id}/export'],
+    ['GET', '/api/v1/privacy/requests'],
+    ['GET', '/api/v1/privacy/entities'],
+    ['POST', '/api/v1/privacy/contact-messages/export'],
+    ['POST', '/api/v1/privacy/contact-messages/erase'],
 ]);

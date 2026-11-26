@@ -19,7 +19,7 @@ final class ListSuperAdmins
             ->orderBy('id')
             ->get()
             ->map(static fn (User $user): array => [
-                'email' => (new EmailAddress($user->email))->masked(),
+                'email' => new EmailAddress($user->email)->masked(),
                 'mfa_enrolled' => $user->hasConfirmedTotp(),
                 'last_login_at' => $user->last_login_at?->toIso8601String(),
             ])

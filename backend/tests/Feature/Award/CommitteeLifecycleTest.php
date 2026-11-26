@@ -66,7 +66,7 @@ it('stores the committee entity data visibility in the assessment settings', fun
     switchTo(awardSecretary())->putJson('/api/v1/settings/assessment', ['committee_entity_data_visibility' => 'full'])->assertForbidden();
 });
 
-it('lists the running and draft award cycles before a criteria publication and keeps or moves the draft cycles', function (): void {
+it('lists the running and draft award cycles before a criteria publication and always moves the draft cycles', function (): void {
     $version = publishedAccreditedCriteria();
     $running = openAwardCycle($version);
     $request = submittedAdvancedRequest($running, $version);
@@ -78,9 +78,8 @@ it('lists the running and draft award cycles before a criteria publication and k
         ->assertJsonPath('meta.award_cycles.running.open_requests', 1)
         ->assertJsonPath('meta.award_cycles.requests_stay_on_cycle_version', true)
         ->assertJsonPath('meta.award_cycles.drafts.0.id', $draft->id);
-    test()->postJson("/api/v1/criteria/versions/{$nextDraftId}/publish", ['confirm' => true, 'scope' => 'all', 'draft_cycles' => 'sometimes'])->assertUnprocessable();
-    test()->postJson("/api/v1/criteria/versions/{$nextDraftId}/publish", ['confirm' => true, 'scope' => 'all', 'draft_cycles' => 'move'])->assertOk()
-        ->assertJsonPath('meta.award_cycles.draft_cycles', 'move')
+    test()->postJson("/api/v1/criteria/versions/{$nextDraftId}/publish", ['confirm' => true, 'scope' => 'all'])->assertOk()
+        ->assertJsonMissingPath('meta.award_cycles.draft_cycles')
         ->assertJsonPath('meta.award_cycles.moved_cycle_ids', [$draft->id])
         ->assertJsonPath('meta.award_cycles.drafts.0.criteria_version_id', $nextDraftId);
 
@@ -90,14 +89,30 @@ it('lists the running and draft award cycles before a criteria publication and k
 
     $thirdId = test()->postJson('/api/v1/criteria/versions', [])->assertCreated()->json('data.id');
     test()->postJson("/api/v1/criteria/versions/{$thirdId}/publish", ['confirm' => true, 'scope' => 'new_only'])->assertOk()
-        ->assertJsonPath('meta.award_cycles.draft_cycles', 'keep')
-        ->assertJsonPath('meta.award_cycles.moved_cycle_ids', [])
-        ->assertJsonPath('meta.award_cycles.drafts.0.criteria_version_id', $nextDraftId);
+        ->assertJsonPath('meta.award_cycles.moved_cycle_ids', [$draft->id])
+        ->assertJsonPath('meta.award_cycles.drafts.0.criteria_version_id', $thirdId);
+
+    expect(AwardCycle::query()->findOrFail($running->id)->criteria_version_id)->toBe($version->id);
+});
+
+it('moves a draft award cycle to the new criteria version and drops its legacy scale stamp', function (): void {
+    $version = publishedAccreditedCriteria();
+    $draft = draftAwardCycle($version, ['submission_start' => Date::now()->addMonths(6), 'submission_end' => Date::now()->addMonths(7), 'committee_start' => Date::now()->addMonths(8), 'committee_end' => Date::now()->addMonths(9), 'announcement_at' => Date::now()->addMonths(10)]);
+    AwardCycle::query()->whereKey($draft->id)->update(['scale_kind' => 'relative']);
+    config(['moashir.assessment.scale_kind' => 'of_10']);
+    $nextDraftId = switchTo(criteriaOfficer())->postJson('/api/v1/criteria/versions', [])->assertCreated()->json('data.id');
+
+    test()->postJson("/api/v1/criteria/versions/{$nextDraftId}/publish", ['confirm' => true, 'scope' => 'all'])->assertOk();
+
+    $moved = Audit::query()->where('event', AuditEvent::CycleCriteriaVersionMoved->value)->sole();
+
+    expect(AwardCycle::query()->findOrFail($draft->id)->scale_kind)->toBeNull()
+        ->and($moved->new_values['criteria_version_id'] ?? null)->toBe($nextDraftId);
 });
 
 it('uses the default qualification threshold of sixty percent for a new cycle', function (): void {
-    $version = publishedAccreditedCriteria();
+    publishedAccreditedCriteria();
     $region = regionWithCity()->region;
 
-    switchTo(systemAdmin())->postJson('/api/v1/award/cycles', cyclePayload($version, $region))->assertCreated()->assertJsonPath('data.conditions.disqualification_score', '60.00');
+    switchTo(systemAdmin())->postJson('/api/v1/award/cycles', cyclePayload($region))->assertCreated()->assertJsonPath('data.conditions.disqualification_score', '60.00');
 });

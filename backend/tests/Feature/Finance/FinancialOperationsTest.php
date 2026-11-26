@@ -41,39 +41,67 @@ function financeLedger(): array
     ];
 }
 
-it('summarizes live collections by service without any gateway fee', function (): void {
+/**
+ * A key that would carry a gateway fee or a net-of-fee amount, which the ledger never exposes.
+ */
+const GATEWAY_FEE_KEY = '/fee|^net/';
+
+/**
+ * Every string key of a JSON payload at any depth. Only keys are collected, never values, because the
+ * values carry random public ids and references that may contain any hex substring.
+ *
+ * @param  array<array-key, mixed>  $payload
+ * @return list<string>
+ */
+function financePayloadKeys(array $payload): array
+{
+    $keys = [];
+    $walker = new RecursiveIteratorIterator(new RecursiveArrayIterator($payload), RecursiveIteratorIterator::SELF_FIRST);
+
+    foreach ($walker as $key => $value) {
+        if (is_string($key)) {
+            $keys[] = $key;
+        }
+    }
+
+    return $keys;
+}
+
+it('totals confirmed collections of both modes in the ledger stats without any gateway fee', function (): void {
     financeLedger();
 
-    $response = switchTo(financeOfficer())->getJson('/api/v1/finance/summary')->assertOk()
-        ->assertJsonPath('meta.live_only', true)
-        ->assertJsonPath('data.transactions_count', 4)
-        ->assertJsonPath('data.completed_count', 2)
-        ->assertJsonPath('data.incomplete_count', 1)
-        ->assertJsonPath('data.refunded_count', 1)
-        ->assertJsonPath('data.total_income', '2300.00')
-        ->assertJsonPath('data.total_vat', '300.00')
-        ->assertJsonPath('data.total_refunded', '1150.00')
-        ->assertJsonPath('data.currency', 'SAR')
-        ->assertJsonPath('data.by_purpose.0.purpose', 'accredited')
-        ->assertJsonPath('data.by_purpose.0.completed_count', 1)
-        ->assertJsonPath('data.by_purpose.1.purpose', 'bag')
-        ->assertJsonPath('data.by_purpose.1.completed_count', 1);
+    $response = switchTo(financeOfficer())->getJson('/api/v1/finance/transactions')->assertOk()
+        ->assertJsonPath('meta.stats.transactions_count', 5)
+        ->assertJsonPath('meta.stats.completed_count', 3)
+        ->assertJsonPath('meta.stats.incomplete_count', 1)
+        ->assertJsonPath('meta.stats.refunded_count', 1)
+        ->assertJsonPath('meta.stats.total_income', '3450.00')
+        ->assertJsonPath('meta.stats.total_vat', '450.00')
+        ->assertJsonPath('meta.stats.total_refunded', '1150.00')
+        ->assertJsonPath('meta.stats.transactions_value', '5750.00')
+        ->assertJsonPath('meta.stats.currency', 'SAR');
 
-    expect((string) $response->getContent())->not->toContain('fee')->and((string) $response->getContent())->not->toContain('net');
-    $this->getJson('/api/v1/finance/summary?from=2020-01-01&to=2020-12-31')->assertOk()->assertJsonPath('data.transactions_count', 0);
-    $this->getJson('/api/v1/finance/summary?from=2026-12-01&to=2026-01-01')->assertUnprocessable();
+    expect(financePayloadKeys((array) $response->json('meta.stats')))->not->toBeEmpty()->each->not->toMatch(GATEWAY_FEE_KEY)
+        ->and(financePayloadKeys((array) $response->json('data')))->not->toBeEmpty()->each->not->toMatch(GATEWAY_FEE_KEY);
+    $this->getJson('/api/v1/finance/transactions?filter[purpose]=accredited')->assertOk()->assertJsonPath('meta.stats.completed_count', 2);
+    $this->getJson('/api/v1/finance/transactions?filter[mode]=live')->assertOk()
+        ->assertJsonPath('meta.stats.completed_count', 2)
+        ->assertJsonPath('meta.stats.total_income', '2300.00');
+    $this->getJson('/api/v1/finance/transactions?filter[purpose]=bag')->assertOk()->assertJsonPath('meta.stats.completed_count', 1);
+    $this->getJson('/api/v1/finance/transactions?filter[from]=2020-01-01&filter[to]=2020-12-31')->assertOk()->assertJsonPath('meta.stats.transactions_count', 0);
+    $this->getJson('/api/v1/finance/transactions?filter[from]=2026-12-01&filter[to]=2026-01-01')->assertUnprocessable();
 });
 
-it('lists live transactions with search, filters, sort and stats', function (): void {
+it('lists transactions of both modes with search, filters, sort and stats', function (): void {
     ['paid' => $paid, 'test' => $test] = financeLedger();
     switchTo(financeOfficer());
 
     $this->getJson('/api/v1/finance/transactions')->assertOk()
-        ->assertJsonPath('meta.pagination.total', 4)
-        ->assertJsonPath('meta.stats.total_income', '2300.00')
-        ->assertJsonPath('meta.stats.transactions_count', 4);
+        ->assertJsonPath('meta.pagination.total', 5)
+        ->assertJsonPath('meta.stats.total_income', '3450.00')
+        ->assertJsonPath('meta.stats.transactions_count', 5);
 
-    $this->getJson('/api/v1/finance/transactions?search='.urlencode('الواحه'))->assertOk()
+    $this->getJson('/api/v1/finance/transactions?filter[mode]=live&search='.urlencode('الواحه'))->assertOk()
         ->assertJsonPath('meta.pagination.total', 1)
         ->assertJsonPath('data.0.id', $paid->public_id)
         ->assertJsonPath('data.0.entity.name.en', 'Al-Waha Charitable Association')
@@ -91,7 +119,26 @@ it('lists live transactions with search, filters, sort and stats', function (): 
         ->assertJsonPath('meta.pagination.total', 1)
         ->assertJsonPath('data.0.id', $test->public_id)
         ->assertJsonPath('data.0.is_test', true)
-        ->assertJsonPath('meta.stats.transactions_count', 4);
+        ->assertJsonPath('meta.stats.transactions_count', 1)
+        ->assertJsonPath('meta.stats.total_income', '1150.00');
+    $this->getJson('/api/v1/finance/transactions?filter[mode]=live')->assertOk()
+        ->assertJsonPath('meta.pagination.total', 4)
+        ->assertJsonPath('meta.stats.total_income', '2300.00');
+});
+
+it('filters transactions by entity and searches by the authorized person', function (): void {
+    ['paid' => $paid] = financeLedger();
+    $initiator = $paid->initiatedBy;
+    switchTo(financeOfficer());
+
+    $this->getJson("/api/v1/finance/transactions?filter[entity_id]={$paid->entity_id}")->assertOk()
+        ->assertJsonPath('data.0.entity.name.en', 'Al-Waha Charitable Association');
+    expect(collect($this->getJson("/api/v1/finance/transactions?filter[entity_id]={$paid->entity_id}")->json('data'))
+        ->every(static fn (array $row): bool => $row['entity']['name']['en'] === 'Al-Waha Charitable Association'))->toBeTrue();
+    $this->getJson('/api/v1/finance/transactions?filter[entity_id]=999999')->assertOk()->assertJsonPath('meta.pagination.total', 0);
+    $this->getJson('/api/v1/finance/transactions?search='.urlencode((string) $initiator?->name))->assertOk()
+        ->assertJsonPath('data.0.entity.name.en', 'Al-Waha Charitable Association');
+    $this->getJson('/api/v1/finance/transactions?filter[entity_id]=0')->assertUnprocessable();
 });
 
 it('rejects unknown sorts and filters', function (string $query): void {
@@ -126,23 +173,22 @@ it('lets the System Administrator read financial operations and keeps everyone e
 
     foreach ([staffUser(RoleKey::Assessor), staffUser(RoleKey::RequestFollower), staffUser(RoleKey::ContentOfficer), ownerOf(entityWithOwner())] as $user) {
         switchTo($user)->getJson('/api/v1/finance/transactions')->assertForbidden();
-        $this->getJson('/api/v1/finance/summary')->assertForbidden();
         $this->postJson('/api/v1/finance/transactions/export')->assertForbidden();
     }
 });
 
-it('streams an audited CSV export of live transactions only', function (): void {
+it('streams an audited CSV export of the transactions of both modes', function (): void {
     ['paid' => $paid, 'test' => $test] = financeLedger();
     $paid->forceFill(['entity_name' => ['ar' => '=جمعية الأمل الخيرية', 'en' => 'Al-Amal']])->save();
     $finance = financeOfficer();
 
     $response = switchTo($finance)->post('/api/v1/finance/transactions/export', [], ['Accept' => 'application/json'])->assertOk()
-        ->assertHeader('X-Export-Row-Count', '4');
+        ->assertHeader('X-Export-Row-Count', '5');
     $csv = $response->streamedContent();
 
     expect($csv)->toStartWith("\u{FEFF}")
         ->and($csv)->toContain($paid->reference)
-        ->and($csv)->not->toContain($test->reference)
+        ->and($csv)->toContain($test->reference)
         ->and($csv)->toContain("'=جمعية الأمل الخيرية")
         ->and($csv)->toContain('مرجع الدفع')
         ->and(FinanceExport::query()->sole()->status)->toBe(FinanceExportStatus::Streamed)
@@ -155,14 +201,14 @@ it('prepares a large export in the background and notifies the requester', funct
     $finance = financeOfficer();
 
     $exportId = (string) switchTo($finance)->postJson('/api/v1/finance/transactions/export')->assertAccepted()
-        ->assertJsonPath('data.row_count', 4)
+        ->assertJsonPath('data.row_count', 5)
         ->json('data.id');
 
     $this->getJson("/api/v1/finance/exports/{$exportId}")->assertOk()->assertJsonPath('data.status', 'ready');
     $url = (string) $this->postJson("/api/v1/finance/exports/{$exportId}/download")->assertOk()->json('data.url');
     $csv = $this->get($url)->assertOk()->streamedContent();
 
-    expect(substr_count($csv, "\n"))->toBe(5)
+    expect(substr_count($csv, "\n"))->toBe(6)
         ->and(financeNoticeSent($finance, NotificationCode::FinanceExportReady))->toBeTrue();
 
     switchTo(systemAdmin())->getJson("/api/v1/finance/exports/{$exportId}")->assertNotFound();

@@ -17,7 +17,7 @@ export default defineConfig([
     '**/dist/**',
     '**/dist-ssr/**',
     '**/coverage/**',
-    '**/public/**',
+    'public/**',
     '**/node_modules/**',
     '**/playwright-report/**',
     '**/playwright-report-integration/**',
@@ -57,6 +57,35 @@ export default defineConfig([
     ],
     rules: {
       'vue/multi-word-component-names': 'off',
+    },
+  },
+
+  {
+    // Live bug 2026-11-22: a template handler that the component never defined threw on click and did nothing.
+    name: 'app/template-defined-properties',
+    files: ['src/**/*.vue'],
+    rules: {
+      'vue/no-undef-properties': 'error',
+    },
+  },
+
+  {
+    name: 'app/complexity-limits',
+    files: ['src/**/*.{js,vue}'],
+    ignores: ['src/mocks/**', 'src/test-utils/**', 'src/**/__tests__/**'],
+    rules: {
+      complexity: ['error', 10],
+      'max-depth': ['error', 3],
+      'max-params': ['error', 5],
+      'max-lines-per-function': ['error', { max: 50, skipBlankLines: true, skipComments: true }],
+    },
+  },
+
+  {
+    name: 'app/component-length',
+    files: ['src/**/*.vue'],
+    rules: {
+      'max-lines': ['error', { max: 200, skipBlankLines: true, skipComments: true }],
     },
   },
 

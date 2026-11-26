@@ -18,6 +18,7 @@ final class CriteriaVersionCloner
         foreach ($source->mainCriteria as $main) {
             $copy = $this->copyOf($main);
             $copy->forceFill(['criteria_version_id' => $target->id, 'cloned_from_id' => $main->id])->save();
+            $this->cloneAttachments($main->attachmentRequirements, $copy);
 
             foreach ($main->subCriteria as $sub) {
                 $this->cloneSub($sub, $copy);
@@ -41,12 +42,15 @@ final class CriteriaVersionCloner
     /**
      * @param  Collection<int, AttachmentRequirement>  $requirements
      */
-    private function cloneAttachments(Collection $requirements, SubCriterion|GuidingPoint $owner): void
+    private function cloneAttachments(Collection $requirements, MainCriterion|SubCriterion|GuidingPoint $owner): void
     {
         foreach ($requirements as $requirement) {
             $owner->attachmentRequirements()->create([
                 'key' => $requirement->key,
                 'name' => $requirement->name,
+                'guidance' => $requirement->guidance,
+                'allowed_types' => $requirement->allowed_types,
+                'max_files' => $requirement->max_files,
                 'is_required' => $requirement->is_required,
                 'sort_order' => $requirement->sort_order,
             ]);

@@ -39,7 +39,7 @@ final readonly class RemoveEvidence
                 throw (new ModelNotFoundException)->setModel(EvidenceFile::class);
             }
 
-            $this->completion->assertRequested($locked, $current->sub_code, CompletionItemKind::Evidence, 'evidence');
+            $this->completion->assertRequested($locked, $current->ownerCode(), CompletionItemKind::Evidence, 'evidence');
             $this->remove($actor, $locked, $current);
         });
     }
@@ -53,7 +53,8 @@ final readonly class RemoveEvidence
 
         $this->audit->record(new AuditEntry(AuditEvent::EvidenceRemoved, $locked, ['evidence_id' => $evidence->public_id], [
             'evidence_id' => $evidence->public_id,
-            'sub_code' => $evidence->sub_code,
+            'level' => $evidence->level()->value,
+            EvidenceFile::ownerColumn($evidence->level()) => $evidence->ownerCode(),
             'status' => EvidenceStatus::Removed->value,
         ]));
 

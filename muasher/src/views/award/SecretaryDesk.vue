@@ -1,0 +1,150 @@
+<script setup>
+import { computed } from 'vue'
+import { useI18n } from 'vue-i18n'
+import { useRoute } from 'vue-router'
+import { useHead } from '@unhead/vue'
+import AppSelect from '@/components/form/AppSelect.vue'
+import StatsCards from '@/components/data-list/StatsCards.vue'
+import ListToolbar from '@/components/data-list/ListToolbar.vue'
+import DataListCard from '@/components/data-list/DataListCard.vue'
+import Pagination from '@/components/data-list/Pagination.vue'
+import AwardPageHeader from '@/components/committee/AwardPageHeader.vue'
+import SecretaryRequestTable from '@/components/committee/SecretaryRequestTable.vue'
+import { useSecretaryDesk } from '@/composables/useSecretaryDesk'
+import {
+  COMMITTEE_REQUEST_STATUSES as C,
+  RESULT_STATUSES as R,
+  SECRETARY_SORTS,
+  SECRETARY_STATUSES,
+} from '@/constants/committee'
+import { ROUTE_NAMES } from '@/constants/routeNames'
+import { localizedText } from '@/utils/localizedText'
+import { statusLabelKey } from '@/utils/canonicalStatus'
+import { linkedStatus } from '@/utils/award/linkedStatus'
+
+const { t, locale } = useI18n()
+const route = useRoute()
+const cycleId = computed(() => Number(route.params.id))
+const {
+  items,
+  status,
+  errorMessage,
+  load,
+  filters,
+  paginator,
+  searchInput,
+  cycle,
+  counts,
+  setFilter,
+  setSort,
+} = useSecretaryDesk(cycleId, { status: linkedStatus(route.query.status, SECRETARY_STATUSES) })
+const { pagination, setPage } = paginator
+
+useHead({ title: () => t('award.secretary.title') })
+
+const statCards = computed(() => {
+  if (!counts.value) return []
+  const value = counts.value
+  return [
+    {
+      id: 'awaiting',
+      icon: 'stamp',
+      value: value[C.AWAITING_SECRETARY],
+      label: t('status.awaiting_secretary_approval'),
+    },
+    {
+      id: 'committee',
+      icon: 'users-two',
+      value: value[C.UNDER_COMMITTEE] + value[C.RETURNED],
+      label: t('award.secretary.stats.inCommittee'),
+    },
+    {
+      id: 'discussion',
+      icon: 'chat',
+      value: value[C.DISCUSSION],
+      label: t('status.committee_discussion'),
+    },
+    {
+      id: 'approved',
+      icon: 'check-circle',
+      value: Object.values(R).reduce((sum, key) => sum + value[key], 0),
+      label: t('award.secretary.stats.approved'),
+    },
+  ]
+})
+const statusOptions = computed(() => [
+  { value: '', label: t('dataList.filter.all') },
+  ...SECRETARY_STATUSES.map((value) => ({ value, label: t(statusLabelKey(value)) })),
+])
+const regionOptions = computed(() => [
+  { value: '', label: t('dataList.filter.all') },
+  ...(cycle.value?.regions ?? []).map((region) => ({
+    value: String(region.id),
+    label: localizedText(region.name, locale.value),
+  })),
+])
+const sortOptions = computed(() =>
+  SECRETARY_SORTS.map((value) => ({
+    value,
+    label: t(`award.secretary.sorts.${value.startsWith('-') ? `${value.slice(1)}_desc` : value}`),
+  })),
+)
+const filterState = { filters: filters.filters, setFilter, sort: filters.sort, setSort }
+</script>
+
+<template>
+  <section class="cycles-page secretary-desk">
+    <AwardPageHeader
+      :title="t('award.secretary.title')"
+      :cycle="cycle"
+      :back="{ name: ROUTE_NAMES.AWARD_SECRETARY, query: { list: 1 } }"
+      :back-label="t('award.common.backToCycles')"
+    />
+    <StatsCards :stats="statCards" :loading="!counts && status === 'loading'" />
+    <DataListCard>
+      <template #toolbar>
+        <ListToolbar
+          v-model:search="searchInput"
+          :search-placeholder="t('award.secretary.searchPlaceholder')"
+          :filter-state="filterState"
+        >
+          <template #filters="{ draft }">
+            <AppSelect
+              :model-value="draft.filters.status"
+              :options="statusOptions"
+              :label="t('award.secretary.filters.status')"
+              @update:model-value="draft.setFilter('status', $event)"
+            />
+            <AppSelect
+              :model-value="draft.filters.regionId"
+              :options="regionOptions"
+              :label="t('award.secretary.filters.region')"
+              @update:model-value="draft.setFilter('regionId', $event)"
+            />
+            <AppSelect
+              :model-value="draft.sort.value"
+              :options="sortOptions"
+              :label="t('award.secretary.filters.sort')"
+              @update:model-value="draft.setSort($event)"
+            />
+          </template>
+        </ListToolbar>
+      </template>
+      <SecretaryRequestTable
+        :cycle-id="cycleId"
+        :items="items"
+        :status="status"
+        :error-message="errorMessage"
+        @retry="load"
+      />
+      <template #footer>
+        <Pagination
+          v-if="status === 'success' && pagination.lastPage > 1"
+          :page="pagination.page"
+          :last-page="pagination.lastPage"
+          @update:page="setPage($event)"
+        />
+      </template>
+    </DataListCard>
+  </section>
+</template>

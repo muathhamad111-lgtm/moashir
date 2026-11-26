@@ -10,6 +10,7 @@ use App\Events\Award\CommitteeAssessorSubstituted;
 use App\Services\Award\AwardStaffNotifier;
 use App\Support\Award\AwardLinks;
 use App\Support\Award\AwardNotices;
+use App\Support\Award\CommitteeWorkLinks;
 
 final readonly class NotifyCommitteeRosterChange
 {
@@ -29,7 +30,7 @@ final readonly class NotifyCommitteeRosterChange
         $replaced = $event->replaced->loadMissing('assessor');
         $cycle = $substitute->awardCycle;
 
-        $this->notifier->assessor($substitute->assessor_user_id, AwardNotices::for(NotificationCode::CommitteeSubstituteAssigned, 'assessor', $cycle, AwardLinks::committeeWork()));
+        $this->notifier->assessor($substitute->assessor_user_id, AwardNotices::for(NotificationCode::CommitteeSubstituteAssigned, 'assessor', $cycle, CommitteeWorkLinks::assignments()));
         $this->notifier->secretaries($cycle->id, AwardNotices::for(NotificationCode::CommitteeSubstituteAssigned, 'staff', $cycle, AwardLinks::committee($cycle->id), [
             'assessor' => $substitute->assessor->name,
             'replaced' => $replaced->assessor->name,

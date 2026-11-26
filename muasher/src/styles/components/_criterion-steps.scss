@@ -1,0 +1,14 @@
+@use '../mixins' as *;
+
+.step-buttons {
+  @include flex(row, center, flex-end, var(--space-3));
+  flex-wrap: wrap;
+  margin-inline-start: auto;
+}
+
+.step-counter {
+  margin: 0;
+  font-size: var(--fs-sm);
+  font-weight: var(--fw-figure);
+  color: var(--theme-accent-text);
+}

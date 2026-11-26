@@ -6,8 +6,10 @@ namespace App\Actions\Demo;
 
 use App\Data\Demo\DemoAccount;
 use App\Data\Demo\DemoInstallation;
+use App\Enums\Identity\RoleKey;
 use App\Services\Demo\DemoAccountsDelivery;
 use App\Services\Demo\DemoActivityInstaller;
+use App\Services\Demo\DemoContentInstaller;
 use App\Services\Demo\DemoInstallGuard;
 use App\Services\Demo\DemoPeopleInstaller;
 
@@ -18,6 +20,7 @@ final readonly class InstallDemoData
         private DemoAccountsDelivery $delivery,
         private DemoPeopleInstaller $people,
         private DemoActivityInstaller $activity,
+        private DemoContentInstaller $content,
     ) {}
 
     public function handle(string $accountsFilePath): DemoInstallation
@@ -30,7 +33,11 @@ final readonly class InstallDemoData
                 $this->guard->assertMayInstall();
                 $people = $this->people->install();
 
-                return new DemoInstallation($people, $this->activity->install($people));
+                return new DemoInstallation(
+                    $people,
+                    $this->activity->install($people),
+                    $this->content->install($people->staffMember(RoleKey::ContentOfficer)),
+                );
             },
             /** @return list<DemoAccount> */
             static fn (DemoInstallation $installation): array => $installation->people->accounts(),

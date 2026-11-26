@@ -6,11 +6,6 @@ namespace App\Support\Award;
 
 final class AwardLinks
 {
-    public static function entityIntro(): string
-    {
-        return '/assessment/advanced';
-    }
-
     public static function cycle(int $cycleId): string
     {
         return '/admin/award/cycles/'.$cycleId;
@@ -21,21 +16,6 @@ final class AwardLinks
         return '/admin/award/cycles/'.$cycleId.'/committee';
     }
 
-    public static function committeeWork(): string
-    {
-        return '/admin/committee/assignments';
-    }
-
-    public static function committeeEvaluation(int $assignmentId): string
-    {
-        return '/admin/committee/assignments/'.$assignmentId;
-    }
-
-    public static function committeeDiscussions(): string
-    {
-        return '/admin/committee/discussions';
-    }
-
     public static function secretaryRequest(int $cycleId, int $assessmentId): string
     {
         return '/admin/award/cycles/'.$cycleId.'/secretary/'.$assessmentId;
@@ -44,6 +24,11 @@ final class AwardLinks
     public static function results(int $cycleId): string
     {
         return '/admin/award/cycles/'.$cycleId.'/results';
+    }
+
+    public static function national(int $cycleId): string
+    {
+        return self::results($cycleId).'/national';
     }
 
     public static function entityResult(int $assessmentId): string

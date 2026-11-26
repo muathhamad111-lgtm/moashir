@@ -22,10 +22,47 @@ const ENTITY = { id: 5001, roles: ['entity'], entityId: 5001 }
 const REASON = 'إجراء معتمد من إدارة الجائزة بعد مراجعة المواعيد.'
 
 const CYCLE_KEYS = [
-  'announcement_at', 'closed_at', 'committee_end', 'committee_start', 'conditions', 'counts', 'created_at', 'criteria_version_id', 'id', 'initial_review_sla_days',
-  'name', 'opened_at', 'participation_certificate_enabled', 'regions', 'scale_kind', 'status', 'submission_end', 'submission_start', 'submissions_closed_at', 'updated_at', 'year',
+  'announcement_at',
+  'closed_at',
+  'committee_end',
+  'committee_start',
+  'conditions',
+  'counts',
+  'created_at',
+  'criteria_version_id',
+  'description',
+  'entry_fee',
+  'entry_fee_editable',
+  'entry_fee_quote',
+  'id',
+  'initial_review_sla_days',
+  'name',
+  'opened_at',
+  'participation_certificate_enabled',
+  'regions',
+  'scale_kind',
+  'status',
+  'submission_end',
+  'submission_start',
+  'submissions_closed_at',
+  'updated_at',
+  'year',
 ]
-const PUBLIC_KEYS = ['announcement_at', 'committee_end', 'committee_start', 'conditions', 'id', 'is_accepting_applications', 'name', 'regions', 'status', 'submission_end', 'submission_start', 'year']
+const PUBLIC_KEYS = [
+  'announcement_at',
+  'committee_end',
+  'committee_start',
+  'conditions',
+  'description',
+  'id',
+  'is_accepting_applications',
+  'name',
+  'regions',
+  'status',
+  'submission_end',
+  'submission_start',
+  'year',
+]
 
 async function call(method, path, body, locale = 'en') {
   const init = { method, headers: { 'accept-language': locale } }
@@ -49,7 +86,6 @@ function newCycleBody(overrides = {}) {
     committee_start: inDays(350),
     committee_end: inDays(380),
     region_ids: [6, 7],
-    criteria_version_id: 1,
     ...overrides,
   }
 }
@@ -72,9 +108,20 @@ describe('award cycles mock — reads and scope', () => {
     const { status, body } = await call('GET', '/award/cycles/current')
     expect(status).toBe(200)
     expect(keys(body.data)).toEqual(PUBLIC_KEYS)
-    expect(body.data).toMatchObject({ id: 31, status: 'submission_open', is_accepting_applications: true, conditions: { min_entity_age_years: 3 } })
+    expect(body.data).toMatchObject({
+      id: 31,
+      status: 'submission_open',
+      is_accepting_applications: true,
+      conditions: { min_entity_age_years: 3 },
+    })
+    expect(body.data.description.ar).toContain('تكرّم هذه الدورة')
     expect(keys(body.data.conditions)).toEqual(['min_entity_age_years'])
-    expect(body.data.regions.map((region) => region.code)).toEqual(['riyadh', 'makkah', 'madinah', 'eastern'])
+    expect(body.data.regions.map((region) => region.code)).toEqual([
+      'riyadh',
+      'makkah',
+      'madinah',
+      'eastern',
+    ])
   })
 
   it('lists every cycle with counts and stats to global readers and only the member cycles to others', async () => {
@@ -83,12 +130,19 @@ describe('award cycles mock — reads and scope', () => {
     expect(body.data.map((cycle) => cycle.id)).toEqual([32, 31, 30])
     expect(keys(body.data[0])).toEqual(CYCLE_KEYS)
     expect(body.data[1].counts).toEqual({ requests: 5, qualified: 0 })
-    expect(body.meta.stats).toMatchObject({ total: 3, by_status: { draft: 1, submission_open: 1, closed: 1 } })
+    expect(body.meta.stats).toMatchObject({
+      total: 3,
+      by_status: { draft: 1, submission_open: 1, closed: 1 },
+    })
     expect(body.meta.pagination).toMatchObject({ page: 1, total: 3 })
     seedMockSession(FILTERING_OFFICER)
-    expect((await call('GET', '/award/cycles')).body.data.map((cycle) => cycle.id)).toEqual([31, 30])
+    expect((await call('GET', '/award/cycles')).body.data.map((cycle) => cycle.id)).toEqual([
+      31, 30,
+    ])
     seedMockSession(ASSESSOR)
-    expect((await call('GET', '/award/cycles')).body.data.map((cycle) => cycle.id)).toEqual([31, 30])
+    expect((await call('GET', '/award/cycles')).body.data.map((cycle) => cycle.id)).toEqual([
+      31, 30,
+    ])
     seedMockSession(OTHER_ASSESSOR)
     expect((await call('GET', '/award/cycles')).body.data).toEqual([])
     expect((await call('GET', '/award/cycles/31')).status).toBe(404)
@@ -98,8 +152,12 @@ describe('award cycles mock — reads and scope', () => {
 
   it('filters, searches, sorts and refuses unknown filters', async () => {
     seedMockSession(FOLLOWER)
-    expect((await call('GET', '/award/cycles?filter[status]=closed')).body.data.map((cycle) => cycle.id)).toEqual([30])
-    expect((await call('GET', '/award/cycles?search=Next')).body.data.map((cycle) => cycle.id)).toEqual([32])
+    expect(
+      (await call('GET', '/award/cycles?filter[status]=closed')).body.data.map((cycle) => cycle.id),
+    ).toEqual([30])
+    expect(
+      (await call('GET', '/award/cycles?search=Next')).body.data.map((cycle) => cycle.id),
+    ).toEqual([32])
     expect((await call('GET', '/award/cycles?sort=submission_start')).body.data[0].id).toBe(30)
     expect((await call('GET', '/award/cycles?filter[status]=judging')).status).toBe(422)
     expect((await call('GET', '/award/cycles?sort=name')).status).toBe(422)
@@ -114,7 +172,9 @@ describe('award cycles mock — reads and scope', () => {
       [8, 'filtering_officer'],
       [18, 'award_secretary'],
     ])
-    expect(admin.initial_assessors.find((link) => link.id === 16)).toMatchObject({ is_active: false })
+    expect(admin.initial_assessors.find((link) => link.id === 16)).toMatchObject({
+      is_active: false,
+    })
     seedMockSession(FILTERING_OFFICER)
     const officer = (await call('GET', '/award/cycles/31')).body.data
     expect(officer.can_manage).toBe(false)
@@ -124,11 +184,21 @@ describe('award cycles mock — reads and scope', () => {
 
   it('serves the default conditions and the candidates per role to managers only', async () => {
     seedMockSession(SYSTEM_ADMIN)
-    expect((await call('GET', '/award/cycles/default-conditions')).body.data).toEqual({ min_entity_age_years: 3, disqualification_score: '60.00', initial_review_sla_days: 14 })
-    const officers = (await call('GET', '/award/cycles/candidates?role=filtering_officer')).body.data
+    expect((await call('GET', '/award/cycles/default-conditions')).body.data).toEqual({
+      min_entity_age_years: 3,
+      disqualification_score: '60.00',
+      initial_review_sla_days: 14,
+      entry_fee: '0.00',
+    })
+    const officers = (await call('GET', '/award/cycles/candidates?role=filtering_officer')).body
+      .data
     expect(officers.map((person) => person.id).sort((a, b) => a - b)).toEqual([8, 13])
     expect(keys(officers[0])).toEqual(['id', 'name'])
-    expect((await call('GET', '/award/cycles/candidates?role=initial_assessor')).body.data.map((person) => person.id).sort((a, b) => a - b)).toEqual([10, 11, 15, 16, 27])
+    expect(
+      (await call('GET', '/award/cycles/candidates?role=initial_assessor')).body.data
+        .map((person) => person.id)
+        .sort((a, b) => a - b),
+    ).toEqual([10, 11, 15, 16, 27, 29, 30, 31])
     expect((await call('GET', '/award/cycles/candidates?role=juror')).status).toBe(422)
     seedMockSession(FOLLOWER)
     expect((await call('GET', '/award/cycles/candidates?role=filtering_officer')).status).toBe(403)
@@ -140,67 +210,220 @@ describe('award cycles mock — create and edit', () => {
     seedMockSession(SECRETARY)
     const { status, body } = await call('POST', '/award/cycles', newCycleBody())
     expect(status).toBe(201)
-    expect(body.data).toMatchObject({ status: 'draft', conditions: { min_entity_age_years: 3, disqualification_score: '60.00' }, initial_review_sla_days: 14, participation_certificate_enabled: false, can_manage: true })
-    expect(body.data.members).toEqual([{ id: 18, name: expect.any(String), role: 'award_secretary' }])
+    expect(body.data).toMatchObject({
+      status: 'draft',
+      conditions: { min_entity_age_years: 3, disqualification_score: '60.00' },
+      initial_review_sla_days: 14,
+      participation_certificate_enabled: false,
+      can_manage: true,
+    })
+    expect(body.data.members).toEqual([
+      { id: 18, name: expect.any(String), role: 'award_secretary' },
+    ])
   })
 
-  it('refuses invalid bodies, unordered dates, an unpublished version and a reserved setting', async () => {
+  it('refuses invalid bodies, unordered dates, a chosen criteria version and a reserved setting', async () => {
     seedMockSession(SECRETARY)
     const invalid = await call('POST', '/award/cycles', { name: { ar: '' } })
     expect(invalid.status).toBe(422)
-    expect(Object.keys(invalid.body.errors)).toEqual(expect.arrayContaining(['name.ar', 'name.en', 'submission_start', 'region_ids', 'criteria_version_id']))
-    expect((await call('POST', '/award/cycles', newCycleBody({ committee_start: inDays(320) }))).body.errors).toHaveProperty('committee_start')
-    expect((await call('POST', '/award/cycles', newCycleBody({ criteria_version_id: 999 }))).body.code).toBe('cycle.criteria_version_not_published')
-    const reserved = await call('POST', '/award/cycles', newCycleBody({ participation_certificate_enabled: true }))
-    expect(reserved).toMatchObject({ status: 403, body: { code: 'cycle.participation_setting_reserved' } })
+    expect(Object.keys(invalid.body.errors)).toEqual(
+      expect.arrayContaining(['name.ar', 'name.en', 'submission_start']),
+    )
+    expect(invalid.body.errors).not.toHaveProperty('region_ids')
+    expect(
+      (await call('POST', '/award/cycles', newCycleBody({ committee_start: inDays(320) }))).body
+        .errors,
+    ).toHaveProperty('committee_start')
+    const chosen = await call('POST', '/award/cycles', newCycleBody({ criteria_version_id: 1 }))
+    expect(chosen.status).toBe(422)
+    expect(chosen.body.errors).toHaveProperty('criteria_version_id')
+    const reserved = await call(
+      'POST',
+      '/award/cycles',
+      newCycleBody({ participation_certificate_enabled: true }),
+    )
+    expect(reserved).toMatchObject({
+      status: 403,
+      body: { code: 'cycle.participation_setting_reserved' },
+    })
     seedMockSession(SUPER_ADMIN)
     expect((await call('POST', '/award/cycles', newCycleBody())).body.code).toBe('reason_required')
-    expect((await call('POST', '/award/cycles', newCycleBody({ reason: REASON, participation_certificate_enabled: true }))).status).toBe(201)
+    expect(
+      (
+        await call(
+          'POST',
+          '/award/cycles',
+          newCycleBody({ reason: REASON, participation_certificate_enabled: true }),
+        )
+      ).status,
+    ).toBe(201)
   })
 
   it('locks the stage fields of a running cycle and re-checks the dates as a whole', async () => {
     seedMockSession(SYSTEM_ADMIN)
-    const locked = await call('PUT', '/award/cycles/31', { submission_start: inDays(-40), criteria_version_id: 1 })
-    expect(locked).toMatchObject({ status: 409, body: { code: 'cycle.field_locked', meta: { locked_fields: ['submission_start', 'criteria_version_id'] } } })
-    expect((await call('PUT', '/award/cycles/31', { submission_end: inDays(-1) })).body.code).toBe('cycle.dates_unordered')
-    expect((await call('PUT', '/award/cycles/31', { region_ids: [1, 2, 3] })).body.code).toBe('cycle.region_has_requests')
-    const updated = await call('PUT', '/award/cycles/31', { disqualification_score: '65.5', region_ids: [1, 2, 3, 4, 5] })
+    const locked = await call('PUT', '/award/cycles/31', { submission_start: inDays(-40) })
+    expect(locked).toMatchObject({
+      status: 409,
+      body: { code: 'cycle.field_locked', meta: { locked_fields: ['submission_start'] } },
+    })
+    expect((await call('PUT', '/award/cycles/31', { submission_end: inDays(-1) })).body.code).toBe(
+      'cycle.dates_unordered',
+    )
+    expect((await call('PUT', '/award/cycles/31', { region_ids: [1, 2, 3] })).body.code).toBe(
+      'cycle.region_has_requests',
+    )
+    const updated = await call('PUT', '/award/cycles/31', {
+      disqualification_score: '65.5',
+      region_ids: [1, 2, 3, 4, 5],
+    })
     expect(updated.body.data.conditions.disqualification_score).toBe('65.50')
     expect(updated.body.data.regions).toHaveLength(5)
     expect((await call('PUT', '/award/cycles/31', { status: 'closed' })).status).toBe(422)
-    expect((await call('PUT', '/award/cycles/30', { name: { ar: 'اسم', en: 'Name' } })).body.code).toBe('cycle.field_locked')
+    expect(
+      (await call('PUT', '/award/cycles/30', { name: { ar: 'اسم', en: 'Name' } })).body.code,
+    ).toBe('cycle.field_locked')
+  })
+
+  it('binds a new cycle to the published version, covers every region by default and keeps its description', async () => {
+    seedMockSession(SYSTEM_ADMIN)
+    const published = (await call('GET', '/award/cycles/32')).body.data.criteria_version_id
+    const body = newCycleBody({
+      description: { ar: ' تعريف الدورة ', en: 'Cycle description' },
+    })
+    delete body.region_ids
+    const created = (await call('POST', '/award/cycles', body)).body.data
+    expect(created).toMatchObject({
+      criteria_version_id: published,
+      description: { ar: 'تعريف الدورة', en: 'Cycle description' },
+      locked_region_ids: [],
+    })
+    expect(created.regions).toHaveLength(13)
+  })
+
+  it('saves one step at a time, updates and clears the description and refuses half of it', async () => {
+    seedMockSession(SYSTEM_ADMIN)
+    const described = await call('PUT', '/award/cycles/32', {
+      description: { ar: 'تعريف', en: 'Description' },
+    })
+    expect(described.body.data.description).toEqual({ ar: 'تعريف', en: 'Description' })
+    expect(described.body.data.name.en).toBe('Next Moashir Institutional Excellence Award')
+    const half = await call('PUT', '/award/cycles/32', { description: { ar: 'تعريف' } })
+    expect(half.status).toBe(422)
+    expect(half.body.errors).toHaveProperty(['description.en'])
+    const long = await call('PUT', '/award/cycles/32', {
+      description: { ar: 'ت'.repeat(2001), en: 'Text' },
+    })
+    expect(long.body.errors).toHaveProperty(['description.ar'])
+    const cleared = await call('PUT', '/award/cycles/32', { description: null })
+    expect(cleared.body.data.description).toBeNull()
+    const step = await call('PUT', '/award/cycles/32', { initial_review_sla_days: 21 })
+    expect(step.body.data).toMatchObject({
+      initial_review_sla_days: 21,
+      conditions: { min_entity_age_years: 3 },
+    })
+  })
+
+  it('moves a draft to the published version on save and keeps a running cycle on its own', async () => {
+    seedMockSession(SYSTEM_ADMIN)
+    const published = findCycle(32).criteriaVersionId
+    findCycle(32).criteriaVersionId = 999
+    findCycle(31).criteriaVersionId = 999
+    expect(
+      (await call('PUT', '/award/cycles/32', { year: 2028 })).body.data.criteria_version_id,
+    ).toBe(published)
+    expect(
+      (await call('PUT', '/award/cycles/31', { initial_review_sla_days: 20 })).body.data
+        .criteria_version_id,
+    ).toBe(999)
+  })
+
+  it('moves a draft to the published version when it opens', async () => {
+    seedMockSession(SYSTEM_ADMIN)
+    const published = findCycle(32).criteriaVersionId
+    Object.assign(findCycle(31), { status: 'closed', closedFromStatus: 'submission-open' })
+    Object.assign(findCycle(32), {
+      criteriaVersionId: 999,
+      initialAssessors: [{ assessorId: 10, isActive: true }],
+    })
+    const opened = await call('POST', '/award/cycles/32/open', {})
+    expect(opened.status).toBe(200)
+    expect(opened.body.data).toMatchObject({
+      status: 'submission_open',
+      criteria_version_id: published,
+    })
+  })
+
+  it('lists the regions that already have requests as locked', async () => {
+    seedMockSession(SYSTEM_ADMIN)
+    const cycle = (await call('GET', '/award/cycles/31')).body.data
+    expect(cycle.locked_region_ids.length).toBeGreaterThan(0)
+    expect(
+      cycle.locked_region_ids.every((id) => cycle.regions.some((region) => region.id === id)),
+    ).toBe(true)
+    expect((await call('GET', '/award/cycles/32')).body.data.locked_region_ids).toEqual([])
   })
 
   it('lets a secretary manage only the cycles of their membership', async () => {
     seedMockSession(SECRETARY)
-    expect((await call('PUT', '/award/cycles/31', { announcement_at: inDays(130) })).status).toBe(200)
+    expect((await call('PUT', '/award/cycles/31', { announcement_at: inDays(130) })).status).toBe(
+      200,
+    )
     findCycle(31).members = findCycle(31).members.filter((member) => member.userId !== 18)
-    expect((await call('PUT', '/award/cycles/31', { announcement_at: inDays(131) })).status).toBe(404)
+    // Every Award Secretary reads every cycle (operator 2026-11-22), so a non-member edit is refused, not hidden.
+    expect((await call('PUT', '/award/cycles/31', { announcement_at: inDays(131) })).status).toBe(
+      403,
+    )
     seedMockSession(FILTERING_OFFICER)
-    expect((await call('PUT', '/award/cycles/31', { announcement_at: inDays(131) })).status).toBe(403)
+    expect((await call('PUT', '/award/cycles/31', { announcement_at: inDays(131) })).status).toBe(
+      403,
+    )
   })
 
   it('replaces the members and the initial assessors with role and segregation checks', async () => {
     seedMockSession(SYSTEM_ADMIN)
     expect((await call('PUT', '/award/cycles/31/members', {})).status).toBe(422)
-    expect((await call('PUT', '/award/cycles/31/members', { filtering_officer_ids: [10] })).body.code).toBe('cycle.member_invalid')
+    expect(
+      (await call('PUT', '/award/cycles/31/members', { filtering_officer_ids: [10] })).body.code,
+    ).toBe('cycle.member_invalid')
     const members = await call('PUT', '/award/cycles/31/members', { filtering_officer_ids: [13] })
-    expect(members.body.data.members.filter((member) => member.role === 'filtering_officer').map((member) => member.id)).toEqual([13])
+    expect(
+      members.body.data.members
+        .filter((member) => member.role === 'filtering_officer')
+        .map((member) => member.id),
+    ).toEqual([13])
     expect(members.body.data.members.some((member) => member.role === 'award_secretary')).toBe(true)
-    expect((await call('PUT', '/award/cycles/31/initial-assessors', { assessor_ids: [13] })).body.code).toBe('cycle.initial_assessor_invalid')
-    const linked = await call('PUT', '/award/cycles/31/initial-assessors', { assessor_ids: [10, 27] })
-    expect(linked.body.data.initial_assessors.filter((link) => link.is_active).map((link) => link.id)).toEqual([10, 27])
+    expect(
+      (await call('PUT', '/award/cycles/31/initial-assessors', { assessor_ids: [13] })).body.code,
+    ).toBe('cycle.initial_assessor_invalid')
+    const linked = await call('PUT', '/award/cycles/31/initial-assessors', {
+      assessor_ids: [10, 27],
+    })
+    expect(
+      linked.body.data.initial_assessors.filter((link) => link.is_active).map((link) => link.id),
+    ).toEqual([10, 27])
     findCycle(31).members.push({ userId: 27, role: 'filtering_officer' })
-    expect((await call('PUT', '/award/cycles/31/initial-assessors', { assessor_ids: [27] })).body.code).toBe('sod_conflict')
-    expect((await call('PUT', '/award/cycles/30/members', { filtering_officer_ids: [13] })).status).toBe(409)
+    expect(
+      (await call('PUT', '/award/cycles/31/initial-assessors', { assessor_ids: [27] })).body.code,
+    ).toBe('sod_conflict')
+    expect(
+      (await call('PUT', '/award/cycles/30/members', { filtering_officer_ids: [13] })).status,
+    ).toBe(409)
   })
 })
 
 describe('award cycles mock — stages', () => {
-  it('refuses to open a draft while another cycle runs and opens it once the running one closes', async () => {
+  it('refuses to open a draft with no initial assessor first, then while another cycle runs, then opens it', async () => {
     seedMockSession(SYSTEM_ADMIN)
+    const unlinked = await call('POST', '/award/cycles/32/open', {})
+    expect(unlinked).toMatchObject({ status: 422, body: { code: 'cycle.no_initial_assessors' } })
+    expect(
+      (await call('PUT', '/award/cycles/32/initial-assessors', { assessor_ids: [10] })).status,
+    ).toBe(200)
     const refused = await call('POST', '/award/cycles/32/open', {})
-    expect(refused).toMatchObject({ status: 409, body: { code: 'cycle.another_open', meta: { award_cycle_id: 31 } } })
+    expect(refused).toMatchObject({
+      status: 409,
+      body: { code: 'cycle.another_open', meta: { award_cycle_id: 31 } },
+    })
     findCycle(31).status = 'closed'
     const opened = await call('POST', '/award/cycles/32/open', {})
     expect(opened.body.data).toMatchObject({ status: 'submission_open' })
@@ -220,7 +443,10 @@ describe('award cycles mock — stages', () => {
     expect(findAssessment(draft.id).status).toBe('expired')
     expect(notificationsStore.some((item) => item.code === 'CYC-01')).toBe(true)
     const blocked = await call('POST', '/award/cycles/31/close', {})
-    expect(blocked).toMatchObject({ status: 409, body: { code: 'cycle.requests_pending', meta: { open_requests_count: 5 } } })
+    expect(blocked).toMatchObject({
+      status: 409,
+      body: { code: 'cycle.requests_pending', meta: { open_requests_count: 5 } },
+    })
     expect(keys(blocked.body.meta.open_requests[0])).toEqual(['id', 'number', 'status'])
     expect((await call('POST', '/award/cycles/31/close-submissions', {})).status).toBe(409)
   })
@@ -230,9 +456,13 @@ describe('award cycles mock — stages', () => {
     expect((await call('POST', '/award/cycles/30/reopen', { reason: REASON })).status).toBe(403)
     seedMockSession(SUPER_ADMIN)
     expect((await call('POST', '/award/cycles/30/reopen', { reason: 'قصير' })).status).toBe(422)
-    expect((await call('POST', '/award/cycles/30/reopen', { reason: REASON })).body.code).toBe('cycle.another_open')
+    expect((await call('POST', '/award/cycles/30/reopen', { reason: REASON })).body.code).toBe(
+      'cycle.another_open',
+    )
     findCycle(31).status = 'closed'
-    expect((await call('POST', '/award/cycles/30/reopen', { reason: REASON })).body.data.status).toBe('announced')
+    expect(
+      (await call('POST', '/award/cycles/30/reopen', { reason: REASON })).body.data.status,
+    ).toBe('announced')
     expect((await call('POST', '/award/cycles/32/open', {})).body.code).toBe('reason_required')
   })
 })

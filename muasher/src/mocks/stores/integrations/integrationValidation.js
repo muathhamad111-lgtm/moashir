@@ -27,7 +27,12 @@ function isBlank(value) {
   return value === null || value === undefined || value === ''
 }
 
-export function checkToken(errors, path, value, { min, max, prefix = '', allowWhitespace = false }) {
+export function checkToken(
+  errors,
+  path,
+  value,
+  { min, max, prefix = '', allowWhitespace = false },
+) {
   if (isBlank(value)) return
   const text = String(value)
   if (text.length < min || text.length > max) errors.add(path, 'field.length', { min, max })
@@ -48,13 +53,15 @@ export function checkChoice(errors, body, key, allowed, path = key) {
 }
 
 export function checkNullableChoice(errors, body, key, allowed, path = key) {
-  if (has(body, key) && body[key] !== null && !allowed.includes(body[key])) errors.add(path, 'field.invalid')
+  if (has(body, key) && body[key] !== null && !allowed.includes(body[key]))
+    errors.add(path, 'field.invalid')
 }
 
 export function checkSubset(errors, body, key, allowed, { min = 0 } = {}) {
   if (!has(body, key)) return
   const values = body[key]
-  if (!Array.isArray(values) || values.some((value) => !allowed.includes(value))) errors.add(key, 'field.invalid')
+  if (!Array.isArray(values) || values.some((value) => !allowed.includes(value)))
+    errors.add(key, 'field.invalid')
   else if (new Set(values).size !== values.length) errors.add(key, 'field.invalid')
   else if (values.length < min) errors.add(key, 'field.required')
 }
@@ -77,7 +84,9 @@ export function checkLocalized(errors, body, key, { max }) {
 export function checkInteger(errors, body, key, { min, max, allowed = null, path = key }) {
   if (!has(body, key)) return
   const number = body[key]
-  const valid = Number.isInteger(number) && (allowed ? allowed.includes(number) : number >= min && number <= max)
+  const valid =
+    Number.isInteger(number) &&
+    (allowed ? allowed.includes(number) : number >= min && number <= max)
   if (!valid) errors.add(path, 'field.invalid')
 }
 
@@ -102,7 +111,8 @@ export function isSaudiMobile(value) {
 export function checkReason(errors, body) {
   if (isBlank(body.reason)) return
   const length = String(body.reason).trim().length
-  if (length < REASON.min || length > REASON.max) errors.add('reason', 'field.reason_min', { min: REASON.min })
+  if (length < REASON.min || length > REASON.max)
+    errors.add('reason', 'field.reason_min', { min: REASON.min })
 }
 
 export function hasSecretChange(values) {
@@ -110,5 +120,6 @@ export function hasSecretChange(values) {
 }
 
 export function requireReason(body, needed) {
-  if (needed && isBlank(String(body.reason ?? '').trim())) throw integrationReject.field('reason_required', 'reason')
+  if (needed && isBlank(String(body.reason ?? '').trim()))
+    throw integrationReject.field('reason_required', 'reason')
 }

@@ -15,7 +15,7 @@ final class SaveSelfAssessmentDraftRequest extends FormRequest
      */
     public function rules(): array
     {
-        return ScoreInputRules::for($this->route('assessment'), 'present');
+        return ScoreInputRules::for('present');
     }
 
     public function scores(): SubmittedScores

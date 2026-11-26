@@ -4,10 +4,24 @@ import { evidenceService } from '@/services/evidenceService'
 import { useToast } from '@/composables/useToast'
 import { useSignedDownload } from '@/composables/useSignedDownload'
 import { EVIDENCE_POLL_MS } from '@/constants/accredited'
-import { exceedsSize, hasAllowedExtension, hasPendingScan } from '@/utils/accredited/evidenceRules'
+import {
+  EVIDENCE_LEVELS,
+  exceedsSize,
+  hasAllowedExtension,
+  hasPendingScan,
+  ownerOfEvidence,
+  slotTypesOf,
+} from '@/utils/accredited/evidenceRules'
 
-export function slotKeyOf(subId, attachmentKey) {
-  return `${subId}:${attachmentKey ?? 'general'}`
+// owner: { level: 'main' | 'sub', id }; a null key is the sub's additional evidence.
+export function slotKeyOf(owner, attachmentKey) {
+  return `${owner.level}:${owner.id}:${attachmentKey ?? 'general'}`
+}
+
+function targetOf(owner) {
+  return owner.level === EVIDENCE_LEVELS.MAIN
+    ? { mainCriterionId: owner.id }
+    : { subCriterionId: owner.id }
 }
 
 export function useEvidenceUploads({ formState, onRejected }) {
@@ -27,10 +41,13 @@ export function useEvidenceUploads({ formState, onRejected }) {
     return formState.form.value?.evidence ?? []
   }
 
-  function localError(file) {
+  function localError(file, slot) {
     const limits = formState.form.value.uploadLimits
-    if (!hasAllowedExtension(file, limits.allowedTypes)) return t('accredited.evidence.errors.type', { types: limits.allowedTypes.join(', ') })
-    if (exceedsSize(file, limits.maxFileMb)) return t('accredited.evidence.errors.size', { max: limits.maxFileMb })
+    const types = slotTypesOf(slot, limits)
+    if (!hasAllowedExtension(file, types))
+      return t('accredited.evidence.errors.type', { types: types.join(', ') })
+    if (exceedsSize(file, limits.maxFileMb))
+      return t('accredited.evidence.errors.size', { max: limits.maxFileMb })
     return ''
   }
 
@@ -39,13 +56,18 @@ export function useEvidenceUploads({ formState, onRejected }) {
     watchScans()
   }
 
-  async function upload(subId, attachmentKey, file) {
-    const key = slotKeyOf(subId, attachmentKey)
-    errors[key] = localError(file)
+  // slot: the attachment as the criteria tree gives it, or null for the sub's additional evidence.
+  async function upload(owner, slot, file) {
+    const key = slotKeyOf(owner, slot?.key)
+    errors[key] = localError(file, slot)
     if (errors[key] || uploading[key]) return null
     uploading[key] = true
     try {
-      const { data } = await evidenceService.upload(assessmentId(), { file, subCriterionId: subId, attachmentKey })
+      const { data } = await evidenceService.upload(assessmentId(), {
+        file,
+        ...targetOf(owner),
+        attachmentKey: slot?.key ?? null,
+      })
       formState.patch({ evidence: [...evidence(), data] })
       toast.success(t('accredited.evidence.toasts.uploaded', { name: data.fileName }))
       await refreshAfterChange()
@@ -76,8 +98,8 @@ export function useEvidenceUploads({ formState, onRejected }) {
     }
   }
 
-  async function replace(row, file) {
-    const uploaded = await upload(row.subCriterionId, row.attachmentKey, file)
+  async function replace(row, slot, file) {
+    const uploaded = await upload(ownerOfEvidence(row), slot, file)
     if (uploaded) await remove(row)
   }
 
@@ -91,7 +113,8 @@ export function useEvidenceUploads({ formState, onRejected }) {
 
   async function pollScans() {
     const answer = await evidenceService.list(assessmentId()).catch((error) => ({ error }))
-    if (answer.data && scanSignature(answer.data) !== scanSignature(evidence())) await formState.load({ silent: true })
+    if (answer.data && scanSignature(answer.data) !== scanSignature(evidence()))
+      await formState.load({ silent: true })
     watchScans()
   }
 
@@ -102,5 +125,15 @@ export function useEvidenceUploads({ formState, onRejected }) {
 
   onBeforeUnmount(() => clearTimeout(timer))
 
-  return { uploading, removing, errors, downloading: downloads.busy, upload, remove, replace, download, watchScans }
+  return {
+    uploading,
+    removing,
+    errors,
+    downloading: downloads.busy,
+    upload,
+    remove,
+    replace,
+    download,
+    watchScans,
+  }
 }

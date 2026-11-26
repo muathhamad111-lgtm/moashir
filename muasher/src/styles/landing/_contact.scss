@@ -1,0 +1,119 @@
+@use 'tokens' as *;
+
+.lp-contact {
+  &__grid {
+    display: grid;
+    gap: 48px;
+  }
+
+  &__lede {
+    max-width: 50ch;
+    margin-block-start: 14px;
+    color: var(--lp-ink-2);
+  }
+
+  &__list {
+    display: grid;
+    margin-block: 30px 16px;
+
+    li {
+      display: flex;
+      gap: 16px;
+      padding-block: 16px;
+      border-bottom: 1px solid var(--lp-line);
+    }
+
+    svg {
+      flex: none;
+      width: 22px;
+      height: 22px;
+      margin-block-start: 4px;
+      color: var(--lp-accent);
+    }
+
+    b {
+      display: block;
+      font-size: 0.95rem;
+    }
+
+    span,
+    a {
+      color: var(--lp-ink-2);
+      font-size: 0.95rem;
+    }
+
+    a {
+      display: inline-block;
+      font-weight: var(--fw-emphasis);
+      transition: color 0.2s;
+
+      &:hover {
+        color: var(--lp-accent);
+      }
+    }
+  }
+
+  &__social {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-block-start: 24px;
+
+    > span {
+      margin-inline-end: 8px;
+      font-weight: var(--fw-body);
+    }
+
+    a {
+      display: grid;
+      place-items: center;
+      width: 44px;
+      height: 44px;
+      border-radius: 10px;
+      border: 1px solid var(--lp-line-strong);
+      color: var(--lp-ink-2);
+      transition:
+        color 0.25s,
+        border-color 0.25s,
+        background-color 0.25s,
+        translate 0.3s $lp-ease;
+
+      &:hover {
+        translate: 0 -3px;
+        color: $lp-white;
+        background: $lp-dark;
+        border-color: $lp-dark;
+      }
+    }
+
+    svg {
+      width: 18px;
+      height: 18px;
+    }
+  }
+
+  &__form {
+    align-self: start;
+    padding: clamp(24px, 4vw, 40px);
+    border-radius: 20px;
+    background: var(--lp-surface);
+    border: 1px solid var(--lp-line);
+  }
+}
+
+@media (min-width: $lp-bp-wide) {
+  .lp-contact__grid {
+    grid-template-columns: 1fr 1.1fr;
+    gap: 80px;
+  }
+}
+
+.lp-contact__form .btn--primary {
+  border-radius: 12px;
+  background-color: var(--lp-btn);
+  color: var(--lp-btn-ink);
+
+  &:hover:not(:disabled) {
+    background-color: color-mix(in srgb, var(--lp-btn) 86%, var(--lp-bg));
+  }
+}

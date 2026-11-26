@@ -1,0 +1,243 @@
+@use '../mixins' as *;
+
+// A miniature of the back office and the portal painted with the unsaved `--draft-*` colours.
+.brand-preview__stage {
+  margin-block-start: var(--space-3);
+  overflow: hidden;
+  border: var(--border-width) solid var(--theme-border-strong);
+  border-radius: var(--radius-lg);
+  background-color: var(--theme-bg);
+}
+
+.brand-preview__note {
+  margin: var(--space-3) 0 0;
+  font-size: var(--fs-xs);
+  color: var(--theme-text-muted);
+}
+
+.brand-sample {
+  @include flex(column, stretch, flex-start, var(--space-2));
+  padding: var(--space-2);
+  font-size: var(--fs-xs);
+  color: var(--theme-text);
+}
+
+.brand-sample__bar {
+  @include flex(row, center, flex-start, var(--space-2));
+  block-size: 2.25rem;
+  padding-inline: var(--space-2);
+  border-radius: var(--radius-md);
+  background-color: var(--draft-secondary);
+}
+
+.brand-sample__search {
+  flex: 1;
+  block-size: 1.5rem;
+  border-radius: var(--radius-sm);
+  background-color: color-mix(in srgb, var(--draft-on-secondary) 13%, transparent);
+}
+
+.brand-sample__avatar {
+  inline-size: 1.5rem;
+  block-size: 1.5rem;
+  border-radius: var(--radius-circle);
+  background-color: var(--draft-primary);
+}
+
+.brand-sample__body {
+  display: grid;
+  grid-template-columns: 7rem minmax(0, 1fr);
+  gap: var(--space-2);
+}
+
+.brand-sample__nav,
+.brand-sample__tabs {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+// The side bar as the gradient rail (look 3); its colours and glow come from _brand-rail.scss.
+.brand-sample__nav {
+  @include flex(column, stretch, flex-start, var(--space-1));
+  padding: var(--space-2) var(--space-2) var(--space-5);
+  border-radius: var(--radius-lg);
+}
+
+.brand-sample__nav-item {
+  padding: var(--space-1) var(--space-2);
+  border-radius: var(--radius-sm);
+}
+
+.brand-sample__nav-item--active {
+  background-color: var(--theme-surface);
+  color: var(--theme-heading);
+  font-weight: var(--fw-emphasis);
+  box-shadow: var(--shadow-sm);
+}
+
+.brand-sample__main,
+.brand-sample__card {
+  @include flex(column, stretch, flex-start, var(--space-2));
+}
+
+.brand-sample__card {
+  padding: var(--space-2);
+  border: var(--border-width) solid var(--theme-border);
+  border-radius: var(--radius-md);
+  background-color: var(--theme-surface);
+}
+
+.brand-sample__title {
+  margin: 0;
+  font-weight: var(--fw-heading);
+  color: var(--theme-heading);
+}
+
+.brand-sample__caption {
+  margin: 0;
+  color: var(--theme-text-muted);
+}
+
+.brand-sample__row {
+  @include flex(row, center, flex-start, var(--space-1));
+  flex-wrap: wrap;
+}
+
+.brand-sample__button {
+  align-self: flex-start;
+  padding: var(--space-1) var(--space-2);
+  border: var(--border-width) solid transparent;
+  border-radius: var(--radius-sm);
+  background-color: var(--draft-primary);
+  color: var(--draft-on-primary);
+  font-weight: var(--fw-emphasis);
+}
+
+.brand-sample__button--hover {
+  background-color: var(--draft-primary-hover);
+}
+
+.brand-sample__button--ghost {
+  border-color: var(--theme-border-strong);
+  background-color: var(--theme-surface);
+  color: var(--theme-heading);
+}
+
+.brand-sample__field {
+  padding: var(--space-1) var(--space-2);
+  border: var(--border-width) solid var(--theme-input-border);
+  border-radius: var(--radius-sm);
+  outline: 2px solid var(--draft-primary-text);
+  outline-offset: 1px;
+  color: var(--theme-text-muted);
+}
+
+.brand-sample__line {
+  @include flex(row, center, space-between, var(--space-2));
+  padding: var(--space-1) var(--space-2);
+  border-radius: var(--radius-sm);
+}
+
+.brand-sample__line--selected {
+  background-color: var(--draft-primary-tint);
+}
+
+.brand-sample__chip {
+  align-self: flex-start;
+  padding-inline: var(--space-2);
+  border-radius: var(--radius-pill);
+  background-color: var(--draft-primary-tint);
+  color: var(--draft-primary-text);
+  font-weight: var(--fw-emphasis);
+}
+
+.brand-sample__link {
+  color: var(--draft-primary-text);
+  font-weight: var(--fw-emphasis);
+  text-decoration: underline;
+}
+
+.brand-sample__bars {
+  @include flex(row, flex-end, flex-start, var(--space-1));
+  block-size: 3.5rem;
+}
+
+.brand-sample__bar-mark {
+  flex: 1;
+  border-start-start-radius: var(--radius-sm);
+  border-start-end-radius: var(--radius-sm);
+  background-color: var(--draft-primary-text);
+
+  @each $height in (40, 52, 65, 70, 88) {
+    &[data-height='#{$height}'] {
+      block-size: $height * 1%;
+    }
+  }
+}
+
+.brand-sample__portal-bar {
+  @include flex(row, center, flex-start, var(--space-3));
+  padding: var(--space-2);
+  border-radius: var(--radius-md);
+  background-color: var(--theme-surface);
+}
+
+.brand-sample__brand {
+  font-weight: var(--fw-heading);
+  color: var(--draft-secondary);
+}
+
+.brand-sample__tabs {
+  @include flex(row, center, flex-start, var(--space-2));
+  flex-wrap: wrap;
+}
+
+.brand-sample__tab {
+  padding-block: var(--space-1);
+  color: var(--theme-text-muted);
+}
+
+.brand-sample__tab--active {
+  border-block-end: 2px solid var(--draft-primary-text);
+  color: var(--draft-primary-text);
+  font-weight: var(--fw-emphasis);
+}
+
+.brand-sample__hero {
+  @include flex(column, stretch, flex-start, var(--space-2));
+  padding: var(--space-3);
+  border-radius: var(--radius-md);
+  background-color: var(--draft-secondary);
+  color: var(--draft-on-secondary);
+}
+
+.brand-sample__hero-title {
+  margin: 0;
+  font-size: var(--fs-sm);
+  font-weight: var(--fw-heading);
+}
+
+.brand-sample__hero-text {
+  margin: 0;
+}
+
+.brand-sample__progress {
+  block-size: 0.5rem;
+  overflow: hidden;
+  border-radius: var(--radius-pill);
+  background-color: color-mix(in srgb, var(--draft-on-secondary) 18%, transparent);
+}
+
+.brand-sample__progress-fill {
+  display: block;
+  inline-size: 70%;
+  block-size: 100%;
+  background-color: var(--draft-primary);
+}
+
+.brand-sample__tiles {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-2);
+}

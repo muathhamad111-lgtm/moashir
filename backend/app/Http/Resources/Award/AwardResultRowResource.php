@@ -32,6 +32,7 @@ final class AwardResultRowResource extends JsonResource
             'average_percent' => $ranking->average_percent->toDisplay(),
             'regional_rank' => $ranking->regional_rank,
             'national_rank' => $ranking->national_rank,
+            'submitted_at' => $assessment->submitted_at?->toIso8601String(),
             'approved_at' => $ranking->created_at->toIso8601String(),
         ];
     }

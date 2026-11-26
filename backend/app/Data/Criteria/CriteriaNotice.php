@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Data\Criteria;
 
+use App\Data\Notifications\NoticeText;
 use App\Enums\Identity\RoleKey;
 use App\Enums\Notifications\NotificationCode;
 use App\Support\ValueObjects\LocalizedText;
@@ -19,6 +20,7 @@ final readonly class CriteriaNotice
         public LocalizedText $body,
         public ?string $link,
         public array $recipientRoles,
+        public ?NoticeText $text = null,
     ) {}
 
     /**
@@ -29,12 +31,8 @@ final readonly class CriteriaNotice
     {
         $key = 'notifications.criteria.'.$code->value;
 
-        return new self(
-            $code,
-            LocalizedText::fromTranslationWith($key.'.title', $replacements),
-            LocalizedText::fromTranslationWith($key.'.body', $replacements),
-            $link,
-            $recipientRoles,
-        );
+        $text = new NoticeText($key, $replacements);
+
+        return new self($code, $text->title(), $text->body(), $link, $recipientRoles, $text);
     }
 }

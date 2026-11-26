@@ -18,9 +18,19 @@ const modeOptions = computed(() => [
 
 <template>
   <div class="payment-environment">
-    <FieldRadio name="mode" :label="t('integrations.payment.fields.environment')" :options="modeOptions" />
-    <p class="field__hint">{{ liveReady ? t('integrations.payment.liveReady') : t('integrations.payment.liveNotReady') }}</p>
+    <FieldRadio
+      name="mode"
+      :label="t('integrations.payment.fields.environment')"
+      :options="modeOptions"
+    />
+    <p class="field__hint">
+      {{ liveReady ? t('integrations.payment.liveReady') : t('integrations.payment.liveNotReady') }}
+    </p>
     <p class="field__hint">{{ t('integrations.payment.productionReasonHint') }}</p>
-    <FieldToggle name="active" :label="t('integrations.payment.fields.active')" :description="t('integrations.payment.fields.activeHint')" />
+    <FieldToggle
+      name="active"
+      :label="t('integrations.payment.fields.active')"
+      :description="t('integrations.payment.fields.activeHint')"
+    />
   </div>
 </template>

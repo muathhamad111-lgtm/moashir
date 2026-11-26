@@ -38,7 +38,9 @@ describe('PermissionForm — labels and role matrix only', () => {
   it('shows the key and module read-only, with no key, module or action inputs', () => {
     factory()
     expect(document.querySelector('.modal__title').textContent).toContain('Edit permission')
-    expect(document.querySelector('.permission-form__facts').textContent).toContain('finance.operations.export')
+    expect(document.querySelector('.permission-form__facts').textContent).toContain(
+      'finance.operations.export',
+    )
     expect(document.querySelector('input[name="key"]')).toBeNull()
     expect(document.querySelector('select[name="group"]')).toBeNull()
     expect(document.querySelectorAll('input[name^="action-"]')).toHaveLength(0)
@@ -52,7 +54,10 @@ describe('PermissionForm — labels and role matrix only', () => {
     await wrapper.vm.form.onSubmit()
     await flushPromises()
     const [payload] = wrapper.emitted('saved').at(-1)
-    expect(payload.label).toEqual({ ar: 'تصدير العمليات المالية', en: 'Export financial operations' })
+    expect(payload.label).toEqual({
+      ar: 'تصدير العمليات المالية',
+      en: 'Export financial operations',
+    })
     expect(payload.roles.sort()).toEqual(['finance_officer', 'system_admin'])
   })
 
@@ -61,12 +66,22 @@ describe('PermissionForm — labels and role matrix only', () => {
     await wrapper.vm.form.onSubmit()
     await flushPromises()
     expect(wrapper.emitted('saved')).toBeUndefined()
-    expect(document.querySelectorAll('.form-field__error, [role="alert"]').length).toBeGreaterThan(0)
+    expect(document.querySelectorAll('.form-field__error, [role="alert"]').length).toBeGreaterThan(
+      0,
+    )
   })
 
   it('keeps a hard-locked permission read-only for every role', () => {
-    factory({ permission: permission({ key: 'settings.branding.manage', lockedToRoles: ['system_admin'], roles: ['system_admin'] }) })
+    factory({
+      permission: permission({
+        key: 'settings.branding.manage',
+        lockedToRoles: ['system_admin'],
+        roles: ['system_admin'],
+      }),
+    })
     expect(document.querySelector('.permission-form__locked')).toBeTruthy()
-    document.querySelectorAll('input[name^="role-"]').forEach((input) => expect(input.disabled).toBe(true))
+    document
+      .querySelectorAll('input[name^="role-"]')
+      .forEach((input) => expect(input.disabled).toBe(true))
   })
 })

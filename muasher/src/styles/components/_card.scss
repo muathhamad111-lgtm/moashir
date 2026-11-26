@@ -1,15 +1,16 @@
 .card {
+  --field-label-backdrop: var(--theme-surface-solid);
   background-color: var(--theme-surface);
   border: var(--border-width) solid var(--theme-border);
-  border-radius: var(--radius-xl);
-  box-shadow: var(--shadow-sm);
+  border-radius: var(--card-radius, var(--radius-xl));
+  box-shadow: var(--card-shadow, var(--shadow-sm));
 }
 
 .card__header {
   padding: var(--space-4) var(--space-5);
   border-block-end: var(--border-width) solid var(--theme-border);
   font-family: var(--font-heading);
-  font-weight: var(--fw-bold);
+  font-weight: var(--fw-heading);
   color: var(--theme-heading);
 }
 

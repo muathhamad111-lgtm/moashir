@@ -38,6 +38,7 @@ final readonly class UpdateMainCriterion
 
             $this->writer->fillMain($main, $attributes);
             $main->save();
+            $this->writer->replaceAttachments($main, $attributes);
             $this->rebalancer->rebalanceSubsOf($main);
 
             $this->audit->changed(AuditEvent::CriteriaMainUpdated, $main, $before);

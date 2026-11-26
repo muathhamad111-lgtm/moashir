@@ -1,0 +1,38 @@
+export const REGISTRATION_STEPS = Object.freeze([
+  Object.freeze({
+    id: 'entity',
+    labelKey: 'entities.registration.steps.entity',
+    fields: Object.freeze([
+      'entityType',
+      'unifiedNumber',
+      'licenseNumber',
+      'licenseCertificate',
+      'name.ar',
+      'name.en',
+      'regionId',
+      'cityId',
+      'developmentSector',
+      'orgSize',
+      'foundedOn',
+      'employeesCount',
+      'annualBeneficiariesCount',
+      'hasGovernanceGrade',
+      'governanceGrade',
+    ]),
+  }),
+  Object.freeze({
+    id: 'account',
+    labelKey: 'entities.registration.steps.account',
+    fields: Object.freeze([
+      'authorizedPersonName',
+      'authorizationLetter',
+      'nationalId',
+      'phone',
+      'officialEmail',
+      'emailVerificationToken',
+      'password',
+      'passwordConfirmation',
+      'termsAccepted',
+    ]),
+  }),
+])

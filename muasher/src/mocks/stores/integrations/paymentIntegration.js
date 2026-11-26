@@ -7,8 +7,19 @@ import {
 } from '../../fixtures/integrations'
 import { integrationReject } from './integrationRejection'
 import { paymentState } from './integrationsState'
-import { applySecretPatch, isSecretTouched, secretMetaResource, secretVerdict } from './integrationSecrets'
-import { check, connectionResult, failOnVerdict, representativeTest, settleTest } from './integrationTesting'
+import {
+  applySecretPatch,
+  isSecretTouched,
+  secretMetaResource,
+  secretVerdict,
+} from './integrationSecrets'
+import {
+  check,
+  connectionResult,
+  failOnVerdict,
+  representativeTest,
+  settleTest,
+} from './integrationTesting'
 import { mockIsProduction } from './mockEnvironment'
 import {
   checkBoolean,
@@ -27,11 +38,20 @@ import {
 const MODES = ['test', 'live']
 const METHODS = ['creditcard', 'applepay', 'stcpay']
 const NETWORKS = ['mada', 'visa', 'mastercard', 'amex', 'unionpay']
-const LINKED_PATHS = ['accredited', 'bag']
+const LINKED_PATHS = ['accredited', 'bag', 'self', 'award']
 const CHECKOUT_PATTERNS = ['intent', 'form']
-const SETTING_FIELDS = ['checkoutPattern', 'methods', 'supportedNetworks', 'applePayLabel', 'linkedPaths']
+const SETTING_FIELDS = [
+  'checkoutPattern',
+  'methods',
+  'supportedNetworks',
+  'applePayLabel',
+  'linkedPaths',
+]
 const CONFIRMATIONS = ['applePayDomain', 'stcpayActivation']
-const METHOD_CONFIRMATIONS = Object.freeze({ applepay: 'applePayDomain', stcpay: 'stcpayActivation' })
+const METHOD_CONFIRMATIONS = Object.freeze({
+  applepay: 'applePayDomain',
+  stcpay: 'stcpayActivation',
+})
 const KEY_LENGTH = { min: 16, max: 256 }
 const WEBHOOK_SECRET_LENGTH = { min: 32, max: 128 }
 const LABEL_MAX = 64
@@ -66,6 +86,11 @@ export function paymentOverview() {
   }
 }
 
+export function paymentHidesTestPayments() {
+  const state = paymentState()
+  return state.mode === 'live' && isConfigured(state.rows.live)
+}
+
 export function paymentTestModeInProduction() {
   return mockIsProduction() && paymentState().mode === 'test'
 }
@@ -84,12 +109,23 @@ function pairResource(state, mode) {
 }
 
 function confirmationResource(stamp) {
-  return { confirmed: Boolean(stamp), confirmedAt: stamp?.at ?? null, confirmedBy: stamp?.by ? { ...stamp.by } : null }
+  return {
+    confirmed: Boolean(stamp),
+    confirmedAt: stamp?.at ?? null,
+    confirmedBy: stamp?.by ? { ...stamp.by } : null,
+  }
 }
 
 function associationFileResource(file) {
-  if (!file) return { set: false, sizeBytes: null, sha256: null, uploadedAt: null, uploadedBy: null }
-  return { set: true, sizeBytes: file.sizeBytes, sha256: file.sha256, uploadedAt: file.uploadedAt, uploadedBy: { ...file.uploadedBy } }
+  if (!file)
+    return { set: false, sizeBytes: null, sha256: null, uploadedAt: null, uploadedBy: null }
+  return {
+    set: true,
+    sizeBytes: file.sizeBytes,
+    sha256: file.sha256,
+    uploadedAt: file.uploadedAt,
+    uploadedBy: { ...file.uploadedBy },
+  }
 }
 
 function valuesToCopy() {
@@ -106,8 +142,16 @@ function valuesToCopy() {
 function checklist(state) {
   return [
     { key: 'live_account_activation', confirmable: false, confirmed: null },
-    { key: 'apple_pay_domain', confirmable: true, confirmed: Boolean(state.confirmations.applePayDomain) },
-    { key: 'stcpay_activation', confirmable: true, confirmed: Boolean(state.confirmations.stcpayActivation) },
+    {
+      key: 'apple_pay_domain',
+      confirmable: true,
+      confirmed: Boolean(state.confirmations.applePayDomain),
+    },
+    {
+      key: 'stcpay_activation',
+      confirmable: true,
+      confirmed: Boolean(state.confirmations.stcpayActivation),
+    },
     { key: 'ip_whitelist', confirmable: false, confirmed: null },
     { key: 'manual_webhook', confirmable: false, confirmed: null },
   ]
@@ -141,7 +185,10 @@ export function paymentResource() {
 function validatePair(errors, body, mode) {
   if (!has(body, mode)) return
   const pair = body[mode] ?? {}
-  checkToken(errors, `${mode}.publishableKey`, pair.publishableKey, { ...KEY_LENGTH, prefix: `pk_${mode}_` })
+  checkToken(errors, `${mode}.publishableKey`, pair.publishableKey, {
+    ...KEY_LENGTH,
+    prefix: `pk_${mode}_`,
+  })
   checkSecret(errors, `${mode}.secretKey`, pair.secretKey, { ...KEY_LENGTH, prefix: `sk_${mode}_` })
   checkSecret(errors, `${mode}.webhookSecret`, pair.webhookSecret, WEBHOOK_SECRET_LENGTH)
 }
@@ -155,29 +202,47 @@ function validatePayment(body) {
   checkSubset(errors, body, 'methods', METHODS)
   checkSubset(errors, body, 'supportedNetworks', NETWORKS, { min: 1 })
   checkLocalized(errors, body, 'applePayLabel', { max: LABEL_MAX })
-  CONFIRMATIONS.forEach((key) => checkBoolean(errors, body.confirmations, key, `confirmations.${key}`))
+  CONFIRMATIONS.forEach((key) =>
+    checkBoolean(errors, body.confirmations, key, `confirmations.${key}`),
+  )
   checkSubset(errors, body, 'linkedPaths', LINKED_PATHS)
   checkReason(errors, body)
   errors.throwIfAny()
 }
 
 function touchesSecrets(body) {
-  return hasSecretChange(MODES.flatMap((mode) => [body[mode]?.secretKey, body[mode]?.webhookSecret]))
+  return hasSecretChange(
+    MODES.flatMap((mode) => [body[mode]?.secretKey, body[mode]?.webhookSecret]),
+  )
 }
 
 function writePair(state, mode, patch, actor) {
-  if (!patch || (!has(patch, 'publishableKey') && !hasSecretChange([patch.secretKey, patch.webhookSecret]))) return
+  if (
+    !patch ||
+    (!has(patch, 'publishableKey') && !hasSecretChange([patch.secretKey, patch.webhookSecret]))
+  )
+    return
   const created = !state.rows[mode]
   const row = state.rows[mode] ?? emptyPaymentRow()
-  const publishableKey = has(patch, 'publishableKey') ? patch.publishableKey || null : row.publishableKey
+  const publishableKey = has(patch, 'publishableKey')
+    ? patch.publishableKey || null
+    : row.publishableKey
   const publicChanged = publishableKey !== row.publishableKey
   const testedSecretChanged = isSecretTouched(row.secretKey, patch.secretKey)
-  if (!created && !publicChanged && !testedSecretChanged && !isSecretTouched(row.webhookSecret, patch.webhookSecret)) return
+  if (
+    !created &&
+    !publicChanged &&
+    !testedSecretChanged &&
+    !isSecretTouched(row.webhookSecret, patch.webhookSecret)
+  )
+    return
   state.rows[mode] = {
     ...row,
     publishableKey,
     secretKey: applySecretPatch(row.secretKey, patch.secretKey, actor),
-    webhookSecret: applySecretPatch(row.webhookSecret, patch.webhookSecret, actor, { showsLastFour: false }),
+    webhookSecret: applySecretPatch(row.webhookSecret, patch.webhookSecret, actor, {
+      showsLastFour: false,
+    }),
     lastTest: created || publicChanged || testedSecretChanged ? null : row.lastTest,
   }
 }
@@ -197,7 +262,9 @@ function writeConfirmations(state, body, actor) {
 }
 
 function assertMethodsConfirmed(state, body) {
-  const missing = state.methods.map((method) => METHOD_CONFIRMATIONS[method]).find((key) => key && !state.confirmations[key])
+  const missing = state.methods
+    .map((method) => METHOD_CONFIRMATIONS[method])
+    .find((key) => key && !state.confirmations[key])
   if (!missing) return
   throw has(body, 'methods')
     ? integrationReject.field('payment.method_requires_confirmation', 'methods')
@@ -205,7 +272,8 @@ function assertMethodsConfirmed(state, body) {
 }
 
 function assertActivatable(row, field) {
-  if (!isConfigured(row)) throw integrationReject.field('integration.configuration_incomplete', field)
+  if (!isConfigured(row))
+    throw integrationReject.field('integration.configuration_incomplete', field)
   if (!row.lastTest?.ok) throw integrationReject.field('integration.test_required', field)
 }
 
@@ -266,17 +334,29 @@ function configuredRow(mode) {
 function paymentTestResult(row, mode) {
   const base = { provider: 'moyasar', mode, latencyMs: TEST_LATENCY_MS }
   if (!row.publishableKey.startsWith(`pk_${mode}_`)) {
-    return connectionResult({ ...base, checks: [check('key_prefixes', false, 'prefix_mismatch')], errorKind: 'misconfigured' })
+    return connectionResult({
+      ...base,
+      checks: [check('key_prefixes', false, 'prefix_mismatch')],
+      errorKind: 'misconfigured',
+    })
   }
   const verdict = secretVerdict(row.secretKey)
   if (verdict !== 'ok') {
-    return connectionResult({ ...base, checks: [check('key_prefixes', true), check('secret_key_valid', false, verdict)], errorKind: verdict })
+    return connectionResult({
+      ...base,
+      checks: [check('key_prefixes', true), check('secret_key_valid', false, verdict)],
+      errorKind: verdict,
+    })
   }
-  const intents = paymentState().checkoutPattern === 'intent' ? [check('intents_available', true)] : []
+  const intents =
+    paymentState().checkoutPattern === 'intent' ? [check('intents_available', true)] : []
   return connectionResult({
     ...base,
     checks: [check('key_prefixes', true), check('secret_key_valid', true), ...intents],
-    info: { webhookRegistered: Boolean(row.webhook), publishableKeyCheck: 'validated_at_first_checkout' },
+    info: {
+      webhookRegistered: Boolean(row.webhook),
+      publishableKeyCheck: 'validated_at_first_checkout',
+    },
   })
 }
 
@@ -299,7 +379,12 @@ export function registerWebhook(body, actor, { superAdmin }) {
 }
 
 export function storeAssociationFile({ sizeBytes, sha256 }, actor) {
-  paymentState().associationFile = { sizeBytes, sha256, uploadedAt: new Date().toISOString(), uploadedBy: actor }
+  paymentState().associationFile = {
+    sizeBytes,
+    sha256,
+    uploadedAt: new Date().toISOString(),
+    uploadedBy: actor,
+  }
   return associationFileResource(paymentState().associationFile)
 }
 

@@ -3,13 +3,13 @@ import { setActivePinia, createPinia } from 'pinia'
 import { useAuthStore } from '@/stores/auth'
 import { authService } from '@/services/authService'
 import { LOGIN_STEPS } from '@/constants/loginSteps'
+import { STORAGE_KEYS } from '@/constants/storageKeys'
 
 vi.mock('@/services/authService', () => ({
   UNAUTHENTICATED_STATUS: 401,
   authService: {
     register: vi.fn(),
-    loginWithPassword: vi.fn(),
-    requestLoginOtp: vi.fn(),
+    signIn: vi.fn(),
     verifyOtp: vi.fn(),
     resendOtp: vi.fn(),
     challengeMfa: vi.fn(),
@@ -74,7 +74,9 @@ describe('auth store — cookie session, nothing in browser storage', () => {
   })
 
   it('retries the session check on the next navigation after a network failure', async () => {
-    authService.session.mockRejectedValueOnce(new Error('offline')).mockResolvedValueOnce({ data: user })
+    authService.session
+      .mockRejectedValueOnce(new Error('offline'))
+      .mockResolvedValueOnce({ data: user })
     const auth = useAuthStore()
     await auth.ensureSession()
     expect(auth.isAuthenticated).toBe(false)
@@ -101,9 +103,15 @@ describe('auth store — cookie session, nothing in browser storage', () => {
   })
 
   it('opens the session only when the step is authenticated', async () => {
-    authService.loginWithPassword.mockResolvedValue({ data: { step: LOGIN_STEPS.AUTHENTICATED, user } })
+    authService.signIn.mockResolvedValue({
+      data: { step: LOGIN_STEPS.AUTHENTICATED, user },
+    })
     const auth = useAuthStore()
-    const outcome = await auth.loginWithPassword({ officialEmail: 'x@example.sa', password: 'secret' })
+    const outcome = await auth.signIn({ identifier: '7001234567', password: 'secret' })
+    expect(authService.signIn).toHaveBeenCalledWith({
+      identifier: '7001234567',
+      password: 'secret',
+    })
     expect(outcome.step).toBe(LOGIN_STEPS.AUTHENTICATED)
     expect(auth.user).toEqual(user)
   })
@@ -111,19 +119,23 @@ describe('auth store — cookie session, nothing in browser storage', () => {
   it.each([LOGIN_STEPS.MFA_CHALLENGE, LOGIN_STEPS.MFA_ENROLLMENT, LOGIN_STEPS.OTP_REQUIRED])(
     'stays signed out while the %s step is pending',
     async (step) => {
-      authService.loginWithPassword.mockResolvedValue({ data: { step, user: null } })
+      authService.signIn.mockResolvedValue({ data: { step, user: null } })
       const auth = useAuthStore()
-      await auth.loginWithPassword({ officialEmail: 'x@example.sa', password: 'secret' })
+      await auth.signIn({ identifier: 'x@example.sa', password: 'secret' })
       expect(auth.isAuthenticated).toBe(false)
     },
   )
 
   it('completes password → OTP → TOTP and only then holds the user', async () => {
-    authService.requestLoginOtp.mockResolvedValue({ data: { step: LOGIN_STEPS.OTP_REQUIRED, otp: { challengeId: '11' } } })
-    authService.verifyOtp.mockResolvedValue({ data: { step: LOGIN_STEPS.MFA_CHALLENGE, user: null } })
+    authService.signIn.mockResolvedValue({
+      data: { step: LOGIN_STEPS.OTP_REQUIRED, otp: { challengeId: '11' } },
+    })
+    authService.verifyOtp.mockResolvedValue({
+      data: { step: LOGIN_STEPS.MFA_CHALLENGE, user: null },
+    })
     authService.challengeMfa.mockResolvedValue({ data: { step: LOGIN_STEPS.AUTHENTICATED, user } })
     const auth = useAuthStore()
-    await auth.requestLoginOtp({ officialEmail: 'x@example.sa', channel: 'email' })
+    await auth.signIn({ identifier: '0500000001', password: 'secret' })
     await auth.verifyOtp({ challengeId: '11', code: '000000' })
     expect(auth.isAuthenticated).toBe(false)
     await auth.challengeMfa({ code: '000000' })
@@ -147,5 +159,51 @@ describe('auth store — cookie session, nothing in browser storage', () => {
     const signedOut = await auth.logout()
     expect(signedOut).toBe(false)
     expect(auth.isAuthenticated).toBe(false)
+  })
+
+  it('logout forgets the recent searches of every user and keeps the other preferences', async () => {
+    authService.logout.mockResolvedValue({})
+    localStorage.setItem(`${STORAGE_KEYS.recentSearches}.5001`, JSON.stringify(['Al-Amal']))
+    localStorage.setItem(`${STORAGE_KEYS.recentSearches}.5002`, JSON.stringify(['Al-Noor']))
+    localStorage.setItem(STORAGE_KEYS.theme, 'dark')
+    const auth = useAuthStore()
+    auth.setUser(user)
+    await auth.logout()
+    expect(localStorage.getItem(`${STORAGE_KEYS.recentSearches}.5001`)).toBeNull()
+    expect(localStorage.getItem(`${STORAGE_KEYS.recentSearches}.5002`)).toBeNull()
+    expect(localStorage.getItem(STORAGE_KEYS.theme)).toBe('dark')
+  })
+
+  it('forgets the recent searches when the session ends without a logout', () => {
+    localStorage.setItem(`${STORAGE_KEYS.recentSearches}.5001`, JSON.stringify(['Al-Amal']))
+    const auth = useAuthStore()
+    auth.setUser(user)
+    auth.clearSession()
+    expect(localStorage.length).toBe(0)
+  })
+})
+
+describe('auth store — account avatar', () => {
+  it('applies a new avatar without touching the rest of the session', () => {
+    const auth = useAuthStore()
+    auth.setUser(user)
+    auth.applyAvatar({ source: 'photo', url: '/api/v1/me/avatar?v=1' })
+    expect(auth.user).toMatchObject({ id: 5001, avatar: { source: 'photo' } })
+    auth.applyAvatar(undefined)
+    expect(auth.user.avatar).toBeNull()
+  })
+
+  it('refreshes only the avatar from the session and keeps the user when that fails', async () => {
+    const auth = useAuthStore()
+    auth.setUser(user)
+    authService.session.mockResolvedValueOnce({
+      data: { ...user, name: 'Changed', avatar: { source: 'entity_logo', url: '/x' } },
+    })
+    await auth.refreshAvatar()
+    expect(auth.user.avatar).toEqual({ source: 'entity_logo', url: '/x' })
+    expect(auth.user.name).toBe('Entity')
+    authService.session.mockRejectedValueOnce(new Error('offline'))
+    await auth.refreshAvatar()
+    expect(auth.user).toMatchObject({ id: 5001, avatar: { source: 'entity_logo' } })
   })
 })

@@ -1,0 +1,426 @@
+@use '../mixins' as *;
+
+// The admin dashboard board: rows of cards. Phones: one card per row (app-like). From md each row
+// lays its cards side by side, sharing the width by `--board-span` and the height of the tallest,
+// so every row, the last one included, ends full with no empty cell.
+.board {
+  @include flex(column, stretch, flex-start, var(--space-4));
+}
+
+.board-row {
+  @include flex(column, stretch, flex-start, var(--space-4));
+
+  @include respond-to('md') {
+    flex-flow: row wrap;
+  }
+
+  > * {
+    min-inline-size: 0;
+
+    @include respond-to('md') {
+      // Two cards per line on tablets; the full row from xl. Flex-grow fills any gap.
+      flex: var(--board-span, 1) 1 calc((100% - var(--space-4)) / 2);
+    }
+
+    @include respond-to('xl') {
+      flex-basis: 0;
+    }
+  }
+}
+
+.board-head {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  align-items: start;
+  gap: var(--space-3);
+
+  @include respond-to('md') {
+    grid-template-columns: minmax(0, 1fr) auto;
+  }
+}
+
+// Phones: the tools on their own line under the title; wider screens: at the end of the title row.
+.board-head__tools {
+  @include flex(row, center, flex-start, var(--space-2));
+
+  @include respond-to('md') {
+    justify-content: flex-end;
+  }
+}
+
+.board-head__chips {
+  @include flex(row, center, flex-start, var(--space-2));
+  flex-wrap: wrap;
+  grid-column: 1 / -1;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.board-head__chip {
+  @include flex(row, center, flex-start, var(--space-1));
+  padding: var(--space-1) var(--space-3);
+  border: var(--border-width) solid var(--theme-border);
+  border-radius: var(--radius-pill);
+  background-color: var(--theme-surface-solid);
+  color: var(--theme-text-secondary);
+  font-size: var(--fs-xs);
+
+  strong {
+    color: var(--theme-heading);
+    font-weight: var(--fw-figure);
+  }
+}
+
+.board-head__error {
+  grid-column: 1 / -1;
+  margin: 0;
+  color: var(--theme-danger-text);
+  font-size: var(--fs-sm);
+}
+
+.board-filters {
+  @include flex(column, stretch, flex-start, var(--space-4));
+}
+
+.board-filters__legend {
+  margin: 0;
+  color: var(--theme-heading);
+  font-size: var(--fs-sm);
+  font-weight: var(--fw-heading);
+}
+
+.board-filters__period {
+  @include flex(column, stretch, flex-start, var(--space-3));
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+// The scope line under a card title: which filters the card follows.
+.board-scope {
+  @include flex(row, center, flex-start, var(--space-1));
+  flex-wrap: wrap;
+}
+
+.board-scope__tag {
+  padding: 0 var(--space-2);
+  border-radius: var(--radius-pill);
+  background-color: var(--theme-surface-muted, var(--chart-grid));
+  color: var(--theme-text-muted);
+  font-size: var(--fs-xs);
+}
+
+// «In each period»: columns beside the period / count list.
+.board-periods {
+  @include flex(column, stretch, flex-start, var(--space-4));
+  flex: 1;
+}
+
+.board-periods__switch {
+  align-self: flex-start;
+}
+
+.board-periods__body {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--space-4);
+
+  @container (min-inline-size: 560px) {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 13rem);
+  }
+}
+
+.board-periods__list {
+  @include flex(column, stretch, flex-start, var(--space-2));
+  min-block-size: 0;
+}
+
+.board-periods__total {
+  @include flex(row, baseline, space-between, var(--space-2));
+  margin: 0;
+  padding-block-end: var(--space-2);
+  border-block-end: var(--border-width) solid var(--theme-border);
+  color: var(--theme-text-secondary);
+  font-size: var(--fs-sm);
+
+  bdi {
+    color: var(--theme-heading);
+    font-size: var(--fs-lg);
+    font-weight: var(--fw-figure);
+    font-variant-numeric: tabular-nums;
+  }
+}
+
+.board-periods__rows {
+  @include flex(column, stretch, flex-start, 0);
+  max-block-size: 15rem;
+  margin: 0;
+  padding: 0;
+  overflow-y: auto;
+  list-style: none;
+}
+
+.board-periods__row {
+  @include flex(row, baseline, space-between, var(--space-2));
+  padding: var(--space-2) 0;
+  border-block-end: var(--border-width) solid var(--theme-border);
+  color: var(--theme-text);
+  font-size: var(--fs-sm);
+
+  bdi {
+    color: var(--theme-heading);
+    font-weight: var(--fw-figure);
+    font-variant-numeric: tabular-nums;
+  }
+}
+
+// Key-value facts.
+.board-facts {
+  @include flex(column, stretch, flex-start, 0);
+  margin: 0;
+}
+
+.board-facts__row {
+  @include flex(row, baseline, space-between, var(--space-3));
+  padding: var(--space-3) 0;
+  border-block-end: var(--border-width) solid var(--theme-border);
+  font-size: var(--fs-sm);
+
+  &:last-child {
+    border-block-end: 0;
+  }
+
+  dt {
+    color: var(--theme-text-secondary);
+  }
+
+  dd {
+    margin: 0;
+    color: var(--theme-heading);
+    font-weight: var(--fw-figure);
+    font-variant-numeric: tabular-nums;
+    text-align: end;
+  }
+}
+
+.board-facts__value--warning {
+  color: var(--theme-warning-text) !important;
+}
+
+.board-facts__value--success {
+  color: var(--theme-success-text) !important;
+}
+
+// Progress to a target.
+.board-targets {
+  @include flex(column, stretch, flex-start, var(--space-4));
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.board-targets__row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  row-gap: var(--space-2);
+  font-size: var(--fs-sm);
+  color: var(--theme-text);
+}
+
+.board-targets__figures {
+  @include flex(row, baseline, flex-end, var(--space-2));
+  color: var(--theme-heading);
+  font-weight: var(--fw-figure);
+  font-variant-numeric: tabular-nums;
+}
+
+.board-targets__count {
+  color: var(--theme-text-muted);
+  font-weight: var(--fw-body);
+}
+
+.board-targets__track {
+  grid-column: 1 / -1;
+  block-size: var(--space-2);
+  border-radius: var(--radius-pill);
+  background-color: var(--chart-grid);
+  overflow: hidden;
+}
+
+.board-targets__fill {
+  display: block;
+  block-size: 100%;
+  border-radius: var(--radius-pill);
+  background-color: var(--chart-single);
+}
+
+// Storage: half gauge beside the rows; stacked when the card is narrow.
+.board-storage {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  align-items: center;
+  gap: var(--space-4);
+
+  @container (min-inline-size: 420px) {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  }
+
+  --storage-tone: var(--chart-single);
+
+  &[data-tone='warning'] {
+    --storage-tone: var(--theme-warning-text);
+  }
+
+  &[data-tone='critical'] {
+    --storage-tone: var(--theme-danger-text);
+  }
+}
+
+.board-storage__gauge {
+  position: relative;
+  margin: 0;
+  max-inline-size: 14rem;
+  justify-self: center;
+  inline-size: 100%;
+
+  svg {
+    display: block;
+    inline-size: 100%;
+  }
+}
+
+.board-storage__track,
+.board-storage__fill {
+  fill: none;
+  stroke-width: 16;
+  stroke-linecap: round;
+}
+
+.board-storage__track {
+  stroke: var(--chart-grid);
+}
+
+.board-storage__fill {
+  stroke: var(--storage-tone);
+}
+
+.board-storage__value {
+  @include flex(column, center, flex-end, 0);
+  position: absolute;
+  inset: auto 0 0;
+  color: var(--theme-text-muted);
+  font-size: var(--fs-xs);
+
+  bdi {
+    color: var(--theme-heading);
+    font-size: var(--fs-2xl);
+    font-weight: var(--fw-figure);
+    line-height: 1.1;
+  }
+}
+
+.board-storage__rows {
+  @include flex(column, stretch, flex-start, 0);
+  margin: 0;
+}
+
+.board-storage__row {
+  @include flex(row, baseline, space-between, var(--space-3));
+  padding: var(--space-2) 0;
+  border-block-end: var(--border-width) solid var(--theme-border);
+  font-size: var(--fs-sm);
+
+  &:last-child {
+    border-block-end: 0;
+  }
+
+  dt {
+    color: var(--theme-text-secondary);
+  }
+
+  dd {
+    margin: 0;
+    color: var(--theme-heading);
+    font-weight: var(--fw-figure);
+    font-variant-numeric: tabular-nums;
+  }
+
+  &[data-row='used'] dd {
+    color: var(--storage-tone);
+  }
+}
+
+.board-storage__measured {
+  grid-column: 1 / -1;
+  margin: 0;
+  color: var(--theme-text-muted);
+  font-size: var(--fs-xs);
+}
+
+.board-storage__alert {
+  grid-column: 1 / -1;
+  margin: 0;
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--card-radius);
+  background-color: var(--theme-warning-soft);
+  color: var(--theme-warning-text);
+  font-size: var(--fs-xs);
+}
+
+// Two short breakdowns in one card (entity type and size), one under the other.
+.board-split {
+  @include flex(column, stretch, flex-start, var(--space-5));
+}
+
+.board-split__part + .board-split__part {
+  padding-block-start: var(--space-4);
+  border-block-start: var(--border-width) solid var(--theme-border);
+}
+
+.board-split__title {
+  margin: 0 0 var(--space-3);
+  color: var(--theme-text-secondary);
+  font-size: var(--fs-sm);
+  font-weight: var(--fw-heading);
+}
+
+// Large cards (full width, 2/3 or 1/2): bigger donuts, map and gauge; the period list gets room.
+.board-panel--lg {
+  .chart-donut {
+    inline-size: min(100%, 15rem);
+  }
+
+  .chart--donut {
+    @container (min-width: 28rem) {
+      grid-template-columns: 15rem minmax(0, 1fr);
+    }
+  }
+
+  .overview-geography__map {
+    max-block-size: 36rem;
+  }
+
+  .board-storage__gauge {
+    max-inline-size: 20rem;
+  }
+
+  .board-storage__value bdi {
+    font-size: var(--fs-3xl, var(--fs-2xl));
+  }
+
+  .board-periods__body {
+    @container (min-inline-size: 760px) {
+      grid-template-columns: minmax(0, 1fr) minmax(0, 18rem);
+    }
+  }
+
+  .board-periods__rows {
+    max-block-size: 18rem;
+  }
+}
+
+// Narrow board cards: keep a gap between a bar's label and its figures.
+.board .chart-progress__row {
+  column-gap: var(--space-3);
+}

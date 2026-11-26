@@ -6,7 +6,9 @@ namespace App\Http\Resources\Award;
 
 use App\Models\Award\AwardCycle;
 use App\Models\Entities\Region;
+use App\Services\Finance\RequestVatRate;
 use App\Support\Entities\EntityPresenter;
+use App\Support\Finance\PriceQuotePresenter;
 use App\Support\ScalarValue;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
@@ -26,10 +28,11 @@ final class AwardCycleResource extends JsonResource
         return [
             'id' => $cycle->id,
             'name' => $cycle->name->toArray(),
+            'description' => $cycle->description?->toArray(),
             'year' => $cycle->year,
             'status' => $cycle->status->value,
             'criteria_version_id' => $cycle->criteria_version_id,
-            'scale_kind' => $cycle->scale_kind->value,
+            'scale_kind' => $cycle->scale_kind?->value,
             'submission_start' => $cycle->submission_start->toIso8601String(),
             'submission_end' => $cycle->submission_end->toIso8601String(),
             'committee_start' => $cycle->committee_start->toIso8601String(),
@@ -41,6 +44,9 @@ final class AwardCycleResource extends JsonResource
             ],
             'initial_review_sla_days' => $cycle->initial_review_sla_days,
             'participation_certificate_enabled' => $cycle->participation_certificate_enabled,
+            'entry_fee' => $cycle->entry_fee,
+            'entry_fee_quote' => PriceQuotePresenter::present(app(RequestVatRate::class)->quoteOf($cycle->entryFee())),
+            'entry_fee_editable' => $cycle->acceptsEntryFeeChanges(),
             'regions' => array_values($cycle->regions->map(static fn (Region $region): array => EntityPresenter::place($region))->all()),
             'counts' => $this->counts($cycle),
             'opened_at' => $cycle->opened_at?->toIso8601String(),

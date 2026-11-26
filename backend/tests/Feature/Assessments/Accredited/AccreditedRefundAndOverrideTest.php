@@ -3,12 +3,14 @@
 declare(strict_types=1);
 
 use App\Enums\Audit\AuditEvent;
+use App\Enums\Certificates\CertificateStatus;
 use App\Enums\Notifications\NotificationCode;
 use App\Models\Assessments\Assessment;
 use App\Models\Assessments\AssessmentAssignment;
 use App\Models\Assessments\AssessmentResultSnapshot;
 use App\Models\Assessments\AssessmentStatusTransition;
 use App\Models\Audit\Audit;
+use App\Models\Certificates\Certificate;
 use App\Models\Finance\Payment;
 use App\Notifications\Identity\SecurityAlertNotification;
 use Illuminate\Support\Facades\Notification;
@@ -87,6 +89,38 @@ it('lets only the Super Admin override a completed score with a reason and recom
         ->and(AssessmentStatusTransition::query()->where('assessment_id', $assessment->id)->latest('id')->firstOrFail()->verb->value)->toBe('override_score');
 
     Notification::assertSentTo($admin, SecurityAlertNotification::class);
+});
+
+it('reissues the certificate in force from an overridden result that changes the shown score', function (): void {
+    $version = publishedAccreditedCriteria();
+    $assessment = completedAccreditedRequest($version, assessorUser());
+    $original = Certificate::query()->where('assessment_id', $assessment->id)->sole();
+    $admin = superAdmin();
+
+    switchTo($admin)->postJson("/api/v1/assessments/{$assessment->id}/scores/override", ['scores' => selfScores($version, ['M1.1' => '10']), 'reason' => SUPER_ADMIN_REASON])->assertOk();
+
+    $replacement = Certificate::query()->where('assessment_id', $assessment->id)->where('status', CertificateStatus::Issued)->sole();
+    $override = AssessmentResultSnapshot::query()->where('assessment_id', $assessment->id)->latest('version')->firstOrFail();
+
+    expect($original->refresh()->status)->toBe(CertificateStatus::Superseded)
+        ->and($replacement->replaces_certificate_id)->toBe($original->id)
+        ->and($replacement->result_snapshot_id)->toBe($override->id)
+        ->and($replacement->score_percent->toDisplay())->toBe($override->percent->toDisplay())
+        ->and($replacement->reissue_reason)->toBe(SUPER_ADMIN_REASON)
+        ->and($replacement->valid_until?->toDateString())->toBe($original->valid_until?->toDateString())
+        ->and(Audit::query()->where('event', AuditEvent::CertificateReissued->value)->count())->toBe(1);
+});
+
+it('leaves a suspended certificate alone when the result is overridden', function (): void {
+    $version = publishedAccreditedCriteria();
+    $assessment = completedAccreditedRequest($version, assessorUser());
+    $certificate = Certificate::query()->where('assessment_id', $assessment->id)->sole();
+    Certificate::query()->whereKey($certificate->id)->update(['status' => CertificateStatus::Suspended->value, 'suspended_at' => now(), 'suspended_reason' => 'Entity under review by the administration.']);
+
+    switchTo(superAdmin())->postJson("/api/v1/assessments/{$assessment->id}/scores/override", ['scores' => selfScores($version, ['M1.1' => '10']), 'reason' => SUPER_ADMIN_REASON])->assertOk();
+
+    expect(Certificate::query()->where('assessment_id', $assessment->id)->count())->toBe(1)
+        ->and($certificate->refresh()->status)->toBe(CertificateStatus::Suspended);
 });
 
 it('refuses a score override before the result exists', function (): void {

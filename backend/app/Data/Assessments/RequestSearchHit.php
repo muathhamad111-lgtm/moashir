@@ -5,8 +5,10 @@ declare(strict_types=1);
 namespace App\Data\Assessments;
 
 use App\Contracts\Search\SearchHit;
+use App\Enums\Assessments\AssessmentPath;
 use App\Models\Assessments\Assessment;
 use App\Models\Identity\User;
+use App\Support\Assessments\PathPresenter;
 use App\Support\Assessments\StatusMask;
 use App\Support\Entities\EntityPresenter;
 
@@ -18,7 +20,7 @@ final readonly class RequestSearchHit implements SearchHit
     public function __construct(
         public int $id,
         public string $number,
-        public string $path,
+        public AssessmentPath $path,
         public string $status,
         public bool $isFrozen,
         public array $entity,
@@ -29,7 +31,7 @@ final readonly class RequestSearchHit implements SearchHit
         return new self(
             $assessment->id,
             $assessment->request_number,
-            $assessment->path->value,
+            $assessment->path,
             StatusMask::statusFor($assessment, $viewer),
             $assessment->isFrozen(),
             EntityPresenter::summary($assessment->entity),
@@ -41,7 +43,7 @@ final readonly class RequestSearchHit implements SearchHit
         return [
             'id' => $this->id,
             'number' => $this->number,
-            'path' => $this->path,
+            ...PathPresenter::of($this->path),
             'status' => $this->status,
             'is_frozen' => $this->isFrozen,
             'entity' => $this->entity,

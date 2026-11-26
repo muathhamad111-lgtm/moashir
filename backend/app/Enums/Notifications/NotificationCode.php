@@ -11,6 +11,9 @@ enum NotificationCode: string
     case AccountStatusChanged = 'USR-03';
     case PasswordResetRequested = 'USR-04';
     case SuperAdminEmailChanged = 'USR-05';
+    case IdentityChangeRequested = 'USR-06';
+    case IdentityChangeDecided = 'USR-07';
+    case NationalIdChangedAtAcceptance = 'USR-08';
     case EntityRegistered = 'REG-01';
     case OtpCode = 'REG-02';
     case EntityProfileIncomplete = 'REG-03';
@@ -21,12 +24,19 @@ enum NotificationCode: string
     case EntityEmailChangeRequested = 'REG-08';
     case EntityEmailChangeDecided = 'REG-09';
     case EntityDeletionChanged = 'REG-10';
+    case EntityAwaitingReview = 'REG-11';
+    case EntityRegistrationApproved = 'REG-12';
+    case EntityRegistrationRejected = 'REG-13';
+    case EntityProfileChangeRequested = 'REG-14';
+    case EntityProfileChangeDecided = 'REG-15';
     case SuperAdminLogin = 'SEC-01';
     case SuperAdminMfaFailed = 'SEC-02';
     case SuperAdminGrantChanged = 'SEC-03';
     case ReasonRequiredAction = 'SEC-04';
     case SuperAdminAssignmentRejected = 'SEC-05';
     case IntegrationSecretReplaced = 'SEC-06';
+    case EntitySignInCodeChannelsChanged = 'SEC-07';
+    case TwoFactorPolicyChanged = 'SEC-08';
     case CriteriaMainCreated = 'STD-01';
     case CriteriaMainWeightChanged = 'STD-02';
     case CriteriaSubCreated = 'STD-03';
@@ -47,9 +57,16 @@ enum NotificationCode: string
     case AccreditedReviewStarted = 'ACC-06';
     case AccreditedCompletionRequested = 'ACC-07';
     case AccreditedCompleted = 'ACC-08';
+    case AccreditedCertificateIssued = 'ACC-09';
     case AccreditedFeedbackAvailable = 'ACC-10';
     case AccreditedReviewOverdue = 'ACC-11';
     case AccreditedCompletionExpired = 'ACC-12';
+    case AccreditedPaidDraftReminder = 'ACC-13';
+    case PeriodStartingSoon = 'PER-01';
+    case PeriodEndingSoon = 'PER-02';
+    case PeriodMissed = 'PER-03';
+    case PeriodDigest = 'PER-04';
+    case PeriodCorrected = 'PER-05';
     case AdvancedCycleOpened = 'ADV-01';
     case AdvancedDeadlineApproaching = 'ADV-02';
     case AdvancedConditionsRejected = 'ADV-03';
@@ -68,6 +85,7 @@ enum NotificationCode: string
     case ReturnedToCommittee = 'ADV-16';
     case CommitteeAverageApproved = 'ADV-17';
     case AwardResultsAnnounced = 'ADV-18';
+    case AdvancedCertificateIssued = 'ADV-19';
     case RegionApproved = 'ADV-20';
     case QualifiedForNational = 'ADV-21';
     case NationalResultApproved = 'ADV-22';
@@ -80,8 +98,11 @@ enum NotificationCode: string
     case AdvancedCompletionExpired = 'ADV-27';
     case AdvancedFilteringException = 'ADV-28';
     case AdvancedWithdrawn = 'ADV-31';
+    case AdvancedParticipationCertificateIssued = 'ADV-32';
     case CycleSubmissionsClosed = 'CYC-01';
     case CycleClosed = 'CYC-02';
+    case CycleOpenBlocked = 'CYC-03';
+    case CycleOpenDeferred = 'CYC-04';
     case EvidenceBundleReady = 'EVD-01';
     case EvidenceRefused = 'EVD-02';
     case SmsSendFailed = 'INT-01';
@@ -89,6 +110,7 @@ enum NotificationCode: string
     case PaymentGatewayTestFailed = 'INT-03';
     case ExternalServiceDown = 'INT-04';
     case RequestProcessingFailed = 'INT-05';
+    case BackupUnhealthy = 'INT-06';
     case AiProviderUpdated = 'AI-04';
     case AiProviderConnectionFailed = 'AI-05';
     case PaymentStarted = 'PAY-01';
@@ -99,7 +121,24 @@ enum NotificationCode: string
     case PaymentOrderCancelled = 'PAY-07';
     case PaymentRefundRequired = 'PAY-08';
     case ProviderRefundReported = 'PAY-09';
+    case BankTransferSubmitted = 'PAY-11';
+    case BankTransferRejected = 'PAY-12';
     case FinanceExportReady = 'FIN-01';
+    case BankAccountsChanged = 'FIN-03';
+    case KpiAdded = 'CMS-01';
+    case KpiValueEdited = 'CMS-02';
+    case KpiPublished = 'CMS-03';
+    case HomepageContentEdited = 'CMS-04';
+    case ContentUnpublished = 'CMS-05';
+    case CertificateRevoked = 'CERT-01';
+    case CertificateSuspended = 'CERT-02';
+    case ContactMessageReceived = 'CNT-01';
+    case ContactReplySent = 'CNT-02';
+    case ContactMessageAcknowledged = 'CNT-03';
+    case ContactFollowUpReceived = 'CNT-04';
+    case ContactMessageAssigned = 'CNT-05';
+    case NdaVersionPublished = 'NDA-01';
+    case NdaAcceptanceReminder = 'NDA-02';
 
     public function category(): NotificationCategory
     {
@@ -107,27 +146,63 @@ enum NotificationCode: string
             self::StaffInvited, self::PasswordResetRequested, self::OtpCode,
             self::CriteriaMainWeightChanged, self::CriteriaSubCreated, self::CriteriaGuidingPointsEnabled,
             self::CriteriaDirectEvaluationEnabled, self::EntityRegistered, self::EntityProfileIncomplete,
-            self::EntityVerificationReminder, self::EntityEmailChangeRequested, self::PaymentStarted,
+            self::EntityVerificationReminder, self::EntityEmailChangeRequested, self::EntityAwaitingReview, self::PaymentStarted,
             self::PaymentOrderCancelled, self::PaymentRefundRequired, self::ProviderRefundReported,
+            self::BankTransferSubmitted, self::BankTransferRejected,
             self::AccreditedFormOpened, self::AccreditedSubmitted, self::AccreditedAwaitingAssignment,
             self::AccreditedAssigned, self::AccreditedCompletionRequested, self::EvidenceRefused,
+            self::AccreditedPaidDraftReminder, self::PeriodStartingSoon, self::PeriodEndingSoon,
             self::AdvancedCycleOpened, self::AdvancedDeadlineApproaching, self::AdvancedSubmitted, self::AdvancedAssigned,
             self::AdvancedInitialAssessmentCompleted, self::AdvancedReturnedForCompletion, self::CommitteeAssigned,
             self::CommitteeAllSubmitted, self::CommitteeAssessorDisabled, self::CommitteeSubstituteAssigned, self::ReturnedToCommittee,
-            self::QualifiedForNational, self::NationalResultApproved, self::CommitteeDiscussionOpened => NotificationCategory::ActionRequired,
+            self::QualifiedForNational, self::NationalResultApproved, self::CommitteeDiscussionOpened,
+            self::ContactMessageReceived, self::ContactFollowUpReceived, self::ContactMessageAssigned,
+            self::IdentityChangeRequested, self::EntityProfileChangeRequested, self::NdaVersionPublished, self::NdaAcceptanceReminder => NotificationCategory::ActionRequired,
             self::AccountStatusChanged, self::CriteriaMainCreated, self::CriteriaScaleChanged,
-            self::CriteriaEditedWithScope, self::EntityCoreDataEdited, self::EntityReactivated,
+            self::CriteriaEditedWithScope, self::EntityCoreDataEdited, self::EntityReactivated, self::EntityRegistrationApproved,
             self::EntityEmailChangeDecided, self::SelfAssessmentStarted, self::SelfAssessmentDraftSaved,
             self::SelfAssessmentSubmitted, self::SelfAssessmentResultAvailable, self::SmsGatewayTestPassed,
             self::AiProviderUpdated, self::PaymentSucceeded, self::PaymentRefundRecorded, self::PaymentReceiptIssued,
             self::FinanceExportReady, self::AccreditedDraftSaved, self::AccreditedReviewStarted, self::AccreditedCompleted,
-            self::AccreditedFeedbackAvailable, self::AccreditedCompletionExpired, self::EvidenceBundleReady,
+            self::AccreditedFeedbackAvailable, self::AccreditedCertificateIssued, self::AccreditedCompletionExpired, self::EvidenceBundleReady,
             self::AdvancedConditionsRejected, self::AdvancedQualified, self::AdvancedNotQualified, self::AdvancedCompletionExpired,
-            self::AdvancedWithdrawn, self::CycleSubmissionsClosed, self::CycleClosed, self::CommitteeEvaluationStarted,
+            self::AdvancedWithdrawn, self::AdvancedCertificateIssued, self::AdvancedParticipationCertificateIssued,
+            self::CycleSubmissionsClosed, self::CycleClosed, self::CommitteeEvaluationStarted,
             self::CommitteeEvaluationSubmitted, self::CommitteeAverageApproved, self::AwardResultsAnnounced, self::RegionApproved,
-            self::RegionalResult, self::NationalResult, self::CommitteeSubstituteApproved, self::CommitteeDiscussionEntry => NotificationCategory::Informational,
+            self::RegionalResult, self::NationalResult, self::CommitteeSubstituteApproved, self::CommitteeDiscussionEntry,
+            self::KpiAdded, self::KpiValueEdited, self::KpiPublished, self::HomepageContentEdited, self::ContentUnpublished,
+            self::ContactReplySent, self::ContactMessageAcknowledged, self::PeriodMissed, self::PeriodDigest,
+            self::PeriodCorrected, self::IdentityChangeDecided, self::EntityProfileChangeDecided => NotificationCategory::Informational,
             default => NotificationCategory::Alert,
         };
+    }
+
+    /**
+     * Core notifications give access to an account or alert on a security event (an NCA ECC monitoring
+     * control): they are always sent, and their wording may change but not their variables or button.
+     */
+    public function isCore(): bool
+    {
+        return in_array($this, [
+            self::StaffInvited, self::AccountLocked, self::PasswordResetRequested, self::SuperAdminEmailChanged,
+            self::OtpCode, self::EntityVerificationReminder, self::EntityEmailChangeRequested,
+            self::SuperAdminLogin, self::SuperAdminMfaFailed, self::SuperAdminGrantChanged, self::ReasonRequiredAction,
+            self::SuperAdminAssignmentRejected, self::IntegrationSecretReplaced, self::EntitySignInCodeChannelsChanged,
+            self::TwoFactorPolicyChanged, self::NdaVersionPublished, self::NdaAcceptanceReminder,
+        ], true);
+    }
+
+    public function module(): string
+    {
+        return (string) strstr($this->value, '-', true);
+    }
+
+    /**
+     * @return list<string>
+     */
+    public static function values(): array
+    {
+        return array_column(self::cases(), 'value');
     }
 
     public function sendsMail(): bool
@@ -137,6 +212,7 @@ enum NotificationCode: string
             self::PaymentGatewayTestFailed,
             self::ExternalServiceDown,
             self::AiProviderConnectionFailed,
+            self::BackupUnhealthy,
         ], true);
     }
 }

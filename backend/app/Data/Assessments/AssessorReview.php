@@ -7,6 +7,7 @@ namespace App\Data\Assessments;
 use App\Enums\Assessments\ReviewMode;
 use App\Models\Assessments\Assessment;
 use App\Models\Assessments\AssessmentCompletionRequest;
+use App\Models\Assessments\AssessmentSummary;
 
 final readonly class AssessorReview
 {
@@ -23,5 +24,8 @@ final readonly class AssessorReview
         public FeedbackSheet $feedback,
         public ?AssessmentCompletionRequest $completionRequest,
         public array $context,
+        public ReviewNotesView $notes,
+        public ?AssessmentSummary $summary = null,
+        public ?CriteriaMoveSummary $criteriaUpdate = null,
     ) {}
 }

@@ -1,9 +1,16 @@
+import { hasFilteringDecisions } from './cycleEditing'
 import { findRegion } from '../regionsStore'
 import { staffNameOf } from '../accredited/staffDirectory'
 import { allAssessments } from '../assessments/assessmentsStore'
 import { ADVANCED_STATES, isInAdvancedQueue } from './advancedStates'
 import { acceptsApplications } from './cycleStore'
 import { canManage, revealsStaff } from './cycleAccess'
+import { entryFeeOf } from './awardPricing'
+import { quoteOfPrice } from '../finance/priceVersions'
+import { openBlockOf } from './cycleConcurrency'
+
+const DRAFT_STATUS = 'draft'
+const FEE_EDITABLE_STATUS = DRAFT_STATUS
 
 function placeOf(regionId) {
   const region = findRegion(regionId)
@@ -12,6 +19,15 @@ function placeOf(regionId) {
 
 function requestsOf(cycle) {
   return allAssessments().filter((record) => record.awardCycleId === cycle.id)
+}
+
+function descriptionOf(cycle) {
+  return cycle.description ? { ...cycle.description } : null
+}
+
+function lockedRegionIdsOf(cycle) {
+  const ids = requestsOf(cycle).map((record) => record.regionId)
+  return [...new Set(ids)].filter((id) => cycle.regionIds.includes(id)).sort((a, b) => a - b)
 }
 
 function countsOf(cycle) {
@@ -26,6 +42,7 @@ export function cycleResource(cycle, { withCounts = false } = {}) {
   return {
     id: cycle.id,
     name: { ...cycle.name },
+    description: descriptionOf(cycle),
     year: cycle.year,
     status: cycle.status,
     criteriaVersionId: cycle.criteriaVersionId,
@@ -35,9 +52,15 @@ export function cycleResource(cycle, { withCounts = false } = {}) {
     committeeStart: cycle.committeeStart,
     committeeEnd: cycle.committeeEnd,
     announcementAt: cycle.announcementAt,
-    conditions: { minEntityAgeYears: cycle.minEntityAgeYears, disqualificationScore: cycle.disqualificationScore },
+    conditions: {
+      minEntityAgeYears: cycle.minEntityAgeYears,
+      disqualificationScore: cycle.disqualificationScore,
+    },
     initialReviewSlaDays: cycle.initialReviewSlaDays,
     participationCertificateEnabled: cycle.participationCertificateEnabled,
+    entryFee: entryFeeOf(cycle),
+    entryFeeQuote: quoteOfPrice(entryFeeOf(cycle)),
+    entryFeeEditable: cycle.status === FEE_EDITABLE_STATUS,
     regions: cycle.regionIds.map(placeOf).filter(Boolean),
     counts: withCounts ? countsOf(cycle) : null,
     openedAt: cycle.openedAt,
@@ -49,12 +72,26 @@ export function cycleResource(cycle, { withCounts = false } = {}) {
 }
 
 export function cycleDetailResource(cycle, viewer) {
-  const detail = { ...cycleResource(cycle), canManage: canManage(viewer, cycle) }
+  const detail = {
+    ...cycleResource(cycle),
+    lockedRegionIds: lockedRegionIdsOf(cycle),
+    canManage: canManage(viewer, cycle),
+    thresholdLocked: hasFilteringDecisions(cycle),
+    openBlock: cycle.status === DRAFT_STATUS ? openBlockOf(cycle) : null,
+  }
   if (!revealsStaff(viewer, cycle)) return detail
   return {
     ...detail,
-    members: cycle.members.map((member) => ({ id: member.userId, name: staffNameOf(member.userId), role: member.role })),
-    initialAssessors: cycle.initialAssessors.map((link) => ({ id: link.assessorId, name: staffNameOf(link.assessorId), isActive: link.isActive })),
+    members: cycle.members.map((member) => ({
+      id: member.userId,
+      name: staffNameOf(member.userId),
+      role: member.role,
+    })),
+    initialAssessors: cycle.initialAssessors.map((link) => ({
+      id: link.assessorId,
+      name: staffNameOf(link.assessorId),
+      isActive: link.isActive,
+    })),
   }
 }
 
@@ -62,6 +99,7 @@ export function publicCycleResource(cycle, now = Date.now()) {
   return {
     id: cycle.id,
     name: { ...cycle.name },
+    description: descriptionOf(cycle),
     year: cycle.year,
     status: cycle.status,
     isAcceptingApplications: acceptsApplications(cycle, now),

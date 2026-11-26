@@ -29,7 +29,9 @@ const completedOutcome = ref(null)
 
 const isEnrollment = computed(() => step.value === LOGIN_STEPS.MFA_ENROLLMENT)
 const recoveryCodes = computed(() => completedOutcome.value?.recoveryCodes ?? [])
-const titleKey = computed(() => (isEnrollment.value ? 'auth.mfa.enroll.title' : 'auth.mfa.challenge.title'))
+const titleKey = computed(() =>
+  isEnrollment.value ? 'auth.mfa.enroll.title' : 'auth.mfa.challenge.title',
+)
 const subtitleKey = computed(() =>
   isEnrollment.value ? 'auth.mfa.enroll.subtitle' : 'auth.mfa.challenge.subtitle',
 )
@@ -104,7 +106,11 @@ onMounted(() => {
     </header>
 
     <div class="auth-form__body">
-      <RecoveryCodesPanel v-if="recoveryCodes.length" :codes="recoveryCodes" @continue="finishEnrollment" />
+      <RecoveryCodesPanel
+        v-if="recoveryCodes.length"
+        :codes="recoveryCodes"
+        @continue="finishEnrollment"
+      />
 
       <template v-else-if="isEnrollment">
         <Skeleton v-if="enrollmentStatus === 'loading'" variant="text" :count="4" />

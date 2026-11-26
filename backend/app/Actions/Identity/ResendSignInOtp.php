@@ -6,44 +6,35 @@ namespace App\Actions\Identity;
 
 use App\Data\Identity\OtpChallenge;
 use App\Data\Identity\OtpDelivery;
-use App\Enums\Identity\OtpChannel;
-use App\Enums\Identity\OtpPurpose;
 use App\Exceptions\Identity\OtpRejected;
 use App\Models\Identity\OtpCode;
-use App\Services\Identity\AuthSettings;
 use App\Services\Identity\DecoyOtpChallenges;
-use Illuminate\Support\Facades\Date;
+use App\Services\Identity\SignInCodeChannelResolver;
+use App\Services\Identity\SignInOtpChallenges;
 
 final readonly class ResendSignInOtp
 {
     public function __construct(
-        private AuthSettings $settings,
+        private SignInOtpChallenges $challenges,
         private DecoyOtpChallenges $decoys,
-        private IssueOtpChallenge $issueChallenge,
+        private SignInCodeChannelResolver $channels,
+        private IssueSignInCode $issueCode,
     ) {}
 
-    public function handle(string $challengeId, ?OtpChannel $channel): OtpChallenge
+    public function handle(string $challengeId): OtpChallenge
     {
-        $otp = OtpCode::query()->where('challenge_id', $challengeId)->where('purpose', OtpPurpose::Login)->first();
+        $otp = $this->challenges->find($challengeId);
 
-        if ($otp === null) {
-            return $this->resendDecoy($challengeId, $channel ?? OtpChannel::Email);
+        if (! $otp instanceof OtpCode) {
+            return $this->resendDecoy($challengeId);
         }
 
-        if (! $otp->isOpen()) {
-            throw OtpRejected::challengeInvalid();
-        }
+        $this->challenges->assertResendable($otp);
 
-        $availableAt = $otp->last_sent_at->addSeconds($this->settings->otpResendCooldownSeconds());
-
-        if ($availableAt->isFuture()) {
-            throw OtpRejected::cooldown((int) Date::now()->diffInSeconds($availableAt, true));
-        }
-
-        return $this->issueChallenge->handle(new OtpDelivery($otp->user, $channel ?? $otp->channel, OtpPurpose::Login));
+        return $this->issueCode->handle(new OtpDelivery($otp->user, $this->channels->forResend($otp->channel), $otp->purpose));
     }
 
-    private function resendDecoy(string $challengeId, OtpChannel $channel): OtpChallenge
+    private function resendDecoy(string $challengeId): OtpChallenge
     {
         if (! $this->decoys->isDecoy($challengeId)) {
             throw OtpRejected::challengeInvalid();
@@ -55,6 +46,6 @@ final readonly class ResendSignInOtp
             throw OtpRejected::cooldown($remaining);
         }
 
-        return $this->decoys->issue($channel);
+        return $this->decoys->issue($this->channels->forResend($this->decoys->channelOf($challengeId)));
     }
 }

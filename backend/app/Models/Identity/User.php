@@ -4,21 +4,29 @@ declare(strict_types=1);
 
 namespace App\Models\Identity;
 
+use App\Enums\Identity\Gender;
 use App\Enums\Identity\Locale;
 use App\Enums\Identity\RoleKey;
 use App\Enums\Identity\SessionGroup;
 use App\Enums\Identity\ThemePreference;
 use App\Enums\Identity\UserStatus;
+use App\Models\Concerns\HasAssessmentScope;
+use App\Models\Concerns\HasIdentityHistory;
+use App\Models\Files\StoredFile;
 use App\Models\Notifications\Notification;
+use App\Observers\Identity\UserNationalIdIndexObserver;
+use App\Observers\Identity\UserPhoneIndexObserver;
 use App\Support\Search\SearchTextNormalizer;
 use App\Support\ValueObjects\EmailAddress;
 use App\Support\ValueObjects\SearchTerm;
 use Database\Factories\Identity\UserFactory;
 use Illuminate\Contracts\Translation\HasLocalePreference;
+use Illuminate\Database\Eloquent\Attributes\ObservedBy;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Foundation\Auth\User as Authenticatable;
@@ -34,8 +42,14 @@ use Spatie\Permission\Traits\HasRoles;
  * @property string $name
  * @property string $email
  * @property string|null $phone
+ * @property string|null $phone_index
+ * @property Carbon|null $phone_verified_at
+ * @property string|null $national_id
+ * @property Gender|null $gender
+ * @property string|null $national_id_index
  * @property string|null $password
  * @property int|null $entity_id
+ * @property int|null $avatar_file_id
  * @property bool $password_change_required
  * @property bool $is_super_admin
  * @property UserStatus $status
@@ -56,18 +70,26 @@ use Spatie\Permission\Traits\HasRoles;
  * @property Carbon $created_at
  * @property Carbon $updated_at
  * @property-read Collection<int, Role> $roles
+ * @property-read Collection<int, UserAssessorQualification> $assessorQualifications
+ * @property-read Collection<int, UserRequestPath> $requestPaths
+ * @property-read UserIdentityChange|null $acceptanceNationalIdChange
  */
+#[ObservedBy([UserPhoneIndexObserver::class, UserNationalIdIndexObserver::class])]
 final class User extends Authenticatable implements Auditable, HasLocalePreference
 {
     use AuditableTrait;
+    use HasAssessmentScope;
 
     /** @use HasFactory<UserFactory> */
     use HasFactory;
 
+    use HasIdentityHistory;
     use HasRoles;
     use RoutesNotifications;
     use SoftDeletes;
     use TwoFactorAuthenticatable;
+
+    public const array ADMINISTRATION_RELATIONS = ['roles', 'assessorQualifications', 'requestPaths', 'acceptanceNationalIdChange'];
 
     protected string $guard_name = 'web';
 
@@ -87,19 +109,19 @@ final class User extends Authenticatable implements Auditable, HasLocalePreferen
     /**
      * @var list<string>
      */
-    protected $fillable = ['name', 'email', 'phone', 'locale', 'theme'];
+    protected $fillable = ['name', 'email', 'phone', 'locale', 'theme', 'gender'];
 
     /**
      * @var list<string>
      */
-    protected $hidden = ['password', 'remember_token', 'two_factor_secret', 'two_factor_recovery_codes', 'is_super_admin'];
+    protected $hidden = ['password', 'remember_token', 'two_factor_secret', 'two_factor_recovery_codes', 'is_super_admin', 'phone_index', 'avatar_file_id', 'national_id', 'national_id_index'];
 
     /**
      * @var list<string>
      */
     protected array $auditExclude = [
-        'password', 'remember_token', 'two_factor_secret', 'two_factor_recovery_codes',
-        'failed_login_attempts', 'last_login_at', 'last_login_ip', 'phone',
+        'password', 'remember_token', 'two_factor_secret', 'two_factor_recovery_codes', 'failed_login_attempts', 'last_login_at',
+        'last_login_ip', 'phone', 'phone_index', 'avatar_file_id', 'national_id', 'national_id_index', 'gender',
     ];
 
     /**
@@ -110,6 +132,8 @@ final class User extends Authenticatable implements Auditable, HasLocalePreferen
         return [
             'email_verified_at' => 'datetime',
             'phone' => 'encrypted',
+            'national_id' => 'encrypted',
+            'gender' => Gender::class,
             'phone_verified_at' => 'datetime',
             'password' => 'hashed',
             'password_change_required' => 'boolean',
@@ -128,11 +152,27 @@ final class User extends Authenticatable implements Auditable, HasLocalePreferen
     }
 
     /**
+     * @return BelongsTo<StoredFile, $this>
+     */
+    public function avatar(): BelongsTo
+    {
+        return $this->belongsTo(StoredFile::class, 'avatar_file_id');
+    }
+
+    /**
      * @return HasMany<PasswordHistory, $this>
      */
     public function passwordHistories(): HasMany
     {
         return $this->hasMany(PasswordHistory::class);
+    }
+
+    /**
+     * @return HasMany<UserTableColumns, $this>
+     */
+    public function tableColumns(): HasMany
+    {
+        return $this->hasMany(UserTableColumns::class);
     }
 
     /**
@@ -231,15 +271,20 @@ final class User extends Authenticatable implements Auditable, HasLocalePreferen
      */
     public function roleKeys(): array
     {
-        return array_values($this->roles
+        return RoleKey::inCatalogOrder(array_values($this->roles
             ->map(static fn (Role $role): ?RoleKey => RoleKey::tryFrom($role->name))
             ->filter()
-            ->all());
+            ->all()));
     }
 
     public function requiresMfa(): bool
     {
         return $this->isSuperAdmin() || $this->mfa_required;
+    }
+
+    public function mayUseSignInCode(): bool
+    {
+        return $this->isEntityUser() && ! $this->requiresMfa();
     }
 
     public function hasConfirmedTotp(): bool

@@ -10,6 +10,7 @@ use App\Enums\Notifications\NotificationCode;
 use App\Events\Entities\EntitySoftDeleted;
 use App\Services\Entities\EntityNotifier;
 use App\Support\Entities\EntityLinks;
+use App\Support\ValueObjects\LocalizedText;
 
 final readonly class NotifyEntitySoftDeleted
 {
@@ -21,7 +22,7 @@ final readonly class NotifyEntitySoftDeleted
         $replacements = [
             'entity' => $entity->name->toLocalizedText(),
             'reference' => $entity->reference(),
-            'count' => (string) count($event->frozenRequestNumbers),
+            'open_requests' => LocalizedText::fromChoice('quantities.open_requests', count($event->frozenRequestNumbers)),
         ];
 
         $this->notifier->toRole(RoleKey::SystemAdmin, EntityNotice::for(NotificationCode::EntityDeletionChanged, 'staff_deleted', $replacements, EntityLinks::deletedEntities()), $event->actorId);

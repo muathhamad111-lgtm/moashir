@@ -1,0 +1,224 @@
+@use '../mixins' as *;
+
+.path-page__body {
+  @include flex(column, stretch, flex-start, var(--space-6));
+  padding-block: var(--space-6) var(--space-10);
+}
+
+.path-header__inner {
+  gap: var(--space-5);
+}
+
+.path-header__intro {
+  @include flex(column, flex-start, flex-start, var(--space-2));
+}
+
+.path-header__title {
+  margin-block: 0 var(--space-2);
+  margin-inline: 0;
+  color: var(--band-ink);
+  font-family: var(--font-heading);
+  font-size: var(--fs-section-title-fluid);
+  font-weight: var(--fw-heading);
+  line-height: var(--lh-heading);
+}
+
+.path-header__lead {
+  max-inline-size: var(--size-prose-wide);
+  margin: 0;
+  color: var(--band-ink-muted);
+  font-size: var(--fs-base);
+  line-height: var(--lh-relaxed);
+}
+
+.path-header__chips {
+  @include flex(row, center, flex-start, var(--space-2));
+  flex-wrap: wrap;
+}
+
+.path-header__chip {
+  @include flex(row, center, flex-start, var(--space-1));
+  margin: 0;
+  padding-block: var(--space-1);
+  padding-inline: var(--space-3);
+  border-radius: var(--radius-pill);
+  background-color: var(--glass-fill);
+  color: var(--band-ink);
+  font-size: var(--fs-caption);
+  font-weight: var(--fw-emphasis);
+
+  &--free {
+    box-shadow: inset 0 0 0 var(--border-width) var(--tier-diamond-graphic-on-band);
+  }
+
+  &--free .app-icon {
+    color: var(--tier-diamond-graphic-on-band);
+  }
+}
+
+.path-header__cards {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--space-4);
+
+  @include respond-to('md') {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+.path-header-card {
+  @include flex(column, stretch, flex-start, var(--space-2));
+  padding: var(--space-5);
+  border: var(--border-width) solid var(--glass-stroke);
+  border-radius: var(--radius-xl);
+  background-color: var(--glass-fill);
+  color: var(--band-ink);
+}
+
+.path-header-card__eyebrow {
+  margin: 0;
+  color: var(--data-on-band);
+  font-size: var(--fs-caption);
+  font-weight: var(--fw-body);
+}
+
+.path-header-card__title {
+  margin: 0;
+  color: var(--band-ink);
+  font-family: var(--font-heading);
+  font-size: var(--fs-xl);
+  font-weight: var(--fw-heading);
+}
+
+.path-header-card__body {
+  @include flex(column, flex-start, flex-start, var(--space-2));
+}
+
+.path-header-card__text {
+  margin: 0;
+  font-size: var(--fs-base);
+}
+
+.path-header-card__note {
+  @include flex(row, center, flex-start, var(--space-2));
+  margin: 0;
+  color: var(--band-ink-muted);
+  font-size: var(--fs-sm);
+}
+
+.path-header-card__actions {
+  @include flex(row, center, flex-start, var(--space-3));
+  flex-wrap: wrap;
+  margin-block-start: auto;
+  padding-block-start: var(--space-2);
+}
+
+.path-header-card .path-price,
+.path-header-card .path-price__muted,
+.path-header-card .path-price__free {
+  color: var(--band-ink);
+}
+
+.path-period-chip {
+  margin: 0;
+  padding-block: var(--space-1);
+  padding-inline: var(--space-3);
+  border-radius: var(--radius-pill);
+  background-color: var(--color-white);
+  color: var(--color-teal-deep);
+  font-size: var(--fs-caption);
+  font-weight: var(--fw-emphasis);
+}
+
+.path-primary-action {
+  min-block-size: var(--size-touch-target);
+}
+
+.path-header-card .money-amount,
+.path-header-card .money-amount--strong,
+.path-header-card .money-amount__currency {
+  color: var(--band-ink);
+}
+
+.path-tile__line,
+.path-tile__status {
+  overflow-wrap: anywhere;
+}
+
+.path-header-card bdi {
+  white-space: nowrap;
+}
+
+.path-header__crumbs .portal-breadcrumb__link,
+.path-header__crumbs .portal-breadcrumb__item,
+.path-header__crumbs .portal-breadcrumb__current {
+  color: var(--band-ink-muted);
+}
+
+.path-header-card__note--groups {
+  flex-wrap: wrap;
+  column-gap: var(--space-3);
+}
+
+.path-header-card__group {
+  white-space: nowrap;
+}
+
+// Compact variant: one slim band — title and chips on one side, status and action on the other.
+.path-header--compact .path-header__inner {
+  gap: var(--space-3);
+  padding-block: var(--space-4) var(--space-5);
+
+  @include respond-to('md') {
+    flex-direction: row;
+    align-items: flex-end;
+    justify-content: space-between;
+  }
+
+  @include respond-to('lg') {
+    padding-block: var(--space-5) var(--space-6);
+  }
+}
+
+.path-header--compact .path-header__intro {
+  gap: var(--space-1);
+  min-inline-size: 0;
+}
+
+.path-header__heading {
+  @include flex(row, center, flex-start, var(--space-2) var(--space-3));
+  flex-wrap: wrap;
+}
+
+.path-header--compact .path-header__title {
+  margin: 0;
+  font-size: var(--fs-2xl);
+}
+
+.path-header--compact .path-header__cards {
+  @include flex(row, center, flex-start, var(--space-3) var(--space-4));
+  flex-wrap: wrap;
+  flex-shrink: 0;
+}
+
+.path-header__status {
+  @include flex(row, center, flex-start, var(--space-3));
+  flex-wrap: wrap;
+}
+
+.path-header__status-text {
+  margin: 0;
+  color: var(--band-ink);
+  font-size: var(--fs-sm);
+  font-weight: var(--fw-body);
+}
+
+.path-header__skeleton {
+  inline-size: 16rem;
+}
+
+.path-header--compact .path-price,
+.path-header--compact .money-amount,
+.path-header--compact .money-amount__currency {
+  color: var(--band-ink);
+}

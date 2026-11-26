@@ -19,6 +19,7 @@ export function seedBagRequests() {
   return [
     {
       id: 'bag-req-7001',
+      number: 'KIT-2026-000005',
       entityId: 6001,
       status: 'awaiting-assignment',
       paymentId: 'bag-pay-7001',
@@ -39,6 +40,7 @@ export function seedBagRequests() {
     },
     {
       id: 'bag-req-7002',
+      number: 'KIT-2026-000006',
       entityId: 6002,
       status: 'awaiting-assignment',
       paymentId: 'bag-pay-7002',
@@ -59,6 +61,7 @@ export function seedBagRequests() {
     },
     {
       id: 'bag-req-7003',
+      number: 'KIT-2026-000004',
       entityId: 6003,
       status: 'assigned',
       paymentId: 'bag-pay-7003',
@@ -76,11 +79,18 @@ export function seedBagRequests() {
       paidAt: '2026-07-06T12:00:00+03:00',
       createdAt: '2026-07-06T12:00:00+03:00',
       assignmentHistory: [
-        { id: 'bah-1', evaluatorId: EVALUATOR_IDS.SULTAN, action: 'assigned', reason: null, at: '2026-07-07T10:00:00+03:00' },
+        {
+          id: 'bah-1',
+          evaluatorId: EVALUATOR_IDS.SULTAN,
+          action: 'assigned',
+          reason: null,
+          at: '2026-07-07T10:00:00+03:00',
+        },
       ],
     },
     {
       id: 'bag-req-7004',
+      number: 'KIT-2026-000003',
       entityId: 6004,
       status: 'in-analysis',
       paymentId: 'bag-pay-7004',
@@ -98,11 +108,18 @@ export function seedBagRequests() {
       paidAt: '2026-07-02T09:00:00+03:00',
       createdAt: '2026-07-02T09:00:00+03:00',
       assignmentHistory: [
-        { id: 'bah-2', evaluatorId: EVALUATOR_IDS.HIND, action: 'assigned', reason: null, at: '2026-07-03T09:00:00+03:00' },
+        {
+          id: 'bah-2',
+          evaluatorId: EVALUATOR_IDS.HIND,
+          action: 'assigned',
+          reason: null,
+          at: '2026-07-03T09:00:00+03:00',
+        },
       ],
     },
     {
       id: 'bag-req-5001',
+      number: 'KIT-2026-000002',
       entityId: 5001,
       status: 'active',
       paymentId: 'bag-pay-5001',
@@ -120,11 +137,18 @@ export function seedBagRequests() {
       paidAt: '2026-06-23T09:00:00+03:00',
       createdAt: '2026-06-23T09:00:00+03:00',
       assignmentHistory: [
-        { id: 'bah-3', evaluatorId: EVALUATOR_IDS.SULTAN, action: 'assigned', reason: null, at: '2026-06-24T09:00:00+03:00' },
+        {
+          id: 'bah-3',
+          evaluatorId: EVALUATOR_IDS.SULTAN,
+          action: 'assigned',
+          reason: null,
+          at: '2026-06-24T09:00:00+03:00',
+        },
       ],
     },
     {
       id: 'bag-req-6600',
+      number: 'KIT-2026-000001',
       entityId: 6001,
       status: 'completed',
       paymentId: 'bag-pay-6600',
@@ -142,7 +166,13 @@ export function seedBagRequests() {
       paidAt: '2026-02-16T09:00:00+03:00',
       createdAt: '2026-02-16T09:00:00+03:00',
       assignmentHistory: [
-        { id: 'bah-4', evaluatorId: EVALUATOR_IDS.DAVID, action: 'assigned', reason: null, at: '2026-02-18T09:00:00+03:00' },
+        {
+          id: 'bah-4',
+          evaluatorId: EVALUATOR_IDS.DAVID,
+          action: 'assigned',
+          reason: null,
+          at: '2026-02-18T09:00:00+03:00',
+        },
       ],
     },
   ]

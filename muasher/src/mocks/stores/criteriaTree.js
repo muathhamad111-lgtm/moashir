@@ -2,6 +2,8 @@ import {
   CRITERIA_VERSION_STATUSES as STATUS,
   CRITERION_GROUP_ORDER,
   EVALUATION_TYPES,
+  SCORING_TYPE_ORDER,
+  SCORING_TYPES,
 } from '@/constants/criteria'
 import { fromHundredths } from '@/utils/weight'
 import {
@@ -27,6 +29,7 @@ import {
   assertCovers,
   assertFits,
   childWeight,
+  distributeIndicatorsEqually,
   rebalancePointsOf,
   rebalanceSubsOf,
   scoresGuidingPoints,
@@ -37,7 +40,6 @@ import { fieldMessage, reject } from './criteriaRejection'
 import {
   FieldCollector,
   prohibit,
-  readAttachments,
   readBoolean,
   readDescription,
   readEnum,
@@ -45,6 +47,7 @@ import {
   readOrderedIds,
   readWeight,
 } from './criteriaValidation'
+import { readAttachments } from './criteriaAttachmentValidation'
 
 const EVALUATION_VALUES = Object.values(EVALUATION_TYPES)
 
@@ -89,6 +92,8 @@ function readMain(body, required) {
     weight: readWeight(errors, body, required),
     distributeEqually: readBoolean(errors, body, 'distributeEqually'),
     group: readEnum(errors, body, 'group', CRITERION_GROUP_ORDER),
+    defaultScoringType: readEnum(errors, body, 'defaultScoringType', SCORING_TYPE_ORDER),
+    attachments: readAttachments(errors, body),
     active: readBoolean(errors, body, 'active'),
   }
   if (!required) prohibit(errors, body, ['active'])
@@ -108,6 +113,8 @@ function readSub(body, required) {
       ? readEnum(errors, body, 'evaluationType', EVALUATION_VALUES)
       : undefined,
     hasCv: readBoolean(errors, body, 'hasCv'),
+    scoringType: readEnum(errors, body, 'scoringType', SCORING_TYPE_ORDER),
+    defaultPointScoringType: readEnum(errors, body, 'defaultPointScoringType', SCORING_TYPE_ORDER),
     active: required ? readBoolean(errors, body, 'active') : undefined,
     attachments: readAttachments(errors, body),
   }
@@ -121,6 +128,7 @@ function readPoint(body, required) {
   const values = {
     description: readDescription(errors, body, 'description', required),
     weight: readWeight(errors, body),
+    scoringType: readEnum(errors, body, 'scoringType', SCORING_TYPE_ORDER),
     active: required ? readBoolean(errors, body, 'active') : undefined,
     attachments: readAttachments(errors, body),
   }
@@ -146,9 +154,11 @@ export function createMain(actor, body) {
       weight: values.weight,
       distributeEqually: values.distributeEqually ?? false,
       group: values.group ?? CRITERION_GROUP_ORDER[0],
+      defaultScoringType: values.defaultScoringType ?? SCORING_TYPES.SCORE,
       active: values.active ?? true,
       order: nextOrder(mainsOf(draft.id)),
     })
+    replaceAttachments('main', main.id, values.attachments ?? [])
     criteriaNotices.mainCreated(actor.id, main)
     return main
   })
@@ -158,9 +168,10 @@ export function updateMain(actor, main, body) {
   const values = readMain(body, false)
   return onVersion(findVersion(main.versionId), actor, () => {
     const previous = main.weight
-    const next = { ...main, ...defined(values) }
+    const next = { ...main, ...defined({ ...values, attachments: undefined }) }
     if (!next.distributeEqually) assertCovers(next.weight, activeTotal(subsOf(main.id)))
     Object.assign(main, next)
+    if (values.attachments) replaceAttachments('main', main.id, values.attachments)
     rebalanceSubsOf(main)
     if (previous !== main.weight) {
       criteriaNotices.mainWeightChanged(
@@ -215,6 +226,9 @@ export function createSub(actor, main, body) {
       weight: childWeight(subBudget(main), values.weight, active),
       distributeEqually: values.distributeEqually ?? false,
       evaluationType: values.evaluationType ?? EVALUATION_TYPES.GUIDING_POINTS,
+      scoringType: values.scoringType ?? main.defaultScoringType,
+      defaultPointScoringType:
+        values.defaultPointScoringType ?? values.scoringType ?? main.defaultScoringType,
       hasCv: values.hasCv ?? true,
       assessorNoteLabel: values.assessorNoteLabel ?? null,
       active,
@@ -256,18 +270,18 @@ export function toggleSub(actor, sub, active) {
   })
 }
 
-export function switchEvaluationType(actor, sub, { evaluationType, confirmDeletePoints = false }) {
+// The indicators always stay: evaluated directly they lose their weights, scored on indicators again
+// they share the sub's weight equally.
+export function switchEvaluationType(actor, sub, { evaluationType }) {
   if (!EVALUATION_VALUES.includes(evaluationType))
     throw reject.validation({ evaluationType: [fieldMessage('field.invalid')] })
   const main = mainOfSub(sub)
   return onVersion(findVersion(main.versionId), actor, () => {
     if (sub.evaluationType === evaluationType) return sub
-    const points = pointsOf(sub.id)
-    if (evaluationType === EVALUATION_TYPES.DIRECT && points.length && !confirmDeletePoints) {
-      throw reject.pointsConfirmRequired(points.length)
-    }
-    if (evaluationType === EVALUATION_TYPES.DIRECT) points.forEach((point) => deletePoint(point.id))
     sub.evaluationType = evaluationType
+    if (evaluationType === EVALUATION_TYPES.DIRECT)
+      pointsOf(sub.id).forEach((point) => Object.assign(point, { weight: null }))
+    else distributeIndicatorsEqually(sub)
     criteriaNotices.evaluationSwitched(
       actor.id,
       main,
@@ -310,13 +324,15 @@ export function createPoint(actor, sub, body) {
   const values = readPoint(body, true)
   const active = values.active ?? true
   return onVersion(versionOfSub(sub), actor, () => {
-    if (!scoresGuidingPoints(sub)) throw reject.subEvaluatedDirectly()
     const point = insertPoint({
       id: nextCriteriaId(),
       subId: sub.id,
       code: nextCode(`${sub.code}.`),
       description: values.description,
-      weight: childWeight(pointBudget(sub), values.weight, active),
+      weight: scoresGuidingPoints(sub)
+        ? childWeight(pointBudget(sub), values.weight, active)
+        : null,
+      scoringType: values.scoringType ?? sub.defaultPointScoringType,
       active,
       order: nextOrder(pointsOf(sub.id)),
     })
@@ -330,15 +346,30 @@ export function updatePoint(actor, point, body) {
   const values = readPoint(body, false)
   const sub = subOfPoint(point)
   return onVersion(versionOfSub(sub), actor, () => {
-    const weight = childWeight(
-      pointBudget(sub, point.id),
-      values.weight ?? point.weight,
-      point.active,
+    const weight = scoresGuidingPoints(sub)
+      ? childWeight(pointBudget(sub, point.id), values.weight ?? point.weight, point.active)
+      : null
+    Object.assign(
+      point,
+      defined({ description: values.description, scoringType: values.scoringType }),
+      { weight },
     )
-    Object.assign(point, defined({ description: values.description }), { weight })
     if (values.attachments) replaceAttachments('point', point.id, values.attachments)
     rebalancePointsOf(sub)
     return point
+  })
+}
+
+export function applyPointScoringType(actor, sub, body) {
+  const errors = new FieldCollector()
+  const scoringType = readEnum(errors, body, 'scoringType', SCORING_TYPE_ORDER)
+  if (body.scoringType === undefined) errors.add('scoringType', 'field.required')
+  errors.assertValid()
+  return onVersion(versionOfSub(sub), actor, () => {
+    if (!scoresGuidingPoints(sub)) throw reject.subEvaluatedDirectly()
+    sub.defaultPointScoringType = scoringType
+    pointsOf(sub.id).forEach((point) => Object.assign(point, { scoringType }))
+    return sub
   })
 }
 
@@ -346,7 +377,7 @@ export function togglePoint(actor, point, active) {
   const sub = subOfPoint(point)
   return onVersion(versionOfSub(sub), actor, () => {
     if (point.active === active) return point
-    if (active && !sub.distributeEqually)
+    if (active && scoresGuidingPoints(sub) && !sub.distributeEqually)
       assertFits(sub.weight, activeTotal(pointsOf(sub.id), point.id), point.weight)
     point.active = active
     rebalancePointsOf(sub)

@@ -14,7 +14,7 @@
 
   thead th {
     font-size: var(--fs-sm);
-    font-weight: var(--fw-semibold);
+    font-weight: var(--fw-body);
     color: var(--theme-text-muted);
   }
 }
@@ -25,7 +25,7 @@
 
 .open-requests__number {
   white-space: nowrap;
-  font-weight: var(--fw-semibold);
+  font-weight: var(--fw-figure);
   color: var(--theme-heading);
 }
 

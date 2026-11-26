@@ -1,147 +1,105 @@
 <script setup>
-import { computed, onMounted, ref } from 'vue'
+import { computed, onMounted } from 'vue'
 import { useI18n } from 'vue-i18n'
 import SettingsSection from '@/components/settings/SettingsSection.vue'
-import Tabs from '@/components/ui/Tabs.vue'
-import NotificationTypeCard from '@/components/settings/NotificationTypeCard.vue'
-import DataTable from '@/components/data-list/DataTable.vue'
-import Badge from '@/components/ui/Badge.vue'
-import { useSettings } from '@/composables/useSettings'
-import { useToast } from '@/composables/useToast'
-import { settingsService } from '@/services/settingsService'
-import { formatDate } from '@/utils/datetime'
-import { TEMPLATE_PLACEHOLDERS } from '@/constants/templatePlaceholders'
+import AppMenu from '@/components/ui/AppMenu.vue'
+import NotificationCatalogueFilters from '@/components/settings/NotificationCatalogueFilters.vue'
+import NotificationViewSwitch from '@/components/settings/notifications/NotificationViewSwitch.vue'
+import NotificationMatrixView from '@/components/settings/notifications/NotificationMatrixView.vue'
+import NotificationChannelView from '@/components/settings/notifications/NotificationChannelView.vue'
+import { useNotificationCatalogue } from '@/composables/useNotificationCatalogue'
+import { useNotificationCatalogueView } from '@/composables/useNotificationCatalogueView'
+import { useNotificationSwitchboard } from '@/composables/useNotificationSwitchboard'
+import {
+  NOTIFICATION_LAYOUTS,
+  useNotificationCatalogueLayout,
+} from '@/composables/useNotificationCatalogueLayout'
+import { useConfirm } from '@/composables/useConfirm'
+import { NOTIFICATION_CHANNELS } from '@/constants/notificationCatalogue'
+import { MENU_TRIGGERS } from '@/constants/dropdown'
+import { notificationTypeName } from '@/utils/notificationTypeName'
 
-const { t, locale } = useI18n()
-const { localized } = useSettings()
-const toast = useToast()
+const { t, te } = useI18n()
+const { confirm } = useConfirm()
+const { types, status, errorMessage, load, replace } = useNotificationCatalogue()
+const { filters, visible, groups } = useNotificationCatalogueView(types, (code) =>
+  notificationTypeName(code, t, te),
+)
+const board = useNotificationSwitchboard(types, replace)
 
-const activeTab = ref('settings')
-const tabs = computed(() => [
-  { value: 'settings', label: t('settings.notifications.tabSettings') },
-  { value: 'audit', label: t('settings.notifications.tabAudit') },
-])
+const view = useNotificationCatalogueLayout()
+const isFiltered = computed(() => Boolean(filters.search || filters.audience))
 
-const types = ref([])
-const status = ref('loading')
-const errorMessage = ref('')
-const savingCode = ref('')
-const placeholders = TEMPLATE_PLACEHOLDERS
+const bulkActions = computed(() =>
+  ['all', ...NOTIFICATION_CHANNELS].flatMap((scope) =>
+    ['enable', 'disable'].map((action) => ({
+      key: `${action}:${scope}`,
+      label: t(`settings.notifications.catalogue.bulk.${action}Scope`, {
+        scope: t(`settings.notifications.catalogue.channelTabs.${scope}`),
+      }),
+    })),
+  ),
+)
 
-async function loadTypes() {
-  status.value = 'loading'
-  errorMessage.value = ''
-  try {
-    const envelope = await settingsService.listNotificationTypes()
-    types.value = envelope.data ?? []
-    status.value = 'success'
-  } catch (error) {
-    errorMessage.value = error?.normalized?.message || t('common.error')
-    status.value = 'error'
-  }
+async function runBulk(change) {
+  const action = change.enabled ? 'enable' : 'disable'
+  const accepted = await confirm({
+    title: t(`settings.notifications.catalogue.bulk.${action}`),
+    message: t('settings.notifications.catalogue.bulk.confirm', { count: change.codes.length }),
+    confirmLabel: t(`settings.notifications.catalogue.bulk.${action}`),
+  })
+  if (accepted) await board.switchMany(change)
 }
 
-async function saveType({ code, payload }) {
-  savingCode.value = code
-  try {
-    const envelope = await settingsService.updateNotificationType(code, payload)
-    types.value = types.value.map((item) => (item.code === code ? envelope.data : item))
-    toast.success(t('settings.toasts.saved'))
-  } catch (error) {
-    toast.error(error?.normalized?.message || t('settings.toasts.saveFailed'))
-  } finally {
-    savingCode.value = ''
-  }
+function runMenuAction(key) {
+  const [action, scope] = key.split(':')
+  runBulk({
+    scope: 'codes',
+    codes: visible.value.map((type) => type.code),
+    ...(scope === 'all' ? {} : { channels: [scope] }),
+    enabled: action === 'enable',
+  })
 }
 
-const auditItems = ref([])
-const auditStatus = ref('loading')
-const auditError = ref('')
-
-async function loadAudit() {
-  auditStatus.value = 'loading'
-  auditError.value = ''
-  try {
-    const envelope = await settingsService.listNotificationAudit()
-    auditItems.value = envelope.data ?? []
-    auditStatus.value = auditItems.value.length ? 'success' : 'empty'
-  } catch (error) {
-    auditError.value = error?.normalized?.message || t('common.error')
-    auditStatus.value = 'error'
-  }
-}
-
-const auditColumns = computed(() => [
-  { key: 'code', label: t('settings.notifications.auditColumns.code') },
-  { key: 'recipient', label: t('settings.notifications.auditColumns.recipient') },
-  { key: 'channel', label: t('settings.notifications.auditColumns.channel') },
-  { key: 'receivedAt', label: t('settings.notifications.auditColumns.received') },
-  { key: 'openedAt', label: t('settings.notifications.auditColumns.opened') },
-  { key: 'actionedAt', label: t('settings.notifications.auditColumns.actioned') },
-])
-
-function stamp(value) {
-  if (!value) return t('settings.notifications.notYet')
-  return formatDate(value, locale.value, { dateStyle: 'medium', timeStyle: 'short' })
-}
-
-onMounted(() => {
-  loadTypes()
-  loadAudit()
-})
+onMounted(load)
 </script>
 
 <template>
   <SettingsSection
     :title="t('settings.notifications.title')"
-    :description="t('settings.notifications.description')"
-    :status="activeTab === 'settings' ? status : 'success'"
+    :status="status"
     :error-message="errorMessage"
-    @retry="loadTypes"
+    @retry="load"
   >
-    <Tabs v-model="activeTab" :tabs="tabs">
-      <template v-if="activeTab === 'settings'">
-        <ul class="notification-type__list">
-          <li v-for="type in types" :key="type.code">
-            <NotificationTypeCard
-              :type="type"
-              :placeholders="placeholders"
-              :saving="savingCode === type.code"
-              @save="saveType"
-            />
-          </li>
-        </ul>
-      </template>
-
-      <template v-else>
-        <DataTable
-          :columns="auditColumns"
-          :items="auditItems"
-          :status="auditStatus"
-          :error-message="auditError"
-          :empty-title="t('settings.notifications.auditEmpty')"
-          @retry="loadAudit"
-        >
-          <template #cell-code="{ item }">
-            <Badge variant="muted">{{ item.code }}</Badge>
-          </template>
-          <template #cell-recipient="{ item }">
-            {{ localized(item.recipient) }}
-          </template>
-          <template #cell-channel="{ item }">
-            <Badge variant="info">{{ t(`settings.notifications.channels.${item.channel}`) }}</Badge>
-          </template>
-          <template #cell-receivedAt="{ item }">
-            <span class="settings-form__nowrap">{{ stamp(item.receivedAt) }}</span>
-          </template>
-          <template #cell-openedAt="{ item }">
-            <span class="settings-form__nowrap">{{ stamp(item.openedAt) }}</span>
-          </template>
-          <template #cell-actionedAt="{ item }">
-            <span class="settings-form__nowrap">{{ stamp(item.actionedAt) }}</span>
-          </template>
-        </DataTable>
-      </template>
-    </Tabs>
+    <div class="notification-catalogue">
+      <NotificationCatalogueFilters :filters="filters" @change="Object.assign(filters, $event)">
+        <template #actions>
+          <NotificationViewSwitch v-model="view" />
+          <AppMenu
+            :actions="bulkActions"
+            :label="t('settings.notifications.catalogue.bulk.menu')"
+            :trigger="MENU_TRIGGERS.button"
+            @select="runMenuAction"
+          >
+            <template #trigger>{{ t('settings.notifications.catalogue.bulk.menu') }}</template>
+          </AppMenu>
+        </template>
+      </NotificationCatalogueFilters>
+      <NotificationMatrixView
+        v-if="view === NOTIFICATION_LAYOUTS.byType"
+        :groups="groups"
+        :board="board"
+        :expanded="isFiltered"
+        @bulk="runBulk"
+      />
+      <NotificationChannelView
+        v-else
+        :groups="groups"
+        :types="visible"
+        :board="board"
+        :expanded="isFiltered"
+        @bulk="runBulk"
+      />
+    </div>
   </SettingsSection>
 </template>

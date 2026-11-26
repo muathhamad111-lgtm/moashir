@@ -2,14 +2,12 @@
 
 .accredited-form {
   @include flex(column, stretch, flex-start, var(--space-5));
-  max-inline-size: var(--size-content-max);
-  margin-inline: auto;
 }
 
 .accredited-form__eyebrow {
   margin-block-end: var(--space-1);
   font-size: var(--fs-sm);
-  font-weight: var(--fw-medium);
+  font-weight: var(--fw-body);
   color: var(--theme-accent-text);
 }
 
@@ -32,7 +30,7 @@
   background-color: var(--color-info-soft);
   color: var(--theme-text);
 
-  i {
+  .app-icon {
     margin-block-start: var(--space-1);
     color: var(--color-info);
   }

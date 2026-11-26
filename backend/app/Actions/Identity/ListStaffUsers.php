@@ -7,15 +7,20 @@ namespace App\Actions\Identity;
 use App\Data\Identity\UserListFilters;
 use App\Enums\Identity\RoleKey;
 use App\Enums\Identity\UserStatus;
+use App\Models\Identity\TermsVersion;
 use App\Models\Identity\User;
+use App\Services\Nda\NdaAcceptanceCheck;
+use App\Services\Nda\NdaAudience;
 use App\Support\ValueObjects\SearchTerm;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\Date;
 
-final class ListStaffUsers
+final readonly class ListStaffUsers
 {
     public const array SORTABLE = ['name', '-name', 'last_login_at', '-last_login_at', 'created_at', '-created_at'];
+
+    public function __construct(private NdaAcceptanceCheck $nda, private NdaAudience $ndaAudience) {}
 
     /**
      * @return LengthAwarePaginator<int, User>
@@ -25,7 +30,7 @@ final class ListStaffUsers
         $direction = str_starts_with($filters->sort, '-') ? 'desc' : 'asc';
 
         return $this->filteredQuery($filters)
-            ->with('roles')
+            ->with(User::ADMINISTRATION_RELATIONS)
             ->orderBy(ltrim($filters->sort, '-'), $direction)
             ->orderBy('id')
             ->paginate($filters->perPage);
@@ -54,7 +59,23 @@ final class ListStaffUsers
             $this->applyStatus($query, $filters->status);
         }
 
+        if ($filters->ndaPendingOnly) {
+            $this->applyNdaPending($query);
+        }
+
         return $query;
+    }
+
+    /**
+     * @param  Builder<User>  $query
+     */
+    private function applyNdaPending(Builder $query): void
+    {
+        $current = $this->nda->current();
+
+        $current instanceof TermsVersion
+            ? $query->whereIn('users.id', $this->ndaAudience->pending($current)->select('users.id'))
+            : $query->whereRaw('false');
     }
 
     /**

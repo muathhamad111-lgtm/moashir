@@ -22,6 +22,6 @@ final readonly class NotifySelfAssessmentSubmitted
             NotificationCode::SelfAssessmentSubmitted,
             ['number' => $assessment->request_number],
             AssessmentLinks::selfResult($assessment->id),
-        ));
+        )->forPath($assessment->path));
     }
 }

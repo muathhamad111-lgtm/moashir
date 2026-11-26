@@ -18,11 +18,14 @@ const SETTINGS = {
   orderValidityMinutes: 30,
   orderValidityLimits: { min: 5, max: 60 },
   pricing: { accredited: null, bag: null },
-  editableFields: ['accredited_price', 'bag_price', 'vat_rate', 'order_validity_minutes'],
+  editableFields: ['vat_rate', 'order_validity_minutes'],
 }
 
 function rejected(code) {
-  return Object.assign(new Error(code), { response: { status: 422 }, normalized: { status: 422, code, fieldErrors: {} } })
+  return Object.assign(new Error(code), {
+    response: { status: 422 },
+    normalized: { status: 422, code, fieldErrors: {} },
+  })
 }
 
 async function setup(extra = {}) {
@@ -50,14 +53,17 @@ describe('useFinanceSettings', () => {
 
   it('asks the Super Admin for a reason up front and resubmits with it', async () => {
     const api = await setup({ isSuperAdmin: true })
-    api.form.setFieldValue('bagPrice', '3000')
+    api.form.setFieldValue('vatRate', '5')
     await api.submit()
     await flushPromises()
     expect(financeSettingsService.update).not.toHaveBeenCalled()
     expect(api.reasonOpen.value).toBe(true)
-    financeSettingsService.update.mockResolvedValue({ data: { ...SETTINGS, bagPrice: '3000.00' } })
-    await api.confirmReason('Approved price list for 2027.')
-    expect(financeSettingsService.update).toHaveBeenCalledWith({ bagPrice: '3000.00', reason: 'Approved price list for 2027.' })
+    financeSettingsService.update.mockResolvedValue({ data: { ...SETTINGS, vatRate: '5.00' } })
+    await api.confirmReason('Approved VAT change for 2027.')
+    expect(financeSettingsService.update).toHaveBeenCalledWith({
+      vatRate: '5.00',
+      reason: 'Approved VAT change for 2027.',
+    })
   })
 
   it('opens the reason dialog when the server asks for a reason', async () => {

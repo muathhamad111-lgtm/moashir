@@ -5,15 +5,12 @@
   flex-direction: column;
   gap: var(--space-8);
   padding-block: var(--space-4);
-  padding-inline: var(--space-4);
-  max-inline-size: var(--size-content-max);
-  margin-inline: auto;
 }
 
 .settings-hub__title {
   margin: 0;
   font-size: var(--fs-2xl);
-  font-weight: var(--fw-bold);
+  font-weight: var(--fw-heading);
   color: var(--theme-heading);
 }
 
@@ -32,7 +29,7 @@
 .settings-hub__group-title {
   margin: 0;
   font-size: var(--fs-lg);
-  font-weight: var(--fw-semibold);
+  font-weight: var(--fw-heading);
   color: var(--theme-heading);
 }
 
@@ -97,7 +94,7 @@
 }
 
 .settings-hub__card-title {
-  font-weight: var(--fw-semibold);
+  font-weight: var(--fw-heading);
   color: var(--theme-heading);
 }
 

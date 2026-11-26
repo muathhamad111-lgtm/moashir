@@ -42,7 +42,7 @@
   border-radius: var(--radius-sm);
   color: var(--theme-text-muted);
   font-size: var(--fs-sm);
-  font-weight: var(--fw-medium);
+  font-weight: var(--fw-body);
   transition:
     background-color var(--t-fast) var(--ease),
     color var(--t-fast) var(--ease);
@@ -82,7 +82,7 @@
   dd {
     margin: 0;
     font-size: var(--fs-lg);
-    font-weight: var(--fw-bold);
+    font-weight: var(--fw-body);
     color: var(--theme-heading);
 
     &.is-negative {
@@ -111,7 +111,7 @@
 
 .weight-editor__name {
   flex: 1 1 12rem;
-  font-weight: var(--fw-medium);
+  font-weight: var(--fw-emphasis);
 }
 
 .weight-editor__control {
@@ -161,7 +161,7 @@
   padding-inline: var(--space-3);
   border-radius: var(--radius-md);
   font-size: var(--fs-sm);
-  font-weight: var(--fw-medium);
+  font-weight: var(--fw-figure);
 
   &--success {
     color: var(--color-success);

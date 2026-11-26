@@ -30,7 +30,7 @@ final class SmsTemplateRules
             }
 
             foreach (['ar', 'en'] as $locale) {
-                $error = self::errorFor($key, ScalarValue::string($bodies[$locale] ?? null));
+                $error = self::errorFor($key, ScalarValue::string($bodies[$locale] ?? null), $locale);
 
                 if ($error !== null) {
                     $validator->errors()->add('templates.'.$index.'.body.'.$locale, __('validation.custom.sms_template.'.$error));
@@ -39,7 +39,7 @@ final class SmsTemplateRules
         }
     }
 
-    public static function errorFor(SmsTemplateKey $key, string $body): ?string
+    public static function errorFor(SmsTemplateKey $key, string $body, string $locale): ?string
     {
         preg_match_all('/\{([a-z_]+)\}/', $body, $matches);
         $used = $matches[1];
@@ -52,7 +52,7 @@ final class SmsTemplateRules
             return 'missing_placeholder';
         }
 
-        if ($key->singleSegmentOnly() && ! self::fitsOneSegment(SmsTemplateRenderer::fill($body, $key->longestSample()))) {
+        if ($key->singleSegmentOnly() && ! self::fitsOneSegment(SmsTemplateRenderer::fill($body, $key->longestSample($locale)))) {
             return 'too_long';
         }
 

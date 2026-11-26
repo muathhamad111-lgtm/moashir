@@ -17,6 +17,13 @@ export const entityReject = {
   validation: (fields) => new MockRejection(422, 'validation_failed', { fields }),
   illegalTransition: () => new MockRejection(409, 'state.transition_illegal'),
   deleted: () => new MockRejection(409, 'entity.deleted'),
+  vatNotRegistered: () => new MockRejection(409, 'entity.vat_not_registered'),
+  vatCertificateMissing: () => new MockRejection(404, 'entity.vat_certificate_missing'),
+  documentMissing: () => new MockRejection(404, 'entity.document_missing'),
+  authorizationLetterRequired: () =>
+    new MockRejection(422, 'profile.change_authorization_letter_required', {
+      fields: { authorizationLetter: [fieldError('profile.change_authorization_letter_required')] },
+    }),
   notSoftDeleted: () => new MockRejection(409, 'entity.not_soft_deleted'),
   openRequestsConfirmationRequired: (openRequests) =>
     new MockRejection(409, 'entity.open_requests_confirmation_required', {
@@ -65,7 +72,8 @@ export function entityRoute(resolve) {
     try {
       return await resolve(info)
     } catch (error) {
-      if (error instanceof MockRejection) return rejectionResponse(error, info.request, entityMessages)
+      if (error instanceof MockRejection)
+        return rejectionResponse(error, info.request, entityMessages)
       throw error
     }
   }

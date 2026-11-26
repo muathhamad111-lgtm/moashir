@@ -1,0 +1,206 @@
+@use '../mixins' as *;
+
+// The overview map: regions shaded in one hue by step, cities as dots ringed in the surface
+// colour so neighbours stay apart, and a side panel with the key, the top regions and the
+// selected region's cities.
+.region-map {
+  display: block;
+  inline-size: 100%;
+  block-size: auto;
+}
+
+.region-map__region {
+  fill: var(--chart-muted);
+  stroke: var(--theme-surface-solid);
+  stroke-width: 2;
+  stroke-linejoin: round;
+  cursor: pointer;
+
+  &:hover {
+    stroke: var(--theme-heading);
+  }
+
+  &.is-selected {
+    stroke: var(--theme-heading);
+    stroke-width: 3;
+  }
+
+  &:focus {
+    outline: none;
+  }
+
+  &:focus-visible {
+    stroke: var(--brand-primary-text);
+    stroke-width: 4;
+  }
+}
+
+.region-map__region--step-0 {
+  fill: var(--chart-muted);
+  background-color: var(--chart-muted);
+}
+
+@for $step from 1 through 4 {
+  .region-map__region--step-#{$step} {
+    fill: var(--chart-ordinal-#{$step});
+    background-color: var(--chart-ordinal-#{$step});
+  }
+}
+
+.region-map__city {
+  fill: var(--chart-series-2);
+  fill-opacity: 0.9;
+  stroke: var(--theme-surface-solid);
+  stroke-width: 2;
+  cursor: pointer;
+}
+
+.overview-geography {
+  @include flex(column, stretch, flex-start, var(--space-4));
+}
+
+.overview-geography__metrics {
+  align-self: flex-start;
+}
+
+.overview-geography__body {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  align-items: start;
+  gap: var(--space-4);
+
+  @container (min-width: 32rem) {
+    grid-template-columns: minmax(0, 3fr) minmax(12rem, 2fr);
+  }
+}
+
+.overview-geography__map {
+  max-block-size: 28rem;
+}
+
+.overview-geography__detail {
+  @include flex(column, stretch, flex-start, var(--space-4));
+  min-inline-size: 0;
+}
+
+.overview-geography__block {
+  @include flex(column, stretch, flex-start, var(--space-2));
+}
+
+.overview-geography__heading {
+  margin: 0;
+  color: var(--theme-heading);
+  font-size: var(--fs-sm);
+  font-weight: var(--fw-heading);
+}
+
+.overview-geography__legend {
+  @include flex(row, center, flex-start, var(--space-1) var(--space-3));
+  flex-wrap: wrap;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.overview-geography__key {
+  @include flex(row, center, flex-start, var(--space-1));
+  color: var(--theme-text-muted);
+  font-size: var(--fs-xs);
+}
+
+.overview-geography__swatch {
+  inline-size: 0.875rem;
+  block-size: 0.875rem;
+  border-radius: var(--radius-sm);
+}
+
+.overview-geography__ranking,
+.overview-geography__cities {
+  @include flex(column, stretch, flex-start, var(--space-0));
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.overview-geography__rank,
+.overview-geography__city {
+  @include flex(row, center, space-between, var(--space-3));
+  inline-size: 100%;
+  min-block-size: var(--size-toolbar-control);
+  padding-inline: var(--space-2);
+  border-radius: var(--radius-sm);
+  font-size: var(--fs-sm);
+}
+
+.overview-geography__rank {
+  border: 0;
+  background: transparent;
+  color: var(--theme-text);
+  font: inherit;
+  font-size: var(--fs-sm);
+  text-align: start;
+  cursor: pointer;
+
+  &:hover {
+    background-color: var(--theme-tint);
+  }
+
+  &.is-active {
+    background-color: var(--theme-tint);
+    font-weight: var(--fw-emphasis);
+  }
+
+  &:focus-visible {
+    @include focus-ring;
+  }
+}
+
+.overview-geography__city {
+  border-block-end: var(--border-width) solid var(--theme-border);
+}
+
+.overview-geography__name {
+  min-inline-size: 0;
+  overflow-wrap: anywhere;
+}
+
+.overview-geography__value {
+  flex-shrink: 0;
+  font-weight: var(--fw-body);
+}
+
+.overview-geography__none {
+  margin: 0;
+  color: var(--theme-text-muted);
+  font-size: var(--fs-sm);
+}
+
+.overview-criteria {
+  @include flex(column, stretch, flex-start, var(--space-3));
+}
+
+.overview-criteria__note {
+  margin: 0;
+  color: var(--theme-text-muted);
+  font-size: var(--fs-xs);
+}
+
+// The criteria panel is a third of the grid, too narrow for one-line rows: the name and the
+// value share a line and the bar runs full width beneath them, with the axis under the bars.
+.overview-criteria .ranked-bars__row {
+  grid-template-areas:
+    'label value delta'
+    'bar bar bar';
+  grid-template-columns: minmax(0, 1fr) auto auto;
+  min-block-size: 0;
+  padding-block: var(--space-2);
+}
+
+.overview-criteria .ranked-bars__axis {
+  display: block;
+}
+
+.overview-criteria .ranked-bars__axis-spacer,
+.overview-criteria .ranked-bars__axis-label--minor {
+  display: none;
+}

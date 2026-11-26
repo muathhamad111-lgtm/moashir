@@ -43,6 +43,6 @@ final readonly class CommitteePolicy
 
     private function reviews(User $actor, AwardCycle $cycle): bool
     {
-        return $this->scope->allows($actor, $cycle, PermissionKey::AwardSecretaryReview, [RoleKey::SystemAdmin], [CycleMemberRole::AwardSecretary]);
+        return $this->scope->allows($actor, $cycle, PermissionKey::AwardSecretaryReview, CycleRoleScope::AWARD_READER_ROLES, [CycleMemberRole::AwardSecretary]);
     }
 }

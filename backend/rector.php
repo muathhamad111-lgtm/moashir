@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use Rector\CodingStyle\Rector\ArrowFunction\ArrowFunctionDelegatingCallToFirstClassCallableRector;
 use Rector\Config\RectorConfig;
 use Rector\DeadCode\Rector\ClassMethod\RemoveUnusedPublicMethodParameterRector;
 use Rector\Php81\Rector\Array_\ArrayToFirstClassCallableRector;
@@ -30,5 +31,10 @@ return RectorConfig::configure()
         ArrayToFirstClassCallableRector::class => [
             __DIR__.'/config',
             __DIR__.'/tests/Unit/Support/SentryEventScrubberTest.php',
+        ],
+        // Pest binds a dataset closure to the test case before calling it for a typed parameter, and a closure
+        // made from a function (`systemAdmin(...)`) cannot be rebound: PHP 8.4 raises an error there.
+        ArrowFunctionDelegatingCallToFirstClassCallableRector::class => [
+            __DIR__.'/tests/Feature/Platform/CsvExportStreamFailureTest.php',
         ],
     ]);

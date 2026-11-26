@@ -12,8 +12,5 @@ final readonly class EvaluationTypeSwitched implements ShouldDispatchAfterCommit
 {
     use Dispatchable;
 
-    /**
-     * @param  list<string>  $removedPointCodes
-     */
-    public function __construct(public SubCriterion $sub, public array $removedPointCodes, public ?int $actorId) {}
+    public function __construct(public SubCriterion $sub, public ?int $actorId) {}
 }

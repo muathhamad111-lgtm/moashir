@@ -11,3 +11,9 @@ $breakpoints: (
   'xl': $bp-xl,
   '2xl': $bp-2xl,
 );
+
+$bp-block-tall: 56.25rem;
+
+$block-breakpoints: (
+  'tall': $bp-block-tall,
+);

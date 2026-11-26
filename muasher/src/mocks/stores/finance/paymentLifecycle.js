@@ -1,28 +1,53 @@
 import { FINANCE_YEAR } from '../../fixtures/finance'
-import { financeState, nextEventId, nextSequence, persistFinanceState, receiptOf } from './financeState'
+import {
+  financeState,
+  nextEventId,
+  nextSequence,
+  persistFinanceState,
+  receiptOf,
+} from './financeState'
 import { financeReject } from './financeRejection'
 import { receiptNumberOf, receiptSnapshotOf } from './receiptSnapshot'
 
 const TRANSITIONS = {
-  created: ['pending', 'cancelled'],
-  pending: ['paid', 'failed', 'cancelled'],
-  paid: ['refunded'],
-  failed: [],
-  cancelled: [],
-  refunded: [],
+  electronic: {
+    created: ['pending', 'cancelled'],
+    pending: ['paid', 'failed', 'cancelled'],
+    paid: ['refunded'],
+  },
+  bank_transfer: {
+    'under-review': ['paid', 'rejected', 'cancelled'],
+    paid: ['refunded'],
+  },
 }
 
-const STAMPS = { paid: 'paidAt', failed: 'failedAt', cancelled: 'cancelledAt', refunded: 'refundedAt' }
+const STAMPS = {
+  paid: 'paidAt',
+  failed: 'failedAt',
+  cancelled: 'cancelledAt',
+  rejected: 'rejectedAt',
+  refunded: 'refundedAt',
+}
 
-export const OPEN_STATUSES = ['created', 'pending']
-export const CONCLUDED_STATUSES = ['paid', 'failed', 'refunded']
+export const OPEN_STATUSES = ['created', 'pending', 'under-review']
+export const OPEN_CARD_STATUSES = ['created', 'pending']
+export const CONCLUDED_STATUSES = ['paid', 'failed', 'rejected', 'refunded']
+
+export function isBankTransfer(payment) {
+  return payment?.channel === 'bank_transfer'
+}
+
+function allowedTargets(payment) {
+  return TRANSITIONS[payment.channel ?? 'electronic']?.[payment.status] ?? []
+}
 
 export function nowIso() {
   return new Date().toISOString()
 }
 
 export function assertTransition(payment, target, verb) {
-  if (!TRANSITIONS[payment.status].includes(target)) throw financeReject.illegalTransition(payment.status, verb)
+  if (!allowedTargets(payment).includes(target))
+    throw financeReject.illegalTransition(payment.status, verb)
 }
 
 export function transition(payment, target, verb) {
@@ -48,6 +73,12 @@ export function recordEvent(payment, fields) {
   })
 }
 
+function issuedSnapshotOf(payment) {
+  const vatRegistrationNumber = financeState().settings.vatRegistrationNumber ?? null
+  const snapshot = receiptSnapshotOf(payment)
+  return vatRegistrationNumber ? { ...snapshot, vatRegistrationNumber } : snapshot
+}
+
 export function issueReceipt(payment) {
   if (receiptOf(payment.id)) return
   const isTest = payment.mode === 'test'
@@ -61,7 +92,7 @@ export function issueReceipt(payment) {
     voidedAt: null,
     reissueCount: 0,
     lastReissuedAt: null,
-    snapshot: receiptSnapshotOf(payment),
+    snapshot: issuedSnapshotOf(payment),
   })
 }
 
@@ -73,7 +104,9 @@ export function voidReceipt(payment) {
 }
 
 function providerIdInUse(payment, providerPaymentId) {
-  return financeState().payments.some((other) => other.id !== payment.id && other.providerPaymentId === providerPaymentId)
+  return financeState().payments.some(
+    (other) => other.id !== payment.id && other.providerPaymentId === providerPaymentId,
+  )
 }
 
 export function bindProvider(payment, providerPaymentId) {
@@ -88,7 +121,8 @@ export function bindProvider(payment, providerPaymentId) {
 export function expireDueOrders(now = Date.now()) {
   let changed = false
   for (const payment of financeState().payments) {
-    if (payment.status !== 'created' || new Date(payment.expiresAt).getTime() > now) continue
+    if (isBankTransfer(payment) || payment.status !== 'created') continue
+    if (new Date(payment.expiresAt).getTime() > now) continue
     transition(payment, 'cancelled', 'expire')
     recordEvent(payment, { source: 'expiry', eventType: 'order_expired', result: 'applied' })
     changed = true

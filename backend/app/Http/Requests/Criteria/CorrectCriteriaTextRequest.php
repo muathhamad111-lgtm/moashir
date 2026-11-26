@@ -12,7 +12,7 @@ use Illuminate\Validation\Rule;
 
 final class CorrectCriteriaTextRequest extends CriteriaFormRequest
 {
-    private const array TEXT_FIELDS = ['name', 'description', 'assessor_note_label'];
+    private const array TEXT_FIELDS = ['name', 'description', 'assessor_note_label', 'guidance'];
 
     /**
      * @return array<string, mixed>
@@ -22,7 +22,7 @@ final class CorrectCriteriaTextRequest extends CriteriaFormRequest
         return [
             ...$this->localizedTextRules('label', 'nullable', self::NAME_MAX),
             'nodes' => ['required_without:label', 'array', 'max:200'],
-            'nodes.*' => ['array:type,id,name,description,assessor_note_label'],
+            'nodes.*' => ['array:type,id,name,description,assessor_note_label,guidance'],
             'nodes.*.type' => ['required', Rule::enum(CriteriaNodeType::class)->except([CriteriaNodeType::Version])],
             'nodes.*.id' => ['required', 'integer', 'min:1'],
             'nodes.*.name' => ['sometimes', 'required', 'prohibited_if:nodes.*.type,point', 'array:ar,en'],
@@ -34,6 +34,9 @@ final class CorrectCriteriaTextRequest extends CriteriaFormRequest
             'nodes.*.assessor_note_label' => ['sometimes', 'prohibited_unless:nodes.*.type,sub', 'nullable', 'array:ar,en'],
             'nodes.*.assessor_note_label.ar' => ['required_with:nodes.*.assessor_note_label', 'string', 'min:2', 'max:'.self::NAME_MAX],
             'nodes.*.assessor_note_label.en' => ['required_with:nodes.*.assessor_note_label', 'string', 'min:2', 'max:'.self::NAME_MAX],
+            'nodes.*.guidance' => ['sometimes', 'prohibited_unless:nodes.*.type,attachment', 'nullable', 'array:ar,en'],
+            'nodes.*.guidance.ar' => ['required_with:nodes.*.guidance', 'string', 'min:2', 'max:'.self::GUIDANCE_MAX],
+            'nodes.*.guidance.en' => ['required_with:nodes.*.guidance', 'string', 'min:2', 'max:'.self::GUIDANCE_MAX],
             'reason' => ['nullable', 'string', 'min:10', 'max:1000'],
         ];
     }

@@ -1,118 +1,159 @@
 <script setup>
-import { computed, onMounted, ref, toRef, watch } from 'vue'
+import { onMounted } from 'vue'
 import { useI18n } from 'vue-i18n'
 import Skeleton from '@/components/feedback/Skeleton.vue'
 import ErrorState from '@/components/feedback/ErrorState.vue'
 import EmptyState from '@/components/feedback/EmptyState.vue'
-import CriteriaTree from '@/components/criteria/CriteriaTree.vue'
 import ReasonDialog from '@/components/modal/ReasonDialog.vue'
 import ReviewHeader from './ReviewHeader.vue'
 import ReviewEntityCard from './ReviewEntityCard.vue'
 import ReviewNotices from './ReviewNotices.vue'
+import ReviewSections from './ReviewSections.vue'
 import ReviewMainPanel from './ReviewMainPanel.vue'
 import ReviewActions from './ReviewActions.vue'
 import RequestCompletionDialog from './RequestCompletionDialog.vue'
-import ScoreOverrideDialog from './ScoreOverrideDialog.vue'
-import { useAssessorReview } from '@/composables/useAssessorReview'
-import { useSelfScoreSheet } from '@/composables/useSelfScoreSheet'
-import { useReviewFeedback } from '@/composables/useReviewFeedback'
-import { useReviewActions } from '@/composables/useReviewActions'
-import { useReasonPrompt } from '@/composables/useReasonPrompt'
-import { useSignedDownload } from '@/composables/useSignedDownload'
-import { useConfirm } from '@/composables/useConfirm'
-import { useAuthStore } from '@/stores/auth'
-import { evidenceService } from '@/services/evidenceService'
-import { localizedText } from '@/utils/localizedText'
+import ScoreOverrideReview from './ScoreOverrideReview.vue'
+import ReviewOverrideBand from './ReviewOverrideBand.vue'
+import CompleteReviewDialog from './CompleteReviewDialog.vue'
+import ReviewSummaryCard from './ReviewSummaryCard.vue'
+import ReviewCriteriaStrip from './ReviewCriteriaStrip.vue'
+import ReviewCompletionAction from './ReviewCompletionAction.vue'
+import ReviewNotesSaveAction from './ReviewNotesSaveAction.vue'
+import { useReviewWorkspace } from '@/composables/useReviewWorkspace'
 
 const props = defineProps({
   assessmentId: { type: Number, required: true },
 })
 
-const { t, locale } = useI18n()
-const auth = useAuthStore()
-const { confirm } = useConfirm()
-const reviewState = useAssessorReview(toRef(props, 'assessmentId'))
-const { status, errorMessage, review, assessment, units, canScore, canStart, canRequestCompletion } = reviewState
-const scoreSheet = useSelfScoreSheet({ form: review, units })
-const feedback = useReviewFeedback({ reviewState })
-const reasonPrompt = useReasonPrompt()
-const askReason = () => (auth.isSuperAdmin ? reasonPrompt.prompt() : Promise.resolve(null))
-const actions = useReviewActions({ reviewState, scoreSheet, feedback, askReason })
-const downloads = useSignedDownload()
-const workspace = { reviewState, scoreSheet, feedback, actions, downloads }
-const activeMainId = ref(null)
-const completionOpen = ref(false)
-const overrideOpen = ref(false)
+// The page shows the request number beside its title.
+const emit = defineEmits(['loaded'])
 
-const mains = computed(() => review.value?.criteria?.mains ?? [])
-const activeMain = computed(() => mains.value.find((main) => main.id === activeMainId.value) ?? mains.value[0] ?? null)
-const dirty = computed(() => scoreSheet.dirty.value || feedback.dirty.value)
-const fullyScored = computed(() => review.value && review.value.progress.scored === review.value.progress.required)
-const treeNodes = computed(() =>
-  mains.value.map((main) => ({
-    id: main.id,
-    label: `${main.code} ${localizedText(main.name, locale.value)}`,
-    children: main.subs.map((sub) => ({ id: sub.id, label: `${sub.code} ${localizedText(sub.name, locale.value)}` })),
-  })),
-)
-
-watch(review, (current, previous) => {
-  if (!current || current === previous) return
-  if (!scoreSheet.dirty.value) scoreSheet.resetFrom(current.scores)
-  if (!feedback.dirty.value) feedback.resetFrom(current.feedback)
-})
-
-function selectNode({ node, parent }) {
-  activeMainId.value = parent ? parent.id : node.id
-}
-
-function download(file) {
-  return downloads.download(file.id, () => evidenceService.requestDownload(props.assessmentId, file.id))
-}
-
-async function onComplete() {
-  const message = fullyScored.value && !scoreSheet.dirty.value ? t('review.confirmComplete.message') : t('review.confirmComplete.pendingMessage')
-  if (await confirm({ title: t('review.confirmComplete.title'), message, confirmLabel: t('review.complete') })) actions.complete()
-}
-
-async function refresh() {
-  actions.clearConflict()
-  await reviewState.load()
-}
+const { t } = useI18n()
+const page = useReviewWorkspace(props, emit)
+const { reviewState, workspace, dialogs, panelTop, steps, progress } = page
+const { status, errorMessage, review, assessment, canScore, canStart } = reviewState
+const { actions, override, notes } = workspace
+const activeMain = steps.current
+const { stations, missing, nextName } = progress
 
 onMounted(reviewState.load)
 </script>
 
 <template>
-  <div class="review-workspace">
-    <div v-if="status === 'loading'" class="review-workspace__loading" aria-busy="true"><Skeleton variant="block" /><Skeleton variant="text" :count="6" /></div>
+  <div class="review-workspace" :class="{ 'is-overriding': override.active.value }">
+    <div v-if="status === 'loading'" class="review-workspace__loading" aria-busy="true">
+      <Skeleton variant="block" /><Skeleton variant="text" :count="6" />
+    </div>
     <ErrorState v-else-if="status === 'error'" :message="errorMessage" @retry="reviewState.load" />
-    <EmptyState v-else-if="status === 'missing' || status === 'blocked'" icon="fa-solid fa-lock" :title="t('review.unavailable.title')" :message="errorMessage || t('review.unavailable.message')" />
+    <EmptyState
+      v-else-if="status === 'missing' || status === 'blocked'"
+      icon="lock"
+      :title="t('review.unavailable.title')"
+      :message="errorMessage || t('review.unavailable.message')"
+    />
     <template v-else-if="review">
       <ReviewHeader :review="review" />
-      <ReviewNotices :review="review" :conflict-code="actions.conflictCode.value" @refresh="refresh" @override="overrideOpen = true" />
-      <ReviewEntityCard :entity="review.entity" :context="review.context" />
-      <div class="review-workspace__layout">
-        <aside class="review-workspace__nav" :aria-label="t('review.navLabel')">
-          <CriteriaTree :nodes="treeNodes" :active-id="activeMain?.id ?? null" @select="selectNode" />
-        </aside>
-        <ReviewMainPanel v-if="activeMain" :key="activeMain.id" :main="activeMain" :workspace="workspace" @download="download" />
-      </div>
-      <ReviewActions
-        :busy="actions.busy.value"
-        :dirty="dirty"
-        :can-score="canScore"
-        :can-start="canStart"
-        :can-request-completion="canRequestCompletion"
-        :complete="fullyScored"
-        @start="actions.startReview"
-        @save="actions.saveAll"
-        @request-completion="completionOpen = true"
-        @complete="onComplete"
+      <ReviewCompletionAction
+        v-if="reviewState.canRequestCompletion.value"
+        :missing="page.savedMissing.value"
+        @open="dialogs.completion = true"
       />
-      <RequestCompletionDialog v-model="completionOpen" :assessment-id="assessment.id" :criteria="review.criteria" :ask-reason="askReason" @done="reviewState.load({ silent: true })" />
-      <ScoreOverrideDialog v-model="overrideOpen" :assessment-id="assessment.id" :units="units" :scores="review.scores" :maximum="scoreSheet.maximum.value" @done="reviewState.load({ silent: true })" />
-      <ReasonDialog v-model="reasonPrompt.open.value" :title="t('review.reasonTitle')" :message="t('review.reasonMessage')" :submit-label="t('actions.confirm')" :action="reasonPrompt.provide" action-name="review.superAdminReason" />
+      <ReviewNotesSaveAction
+        v-if="notes.canWrite.value && !canScore"
+        :dirty="notes.dirty.value"
+        :busy="actions.busy.value === 'notes'"
+        @save="actions.saveNotes"
+      />
+      <ReviewNotices
+        :review="review"
+        :conflict-code="actions.conflictCode.value"
+        :can-start="canStart"
+        :overriding="override.active.value"
+        :awaiting-codes="progress.awaitingCodes.value"
+        :starting="actions.busy.value === 'start'"
+        @start="actions.startReview"
+        @refresh="page.refresh"
+        @override="override.enter"
+      />
+      <ReviewSections :request-id="assessment.id">
+        <template #assessment>
+          <ReviewOverrideBand
+            v-if="override.active.value"
+            :override="override"
+            @review="dialogs.override = true"
+          />
+          <ReviewCriteriaStrip
+            :stations="stations"
+            :active-id="activeMain?.id ?? null"
+            @select="page.showStep(() => steps.goToMain($event))"
+          />
+          <div ref="panelTop" class="review-workspace__main" tabindex="-1">
+            <ReviewMainPanel
+              v-if="activeMain"
+              :key="activeMain.id"
+              :main="activeMain"
+              :step="steps.position.value + 1"
+              :total="steps.total.value"
+              :workspace="workspace"
+              @download="page.download"
+            />
+          </div>
+          <ReviewSummaryCard
+            v-if="page.offersCertificate.value && steps.isLast.value && !canScore"
+            :summary="review.summary"
+          />
+          <ReviewActions
+            :busy="actions.busy.value"
+            :dirty="page.dirty.value"
+            :can-score="canScore"
+            :is-first="steps.isFirst.value"
+            :is-last="steps.isLast.value"
+            :next-name="nextName"
+            :missing="missing"
+            @previous="page.showStep(steps.previous)"
+            @next="page.showStep(steps.next)"
+            @save="actions.saveAll"
+            @complete="dialogs.complete = true"
+          />
+        </template>
+        <template #entity>
+          <ReviewEntityCard :entity="review.entity" :context="review.context" />
+        </template>
+      </ReviewSections>
+      <CompleteReviewDialog
+        v-model="dialogs.complete"
+        :message="page.completeMessage.value"
+        :assessment-id="assessment.id"
+        :offers-summary="page.offersCertificate.value"
+        :summary="review.summary"
+        :ask-reason="page.askReason"
+        :requires-reason="page.auth.isSuperAdmin"
+        @saved="reviewState.patch({ summary: $event })"
+        @confirm="actions.complete"
+      />
+      <RequestCompletionDialog
+        v-model="dialogs.completion"
+        :active-main-id="activeMain?.id ?? null"
+        :assessment-id="assessment.id"
+        :criteria="review.criteria"
+        :scores="review.scores"
+        :review-notes="review.reviewNotes"
+        :ask-reason="page.askReason"
+        @done="reviewState.load({ silent: true })"
+      />
+      <ScoreOverrideReview
+        v-model="dialogs.override"
+        :override="override"
+        :values="workspace.scoreSheet.sheet.values"
+        :type-of="workspace.scoreSheet.typeOf"
+      />
+      <ReasonDialog
+        v-model="page.reasonPrompt.open.value"
+        :title="t('review.reasonTitle')"
+        :submit-label="t('actions.confirm')"
+        :action="page.reasonPrompt.provide"
+        action-name="review.superAdminReason"
+      />
     </template>
   </div>
 </template>

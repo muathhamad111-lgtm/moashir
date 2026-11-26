@@ -18,7 +18,9 @@ describe('canonical status values', () => {
   })
 
   it('has an ar and en label keyed by the canonical value for every status token', () => {
-    const missing = STATUS_TOKENS.map(toCanonicalStatus).filter((key) => !ar.status[key] || !en.status[key])
+    const missing = STATUS_TOKENS.map(toCanonicalStatus).filter(
+      (key) => !ar.status[key] || !en.status[key],
+    )
     expect(missing).toEqual([])
     expect(Object.keys(en.status).some((key) => key.includes('-'))).toBe(false)
     expect(Object.keys(ar.status)).toEqual(Object.keys(en.status))

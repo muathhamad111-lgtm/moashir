@@ -1,13 +1,19 @@
 import { allEntities, isDeleted } from './entitiesStore'
 import { normalizeSearchText } from './searchIndex'
+import { levelRankOf, matchesLevelFilter } from './entityLevels'
+import { lastAssessedAtOf, lastAssessmentPercentOf } from './entityLastAssessment'
 
-const STATUSES = ['pending-verification', 'active', 'deactivated']
+const STATUSES = ['pending-verification', 'pending-review', 'active', 'deactivated', 'rejected']
 
 const SORT_KEYS = {
   name: (entity) => normalizeSearchText(entity.name.ar),
   created_at: (entity) => entity.createdAt,
   founding_year: (entity) => entity.foundingYear,
-  governance_grade: (entity) => (entity.governanceGrade === null ? -1 : Number(entity.governanceGrade)),
+  governance_grade: (entity) =>
+    entity.governanceGrade === null ? -1 : Number(entity.governanceGrade),
+  level: levelRankOf,
+  last_assessed_at: lastAssessedAtOf,
+  last_assessment_percent: lastAssessmentPercentOf,
 }
 
 export const SORTABLE = Object.keys(SORT_KEYS).flatMap((key) => [key, `-${key}`])
@@ -21,6 +27,7 @@ export function filtersFrom(query) {
     entityType: query.get('filter[entityType]'),
     developmentSector: query.get('filter[developmentSector]'),
     orgSize: query.get('filter[orgSize]'),
+    level: query.get('filter[level]'),
     trashed: query.get('filter[trashed]') === 'only',
     sort: query.get('sort') || '-created_at',
   }
@@ -28,7 +35,9 @@ export function filtersFrom(query) {
 
 function matchesSearch(entity, needle) {
   if (!needle) return true
-  return [entity.name.ar, entity.name.en, entity.owner.email].some((value) => normalizeSearchText(value).includes(needle))
+  return [entity.name.ar, entity.name.en, entity.owner.email].some((value) =>
+    normalizeSearchText(value).includes(needle),
+  )
 }
 
 function matchesFilters(entity, filters) {
@@ -38,6 +47,7 @@ function matchesFilters(entity, filters) {
     [filters.entityType, () => entity.entityType === filters.entityType],
     [filters.developmentSector, () => entity.developmentSector === filters.developmentSector],
     [filters.orgSize, () => entity.orgSize === filters.orgSize],
+    [filters.level, () => matchesLevelFilter(entity, filters.level)],
   ]
   return checks.every(([value, check]) => !value || check())
 }
@@ -49,12 +59,18 @@ function scoped(filters) {
     .filter((entity) => matchesFilters(entity, filters))
 }
 
+function nullsLast(a, b) {
+  if (a === b) return 0
+  return a === null ? 1 : -1
+}
+
 function compareBy(sort) {
   const descending = sort.startsWith('-')
   const valueOf = SORT_KEYS[descending ? sort.slice(1) : sort] ?? SORT_KEYS.created_at
   return (left, right) => {
     const a = valueOf(left)
     const b = valueOf(right)
+    if (a === null || b === null) return nullsLast(a, b) || left.id - right.id
     const order = a < b ? -1 : a > b ? 1 : 0
     return (descending ? -order : order) || left.id - right.id
   }

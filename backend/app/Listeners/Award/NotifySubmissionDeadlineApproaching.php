@@ -8,8 +8,8 @@ use App\Enums\Notifications\NotificationCode;
 use App\Events\Award\SubmissionDeadlineApproaching;
 use App\Models\Assessments\Assessment;
 use App\Services\Entities\EntityNotifier;
-use App\Support\Award\AwardLinks;
 use App\Support\Award\AwardNotices;
+use App\Support\Award\EntityAwardLinks;
 
 final readonly class NotifySubmissionDeadlineApproaching
 {
@@ -24,7 +24,7 @@ final readonly class NotifySubmissionDeadlineApproaching
                 NotificationCode::AdvancedDeadlineApproaching,
                 AwardNotices::FOR_ENTITY,
                 $event->cycle,
-                AwardLinks::entityIntro(),
+                EntityAwardLinks::cycle($event->cycle->id),
                 ['number' => $draft->request_number],
             ));
         }

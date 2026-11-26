@@ -5,21 +5,29 @@ declare(strict_types=1);
 namespace App\Actions\Assessments;
 
 use App\Data\Assessments\RequestDetail;
+use App\Enums\Assessments\AssignmentStatus;
 use App\Enums\Finance\PaymentStatus;
 use App\Models\Assessments\Assessment;
 use App\Models\Assessments\AssessmentAssignment;
 use App\Models\Assessments\AssessmentCompletionRequest;
 use App\Models\Identity\User;
 use App\Services\Assessments\AssessmentRecordScope;
+use App\Services\Assessments\BoundSubCriteriaReader;
+use App\Support\Certificates\EntityLevelQuery;
 use Illuminate\Database\Eloquent\Builder;
 
 final readonly class ShowRequest
 {
-    public function __construct(private ShowAssessmentRecord $records, private AssessmentRecordScope $scope) {}
+    public function __construct(
+        private ShowAssessmentRecord $records,
+        private AssessmentRecordScope $scope,
+        private BoundSubCriteriaReader $subs,
+    ) {}
 
     public function handle(User $viewer, Assessment $assessment): RequestDetail
     {
-        $assessment->loadMissing(['activeAssignment.assessor', 'openCompletionRequest', 'payment', 'awardCycle', 'region']);
+        $assessment->loadMissing(['entity.logo', 'entity.'.EntityLevelQuery::RELATION, 'entity.'.EntityLevelQuery::DISPLAY_RELATION, 'openCompletionRequest', 'payment.receipt', 'awardCycle', 'region']);
+        $assessment->load('latestAssignment.assessor')->loadExists(['assignments as was_reassigned' => static fn (Builder $reassigned): Builder => $reassigned->where('status', AssignmentStatus::Reassigned)]);
         $revealsIdentities = $this->scope->accessOf($viewer, $assessment)->revealsStaffIdentities();
         $assignments = AssessmentAssignment::query()
             ->with(['assessor', 'assignedBy'])
@@ -29,12 +37,16 @@ final readonly class ShowRequest
             ->get()
             ->all();
 
+        $completionRequests = array_values(AssessmentCompletionRequest::query()->where('assessment_id', $assessment->id)->orderBy('id')->get()->all());
+
         return new RequestDetail(
             $this->records->handle($viewer, $assessment),
             array_values($assignments),
-            array_values(AssessmentCompletionRequest::query()->where('assessment_id', $assessment->id)->orderBy('id')->get()->all()),
+            $completionRequests,
             $revealsIdentities,
             $assessment->payment?->status === PaymentStatus::Paid,
+            $completionRequests === [] ? null : $this->subs->of($assessment->criteriaVersion()->firstOrFail()),
+            $assessment->certificate()->exists(),
         );
     }
 }

@@ -9,17 +9,35 @@ vi.mock('@/services/entityLifecycleService', () => ({
   entityLifecycleService: { deletionImpact: vi.fn(), softDelete: vi.fn() },
 }))
 
-const ENTITY = { id: 6002, reference: 'ENT-006002', name: { ar: 'جمعية إحسان الخيرية', en: 'Ehsan Charitable Society' } }
+const ENTITY = {
+  id: 6002,
+  reference: 'ENT-006002',
+  name: { ar: 'جمعية إحسان الخيرية', en: 'Ehsan Charitable Society' },
+}
 const LISTED = [
-  { id: 31, number: 'ADV-2026-000031', path: 'advanced', status: 'under-initial-assessment', cycleId: null },
+  {
+    id: 31,
+    number: 'ADV-2026-000031',
+    path: 'advanced',
+    status: 'under-initial-assessment',
+    cycleId: null,
+  },
   { id: 7, number: 'BAG-2026-000007', path: 'bag', status: 'stage-active', cycleId: null },
 ]
-const CURRENT = [...LISTED, { id: 52, number: 'ACC-2026-000052', path: 'accredited', status: 'submitted', cycleId: null }]
+const CURRENT = [
+  ...LISTED,
+  { id: 52, number: 'ACC-2026-000052', path: 'accredited', status: 'submitted', cycleId: null },
+]
 const REASON = 'Merged with another entity by board decision'
 
 function stale() {
   return Object.assign(new Error('conflict'), {
-    normalized: { code: 'entity.open_requests_confirmation_required', status: 409, meta: { openRequests: CURRENT }, fieldErrors: {} },
+    normalized: {
+      code: 'entity.open_requests_confirmation_required',
+      status: 409,
+      meta: { openRequests: CURRENT },
+      fieldErrors: {},
+    },
   })
 }
 
@@ -49,7 +67,9 @@ async function submit(wrapper) {
 
 beforeEach(() => {
   vi.clearAllMocks()
-  entityLifecycleService.deletionImpact.mockResolvedValue({ data: { openRequests: LISTED, openRequestsCount: 2, requiresConfirmation: true } })
+  entityLifecycleService.deletionImpact.mockResolvedValue({
+    data: { openRequests: LISTED, openRequestsCount: 2, requiresConfirmation: true },
+  })
 })
 
 describe('EntityDeleteDialog', () => {
@@ -64,7 +84,9 @@ describe('EntityDeleteDialog', () => {
   })
 
   it('re-shows the current list on a stale confirmation and deletes after a new confirmation', async () => {
-    entityLifecycleService.softDelete.mockRejectedValueOnce(stale()).mockResolvedValueOnce(undefined)
+    entityLifecycleService.softDelete
+      .mockRejectedValueOnce(stale())
+      .mockResolvedValueOnce(undefined)
     const wrapper = await mountDialog()
     await wrapper.find('[name="reason"]').setValue(REASON)
     await wrapper.find('[name="confirmed"]').setValue(true)
@@ -88,13 +110,18 @@ describe('EntityDeleteDialog', () => {
   })
 
   it('deletes an entity without open requests with a reason only', async () => {
-    entityLifecycleService.deletionImpact.mockResolvedValue({ data: { openRequests: [], openRequestsCount: 0, requiresConfirmation: false } })
+    entityLifecycleService.deletionImpact.mockResolvedValue({
+      data: { openRequests: [], openRequestsCount: 0, requiresConfirmation: false },
+    })
     entityLifecycleService.softDelete.mockResolvedValue(undefined)
     const wrapper = await mountDialog()
     expect(wrapper.find('.entity-delete__none').exists()).toBe(true)
     await wrapper.find('[name="reason"]').setValue(REASON)
     await submit(wrapper)
-    expect(entityLifecycleService.softDelete).toHaveBeenCalledWith(6002, { reason: REASON, acknowledgedRequestNumbers: [] })
+    expect(entityLifecycleService.softDelete).toHaveBeenCalledWith(6002, {
+      reason: REASON,
+      acknowledgedRequestNumbers: [],
+    })
     wrapper.unmount()
   })
 })

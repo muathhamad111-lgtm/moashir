@@ -1,0 +1,32 @@
+@use '../mixins' as *;
+
+// "A new version is available": floats at the bottom of the window, above page content and
+// below dialogs, without blocking anything behind it.
+.app-update {
+  @include flex(row, center, space-between, var(--space-3));
+  position: fixed;
+  inset-block-end: calc(
+    var(--space-4) + var(--app-tab-bar-offset) + env(safe-area-inset-bottom, 0px)
+  );
+  inset-inline: var(--space-4);
+  z-index: var(--z-toast);
+  flex-wrap: wrap;
+  max-inline-size: var(--size-panel);
+  margin-inline-start: auto;
+  padding-block: var(--space-3);
+  padding-inline: var(--space-4);
+  border: var(--border-width) solid var(--theme-border);
+  border-radius: var(--radius-lg);
+  background-color: var(--theme-surface-solid);
+  box-shadow: var(--shadow-lg);
+}
+
+.app-update__message {
+  margin: 0;
+  color: var(--theme-heading);
+  font-weight: var(--fw-body);
+}
+
+.app-update__actions {
+  @include flex(row, center, flex-start, var(--space-2));
+}

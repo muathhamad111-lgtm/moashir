@@ -3,8 +3,9 @@ import { API_BASE_URL } from './config'
 import { XSRF_COOKIE_NAME, XSRF_HEADER_NAME } from './csrf'
 import { applyAcceptLanguage } from './interceptors/acceptLanguage'
 import { ensureCsrfBeforeWrite, retryOnceAfterCsrfMismatch } from './interceptors/csrf'
-import { reportSessionLoss } from './interceptors/sessionExpiry'
+import { recordServerActivity, reportSessionLoss } from './interceptors/sessionExpiry'
 import { attachNormalizedError } from './interceptors/errorNormalizer'
+import { holdForNdaAcceptance } from './interceptors/ndaGate'
 import { decodeErrorResponse, decodeResponse, encodeRequest } from './interceptors/contractCase'
 
 export const apiClient = axios.create({
@@ -22,6 +23,8 @@ apiClient.interceptors.request.use(applyAcceptLanguage)
 apiClient.interceptors.request.use(ensureCsrfBeforeWrite)
 
 apiClient.interceptors.response.use(decodeResponse, decodeErrorResponse)
+apiClient.interceptors.response.use(recordServerActivity)
 apiClient.interceptors.response.use(undefined, retryOnceAfterCsrfMismatch(apiClient))
 apiClient.interceptors.response.use(undefined, reportSessionLoss)
+apiClient.interceptors.response.use(undefined, holdForNdaAcceptance(apiClient))
 apiClient.interceptors.response.use(undefined, attachNormalizedError)

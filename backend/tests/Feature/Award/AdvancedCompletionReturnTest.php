@@ -9,6 +9,7 @@ use App\Models\Assessments\AssessmentCompletionRequest;
 use App\Models\Audit\Audit;
 use App\Models\Award\AwardCycle;
 use App\Models\Criteria\CriteriaVersion;
+use App\Models\Criteria\SubCriterion;
 use App\Models\Identity\User;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Date;
@@ -57,6 +58,7 @@ it('returns an incomplete request to the entity with the items, the deadline and
         ->assertJsonPath('data.completion_requests.0.status', 'open')
         ->assertJsonPath('data.completion_requests.0.expiry_outcome', 'continue_as_submitted')
         ->assertJsonPath('data.completion_requests.0.items.0.code', 'M1.1')
+        ->assertJsonPath('data.completion_requests.0.items.0.name', SubCriterion::query()->whereRelation('mainCriterion', 'criteria_version_id', $version->id)->where('code', 'M1.1')->sole()->name->toArray())
         ->assertJsonPath('data.completion_deadline', ADVANCED_DEADLINE);
     switchTo($owner)->getJson("/api/v1/assessments/{$assessment->id}/form")->assertOk()
         ->assertJsonPath('data.assessment.status', 'needs_completion')
@@ -101,10 +103,10 @@ it('lets only the followers and the System Administrator return an advanced requ
     switchTo(systemAdmin())->postJson($path, returnPayload($version))->assertOk();
 });
 
-it('refuses a return once the initial assessor is assigned', function (): void {
+it('refuses a return once the initial assessment is complete', function (): void {
     $version = publishedAccreditedCriteria();
     $cycle = openAwardCycle($version);
-    $assessment = assignedAdvancedRequest($cycle, $version, assessorUser());
+    $assessment = initiallyAssessedRequest($cycle, $version, assessorUser());
 
     switchTo(requestFollower())->postJson("/api/v1/requests/{$assessment->id}/return-for-completion", returnPayload($version))
         ->assertConflict()->assertJsonPath('code', 'state.transition_illegal');
@@ -123,7 +125,7 @@ it('lets the entity change only the listed items and resubmit to the follower qu
         ->assertUnprocessable()->assertJsonPath('code', 'completion.item_not_requested');
     uploadEvidence($owner, $assessment, $version)->assertUnprocessable()->assertJsonPath('code', 'completion.item_not_requested');
     switchTo($owner)->putJson("/api/v1/assessments/{$assessment->id}/cv", ['cv' => [$listed => 'تحديث وصف السياسة المعتمدة من مجلس الإدارة.']])->assertOk();
-    switchTo($owner)->postJson("/api/v1/assessments/{$assessment->id}/submit")->assertOk()->assertJsonPath('data.status', 'awaiting_review_assignment');
+    switchTo($owner)->postJson("/api/v1/assessments/{$assessment->id}/submit")->assertOk()->assertJsonPath('data.status', 'under_review');
 
     expect(AssessmentCompletionRequest::query()->where('assessment_id', $assessment->id)->value('status')->value)->toBe('resubmitted')
         ->and(financeNoticeSent($follower, NotificationCode::AdvancedSubmitted))->toBeTrue();

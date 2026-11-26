@@ -16,7 +16,7 @@
   padding: 0;
   margin-block-end: var(--space-2);
   font-size: var(--fs-sm);
-  font-weight: var(--fw-medium);
+  font-weight: var(--fw-body);
   color: var(--theme-text);
 }
 
@@ -40,7 +40,9 @@
   border-radius: var(--radius-md);
   background-color: var(--theme-surface);
   cursor: pointer;
-  transition: border-color var(--t-fast) var(--ease), background-color var(--t-fast) var(--ease);
+  transition:
+    border-color var(--t-fast) var(--ease),
+    background-color var(--t-fast) var(--ease);
 
   &:hover {
     border-color: var(--theme-accent);
@@ -68,7 +70,7 @@
 }
 
 .segment-picker__option-title {
-  font-weight: var(--fw-medium);
+  font-weight: var(--fw-heading);
   color: var(--theme-text);
 }
 

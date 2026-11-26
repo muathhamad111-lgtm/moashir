@@ -2,26 +2,22 @@
 
 .review-workspace,
 .review-workspace__loading,
-.review-notices {
+.review-notices,
+.review-sections__panel,
+.review-request-tab {
   @include flex(column, stretch, flex-start, var(--space-4));
 }
 
-.review-workspace__layout {
-  display: grid;
-  gap: var(--space-5);
-  grid-template-columns: 1fr;
+.review-workspace__main {
+  min-inline-size: 0;
 
-  @include respond-to(lg) {
-    grid-template-columns: minmax(0, var(--size-panel)) minmax(0, 1fr);
-    align-items: start;
+  &:focus {
+    outline: none;
   }
 }
 
-.review-workspace__nav {
-  @include respond-to(lg) {
-    position: sticky;
-    inset-block-start: var(--space-4);
-  }
+.review-main__heading {
+  @include flex(column, flex-start, flex-start, var(--space-1));
 }
 
 .review-header {
@@ -46,7 +42,7 @@
   dd {
     margin: 0;
     font-size: var(--fs-sm);
-    font-weight: var(--fw-semibold);
+    font-weight: var(--fw-body);
     color: var(--theme-heading);
   }
 }
@@ -57,20 +53,94 @@
 }
 
 .review-header__progress {
+  @include pill-progress;
   inline-size: 100%;
   block-size: var(--space-2);
-  border: 0;
-  border-radius: var(--radius-pill);
-  background-color: var(--theme-surface-raised);
-  accent-color: var(--theme-accent);
 }
 
 .review-header__progress-text {
   display: block;
   margin-block-start: var(--space-1);
   font-size: var(--fs-xs);
-  font-weight: var(--fw-regular);
+  font-weight: var(--fw-body);
   color: var(--theme-text-muted);
+}
+
+// The assessor's context bar: one line from md up (entity · path · status … due · progress).
+// The request number sits beside the page title.
+// Labels are for screen readers; the entity name truncates with its full text as a tooltip.
+.review-bar {
+  @include flex(row, center, flex-start, var(--space-2) var(--space-3));
+  flex-wrap: wrap;
+  padding-block: var(--space-2);
+  padding-inline: var(--space-4);
+  min-block-size: var(--size-touch-target);
+
+  @include respond-to('md') {
+    flex-wrap: nowrap;
+  }
+
+  dt {
+    @include visually-hidden;
+  }
+
+  dd {
+    @include flex(row, center, flex-start, var(--space-2));
+    margin: 0;
+    font-size: var(--fs-sm);
+    white-space: nowrap;
+  }
+}
+
+.review-bar__item {
+  flex-shrink: 0;
+}
+
+// Only the entity name gives way (with an ellipsis) when the line is short.
+.review-bar__item--entity {
+  flex: 0 1 auto;
+  min-inline-size: 0;
+
+  dd {
+    display: block;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    font-weight: var(--fw-body);
+    color: var(--theme-heading);
+  }
+}
+
+.review-bar__item--due {
+  margin-inline-start: auto;
+  color: var(--theme-text-secondary);
+}
+
+.review-bar__muted {
+  color: var(--theme-text-secondary);
+}
+
+.review-bar__icon {
+  color: var(--theme-text-muted);
+}
+
+// The divider only makes sense on one line (from md up); a wrapped bar drops it.
+.review-bar__item--progress {
+  @include respond-to('md') {
+    padding-inline-start: var(--space-3);
+    border-inline-start: var(--border-width) solid var(--theme-border);
+  }
+}
+
+.review-bar__progress {
+  @include pill-progress;
+  inline-size: 4rem;
+  block-size: var(--space-2);
+}
+
+.review-bar .review-header__progress-text {
+  font-family: var(--font-latin);
+  font-weight: var(--fw-body);
+  color: var(--theme-text-secondary);
 }
 
 .review-entity__facts {
@@ -102,7 +172,7 @@
 .review-entity__context-title {
   margin-block: 0 var(--space-2);
   font-size: var(--fs-sm);
-  font-weight: var(--fw-semibold);
+  font-weight: var(--fw-heading);
   color: var(--theme-heading);
 }
 
@@ -117,4 +187,32 @@
   @include flex(row, center, flex-start, var(--space-3));
   font-size: var(--fs-sm);
   color: var(--theme-text);
+}
+
+// No empty gap when there is no notice to show (Vue leaves only comment nodes).
+.review-notices:empty {
+  display: none;
+}
+
+// The tabs sit close under the context bar: shorter tab row, no extra space above the panel.
+.review-sections .tabs__tab {
+  padding-block: var(--space-2);
+  padding-inline: var(--space-3);
+
+  @include respond-to('md') {
+    padding-inline: var(--space-4);
+  }
+
+  @include in-tts-shell {
+    padding-block: var(--space-2);
+    padding-inline: var(--space-3);
+
+    @include respond-to('md') {
+      padding-inline: var(--space-4);
+    }
+  }
+}
+
+.review-sections > .tabs__panel {
+  padding-block: var(--space-3) 0;
 }

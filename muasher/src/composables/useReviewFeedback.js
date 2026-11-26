@@ -15,7 +15,9 @@ export function useReviewFeedback({ reviewState }) {
   function resetFrom(feedback) {
     Object.keys(drafts).forEach((key) => delete drafts[key])
     Object.entries(feedback ?? {}).forEach(([subId, fields]) => {
-      drafts[subId] = Object.fromEntries(FEEDBACK_FIELDS.map((field) => [field, fields[field] ?? '']))
+      drafts[subId] = Object.fromEntries(
+        FEEDBACK_FIELDS.map((field) => [field, fields[field] ?? '']),
+      )
     })
   }
 
@@ -32,9 +34,18 @@ export function useReviewFeedback({ reviewState }) {
   const changes = computed(() =>
     Object.fromEntries(
       Object.entries(drafts).flatMap(([subId, fields]) => {
-        const changed = FEEDBACK_FIELDS.filter((field) => (fields[field] ?? '') !== savedOf(subId, field))
+        const changed = FEEDBACK_FIELDS.filter(
+          (field) => (fields[field] ?? '') !== savedOf(subId, field),
+        )
         if (!changed.length) return []
-        return [[subId, Object.fromEntries(changed.map((field) => [field, fields[field]?.trim() ? fields[field] : null]))]]
+        return [
+          [
+            subId,
+            Object.fromEntries(
+              changed.map((field) => [field, fields[field]?.trim() ? fields[field] : null]),
+            ),
+          ],
+        ]
       }),
     ),
   )
@@ -44,7 +55,10 @@ export function useReviewFeedback({ reviewState }) {
     if (!dirty.value) return null
     saving.value = true
     try {
-      const { data } = await assessorReviewService.saveFeedback(reviewState.assessment.value.id, { feedback: changes.value, ...extra })
+      const { data } = await assessorReviewService.saveFeedback(reviewState.assessment.value.id, {
+        feedback: changes.value,
+        ...extra,
+      })
       reviewState.patch({ feedback: data.feedback, assessment: data.assessment })
       resetFrom(data.feedback)
       return data

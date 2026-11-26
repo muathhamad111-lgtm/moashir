@@ -11,16 +11,15 @@
   box-shadow: var(--shadow-md);
 }
 
-.accredited-actions__status,
-.review-actions__status,
-.review-actions__hint {
+.accredited-actions__status {
   margin: 0;
   font-size: var(--fs-sm);
   color: var(--theme-text-muted);
 }
 
-.review-actions__hint {
-  flex-basis: 100%;
+// The assessor's bar shows only its buttons; the save state is still announced to screen readers.
+.review-actions__status {
+  @include visually-hidden;
 }
 
 .accredited-actions__buttons,
@@ -28,4 +27,14 @@
   @include flex(row, center, flex-end, var(--space-3));
   flex-wrap: wrap;
   margin-inline-start: auto;
+}
+
+// Until every item is answered the bar counts what is left where «إكمال التقييم» will appear (operator 2026-11-22).
+.review-actions__remaining {
+  padding: var(--space-1) var(--space-3);
+  border-radius: var(--radius-pill);
+  background: var(--theme-warning-soft);
+  color: var(--color-warning-text);
+  font-size: var(--fs-sm);
+  font-weight: var(--fw-body);
 }

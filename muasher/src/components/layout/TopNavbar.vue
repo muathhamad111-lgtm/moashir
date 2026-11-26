@@ -1,34 +1,42 @@
 <script setup>
-import { computed } from 'vue'
+import { computed, useTemplateRef } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { useRoute, useRouter } from 'vue-router'
 import { storeToRefs } from 'pinia'
 import { useAuthStore } from '@/stores/auth'
 import { useUiStore } from '@/stores/ui'
 import { usePermissions } from '@/composables/usePermissions'
+import { useElementWidth } from '@/composables/useElementWidth'
+import { useCompactViewport } from '@/composables/useCompactViewport'
+import { useNavbarUserMenu } from '@/composables/useNavbarUserMenu'
 import { ROUTE_NAMES } from '@/constants/routeNames'
-import { PERMISSIONS } from '@/constants/permissionKeys'
-import { accessFor } from '@/constants/routeAccess'
-import { canUseGlobalSearch } from '@/constants/globalSearch'
+import { NAVBAR_TOOLS_INLINE_MIN_WIDTH } from '@/constants/navigation'
+import { SEARCH_INLINE_MIN_NAVBAR_WIDTH, canUseGlobalSearch } from '@/constants/globalSearch'
 import LocaleSwitcher from '@/components/ui/LocaleSwitcher.vue'
-import ThemeToggle from '@/components/ui/ThemeToggle.vue'
 import NotificationBell from '@/components/notifications/NotificationBell.vue'
-import ActionsDropdown from '@/components/data-list/ActionsDropdown.vue'
+import AppMenu from '@/components/ui/AppMenu.vue'
 import Badge from '@/components/ui/Badge.vue'
 import GlobalSearch from '@/components/search/GlobalSearch.vue'
+import AppIcon from '@/components/ui/AppIcon.vue'
+import AccountAvatar from '@/components/account/AccountAvatar.vue'
+import AppTopBarPhone from './AppTopBarPhone.vue'
 
 const { t, locale } = useI18n()
-const route = useRoute()
-const router = useRouter()
 const auth = useAuthStore()
 const ui = useUiStore()
 const { sidebarCollapsed } = storeToRefs(ui)
-const { can, canAccess } = usePermissions()
+const { can } = usePermissions()
+// Phones (below md) have no sidebar: the bar starts with the logo, or back and the screen title.
+const isPhone = useCompactViewport()
 
-const canAccessSettings = computed(() => canAccess(accessFor(ROUTE_NAMES.ADMIN_SETTINGS)))
-const canViewEntityProfile = computed(() => can(PERMISSIONS.ENTITY_PROFILE_VIEW))
 const canSearch = computed(() => canUseGlobalSearch(can))
-const pageTitle = computed(() => (route.meta.titleKey ? t(route.meta.titleKey) : t('app.name')))
+const navbarWidth = useElementWidth(useTemplateRef('navbar'), Number.POSITIVE_INFINITY)
+const isSearchCompact = computed(() => navbarWidth.value < SEARCH_INLINE_MIN_NAVBAR_WIDTH)
+const menuHoldsTools = computed(() => navbarWidth.value < NAVBAR_TOOLS_INLINE_MIN_WIDTH)
+const {
+  actions: userActions,
+  canAccessSettings,
+  select: onUserAction,
+} = useNavbarUserMenu({ holdsTools: menuHoldsTools })
 
 const displayName = computed(() => {
   const name = auth.user?.name
@@ -36,74 +44,48 @@ const displayName = computed(() => {
   return typeof name === 'object' ? (name[locale.value] ?? name.ar ?? name.en ?? '') : name
 })
 
-const initial = computed(() => Array.from(displayName.value.trim())[0] ?? '')
-
 const roleLabels = computed(() => auth.roles.map((role) => t(`users.roleLabels.${role}`)))
-
-const userActions = computed(() => [
-  { key: 'account', label: t('nav.account'), icon: 'fa-solid fa-id-badge' },
-  ...(canViewEntityProfile.value
-    ? [{ key: 'profile', label: t('nav.entityProfile'), icon: 'fa-solid fa-user' }]
-    : []),
-  { key: 'logout', label: t('actions.logout'), icon: 'fa-solid fa-arrow-right-from-bracket', variant: 'danger' },
-])
-
-const ROUTES_BY_ACTION = {
-  account: ROUTE_NAMES.ACCOUNT_PROFILE,
-  profile: ROUTE_NAMES.ENTITY_PROFILE,
-}
-
-async function signOut() {
-  await auth.logout()
-  router.push({ name: ROUTE_NAMES.AUTH_LOGIN })
-}
-
-function onUserAction(key) {
-  if (key === 'logout') {
-    signOut()
-    return
-  }
-  if (ROUTES_BY_ACTION[key]) router.push({ name: ROUTES_BY_ACTION[key] })
-}
 </script>
 
 <template>
-  <header class="navbar navbar--app">
+  <header ref="navbar" class="navbar navbar--app">
     <div class="navbar__start">
+      <AppTopBarPhone v-if="isPhone" />
       <button
+        v-else
         type="button"
         class="btn btn--ghost btn--icon navbar__toggle"
         :aria-label="t('nav.toggleSidebar')"
         :aria-expanded="!sidebarCollapsed"
         @click="ui.toggleSidebar"
       >
-        <i class="fa-solid fa-bars-staggered u-flip-in-rtl" aria-hidden="true"></i>
+        <AppIcon name="menu" />
       </button>
-      <p class="navbar__title">{{ pageTitle }}</p>
     </div>
-    <GlobalSearch v-if="canSearch" />
+    <GlobalSearch v-if="canSearch" :compact="isSearchCompact" />
     <div class="navbar__actions">
-      <LocaleSwitcher />
-      <ThemeToggle />
-      <router-link
-        v-if="canAccessSettings"
-        class="btn btn--ghost btn--icon navbar__settings"
-        :to="{ name: ROUTE_NAMES.ADMIN_SETTINGS }"
-        :aria-label="t('nav.adminSettings')"
-        :title="t('nav.adminSettings')"
-      >
-        <i class="fa-solid fa-gear" aria-hidden="true"></i>
-      </router-link>
+      <template v-if="!menuHoldsTools">
+        <LocaleSwitcher class="navbar__locale" />
+        <router-link
+          v-if="canAccessSettings"
+          class="btn btn--ghost btn--icon navbar__settings"
+          :to="{ name: ROUTE_NAMES.ADMIN_SETTINGS }"
+          :aria-label="t('nav.adminSettings')"
+          :title="t('nav.adminSettings')"
+        >
+          <AppIcon name="gear" />
+        </router-link>
+      </template>
       <NotificationBell />
       <div class="navbar__user">
-        <ActionsDropdown
+        <AppMenu
           :actions="userActions"
           :label="t('nav.userMenu', { name: displayName })"
-          toggle-class="navbar__avatar"
+          trigger="avatar"
           @select="onUserAction"
         >
           <template #trigger>
-            <span aria-hidden="true">{{ initial }}</span>
+            <AccountAvatar />
           </template>
           <template #header>
             <div class="navbar__user-head">
@@ -113,7 +95,7 @@ function onUserAction(key) {
               </span>
             </div>
           </template>
-        </ActionsDropdown>
+        </AppMenu>
       </div>
     </div>
   </header>

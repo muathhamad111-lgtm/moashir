@@ -14,6 +14,6 @@ final class ResendOtpController
 {
     public function __invoke(ResendOtpRequest $request, ResendSignInOtp $resendOtp, LoginOutcomeResponder $responder): JsonResponse
     {
-        return $responder->respond(LoginOutcome::otpRequired($resendOtp->handle($request->challengeId(), $request->channel())));
+        return $responder->respond(LoginOutcome::otpRequired($resendOtp->handle($request->challengeId())));
     }
 }

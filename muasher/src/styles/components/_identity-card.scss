@@ -1,0 +1,131 @@
+@use '../mixins' as *;
+@use '../tokens' as *;
+
+// The platform block at the top of the back-office sidebar and the portal side nav (TTS model):
+// the logo, then the split «preview the platform» control (open in a new tab | copy the link).
+@mixin identity-card-compact {
+  .identity-card__brand {
+    justify-content: center;
+  }
+
+  .identity-card__logo {
+    inline-size: var(--size-sidebar-logo-collapsed);
+    block-size: auto;
+  }
+
+  .identity-card__actions {
+    align-self: center;
+    inline-size: var(--size-toolbar-control);
+    border: 0;
+    background-color: transparent;
+  }
+
+  .identity-card__preview {
+    padding: 0;
+    border: var(--border-width) solid var(--sidebar-control-border, var(--theme-border-strong));
+    border-radius: var(--btn-radius);
+  }
+
+  .identity-card__preview-icon {
+    display: inline-flex;
+  }
+
+  .identity-card__label,
+  .identity-card__copy {
+    @include visually-hidden;
+  }
+}
+
+.identity-card {
+  @include flex(column, stretch, flex-start, var(--space-3));
+  margin-block-end: var(--space-2);
+
+  &--collapsed {
+    @include identity-card-compact;
+  }
+
+  .sidebar & {
+    @media (max-width: ($bp-md - 1px)) {
+      @include identity-card-compact;
+    }
+  }
+}
+
+.identity-card__brand {
+  @include flex(row, center, flex-start);
+  border-radius: var(--tts-radius-menu-item);
+
+  &:focus-visible {
+    @include focus-ring;
+    outline-color: var(--sidebar-focus-ring);
+  }
+}
+
+.identity-card__logo {
+  block-size: var(--tts-logo-height);
+  inline-size: auto;
+  max-inline-size: 100%;
+  object-fit: contain;
+}
+
+.identity-card__actions {
+  display: flex;
+  align-items: stretch;
+  min-block-size: var(--size-toolbar-control);
+  border: var(--border-width) solid var(--sidebar-control-border, var(--theme-border-strong));
+  border-radius: var(--btn-radius);
+  background-color: transparent;
+  overflow: hidden;
+}
+
+.identity-card__preview,
+.identity-card__copy {
+  @include flex(row, center, center, var(--space-2));
+  border: 0;
+  background-color: transparent;
+  color: var(--sidebar-accent, var(--sidebar-hover-text));
+  font: inherit;
+  font-size: var(--fs-sm);
+  font-weight: var(--fw-body);
+  text-decoration: none;
+  cursor: pointer;
+  transition: background-color var(--t-fast) var(--ease);
+
+  &:hover {
+    background-color: var(--sidebar-hover-bg);
+  }
+
+  &:focus-visible {
+    @include focus-ring;
+    outline-color: var(--sidebar-focus-ring);
+    outline-offset: calc(-1 * var(--border-width-thick));
+  }
+}
+
+.identity-card__preview {
+  flex: 1;
+  min-inline-size: 0;
+  padding-inline: var(--space-3);
+}
+
+.identity-card__preview-icon {
+  display: none;
+}
+
+.identity-card__copy {
+  flex-shrink: 0;
+  inline-size: var(--size-toolbar-control);
+  border-inline-start: var(--border-width) solid
+    var(--sidebar-control-border, var(--theme-border-strong));
+}
+
+.identity-card__hint {
+  @include visually-hidden;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .identity-card__preview,
+  .identity-card__copy {
+    transition: none;
+  }
+}

@@ -14,6 +14,7 @@ use App\Services\Entities\EntityNotifier;
 use App\Support\Award\AwardLinks;
 use App\Support\Award\AwardNotices;
 use App\Support\Award\CommitteeEntityPresenter;
+use App\Support\Award\CommitteeWorkLinks;
 
 final readonly class NotifyCommitteeAverageApproved
 {
@@ -30,7 +31,7 @@ final readonly class NotifyCommitteeAverageApproved
         ]);
 
         $this->entities->toRole(RoleKey::SystemAdmin, $staff, $event->actorId);
-        $this->notifier->committeeOf($assessment->id, AwardNotices::for(NotificationCode::CommitteeAverageApproved, 'assessor', $cycle, AwardLinks::committeeWork(), [
+        $this->notifier->committeeOf($assessment->id, AwardNotices::for(NotificationCode::CommitteeAverageApproved, 'assessor', $cycle, CommitteeWorkLinks::assignments(), [
             'label' => CommitteeEntityPresenter::label($assessment, $this->visibility->read()),
         ]), $event->actorId);
     }

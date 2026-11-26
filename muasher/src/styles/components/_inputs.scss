@@ -16,9 +16,9 @@
   white-space: nowrap;
   text-overflow: ellipsis;
   font-size: var(--fs-base);
-  font-weight: var(--fw-regular);
+  font-weight: var(--fw-body);
   color: var(--theme-text-secondary);
-  background-color: var(--theme-surface);
+  background: var(--field-label-rest);
   pointer-events: none;
   transition:
     inset-block-start var(--t-fast) var(--ease),
@@ -29,7 +29,7 @@
 .field__control {
   padding-block: var(--space-4) var(--space-2);
   padding-inline: var(--space-3);
-  border: var(--border-width) solid var(--theme-border);
+  border: var(--border-width) solid var(--theme-input-border);
   border-radius: var(--radius-md);
   background-color: var(--theme-surface);
   color: var(--theme-text);
@@ -43,13 +43,23 @@
   &::placeholder {
     color: transparent;
   }
+
+  &[readonly] {
+    background-color: var(--theme-bg);
+    color: var(--theme-text-secondary);
+    cursor: default;
+  }
 }
 
-.field--floated .field__label,
-.field:has(.datepicker__control) .field__label {
+.field--floated .field__label {
   inset-block-start: calc(var(--space-2) * -1);
   font-size: var(--fs-xs);
-  font-weight: var(--fw-medium);
+  font-weight: var(--fw-body);
+  background: linear-gradient(
+    to bottom,
+    var(--field-label-backdrop) calc(var(--space-2) + var(--border-width)),
+    var(--field-label-under) 0
+  );
 }
 
 .field--floated.field--focused .field__label {
@@ -82,4 +92,33 @@
 .field--required .field__label::after {
   content: ' *';
   color: var(--color-danger);
+}
+
+.field__control--digits {
+  font-variant-numeric: tabular-nums;
+}
+
+.field__affixed {
+  position: relative;
+  display: flex;
+
+  .field__control {
+    flex: 1 1 auto;
+    min-inline-size: 0;
+    padding-inline-end: var(--space-8);
+  }
+}
+
+.field__suffix {
+  @include flex-center;
+  position: absolute;
+  inset-block: var(--space-4) var(--space-2);
+  inset-inline-end: var(--space-3);
+  color: var(--theme-text-secondary);
+  pointer-events: none;
+  visibility: hidden;
+
+  .field--floated & {
+    visibility: visible;
+  }
 }

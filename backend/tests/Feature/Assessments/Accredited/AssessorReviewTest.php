@@ -10,6 +10,7 @@ use App\Models\Assessments\AssessmentResultSnapshot;
 use App\Models\Assessments\AssessmentScore;
 use App\Models\Audit\Audit;
 use Illuminate\Support\Facades\Date;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Notification;
 
 beforeEach(function (): void {
@@ -35,6 +36,65 @@ it('lists the requests assigned to the assessor by tab', function (): void {
     switchTo(requestFollower())->getJson('/api/v1/requests/assigned')->assertForbidden();
 });
 
+it('sorts the assigned requests by due date, assignment date or status, in either direction', function (): void {
+    $version = publishedAccreditedCriteria();
+    $assessor = assessorUser();
+    Date::setTestNow('2026-11-01 08:00:00');
+    $first = reviewedAccreditedRequest($version, $assessor);
+    Date::setTestNow('2026-11-05 08:00:00');
+    $second = assignedAccreditedRequest($version, $assessor);
+    $first->forceFill(['due_at' => '2026-11-30 08:00:00'])->saveQuietly();
+    $second->forceFill(['due_at' => '2026-11-20 08:00:00'])->saveQuietly();
+    $ids = static fn (string $sort): array => collect(switchTo($assessor)->getJson('/api/v1/requests/assigned'.($sort === '' ? '' : '?sort='.$sort))->assertOk()->json('data'))->pluck('id')->all();
+
+    expect($ids(''))->toBe([$second->id, $first->id])
+        ->and($ids('-due_at'))->toBe([$first->id, $second->id])
+        ->and($ids('-assigned_at'))->toBe([$second->id, $first->id])
+        ->and($ids('assigned_at'))->toBe([$first->id, $second->id])
+        ->and($ids('status'))->toBe([$second->id, $first->id])
+        ->and($ids('-status'))->toBe([$first->id, $second->id]);
+
+    test()->getJson('/api/v1/requests/assigned?sort=entity')->assertUnprocessable()->assertJsonValidationErrors(['sort']);
+});
+
+it('shows the scoring progress of each assigned request in the list', function (): void {
+    $version = publishedAccreditedCriteria();
+    $assessor = assessorUser();
+    $new = assignedAccreditedRequest($version, $assessor);
+    $started = reviewedAccreditedRequest($version, $assessor);
+    $policyId = (string) subOf($version, 'M1.1')->id;
+    switchTo($assessor)->putJson("/api/v1/assessments/{$started->id}/review/scores", ['scores' => ['subs' => [$policyId => '7']]])->assertOk();
+    test()->putJson("/api/v1/assessments/{$started->id}/review/scores", ['scores' => ['subs' => [$policyId => '8']]])->assertOk();
+
+    test()->getJson('/api/v1/requests/assigned?filter[tab]=new')->assertOk()
+        ->assertJsonPath('data.0.id', $new->id)
+        ->assertJsonPath('data.0.review_progress', ['scored' => 0, 'required' => 4]);
+    test()->getJson('/api/v1/requests/assigned?filter[tab]=in_progress')->assertOk()
+        ->assertJsonPath('data.0.id', $started->id)
+        ->assertJsonPath('data.0.review_progress', ['scored' => 1, 'required' => 4]);
+});
+
+it('reads the scoring progress of a whole page without a query per request', function (): void {
+    $version = publishedAccreditedCriteria();
+    $assessor = assessorUser();
+    assignedAccreditedRequest($version, $assessor);
+    $countQueries = static function () use ($assessor): int {
+        switchTo($assessor)->getJson('/api/v1/requests/assigned')->assertOk();
+        DB::flushQueryLog();
+        DB::enableQueryLog();
+        test()->getJson('/api/v1/requests/assigned')->assertOk();
+        $count = count(DB::getQueryLog());
+        DB::disableQueryLog();
+
+        return $count;
+    };
+    $onePage = $countQueries();
+    assignedAccreditedRequest($version, $assessor);
+    assignedAccreditedRequest($version, $assessor);
+
+    expect($countQueries())->toBe($onePage);
+});
+
 it('opens the review in edit mode for the assignee and read only for the followers', function (): void {
     $version = publishedAccreditedCriteria();
     $assessor = assessorUser();
@@ -46,7 +106,8 @@ it('opens the review in edit mode for the assignee and read only for the followe
         ->assertJsonPath('data.assessment.status', 'assigned')
         ->assertJsonPath("data.cv.{$policyId}", ACCREDITED_CV_TEXT)
         ->assertJsonPath('data.evidence.0.scan_status', 'clean')
-        ->assertJsonPath('data.scale.kind', 'of_10')
+        ->assertJsonPath('data.scale', null)
+        ->assertJsonPath('data.criteria.mains.0.subs.0.scoring_type', 'score')
         ->assertJsonPath('data.entity.id', $assessment->entity_id)
         ->assertJsonPath('data.context', []);
     switchTo(requestFollower())->getJson("/api/v1/assessments/{$assessment->id}/review")->assertOk()->assertJsonPath('data.mode', 'read_only');
@@ -136,6 +197,7 @@ it('returns the request to the entity for completion and accepts only the reques
     $version = publishedAccreditedCriteria();
     $assessor = assessorUser();
     $assessment = reviewedAccreditedRequest($version, $assessor);
+    scoreEveryUnit($assessor, $assessment);
     $owner = ownerOf($assessment->entity);
     $policy = subOf($version, 'M1.1');
     $strategy = subOf($version, 'M1.2');
@@ -152,6 +214,7 @@ it('returns the request to the entity for completion and accepts only the reques
 
     switchTo($owner)->getJson("/api/v1/assessments/{$assessment->id}/form")->assertOk()
         ->assertJsonPath('data.completion_request.items.0.sub_criterion_id', $policy->id)
+        ->assertJsonPath('data.completion_request.items.0.name', $policy->name->toArray())
         ->assertJsonPath('data.completion_request.status', 'open')
         ->assertJsonPath('data.completion_request.expiry_outcome', 'continue_as_submitted');
     switchTo($owner)->putJson("/api/v1/assessments/{$assessment->id}/cv", ['cv' => [(string) $strategy->id => 'نص جديد للمعيار']])
@@ -171,6 +234,7 @@ it('validates a completion request', function (): void {
     $version = publishedAccreditedCriteria();
     $assessor = assessorUser();
     $assessment = reviewedAccreditedRequest($version, $assessor);
+    scoreEveryUnit($assessor, $assessment);
 
     switchTo($assessor)->postJson("/api/v1/assessments/{$assessment->id}/request-completion", [])->assertUnprocessable()->assertJsonValidationErrors(['notes', 'items', 'deadline_at', 'expiry_outcome']);
     test()->postJson("/api/v1/assessments/{$assessment->id}/request-completion", [
@@ -192,7 +256,28 @@ it('validates a completion request', function (): void {
         'expiry_outcome' => 'decline',
     ])->assertUnprocessable()->assertJsonValidationErrors(['deadline_at']);
 
+    test()->postJson("/api/v1/assessments/{$assessment->id}/request-completion", [
+        'notes' => str_repeat('ن', 2001),
+        'items' => [['sub_criterion_id' => subOf($version, 'M1.1')->id, 'kind' => 'cv']],
+        'deadline_at' => Date::now()->addDays(3)->toIso8601String(),
+        'expiry_outcome' => 'decline',
+    ])->assertUnprocessable()->assertJsonValidationErrors(['notes']);
+
     expect($assessment->refresh()->status->value)->toBe('under_review');
+});
+
+it('accepts a short completion note because the notes have no minimum length', function (): void {
+    $version = publishedAccreditedCriteria();
+    $assessor = assessorUser();
+    $assessment = reviewedAccreditedRequest($version, $assessor);
+    scoreEveryUnit($assessor, $assessment);
+
+    switchTo($assessor)->postJson("/api/v1/assessments/{$assessment->id}/request-completion", [
+        'notes' => 'أرفق السيرة',
+        'items' => [['sub_criterion_id' => subOf($version, 'M1.1')->id, 'kind' => 'cv']],
+        'deadline_at' => Date::now()->addDays(3)->toIso8601String(),
+        'expiry_outcome' => 'decline',
+    ])->assertOk();
 });
 
 it('refuses to complete an assessment with missing scores', function (): void {

@@ -38,7 +38,7 @@ describe('FormModal', () => {
 
   it('cancel button closes the modal', async () => {
     factory()
-    const cancel = wrapper.findAll('.modal__footer .btn')[0]
+    const cancel = wrapper.findAll('.modal__footer .btn')[1]
     await cancel.trigger('click')
     expect(wrapper.emitted('update:modelValue')[0]).toEqual([false])
   })

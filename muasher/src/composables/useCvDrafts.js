@@ -41,7 +41,9 @@ export function useCvDrafts({ formState, onRejected }) {
     if (saving.value || !dirty.value) return true
     saving.value = true
     try {
-      const { data } = await submissionService.saveCv(formState.assessment.value.id, { cv: changes.value })
+      const { data } = await submissionService.saveCv(formState.assessment.value.id, {
+        cv: changes.value,
+      })
       formState.patch({ cv: data.cv, assessment: data.assessment })
       resetFrom(data.cv)
       await formState.load({ silent: true })

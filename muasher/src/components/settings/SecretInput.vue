@@ -4,6 +4,9 @@ import { useI18n } from 'vue-i18n'
 import BaseButton from '@/components/ui/BaseButton.vue'
 import { SECRET_ACTIONS, isSecretStored } from '@/utils/integrations/secretValue'
 import { formatDate } from '@/utils/datetime'
+import AppIcon from '@/components/ui/AppIcon.vue'
+import PasswordRevealButton from '@/components/form/PasswordRevealButton.vue'
+import { usePasswordReveal } from '@/composables/usePasswordReveal'
 
 const props = defineProps({
   modelValue: { type: Object, default: () => ({ action: SECRET_ACTIONS.KEEP, value: '' }) },
@@ -27,17 +30,31 @@ const stored = computed(() => isSecretStored(props.meta))
 const action = computed(() => props.modelValue?.action ?? SECRET_ACTIONS.KEEP)
 const entering = computed(() => !stored.value || action.value === SECRET_ACTIONS.REPLACE)
 const clearing = computed(() => stored.value && action.value === SECRET_ACTIONS.CLEAR)
+const typedValue = computed(() => props.modelValue?.value ?? '')
+const { revealed, toggle } = usePasswordReveal(typedValue)
 
 const updatedLine = computed(() => {
   if (!props.meta?.updatedAt) return ''
-  const at = formatDate(props.meta.updatedAt, locale.value, { dateStyle: 'medium', timeStyle: 'short' })
+  const at = formatDate(props.meta.updatedAt, locale.value, {
+    dateStyle: 'medium',
+    timeStyle: 'short',
+  })
   const by = props.meta.updatedBy?.name
-  return by ? t('integrations.secret.updatedBy', { at, by }) : t('integrations.secret.updatedAt', { at })
+  return by
+    ? t('integrations.secret.updatedBy', { at, by })
+    : t('integrations.secret.updatedAt', { at })
 })
 
-const describedBy = computed(() => [props.error && errorId, props.hint && hintId].filter(Boolean).join(' ') || undefined)
+const describedBy = computed(
+  () => [props.error && errorId, props.hint && hintId].filter(Boolean).join(' ') || undefined,
+)
 
-const classes = computed(() => ['field', 'secret-input', props.error && 'field--error', props.disabled && 'field--disabled'])
+const classes = computed(() => [
+  'field',
+  'secret-input',
+  props.error && 'field--error',
+  props.disabled && 'field--disabled',
+])
 
 function emitAction(nextAction, value = '') {
   emit('update:modelValue', { action: nextAction, value })
@@ -54,48 +71,95 @@ function onInput(event) {
     <span v-else :id="labelId" class="secret-input__label">{{ label }}</span>
 
     <div v-if="entering" class="secret-input__entry">
-      <input
-        :id="controlId"
-        class="field__control secret-input__control"
-        type="password"
-        :name="name"
-        :value="modelValue?.value ?? ''"
+      <div class="field__frame field__frame--reveal secret-input__field">
+        <input
+          :id="controlId"
+          class="field__control secret-input__control"
+          :type="revealed ? 'text' : 'password'"
+          :name="name"
+          :value="typedValue"
+          :disabled="disabled"
+          autocomplete="off"
+          autocapitalize="off"
+          spellcheck="false"
+          dir="ltr"
+          :aria-invalid="Boolean(error) || undefined"
+          :aria-describedby="describedBy"
+          @input="onInput"
+        />
+        <PasswordRevealButton
+          :revealed="revealed"
+          :controls="controlId"
+          subject="secret"
+          :disabled="disabled"
+          @toggle="toggle"
+        />
+      </div>
+      <BaseButton
+        v-if="stored"
+        variant="ghost"
+        size="sm"
+        icon="undo"
         :disabled="disabled"
-        autocomplete="off"
-        autocapitalize="off"
-        spellcheck="false"
-        dir="ltr"
-        :aria-invalid="Boolean(error) || undefined"
-        :aria-describedby="describedBy"
-        @input="onInput"
-      />
-      <BaseButton v-if="stored" variant="ghost" size="sm" icon="fa-solid fa-rotate-left" :disabled="disabled" @click="emitAction(SECRET_ACTIONS.KEEP)">
+        @click="emitAction(SECRET_ACTIONS.KEEP)"
+      >
         {{ t('integrations.secret.keep') }}
       </BaseButton>
     </div>
 
-    <div v-else-if="clearing" class="secret-input__state secret-input__state--clearing" role="group" :aria-labelledby="labelId">
+    <div
+      v-else-if="clearing"
+      class="secret-input__state secret-input__state--clearing"
+      role="group"
+      :aria-labelledby="labelId"
+    >
       <span class="secret-input__status" role="status">
-        <i class="fa-solid fa-eraser" aria-hidden="true"></i>
+        <AppIcon name="x" />
         {{ t('integrations.secret.willClear') }}
       </span>
-      <BaseButton variant="ghost" size="sm" icon="fa-solid fa-rotate-left" :disabled="disabled" @click="emitAction(SECRET_ACTIONS.KEEP)">
+      <BaseButton
+        variant="ghost"
+        size="sm"
+        icon="undo"
+        :disabled="disabled"
+        @click="emitAction(SECRET_ACTIONS.KEEP)"
+      >
         {{ t('integrations.secret.undo') }}
       </BaseButton>
     </div>
 
-    <div v-else class="secret-input__state" role="group" :aria-labelledby="labelId" :aria-describedby="describedBy">
+    <div
+      v-else
+      class="secret-input__state"
+      role="group"
+      :aria-labelledby="labelId"
+      :aria-describedby="describedBy"
+    >
       <span class="secret-input__status">
-        <i class="fa-solid fa-key" aria-hidden="true"></i>
+        <AppIcon name="lock" />
         {{ t('integrations.secret.stored') }}
       </span>
-      <span v-if="meta.last4" class="secret-input__last4" dir="ltr">{{ t('integrations.secret.endingIn', { last4: meta.last4 }) }}</span>
+      <span v-if="meta.last4" class="secret-input__last4" dir="ltr">{{
+        t('integrations.secret.endingIn', { last4: meta.last4 })
+      }}</span>
       <span v-if="updatedLine" class="secret-input__updated">{{ updatedLine }}</span>
       <span class="secret-input__actions">
-        <BaseButton variant="secondary" size="sm" icon="fa-solid fa-pen" :disabled="disabled" @click="emitAction(SECRET_ACTIONS.REPLACE)">
+        <BaseButton
+          variant="secondary"
+          size="sm"
+          icon="pen"
+          :disabled="disabled"
+          @click="emitAction(SECRET_ACTIONS.REPLACE)"
+        >
           {{ t('integrations.secret.replace') }}
         </BaseButton>
-        <BaseButton variant="ghost" size="sm" icon="fa-solid fa-trash-can" :disabled="disabled" @click="emitAction(SECRET_ACTIONS.CLEAR)">
+        <BaseButton
+          variant="ghost"
+          size="sm"
+          icon="trash"
+          :disabled="disabled"
+          @click="emitAction(SECRET_ACTIONS.CLEAR)"
+        >
           {{ t('integrations.secret.clear') }}
         </BaseButton>
       </span>

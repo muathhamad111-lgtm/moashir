@@ -5,37 +5,46 @@
   flex-direction: column;
   gap: var(--space-5);
   padding-block: var(--space-4);
-  padding-inline: var(--space-4);
-  max-inline-size: var(--size-content-max);
-  margin-inline: auto;
 }
 
 .users-page__header {
-  @include flex(row, flex-start, space-between, var(--space-4));
+  @include flex(row, center, space-between, var(--space-4));
+  flex-wrap: wrap;
+}
+
+// Every page action sits together at the inline end of the title row; the primary one is last, at the edge.
+.users-page__actions {
+  @include flex(row, center, flex-end, var(--space-2));
   flex-wrap: wrap;
 }
 
 .users-page__title {
   margin: 0;
   font-size: var(--fs-2xl);
-  font-weight: var(--fw-bold);
+  font-weight: var(--fw-heading);
   color: var(--theme-heading);
 }
 
-.users-page__subtitle {
-  margin-block: var(--space-2) 0;
-  color: var(--theme-text-muted);
-  max-inline-size: var(--size-prose-max);
+.users-page__identity {
+  @include flex(column, flex-start, flex-start, var(--space-1));
+}
+
+// The account status and the last sign-in, on one line.
+.users-page__state {
+  @include flex(row, center, flex-start, var(--space-2));
+  flex-wrap: nowrap;
 }
 
 .users-page__name {
-  font-weight: var(--fw-medium);
+  font-weight: var(--fw-emphasis);
   color: var(--theme-text);
 }
 
 .users-page__email {
   color: var(--theme-accent-text);
+  font-size: var(--fs-sm);
   text-align: start;
+  text-decoration: none;
 
   &:hover {
     text-decoration: underline;
@@ -44,12 +53,6 @@
   &:focus-visible {
     @include focus-ring;
   }
-}
-
-.users-page__last-login {
-  color: var(--theme-text-muted);
-  font-size: var(--fs-sm);
-  font-variant-numeric: tabular-nums;
 }
 
 .user-form {
@@ -64,7 +67,7 @@
 
 .user-form__label {
   font-size: var(--fs-sm);
-  font-weight: var(--fw-medium);
+  font-weight: var(--fw-body);
   color: var(--theme-text);
 }
 
@@ -85,9 +88,7 @@
 }
 
 .users-page__roles {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--space-1);
+  color: var(--theme-text);
 }
 
 .user-form__hint {
@@ -102,7 +103,7 @@
 .user-form__hint-title {
   @include flex(row, center, flex-start, var(--space-2));
   margin: 0;
-  font-weight: var(--fw-semibold);
+  font-weight: var(--fw-heading);
   color: var(--color-info);
 }
 
@@ -119,10 +120,4 @@
   @include flex(row, center, flex-start, var(--space-2));
   font-size: var(--fs-sm);
   color: var(--theme-text);
-}
-
-.user-form__hint-note {
-  margin: 0;
-  font-size: var(--fs-xs);
-  color: var(--theme-text-muted);
 }

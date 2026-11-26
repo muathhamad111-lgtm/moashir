@@ -43,7 +43,11 @@ export const ADVANCED_CLOSED_STATUSES = [
   ADVANCED_STATUSES.NOT_QUALIFIED,
 ]
 
-export const FILTERING_STATUSES = [ADVANCED_STATUSES.AWAITING_FILTERING, ADVANCED_STATUSES.QUALIFIED, ADVANCED_STATUSES.NOT_QUALIFIED]
+export const FILTERING_STATUSES = [
+  ADVANCED_STATUSES.AWAITING_FILTERING,
+  ADVANCED_STATUSES.QUALIFIED,
+  ADVANCED_STATUSES.NOT_QUALIFIED,
+]
 
 export const CYCLE_STATUSES = {
   DRAFT: 'draft',
@@ -66,21 +70,39 @@ export const CYCLE_CLOSABLE_STATUSES = [
   CYCLE_STATUSES.ANNOUNCED,
 ]
 
-export const CYCLE_FILTERING_STATUSES = [CYCLE_STATUSES.SUBMISSION_CLOSED, CYCLE_STATUSES.COMMITTEE_ASSESSMENT]
+// Filtering decisions run from the opening of submissions until the results are approved (operator, 2026-11-22).
+export const CYCLE_FILTERING_STATUSES = [
+  CYCLE_STATUSES.SUBMISSION_OPEN,
+  CYCLE_STATUSES.SUBMISSION_CLOSED,
+  CYCLE_STATUSES.COMMITTEE_ASSESSMENT,
+  CYCLE_STATUSES.AWAITING_SECRETARY,
+]
 
 export const CYCLE_FIELD_GROUPS = {
-  DRAFT_ONLY: ['submissionStart', 'criteriaVersionId', 'scaleKind'],
-  UNTIL_SUBMISSIONS_CLOSE: ['submissionEnd', 'regionIds', 'minEntityAgeYears', 'disqualificationScore'],
+  DRAFT_ONLY: ['submissionStart', 'scaleKind'],
+  UNTIL_SUBMISSIONS_CLOSE: [
+    'submissionEnd',
+    'regionIds',
+    'minEntityAgeYears',
+    'disqualificationScore',
+  ],
   UNTIL_COMMITTEE: ['committeeStart', 'committeeEnd', 'initialReviewSlaDays'],
 }
 
 export const CYCLE_STAGE_ACCEPTS = {
   DRAFT_ONLY: [CYCLE_STATUSES.DRAFT],
   UNTIL_SUBMISSIONS_CLOSE: [CYCLE_STATUSES.DRAFT, CYCLE_STATUSES.SUBMISSION_OPEN],
-  UNTIL_COMMITTEE: [CYCLE_STATUSES.DRAFT, CYCLE_STATUSES.SUBMISSION_OPEN, CYCLE_STATUSES.SUBMISSION_CLOSED],
+  UNTIL_COMMITTEE: [
+    CYCLE_STATUSES.DRAFT,
+    CYCLE_STATUSES.SUBMISSION_OPEN,
+    CYCLE_STATUSES.SUBMISSION_CLOSED,
+  ],
 }
 
-export const MEMBER_ROLES = { FILTERING_OFFICER: 'filtering_officer', AWARD_SECRETARY: 'award_secretary' }
+export const MEMBER_ROLES = {
+  FILTERING_OFFICER: 'filtering_officer',
+  AWARD_SECRETARY: 'award_secretary',
+}
 
 export const CANDIDATE_ROLES = { INITIAL_ASSESSOR: 'initial_assessor', ...MEMBER_ROLES }
 
@@ -88,16 +110,29 @@ export const FILTERING_OUTCOMES = { QUALIFIED: 'qualified', NOT_QUALIFIED: 'not_
 
 export const ELIGIBILITY_RULES = { MIN_ENTITY_AGE: 'min_entity_age', REGION: 'region' }
 
-export const CYCLE_SORTS = ['-submission_start', 'submission_start', '-announcement_at', 'announcement_at', '-created_at', 'created_at']
+export const CYCLE_SORTS = [
+  '-submission_start',
+  'submission_start',
+  '-announcement_at',
+  'announcement_at',
+  '-created_at',
+  'created_at',
+]
 
 export const DEFAULT_CYCLE_SORT = '-submission_start'
 
-export const FILTERING_SORTS = ['-initial_percent', 'initial_percent', '-submitted_at', 'submitted_at']
+export const FILTERING_SORTS = [
+  '-initial_percent',
+  'initial_percent',
+  '-submitted_at',
+  'submitted_at',
+]
 
 export const DEFAULT_FILTERING_SORT = '-initial_percent'
 
 export const AWARD_LIMITS = {
   NAME_MAX: 200,
+  DESCRIPTION_MAX: 2000,
   YEAR_MIN: 2000,
   YEAR_MAX: 2200,
   REGIONS_MIN: 1,
@@ -116,12 +151,21 @@ export const AWARD_LIMITS = {
   CANDIDATES_MAX: 100,
 }
 
+export const CYCLE_CONCURRENCY = {
+  SINGLE: 'single',
+  STAGGERED: 'staggered',
+  CONCURRENT: 'concurrent',
+}
+
+export const CYCLE_CONCURRENCY_LIST = Object.values(CYCLE_CONCURRENCY)
+
 export const AWARD_CODES = {
   ANOTHER_OPEN: 'cycle.another_open',
+  ANOTHER_OPEN_FOR_SUBMISSION: 'cycle.another_open_for_submission',
   DATES_UNORDERED: 'cycle.dates_unordered',
   FIELD_LOCKED: 'cycle.field_locked',
   REGION_HAS_REQUESTS: 'cycle.region_has_requests',
-  VERSION_NOT_PUBLISHED: 'cycle.criteria_version_not_published',
+  NO_PUBLISHED_CRITERIA: 'cycle.no_published_criteria',
   PARTICIPATION_RESERVED: 'cycle.participation_setting_reserved',
   WINDOW_PASSED: 'cycle.submission_window_passed',
   REQUESTS_PENDING: 'cycle.requests_pending',

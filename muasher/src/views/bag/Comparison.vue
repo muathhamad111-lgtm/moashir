@@ -1,12 +1,14 @@
 <script setup>
+import { twoDecimals } from '@/utils/percentText'
 import { onMounted } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useHead } from '@unhead/vue'
 import Card from '@/components/ui/Card.vue'
-import Skeleton from '@/components/feedback/Skeleton.vue'
+import PageLoading from '@/components/feedback/PageLoading.vue'
 import ErrorState from '@/components/feedback/ErrorState.vue'
 import ReassessmentRow from '@/components/bag/ReassessmentRow.vue'
 import { useBagReassessment } from '@/composables/useBag'
+import AppIcon from '@/components/ui/AppIcon.vue'
 
 const { t, n } = useI18n()
 
@@ -29,10 +31,7 @@ onMounted(load)
 
 <template>
   <section class="bag-comparison">
-    <div v-if="status === 'loading'" class="bag-comparison__loading">
-      <Skeleton variant="block" />
-      <Skeleton variant="text" :count="5" />
-    </div>
+    <PageLoading v-if="status === 'loading'" />
 
     <ErrorState v-else-if="status === 'error'" :message="errorMessage" @retry="load" />
 
@@ -47,7 +46,7 @@ onMounted(load)
       <p class="bag-comparison__intro">{{ t('bag.comparison.intro') }}</p>
 
       <p v-if="reference && reassessment" class="bag-comparison__versions">
-        <i class="fa-solid fa-lock bag-comparison__versions-icon" aria-hidden="true"></i>
+        <AppIcon name="lock" class="bag-comparison__versions-icon" />
         {{
           t('bag.comparison.versions', {
             refVersion: n(reference.version, 'id'),
@@ -59,16 +58,20 @@ onMounted(load)
       <Card v-if="overall" class="bag-comparison__overall">
         <div class="bag-comparison__overall-scores">
           <div class="bag-comparison__overall-score">
-            <span class="bag-comparison__overall-label">{{ t('bag.comparison.overallBefore') }}</span>
+            <span class="bag-comparison__overall-label">{{
+              t('bag.comparison.overallBefore')
+            }}</span>
             <span class="bag-comparison__overall-value">
-              {{ t('bag.comparison.percent', { value: n(overall.beforePercent, 'default') }) }}
+              {{ t('bag.comparison.percent', { value: twoDecimals(overall.beforePercent) }) }}
             </span>
           </div>
-          <i class="fa-solid fa-arrow-right-long bag-comparison__overall-arrow" aria-hidden="true"></i>
+          <AppIcon name="arrow-right" class="bag-comparison__overall-arrow" />
           <div class="bag-comparison__overall-score">
-            <span class="bag-comparison__overall-label">{{ t('bag.comparison.overallAfter') }}</span>
+            <span class="bag-comparison__overall-label">{{
+              t('bag.comparison.overallAfter')
+            }}</span>
             <span class="bag-comparison__overall-value bag-comparison__overall-value--after">
-              {{ t('bag.comparison.percent', { value: n(overall.afterPercent, 'default') }) }}
+              {{ t('bag.comparison.percent', { value: twoDecimals(overall.afterPercent) }) }}
             </span>
           </div>
           <div class="bag-comparison__overall-score">
@@ -99,8 +102,14 @@ onMounted(load)
         </ul>
       </Card>
 
-      <section v-if="kitCriteria.length" class="bag-comparison__group" aria-labelledby="bag-cmp-kit">
-        <h2 id="bag-cmp-kit" class="bag-comparison__group-title">{{ t('bag.comparison.kitScope.title') }}</h2>
+      <section
+        v-if="kitCriteria.length"
+        class="bag-comparison__group"
+        aria-labelledby="bag-cmp-kit"
+      >
+        <h2 id="bag-cmp-kit" class="bag-comparison__group-title">
+          {{ t('bag.comparison.kitScope.title') }}
+        </h2>
         <p class="bag-comparison__group-lead">{{ t('bag.comparison.kitScope.lead') }}</p>
         <ul class="bag-comparison__rows">
           <li v-for="row in kitCriteria" :key="row.subCriterionId" class="bag-comparison__row">
@@ -109,8 +118,14 @@ onMounted(load)
         </ul>
       </section>
 
-      <section v-if="otherCriteria.length" class="bag-comparison__group" aria-labelledby="bag-cmp-rest">
-        <h2 id="bag-cmp-rest" class="bag-comparison__group-title">{{ t('bag.comparison.rest.title') }}</h2>
+      <section
+        v-if="otherCriteria.length"
+        class="bag-comparison__group"
+        aria-labelledby="bag-cmp-rest"
+      >
+        <h2 id="bag-cmp-rest" class="bag-comparison__group-title">
+          {{ t('bag.comparison.rest.title') }}
+        </h2>
         <p class="bag-comparison__group-lead">{{ t('bag.comparison.rest.lead') }}</p>
         <ul class="bag-comparison__rows">
           <li v-for="row in otherCriteria" :key="row.subCriterionId" class="bag-comparison__row">

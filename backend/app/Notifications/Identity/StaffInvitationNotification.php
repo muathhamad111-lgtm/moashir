@@ -4,14 +4,18 @@ declare(strict_types=1);
 
 namespace App\Notifications\Identity;
 
+use App\Enums\Notifications\MailReason;
 use App\Models\Identity\User;
+use App\Notifications\Messages\BrandedMailMessage;
 use App\Notifications\QueuedNotification;
 use App\Support\FrontendUrl;
-use Illuminate\Notifications\Messages\MailMessage;
 
 final class StaffInvitationNotification extends QueuedNotification
 {
-    public function __construct(private readonly string $token, private readonly int $validHours)
+    /**
+     * @param  bool  $asksNda  whether accepting includes the staff non-disclosure agreement (the roles are in its scope)
+     */
+    public function __construct(private readonly string $token, private readonly int $validMinutes, private readonly bool $asksNda = false)
     {
         parent::__construct();
     }
@@ -24,13 +28,17 @@ final class StaffInvitationNotification extends QueuedNotification
         return ['mail'];
     }
 
-    public function toMail(User $notifiable): MailMessage
+    public function toMail(User $notifiable): BrandedMailMessage
     {
-        return (new MailMessage)
+        $mail = BrandedMailMessage::make($notifiable, MailReason::Invitation)
             ->subject(__('notifications.staff_invited.subject'))
-            ->greeting(__('notifications.greeting', ['name' => $notifiable->name]))
-            ->line(__('notifications.staff_invited.line'))
-            ->action(__('notifications.staff_invited.action'), FrontendUrl::to('auth/invitations/'.$this->token))
-            ->line(__('notifications.staff_invited.expiry', ['hours' => $this->validHours]));
+            ->line(__('notifications.staff_invited.line'));
+
+        if ($this->asksNda) {
+            $mail->line(__('notifications.staff_invited.nda'));
+        }
+
+        return $mail->action(__('notifications.staff_invited.action'), FrontendUrl::to('auth/invitations/'.$this->token))
+            ->line(__('notifications.staff_invited.expiry', ['duration' => trans_choice('quantities.minutes', $this->validMinutes)]));
     }
 }

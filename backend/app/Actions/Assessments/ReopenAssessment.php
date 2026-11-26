@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Actions\Assessments;
 
+use App\Contracts\Assessments\AssessmentReopenStep;
 use App\Data\Audit\AuditEntry;
 use App\Enums\Assessments\AccreditedAssessmentStatus;
 use App\Enums\Assessments\AssessmentVerb;
@@ -29,6 +30,7 @@ final readonly class ReopenAssessment
         private AssignmentRecorder $assignments,
         private AssessmentStateMachine $stateMachine,
         private AuditRecorder $audit,
+        private AssessmentReopenStep $reopenStep,
     ) {}
 
     public function handle(User $actor, Assessment $assessment, string $reason): Assessment
@@ -53,6 +55,7 @@ final readonly class ReopenAssessment
                 'status' => $target->value,
                 'assessor_user_id' => $assessor?->id,
             ]));
+            $this->reopenStep->onReopen($locked, $reason);
 
             if ($assessor instanceof User) {
                 RequestAssigned::dispatch($locked, $assessor->id, null, $actor->id);
@@ -70,6 +73,6 @@ final readonly class ReopenAssessment
             return null;
         }
 
-        return $this->eligibility->find($actor, $last->assessor_user_id);
+        return $this->eligibility->find($actor, $last->assessor_user_id, $locked->path);
     }
 }

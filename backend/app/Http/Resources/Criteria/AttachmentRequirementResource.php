@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Http\Resources\Criteria;
 
 use App\Models\Criteria\AttachmentRequirement;
+use App\Support\Criteria\AttachmentRequirementShape;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
@@ -20,9 +21,7 @@ final class AttachmentRequirementResource extends JsonResource
     {
         return [
             'id' => $this->resource->id,
-            'key' => $this->resource->key,
-            'name' => $this->resource->name->toArray(),
-            'required' => $this->resource->is_required,
+            ...AttachmentRequirementShape::of($this->resource),
             'order' => $this->resource->sort_order,
         ];
     }

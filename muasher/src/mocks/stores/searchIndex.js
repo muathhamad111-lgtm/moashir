@@ -15,8 +15,15 @@ function toWesternDigits(text) {
 }
 
 export function normalizeSearchText(value) {
-  const text = toWesternDigits(String(value ?? '').normalize('NFKC').toLocaleLowerCase('en'))
-  return ARABIC_FOLDS.reduce((folded, [pattern, replacement]) => folded.replace(pattern, replacement), text)
+  const text = toWesternDigits(
+    String(value ?? '')
+      .normalize('NFKC')
+      .toLocaleLowerCase('en'),
+  )
+  return ARABIC_FOLDS.reduce(
+    (folded, [pattern, replacement]) => folded.replace(pattern, replacement),
+    text,
+  )
     .replace(/\s+/g, ' ')
     .trim()
 }

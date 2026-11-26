@@ -5,7 +5,8 @@ declare(strict_types=1);
 namespace App\Models\Criteria;
 
 use App\Casts\LocalizedTextCast;
-use App\Casts\WeightCast;
+use App\Casts\OptionalWeightCast;
+use App\Enums\Criteria\ScoringType;
 use App\Support\ValueObjects\LocalizedText;
 use App\Support\ValueObjects\Weight;
 use Database\Factories\Criteria\GuidingPointFactory;
@@ -21,7 +22,8 @@ use Illuminate\Support\Carbon;
  * @property int $sub_criterion_id
  * @property string $code
  * @property LocalizedText $description
- * @property Weight $weight
+ * @property Weight|null $weight the share of the sub-criterion's weight; null when the sub-criterion is evaluated directly
+ * @property ScoringType $scoring_type
  * @property bool $is_active
  * @property int $sort_order
  * @property int|null $cloned_from_id
@@ -38,7 +40,7 @@ final class GuidingPoint extends Model
     /**
      * @var list<string>
      */
-    protected $fillable = ['description', 'weight', 'is_active'];
+    protected $fillable = ['description', 'weight', 'scoring_type', 'is_active'];
 
     /**
      * @return array<string, string>
@@ -47,7 +49,8 @@ final class GuidingPoint extends Model
     {
         return [
             'description' => LocalizedTextCast::class,
-            'weight' => WeightCast::class,
+            'weight' => OptionalWeightCast::class,
+            'scoring_type' => ScoringType::class,
             'is_active' => 'boolean',
             'sort_order' => 'integer',
         ];

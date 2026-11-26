@@ -94,7 +94,7 @@ describe('bag mock — frozen reference snapshot (§8)', () => {
 describe('bag mock — enriched gap model (§8/§11)', () => {
   it('carries priority + status + note + recommended action on the seeded opened gaps', async () => {
     const { body } = await retryGet('/bag/consultant-view')
-    const gap = body.data.gaps.find((g) => g.id === 'gap-503')
+    const gap = body.data.gaps.find((g) => g.id === 'gap-802')
     expect(gap.priority).toBe('high')
     expect(gap.status).toBe('approved')
     expect(gap.consultantNote).toBeTruthy()
@@ -142,14 +142,14 @@ describe('bag mock — consultant gap guidance (§14 builder)', () => {
 
   it('NEVER edits the source assessment score via guidance (kit-local only)', async () => {
     const before = await retryGet('/bag/consultant-view')
-    const gap503Before = before.body.data.gaps.find((g) => g.id === 'gap-503')
-    await retryPost('/bag/gap-guidance', { gapId: 'gap-503', priority: 'low' })
+    const gap802Before = before.body.data.gaps.find((g) => g.id === 'gap-802')
+    await retryPost('/bag/gap-guidance', { gapId: 'gap-802', priority: 'low' })
     const after = await retryGet('/bag/consultant-view')
-    const gap503After = after.body.data.gaps.find((g) => g.id === 'gap-503')
-    expect(gap503After.priority).toBe('low')
-    expect(gap503After.current).toBe(gap503Before.current)
-    expect(gap503After.target).toBe(gap503Before.target)
-    expect(gap503After.gap).toBe(gap503Before.gap)
+    const gap802After = after.body.data.gaps.find((g) => g.id === 'gap-802')
+    expect(gap802After.priority).toBe('low')
+    expect(gap802After.current).toBe(gap802Before.current)
+    expect(gap802After.target).toBe(gap802Before.target)
+    expect(gap802After.gap).toBe(gap802Before.gap)
   })
 })
 
@@ -160,8 +160,8 @@ describe('bag mock — re-assessment comparison (§19)', () => {
     expect(a.body.data).toEqual(b.body.data)
 
     const byId = Object.fromEntries(a.body.data.criteria.map((c) => [c.subCriterionId, c]))
-    expect(byId[503].outcome).toBe('closed')
-    expect(byId[402].outcome).toBe('closed')
+    expect(byId[802].outcome).toBe('closed')
+    expect(byId[801].outcome).toBe('closed')
     expect(byId[502].outcome).toBe('partially-improved')
     expect(byId[302].outcome).toBe('regressed')
     expect(byId[101].outcome).toBe('stable')
@@ -169,7 +169,9 @@ describe('bag mock — re-assessment comparison (§19)', () => {
 
   it('marks the opened stage-1 gaps as in kit scope', async () => {
     const { body } = await retryGet('/bag/reassessment')
-    const scoped = body.data.criteria.filter((c) => c.inKitScope).map((c) => `gap-${c.subCriterionId}`)
+    const scoped = body.data.criteria
+      .filter((c) => c.inKitScope)
+      .map((c) => `gap-${c.subCriterionId}`)
     expect(scoped.sort()).toEqual([...STAGE_1_OPEN_GAP_IDS].sort())
   })
 

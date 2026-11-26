@@ -5,14 +5,15 @@ declare(strict_types=1);
 namespace App\Notifications\Identity;
 
 use App\Data\Notifications\InAppMessage;
+use App\Enums\Notifications\MailReason;
 use App\Enums\Notifications\NotificationCode;
 use App\Models\Identity\User;
 use App\Notifications\Channels\InAppChannel;
 use App\Notifications\Contracts\DeliversInApp;
+use App\Notifications\Messages\BrandedMailMessage;
 use App\Notifications\QueuedNotification;
 use App\Support\ValueObjects\LocalizedText;
 use Illuminate\Notifications\AnonymousNotifiable;
-use Illuminate\Notifications\Messages\MailMessage;
 
 final class SecurityAlertNotification extends QueuedNotification implements DeliversInApp
 {
@@ -29,9 +30,9 @@ final class SecurityAlertNotification extends QueuedNotification implements Deli
         return $notifiable instanceof User ? ['mail', InAppChannel::class] : ['mail'];
     }
 
-    public function toMail(User|AnonymousNotifiable $notifiable): MailMessage
+    public function toMail(User|AnonymousNotifiable $notifiable): BrandedMailMessage
     {
-        return (new MailMessage)
+        return BrandedMailMessage::make($notifiable, $notifiable instanceof User ? MailReason::Account : MailReason::SecurityMailbox)
             ->subject(__($this->translationKey('title')))
             ->line(__($this->translationKey('body')))
             ->line(__('notifications.security_alert.footer'));

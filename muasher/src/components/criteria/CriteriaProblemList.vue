@@ -2,7 +2,8 @@
 import { toRef } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useCriteria } from '@/composables/useCriteria'
-import { useCriteriaProblemLinks } from '@/composables/useCriteriaProblemLinks'
+import { useCriteriaProblemNodes } from '@/composables/useCriteriaProblemNodes'
+import AppIcon from '@/components/ui/AppIcon.vue'
 
 const props = defineProps({
   problems: { type: Array, required: true },
@@ -12,21 +13,27 @@ const props = defineProps({
 
 const emit = defineEmits(['navigate'])
 const { t } = useI18n()
-const { weight } = useCriteria()
-const { linkFor } = useCriteriaProblemLinks(toRef(props, 'versionId'), toRef(props, 'problems'))
+const { localized, weight } = useCriteria()
+const { nodeOf, linkFor } = useCriteriaProblemNodes(
+  toRef(props, 'versionId'),
+  toRef(props, 'problems'),
+)
+
+function nameOf(problem) {
+  return localized(nodeOf(problem)?.name)
+}
 
 function describe(problem) {
   return t(`criteria.problems.${problem.problem}`, {
-    code: problem.code ?? '',
+    name: nameOf(problem),
     expected: problem.expectedWeight ? weight(problem.expectedWeight) : '',
     actual: problem.actualWeight ? weight(problem.actualWeight) : '',
   })
 }
 
 function fixLabel(problem) {
-  return problem.code
-    ? t('criteria.problems.fix', { code: problem.code })
-    : t('criteria.problems.fixVersion')
+  const name = nameOf(problem)
+  return name ? t('criteria.problems.fix', { name }) : t('criteria.problems.fixVersion')
 }
 
 function keyOf(problem, index) {
@@ -37,7 +44,7 @@ function keyOf(problem, index) {
 <template>
   <section class="criteria-problems" role="alert">
     <header class="criteria-problems__head">
-      <i class="fa-solid fa-triangle-exclamation" aria-hidden="true"></i>
+      <AppIcon name="warning-triangle" />
       <h3 class="criteria-problems__title">{{ title || t('criteria.problems.title') }}</h3>
     </header>
     <ul class="criteria-problems__list">
@@ -46,11 +53,10 @@ function keyOf(problem, index) {
         :key="keyOf(problem, index)"
         class="criteria-problems__item"
       >
-        <span v-if="problem.code" class="criteria-problems__code">{{ problem.code }}</span>
         <span class="criteria-problems__text">{{ describe(problem) }}</span>
         <RouterLink class="criteria-problems__fix" :to="linkFor(problem)" @click="emit('navigate')">
           {{ fixLabel(problem) }}
-          <i class="fa-solid fa-arrow-right u-flip-in-rtl" aria-hidden="true"></i>
+          <AppIcon name="arrow-right" />
         </RouterLink>
       </li>
     </ul>

@@ -8,6 +8,7 @@ use App\Data\Assessments\AdvancedCurrent;
 use App\Http\Resources\Award\PublicCycleResource;
 use App\Models\Assessments\Assessment;
 use App\Models\Award\AwardCycle;
+use App\Support\Award\OpenCycleOptionPresenter;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
@@ -29,6 +30,7 @@ final class AdvancedCurrentResource extends JsonResource
             'eligibility' => $current->eligibility->toArray(),
             'request' => $this->present($current->request, $request),
             'previous' => $this->present($current->previous, $request),
+            'open_cycles' => OpenCycleOptionPresenter::presentAll($current->openCycles, $request->user()),
         ];
     }
 

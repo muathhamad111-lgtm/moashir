@@ -16,6 +16,9 @@ use App\Http\Responses\ApiResponse;
 use App\Models\Assessments\Assessment;
 use App\Models\Award\AwardCycle;
 use App\Models\Award\CommitteeAssignment;
+use App\Models\Identity\User;
+use App\Services\Award\CycleRoleScope;
+use Illuminate\Container\Attributes\CurrentUser;
 use Illuminate\Http\JsonResponse;
 
 final class SecretaryDeskController
@@ -27,9 +30,9 @@ final class SecretaryDeskController
         return ApiResponse::paginated($list->handle($cycle, $filters), SecretaryRequestRowResource::class, ['counts' => $summary->handle($cycle, $filters)]);
     }
 
-    public function show(AwardCycle $cycle, Assessment $assessment, ShowSecretaryRequest $show): JsonResponse
+    public function show(AwardCycle $cycle, Assessment $assessment, #[CurrentUser] User $viewer, ShowSecretaryRequest $show, CycleRoleScope $roles): JsonResponse
     {
-        return ApiResponse::resource(new SecretaryRequestDetailResource($show->handle($assessment)));
+        return ApiResponse::resource(new SecretaryRequestDetailResource($show->handle($assessment)), meta: ['is_cycle_secretary' => $roles->isCycleSecretary($viewer, $cycle)]);
     }
 
     public function evaluation(AwardCycle $cycle, Assessment $assessment, CommitteeAssignment $assignment, ShowSecretaryEvaluation $show): JsonResponse

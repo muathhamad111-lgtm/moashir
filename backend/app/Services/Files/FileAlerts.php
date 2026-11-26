@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Services\Files;
 
 use App\Data\Entities\EntityNotice;
+use App\Data\Notifications\NoticeText;
 use App\Enums\Files\StoredFilePurpose;
 use App\Enums\Identity\RoleKey;
 use App\Enums\Notifications\NotificationCode;
@@ -22,17 +23,10 @@ final readonly class FileAlerts
 
     public function quarantined(StoredFile $file): void
     {
-        $this->toSystemAdministrators(new EntityNotice(
-            NotificationCode::RequestProcessingFailed,
-            LocalizedText::fromTranslation(self::TRANSLATIONS.'quarantined.title'),
-            LocalizedText::fromTranslationWith(self::TRANSLATIONS.'quarantined.body', [
-                'purpose' => LocalizedText::fromTranslation(self::TRANSLATIONS.'purposes.'.$file->purpose->value),
-                'file' => $file->public_id,
-            ]),
-            null,
-            false,
-            true,
-        ));
+        $this->toSystemAdministrators(EntityNotice::fromText(NotificationCode::RequestProcessingFailed, new NoticeText(self::TRANSLATIONS.'quarantined', [
+            'purpose' => LocalizedText::fromTranslation(self::TRANSLATIONS.'purposes.'.$file->purpose->value),
+            'file' => $file->public_id,
+        ]), null)->inAppOnly());
     }
 
     public function infectedUploadRefused(StoredFilePurpose $purpose): void
@@ -41,16 +35,9 @@ final readonly class FileAlerts
             return;
         }
 
-        $this->toSystemAdministrators(new EntityNotice(
-            NotificationCode::RequestProcessingFailed,
-            LocalizedText::fromTranslation(self::TRANSLATIONS.'infected_upload.title'),
-            LocalizedText::fromTranslationWith(self::TRANSLATIONS.'infected_upload.body', [
-                'purpose' => LocalizedText::fromTranslation(self::TRANSLATIONS.'purposes.'.$purpose->value),
-            ]),
-            null,
-            false,
-            true,
-        ));
+        $this->toSystemAdministrators(EntityNotice::fromText(NotificationCode::RequestProcessingFailed, new NoticeText(self::TRANSLATIONS.'infected_upload', [
+            'purpose' => LocalizedText::fromTranslation(self::TRANSLATIONS.'purposes.'.$purpose->value),
+        ]), null)->inAppOnly());
     }
 
     public function scanAbandoned(): void
@@ -59,14 +46,7 @@ final readonly class FileAlerts
             return;
         }
 
-        $this->toSystemAdministrators(new EntityNotice(
-            NotificationCode::ExternalServiceDown,
-            LocalizedText::fromTranslation(self::TRANSLATIONS.'scan_abandoned.title'),
-            LocalizedText::fromTranslation(self::TRANSLATIONS.'scan_abandoned.body'),
-            null,
-            true,
-            true,
-        ));
+        $this->toSystemAdministrators(EntityNotice::fromText(NotificationCode::ExternalServiceDown, new NoticeText(self::TRANSLATIONS.'scan_abandoned', []), null));
     }
 
     private function claimCooldown(string $key): bool

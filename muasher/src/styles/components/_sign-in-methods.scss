@@ -1,0 +1,93 @@
+@use '../mixins' as *;
+
+.sign-in-methods {
+  @include flex(column, stretch, flex-start, var(--space-6));
+}
+
+.sign-in-methods__list {
+  --sign-in-gap: var(--space-1);
+  --sign-in-shift: 0;
+  position: relative;
+  isolation: isolate;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--sign-in-gap);
+  padding: var(--sign-in-gap);
+  border: var(--border-width) solid var(--theme-border);
+  border-radius: var(--radius-lg);
+  background-color: var(--theme-surface);
+}
+
+.sign-in-methods__tab {
+  @include flex-center;
+  min-block-size: var(--size-touch-target);
+  padding-inline: var(--space-3);
+  border: var(--border-width) solid transparent;
+  border-radius: var(--radius-md);
+  background: none;
+  color: var(--theme-text-secondary);
+  font: inherit;
+  font-size: var(--fs-sm);
+  font-weight: var(--fw-emphasis);
+  cursor: pointer;
+  transition:
+    background-color var(--t-fast) var(--ease),
+    border-color var(--t-fast) var(--ease),
+    color var(--t-fast) var(--ease);
+
+  &:hover:not(.is-selected) {
+    color: var(--theme-heading);
+    background-color: var(--theme-accent-soft);
+  }
+
+  &:focus-visible {
+    @include focus-ring;
+  }
+
+  &.is-selected {
+    color: var(--theme-on-accent);
+    font-weight: var(--fw-emphasis);
+  }
+}
+
+// The highlighted pill sits under the tabs and slides to the chosen one, like a switch knob.
+.sign-in-methods__indicator {
+  position: absolute;
+  z-index: -1;
+  inset-block: var(--sign-in-gap);
+  inset-inline-start: var(--sign-in-gap);
+  inline-size: calc((100% - 3 * var(--sign-in-gap)) / 2);
+  border: var(--border-width) solid var(--theme-accent-text);
+  border-radius: var(--radius-md);
+  background-color: var(--theme-accent);
+  translate: calc((100% + var(--sign-in-gap)) * var(--sign-in-shift)) 0;
+
+  @include motion-safe {
+    transition: translate var(--t-slow) var(--ease-out);
+  }
+}
+
+.sign-in-methods__list[data-selected='code'] {
+  --sign-in-shift: 1;
+}
+
+[dir='rtl'] .sign-in-methods__list[data-selected='code'] {
+  --sign-in-shift: -1;
+}
+
+// While the forms swap, both are on screen: the leaving one lifts out of the flow and the panel
+// clips the two as they slide past each other.
+.sign-in-methods__panel {
+  position: relative;
+
+  &:has(> .is-panel-leaving) {
+    overflow: clip;
+    overflow-clip-margin: var(--space-2);
+  }
+
+  > .is-panel-leaving {
+    position: absolute;
+    inset-block-start: 0;
+    inset-inline: 0;
+  }
+}

@@ -18,9 +18,13 @@ it('follows the advanced machine of the analysis up to filtering', function (Sta
     'return for completion' => [Status::AwaitingReviewAssignment, Status::NeedsCompletion, true],
     'resubmit after completion' => [Status::NeedsCompletion, Status::AwaitingReviewAssignment, true],
     'decline at the completion deadline' => [Status::NeedsCompletion, Status::DeclinedIncomplete, true],
-    'assign while waiting for the entity' => [Status::NeedsCompletion, Status::Assigned, false],
+    'resume to the assessor who had not started' => [Status::NeedsCompletion, Status::Assigned, true],
+    'resume to the initial assessment' => [Status::NeedsCompletion, Status::UnderInitialAssessment, true],
+    'complete the initial assessment while waiting for the entity' => [Status::NeedsCompletion, Status::AwaitingFiltering, false],
     'assign the initial assessor' => [Status::AwaitingReviewAssignment, Status::Assigned, true],
-    'return after the assignment' => [Status::Assigned, Status::NeedsCompletion, false],
+    'return after the assignment' => [Status::Assigned, Status::NeedsCompletion, true],
+    'return during the initial assessment' => [Status::UnderInitialAssessment, Status::NeedsCompletion, true],
+    'return after the initial assessment' => [Status::AwaitingFiltering, Status::NeedsCompletion, false],
     'start the initial assessment' => [Status::Assigned, Status::UnderInitialAssessment, true],
     'complete the initial assessment' => [Status::UnderInitialAssessment, Status::AwaitingFiltering, true],
     'skip the initial assessment' => [Status::Assigned, Status::AwaitingFiltering, false],
@@ -54,7 +58,11 @@ it('marks the terminal, queued, withdrawable and filtering states', function ():
         ->and(Status::valuesOf(...Status::filteringStates()))->toBe(['awaiting_filtering', 'qualified_for_committee', 'not_qualified'])
         ->and(Status::UnderInitialAssessment->isHiddenFromEntityUntilAnnouncement())->toBeFalse()
         ->and(Status::NotQualified->isHiddenFromEntityUntilAnnouncement())->toBeTrue()
-        ->and(Status::AwaitingFiltering->exposesResult())->toBeFalse();
+        ->and(Status::AwaitingFiltering->exposesResult())->toBeFalse()
+        ->and(array_values(array_filter(Status::cases(), static fn (Status $status): bool => $status->acceptsCompletionReturn())))
+        ->toBe([Status::AwaitingReviewAssignment, Status::Assigned, Status::UnderInitialAssessment])
+        ->and(Status::NeedsCompletion->hasAssessor())->toBeFalse()
+        ->and(Status::NeedsCompletion->runsReviewClock())->toBeFalse();
 });
 
 it('maps the advanced path to its review stages, number prefix and request path', function (): void {

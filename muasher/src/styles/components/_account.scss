@@ -2,7 +2,6 @@
 
 .account-page {
   @include flex(column, stretch, flex-start, var(--space-6));
-  max-inline-size: var(--size-content-max);
 }
 
 .account-page .page-header {
@@ -12,10 +11,10 @@
 .account-page__grid {
   display: grid;
   gap: var(--space-4);
-  grid-template-columns: 1fr;
+  grid-template-columns: minmax(0, 1fr);
 
   @include respond-to('lg') {
-    grid-template-columns: 3fr 2fr;
+    grid-template-columns: minmax(0, 3fr) minmax(0, 2fr);
   }
 }
 
@@ -30,14 +29,18 @@
   border-block-end: var(--border-width) solid var(--theme-border);
 
   dt {
+    flex-shrink: 0;
     color: var(--theme-text-muted);
     font-size: var(--fs-sm);
   }
 
+  // A long email breaks inside the card instead of widening the page on a phone.
   dd {
+    min-inline-size: 0;
     margin: 0;
-    font-weight: var(--fw-semibold);
+    font-weight: var(--fw-body);
     color: var(--theme-heading);
+    overflow-wrap: anywhere;
   }
 }
 
@@ -65,64 +68,72 @@
   color: var(--theme-text-muted);
 }
 
-.account-page__section-head {
-  @include flex(column, flex-start, flex-start, var(--space-1));
-  margin-block-end: var(--space-4);
+.change-password-card__form {
+  @include flex(column, stretch, flex-start, var(--space-4));
+  margin-block-start: var(--space-4);
 }
 
-.account-page__section-title {
-  margin: 0;
-  @include heading(var(--fs-xl));
-}
-
-.account-page__module-grid {
+.change-password-card__fields {
   display: grid;
   gap: var(--space-4);
-  grid-template-columns: 1fr;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  grid-template-columns: minmax(0, 1fr);
 
   @include respond-to('md') {
-    grid-template-columns: repeat(2, 1fr);
+    grid-template-columns: repeat(3, minmax(0, 1fr));
   }
 
-  @include respond-to('xl') {
-    grid-template-columns: repeat(3, 1fr);
+  .password-policy {
+    grid-column: 1 / -1;
   }
 }
 
-.permission-module {
-  @include flex(column, stretch, flex-start, var(--space-3));
-  padding: var(--space-5);
-  border: var(--border-width) solid var(--theme-border);
-  border-radius: var(--radius-xl);
-  background-color: var(--theme-surface);
+.change-password-card__actions {
+  @include flex(row, center, flex-end, var(--space-3));
 }
 
-.permission-module__header {
-  @include flex(row, center, space-between, var(--space-3));
+// Cycle committee seats under the roles: a cycle appointment, not a permanent role.
+.committee-seats {
+  @include flex(column, stretch, flex-start, var(--space-2));
+  margin: var(--space-3) 0 0;
+  padding: var(--space-3) 0 0;
+  border-block-start: var(--border-width) solid var(--theme-border);
+  list-style: none;
 }
 
-.permission-module__title {
-  margin: 0;
-  @include heading(var(--fs-lg));
+.committee-seats__item {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 0 var(--space-2);
+  align-items: center;
 }
 
-.permission-module__count {
+.committee-seats__role {
+  font-size: var(--fs-sm);
+  font-weight: var(--fw-body);
+  color: var(--theme-heading);
+}
+
+.committee-seats__cycle,
+.committee-seats__period {
+  grid-column: 1;
   font-size: var(--fs-xs);
   color: var(--theme-text-muted);
 }
 
-.permission-module__list {
-  @include flex(column, stretch, flex-start, var(--space-2));
-  margin: 0;
-  padding: 0;
-  list-style: none;
+// A date never breaks across lines.
+.committee-seats__date {
+  white-space: nowrap;
 }
 
-.permission-module__item {
-  @include flex(row, center, flex-start, var(--space-2));
-  font-size: var(--fs-sm);
+.committee-seats__item > .badge {
+  grid-column: 2;
+  grid-row: 1 / span 3;
 }
 
-.permission-module__icon {
-  color: var(--theme-accent-text);
+// Account cards under the entity profile reuse its body container; the body above already gives the gap.
+.entity-profile__account {
+  padding-block-start: 0;
 }

@@ -1,5 +1,11 @@
 @use '../mixins' as *;
 
+// The back link and the page's actions share the top row.
+.transaction-detail__top {
+  @include flex(row, center, space-between, var(--space-3));
+  flex-wrap: wrap;
+}
+
 .transaction-detail__back {
   @include flex(row, center, flex-start, var(--space-2));
   align-self: flex-start;
@@ -11,24 +17,15 @@
   }
 }
 
-.transaction-detail__loading {
-  @include flex(column, stretch, flex-start, var(--space-4));
-}
-
+// The receipt card opens with the payment reference and its status.
 .transaction-detail__header {
-  @include flex(row, flex-end, space-between, var(--space-3));
+  @include flex(row, center, space-between, var(--space-3));
   flex-wrap: wrap;
-}
-
-.transaction-detail__eyebrow {
-  margin: 0;
-  font-size: var(--fs-sm);
-  color: var(--theme-accent-text);
 }
 
 .transaction-detail__title {
   margin: 0;
-  font-size: var(--fs-2xl);
+  font-size: var(--fs-xl);
   color: var(--theme-heading);
 }
 
@@ -36,6 +33,13 @@
 .transaction-detail__actions {
   @include flex(row, center, flex-start, var(--space-2));
   flex-wrap: wrap;
+}
+
+.transaction-detail__hints {
+  @include flex(column, stretch, flex-start, var(--space-1));
+  margin: 0;
+  padding: 0;
+  list-style: none;
 }
 
 .transaction-detail__late {
@@ -69,4 +73,11 @@
 
 .refund-record__evidence {
   overflow-wrap: anywhere;
+}
+
+// The amounts sit between the parties and the payment details, set apart by a rule.
+.transaction-detail__receipt .pricing-breakdown {
+  margin-block-end: var(--space-4);
+  padding-block-end: var(--space-4);
+  border-block-end: var(--border-width) solid var(--theme-border);
 }

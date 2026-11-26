@@ -17,6 +17,7 @@ use App\Services\Assessments\ResultSnapshotRecorder;
 use App\Services\Assessments\ScoreChangesRecorder;
 use App\Services\Assessments\ScoringEngine;
 use App\Services\Assessments\ScoringTreeBuilder;
+use App\Services\Certificates\OverriddenResultCertificate;
 use Illuminate\Support\Facades\DB;
 
 final readonly class OverrideAssessmentScores
@@ -28,6 +29,7 @@ final readonly class OverrideAssessmentScores
         private ScoringEngine $engine,
         private ResultSnapshotRecorder $snapshots,
         private AssessmentStateMachine $stateMachine,
+        private OverriddenResultCertificate $certificate,
     ) {}
 
     public function handle(User $actor, Assessment $assessment, SubmittedScores $changes, string $reason): Assessment
@@ -46,9 +48,10 @@ final readonly class OverrideAssessmentScores
                 return $locked;
             }
 
-            $this->snapshots->record($locked, $this->engine->compute($tree, $recorded->sheet), ResultSnapshotKind::OverrideRecompute, $actor->id);
+            $result = $this->snapshots->record($locked, $this->engine->compute($tree, $recorded->sheet), ResultSnapshotKind::OverrideRecompute, $actor->id);
             $locked->save();
             $this->stateMachine->override($locked, $locked->status, AssessmentVerb::OverrideScore, $actor->id);
+            $this->certificate->reissueFor($actor, $locked, $result, $reason);
 
             return $locked;
         });

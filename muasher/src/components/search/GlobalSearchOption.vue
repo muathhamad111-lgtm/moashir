@@ -5,8 +5,10 @@ import { SEARCH_TYPE_ICONS, SEARCH_TYPES } from '@/constants/globalSearch'
 import { STATUS_VARIANTS } from '@/constants/statuses'
 import StatusBadge from '@/components/ui/StatusBadge.vue'
 import FrozenBadge from '@/components/entities/FrozenBadge.vue'
+import PathBadge from '@/components/ui/PathBadge.vue'
+import AppIcon from '@/components/ui/AppIcon.vue'
 
-const RECENT_ICON = 'fa-solid fa-clock-rotate-left'
+const RECENT_ICON = 'refresh-dots'
 
 const props = defineProps({
   id: { type: String, required: true },
@@ -23,9 +25,7 @@ const email = computed(() => (isUser.value ? (props.item.email ?? '') : ''))
 
 const subtitle = computed(() => {
   if (props.item.type === SEARCH_TYPES.requests) {
-    const parts = [t('globalSearch.request.reference', { reference: props.item.reference })]
-    if (props.item.path) parts.push(t(`requests.paths.${props.item.path}`))
-    return parts.join(' · ')
+    return t('globalSearch.request.reference', { reference: props.item.reference })
   }
   if (isUser.value) {
     const labels = (props.item.roles ?? []).map((role) => t(`users.roleLabels.${role}`))
@@ -56,12 +56,18 @@ const showStatus = computed(
     :aria-selected="active ? 'true' : 'false'"
     :aria-label="accessibleLabel"
   >
-    <i class="global-search__option-icon" :class="icon" aria-hidden="true"></i>
+    <AppIcon :name="icon" class="global-search__option-icon" />
     <span class="global-search__option-text">
       <span class="global-search__option-title">{{ title }}</span>
       <span v-if="email" class="global-search__option-email" dir="ltr">{{ email }}</span>
       <span v-if="subtitle" class="global-search__option-subtitle">{{ subtitle }}</span>
     </span>
+    <PathBadge
+      v-if="item.type === SEARCH_TYPES.requests && item.path"
+      :path="item.path"
+      :label="item.pathLabel"
+      compact
+    />
     <StatusBadge v-if="showStatus" :status="item.status" />
     <FrozenBadge v-if="item.isFrozen" />
   </li>

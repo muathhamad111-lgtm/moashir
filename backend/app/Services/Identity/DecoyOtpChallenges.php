@@ -17,6 +17,8 @@ final readonly class DecoyOtpChallenges
 
     private const string SENT_PREFIX = 'otp-decoy-sent:';
 
+    private const string CHANNEL_PREFIX = 'otp-decoy-channel:';
+
     public function __construct(private Repository $cache, private AuthSettings $settings) {}
 
     public function issue(OtpChannel $channel): OtpChallenge
@@ -27,6 +29,7 @@ final readonly class DecoyOtpChallenges
 
         $this->cache->put(self::PREFIX.$challengeId, 0, $expiresAt);
         $this->cache->put(self::SENT_PREFIX.$challengeId, $now->getTimestamp(), $expiresAt);
+        $this->cache->put(self::CHANNEL_PREFIX.$challengeId, $channel->value, $expiresAt);
 
         return new OtpChallenge(
             $challengeId,
@@ -40,6 +43,11 @@ final readonly class DecoyOtpChallenges
     public function isDecoy(string $challengeId): bool
     {
         return $this->cache->has(self::PREFIX.$challengeId);
+    }
+
+    public function channelOf(string $challengeId): OtpChannel
+    {
+        return OtpChannel::tryFrom(ScalarValue::string($this->cache->get(self::CHANNEL_PREFIX.$challengeId))) ?? OtpChannel::Email;
     }
 
     public function cooldownRemainingSeconds(string $challengeId): int

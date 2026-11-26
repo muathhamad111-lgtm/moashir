@@ -22,7 +22,7 @@ final class ListPaymentEvents
         $search = $filters->search === null ? null : '%'.addcslashes(mb_strtolower($filters->search), '\\%_').'%';
 
         return PaymentEvent::query()
-            ->with('payment:id,public_id,reference')
+            ->with('payment:id,public_id,reference,entity_name')
             ->when($filters->source instanceof PaymentEventSource, static fn (Builder $query): Builder => $query->where('source', $filters->source))
             ->when($filters->result instanceof PaymentEventResult, static fn (Builder $query): Builder => $query->where('processing_result', $filters->result))
             ->when($filters->mode instanceof IntegrationMode, static fn (Builder $query): Builder => $query->where('mode', $filters->mode))

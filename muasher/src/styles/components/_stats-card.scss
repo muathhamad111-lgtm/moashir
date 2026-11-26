@@ -1,16 +1,15 @@
 @use '../mixins' as *;
 
 .stats-cards {
-  display: grid;
-  grid-template-columns: 1fr;
+  // As many cards per row as fit at their minimum width; every row then fills the whole width,
+  // so cards never overflow the page and never leave an empty slot, whatever the card count.
+  display: flex;
+  flex-wrap: wrap;
   gap: var(--space-4);
 
-  @include respond-to('sm') {
-    grid-template-columns: repeat(2, 1fr);
-  }
-
-  @include respond-to('lg') {
-    grid-template-columns: repeat(4, 1fr);
+  > .stats-card {
+    flex: 1 1 var(--size-stats-card-min);
+    min-inline-size: 0;
   }
 }
 
@@ -19,7 +18,8 @@
   grid-template-columns: 1fr auto;
   grid-template-areas:
     'label icon'
-    'value icon';
+    'value icon'
+    'detail icon';
   align-items: center;
   gap: var(--space-1) var(--space-3);
   padding: var(--space-5);
@@ -45,7 +45,7 @@
   grid-area: value;
   font-family: var(--font-heading);
   font-size: var(--fs-3xl);
-  font-weight: var(--fw-bold);
+  font-weight: var(--fw-figure);
   line-height: var(--lh-tight);
   color: var(--theme-heading);
 }
@@ -74,5 +74,28 @@
     &:hover {
       transform: none;
     }
+  }
+}
+
+// An optional second figure under the value (e.g. the worth of the counted operations).
+.stats-card__detail {
+  grid-area: detail;
+  font-size: var(--fs-sm);
+  color: var(--theme-text-secondary);
+}
+
+// A card that filters its list (request queue stages).
+.stats-card--selectable {
+  font: inherit;
+  text-align: start;
+  cursor: pointer;
+
+  &:focus-visible {
+    @include focus-ring;
+  }
+
+  &.is-active {
+    border-color: var(--theme-accent);
+    box-shadow: 0 0 0 var(--border-width) var(--theme-accent);
   }
 }

@@ -26,7 +26,18 @@
 
 .entity-details__value {
   margin: 0;
-  font-weight: var(--fw-medium);
+  font-weight: var(--fw-body);
   color: var(--theme-heading);
   overflow-wrap: anywhere;
+}
+
+.entity-details__link {
+  color: var(--theme-accent-text);
+  text-decoration: underline;
+  text-underline-offset: var(--space-1);
+
+  &:focus-visible {
+    outline: var(--border-width) solid var(--theme-accent-text);
+    outline-offset: var(--space-0);
+  }
 }

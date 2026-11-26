@@ -97,7 +97,7 @@ export const bagHandlers = [
       source: {
         kind: store.subscription.source,
         assessmentId: BAG_SOURCE_ASSESSMENT_ID,
-        scorePercent: 78,
+        scorePercent: seedReference().scorePercent,
       },
       reference: seedReference(),
       stage: stage ? { ...stage } : null,
@@ -113,7 +113,7 @@ export const bagHandlers = [
       source: {
         kind: store.subscription.source,
         assessmentId: BAG_SOURCE_ASSESSMENT_ID,
-        scorePercent: 78,
+        scorePercent: seedReference().scorePercent,
       },
       reference: seedReference(),
       tracks: seedAssessmentContext(),

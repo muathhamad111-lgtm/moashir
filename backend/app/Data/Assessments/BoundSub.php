@@ -4,16 +4,37 @@ declare(strict_types=1);
 
 namespace App\Data\Assessments;
 
-final readonly class BoundSub
-{
-    /**
-     * @param  list<AttachmentSlot>  $slots
-     */
-    public function __construct(public int $id, public string $code, public bool $hasCv, public array $slots) {}
+use App\Contracts\Assessments\EvidenceNode;
+use App\Enums\Assessments\EvidenceLevel;
+use App\Support\ValueObjects\LocalizedText;
 
-    public function hasSlot(string $key): bool
+final readonly class BoundSub implements EvidenceNode
+{
+    public function __construct(public int $id, public string $code, public LocalizedText $name, public bool $hasCv, public AttachmentSlots $slots) {}
+
+    public function level(): EvidenceLevel
     {
-        return array_any($this->slots, static fn (AttachmentSlot $slot): bool => $slot->key === $key);
+        return EvidenceLevel::Sub;
+    }
+
+    public function nodeId(): int
+    {
+        return $this->id;
+    }
+
+    public function nodeCode(): string
+    {
+        return $this->code;
+    }
+
+    public function nodeName(): LocalizedText
+    {
+        return $this->name;
+    }
+
+    public function slot(string $key): ?AttachmentSlot
+    {
+        return $this->slots->find($key);
     }
 
     /**
@@ -21,9 +42,6 @@ final readonly class BoundSub
      */
     public function requiredSlotKeys(): array
     {
-        return array_values(array_map(
-            static fn (AttachmentSlot $slot): string => $slot->key,
-            array_filter($this->slots, static fn (AttachmentSlot $slot): bool => $slot->isRequired),
-        ));
+        return $this->slots->requiredKeys();
     }
 }

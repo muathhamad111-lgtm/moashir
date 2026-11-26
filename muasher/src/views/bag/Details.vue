@@ -2,9 +2,10 @@
 import { computed, onMounted, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useRouter } from 'vue-router'
-import Skeleton from '@/components/feedback/Skeleton.vue'
+import PageLoading from '@/components/feedback/PageLoading.vue'
 import ErrorState from '@/components/feedback/ErrorState.vue'
 import BagIntro from '@/components/bag/BagIntro.vue'
+import { useBagDetailsContent } from '@/composables/useIntroPageContent'
 import { bagService } from '@/services/bagService'
 import { useAuthStore } from '@/stores/auth'
 import { ROUTE_NAMES } from '@/constants/routeNames'
@@ -12,6 +13,12 @@ import { ROUTE_NAMES } from '@/constants/routeNames'
 const { locale } = useI18n()
 const router = useRouter()
 const auth = useAuthStore()
+const { overview, faqTitle, faqs } = useBagDetailsContent()
+const cms = computed(() => ({
+  overview: overview.value,
+  faqTitle: faqTitle.value,
+  faqs: faqs.value,
+}))
 
 function localized(content) {
   if (content === null || content === undefined) return ''
@@ -50,10 +57,7 @@ function goToPay() {
 
 <template>
   <section class="bag-details">
-    <div v-if="status === 'loading'" class="bag-details__loading">
-      <Skeleton variant="block" />
-      <Skeleton variant="text" :count="5" />
-    </div>
+    <PageLoading v-if="status === 'loading'" />
 
     <ErrorState v-else-if="status === 'error'" :message="errorMessage" @retry="load" />
 
@@ -63,6 +67,7 @@ function goToPay() {
       :pricing="pricing"
       :localized="localized"
       :eligible="true"
+      :cms="cms"
       @pay="goToPay"
     />
   </section>

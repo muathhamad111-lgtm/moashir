@@ -28,13 +28,13 @@
   background-color: var(--color-dark);
   color: var(--color-primary);
   font-size: var(--fs-xs);
-  font-weight: var(--fw-semibold);
+  font-weight: var(--fw-body);
 }
 
 .lenses-page__title {
   margin: 0;
   font-size: var(--fs-4xl);
-  font-weight: var(--fw-black);
+  font-weight: var(--fw-display);
   color: var(--color-white);
 }
 
@@ -79,7 +79,9 @@
   border-radius: var(--radius-lg);
   background-color: var(--theme-surface);
   box-shadow: var(--shadow-sm);
-  transition: transform var(--t-base) var(--ease), box-shadow var(--t-base) var(--ease),
+  transition:
+    transform var(--t-base) var(--ease),
+    box-shadow var(--t-base) var(--ease),
     border-color var(--t-base) var(--ease);
 
   &:hover {
@@ -103,7 +105,7 @@
 .lens-card__title {
   margin: 0;
   font-size: var(--fs-lg);
-  font-weight: var(--fw-bold);
+  font-weight: var(--fw-heading);
   color: var(--theme-heading);
 }
 
@@ -125,7 +127,7 @@
 
 .lenses-page__rule-icon {
   flex-shrink: 0;
-  color: var(--color-primary);
+  color: var(--theme-accent-text);
   font-size: var(--fs-2xl);
   margin-block-start: var(--space-1);
 }
@@ -137,7 +139,7 @@
 .lenses-page__rule-title {
   margin: 0;
   font-size: var(--fs-base);
-  font-weight: var(--fw-bold);
+  font-weight: var(--fw-heading);
   color: var(--theme-heading);
 }
 

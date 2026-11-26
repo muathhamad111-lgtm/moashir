@@ -2,33 +2,89 @@
 import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useHead } from '@unhead/vue'
-import { RouterLink } from 'vue-router'
-import Card from '@/components/ui/Card.vue'
-import Tabs from '@/components/ui/Tabs.vue'
+import ListToolbar from '@/components/data-list/ListToolbar.vue'
+import DataListCard from '@/components/data-list/DataListCard.vue'
+import AppSelect from '@/components/form/AppSelect.vue'
 import StatusBadge from '@/components/ui/StatusBadge.vue'
 import DataTable from '@/components/data-list/DataTable.vue'
 import Pagination from '@/components/data-list/Pagination.vue'
 import DateStamp from '@/components/accredited/DateStamp.vue'
 import OverdueBadge from '@/components/accredited/OverdueBadge.vue'
+import AssignedRequestProgress from '@/components/requests/AssignedRequestProgress.vue'
+import AssignedRequestActions from '@/components/requests/AssignedRequestActions.vue'
+import PathBadge from '@/components/ui/PathBadge.vue'
 import { useAssignedRequests } from '@/composables/useAssignedRequests'
+import { useAuthStore } from '@/stores/auth'
+import { useRequestPathCountsStore } from '@/stores/requestPathCounts'
+import { assignedPathsOf, pathCountOf } from '@/utils/requestPaths'
 import { ASSIGNED_TABS } from '@/constants/accredited'
-import { ROUTE_NAMES } from '@/constants/routeNames'
 import { localizedText } from '@/utils/localizedText'
 
+const TAB_COUNT_KEYS = { new: 'new', in_progress: 'inProgress', completed: 'completed' }
+// Optional dates the row already carries (hidden until the viewer adds them).
+const EXTRA_DATES = ['submittedAt', 'startedAt', 'completedAt']
+
 const { t, locale } = useI18n()
-const { items, status, errorMessage, load, tab, paginator } = useAssignedRequests()
+const auth = useAuthStore()
+const counts = useRequestPathCountsStore()
+const paths = computed(() => assignedPathsOf(auth.user, counts.assigned))
+const {
+  items,
+  status,
+  errorMessage,
+  load,
+  filters,
+  sort,
+  setFilter,
+  setSort,
+  path,
+  pathCounts,
+  paginator,
+} = useAssignedRequests(paths)
 const { pagination, setPage } = paginator
 
 useHead({ title: () => t('requests.assigned.title') })
 
-const tabs = computed(() => Object.values(ASSIGNED_TABS).map((value) => ({ value, label: t(`requests.assigned.tabs.${value}`) })))
+const current = computed(() => pathCountOf(pathCounts.value, path.value))
+function countOf(key) {
+  return current.value?.[key]
+}
+// All the requests by default; the filter narrows them to one status group, with its count.
+const statusOptions = computed(() => {
+  const groups = Object.values(ASSIGNED_TABS).map((value) => ({
+    value,
+    label: t(`requests.assigned.tabs.${value}`),
+    count: countOf(TAB_COUNT_KEYS[value]),
+  }))
+  const total = groups.every((group) => group.count === undefined)
+    ? undefined
+    : groups.reduce((sum, group) => sum + (group.count ?? 0), 0)
+  return [{ value: '', label: t('dataList.filter.all'), count: total }, ...groups].map(
+    (option) => ({
+      value: option.value,
+      label: option.count === undefined ? option.label : `${option.label} (${option.count})`,
+    }),
+  )
+})
+const filterState = { filters, setFilter, defaults: { tab: '' } }
 const columns = computed(() => [
-  { key: 'number', label: t('requests.columns.number') },
-  { key: 'entity', label: t('requests.columns.entity') },
-  { key: 'cycle', label: t('requests.columns.pathAndCycle') },
-  { key: 'status', label: t('requests.columns.status') },
-  { key: 'assignedAt', label: t('requests.assignment.assignedAt') },
-  { key: 'dueAt', label: t('requests.columns.dueAt') },
+  { key: 'request', label: t('requests.assigned.columns.request') },
+  { key: 'state', label: t('requests.assigned.columns.state'), sortKey: 'status' },
+  {
+    key: 'assignedAt',
+    label: t('requests.assigned.columns.assignedAt'),
+    sortKey: 'assigned_at',
+    sortFirst: 'desc',
+  },
+  { key: 'dueAt', label: t('requests.columns.dueAt'), sortKey: 'due_at' },
+  { key: 'progress', label: t('requests.assigned.columns.progress') },
+  { key: 'path', label: t('requests.columns.path') },
+  { key: 'cycle', label: t('requests.columns.cycle') },
+  { key: 'submittedAt', label: t('requests.columns.submittedAt') },
+  { key: 'startedAt', label: t('requests.assigned.columns.startedAt') },
+  { key: 'completedAt', label: t('requests.columns.completedAt') },
+  { key: 'entityReference', label: t('requests.columns.entityReference') },
+  { key: 'actions', label: t('requests.assigned.columns.actions') },
 ])
 </script>
 
@@ -39,27 +95,84 @@ const columns = computed(() => [
       <h1 class="requests-page__title">{{ t('requests.assigned.title') }}</h1>
       <p class="requests-page__subtitle">{{ t('requests.assigned.subtitle') }}</p>
     </header>
-    <Card>
-      <Tabs v-model="tab" :tabs="tabs" />
-      <DataTable :columns="columns" :items="items" :status="status" :error-message="errorMessage" :empty-title="t('requests.assigned.emptyTitle')" :empty-message="t('requests.assigned.emptyMessage')" @retry="load">
-        <template #cell-number="{ item }">
-          <RouterLink class="request-queue__link" :to="{ name: ROUTE_NAMES.REQUESTS_REVIEW, params: { id: item.id } }"><bdi dir="ltr">{{ item.number }}</bdi></RouterLink>
+    <DataListCard>
+      <template #toolbar>
+        <ListToolbar :searchable="false" :filter-state="filterState">
+          <template #filters="{ draft }">
+            <AppSelect
+              :model-value="draft.filters.tab"
+              :options="statusOptions"
+              :label="t('requests.assigned.filters.status')"
+              @update:model-value="draft.setFilter('tab', $event)"
+            />
+          </template>
+        </ListToolbar>
+      </template>
+      <DataTable
+        table-key="requests-assigned"
+        :columns="columns"
+        :sort="sort"
+        @sort="setSort"
+        :items="items"
+        :status="status"
+        :error-message="errorMessage"
+        :empty-title="t('requests.assigned.emptyTitle')"
+        :empty-message="t('requests.assigned.emptyMessage')"
+        @retry="load"
+      >
+        <template #cell-request="{ item }">
+          <span class="assigned-request__entity">{{
+            localizedText(item.entity?.name, locale)
+          }}</span>
+          <bdi class="assigned-request__number" dir="ltr">{{ item.number }}</bdi>
+          <span v-if="item.entity?.region" class="request-queue__muted">{{
+            localizedText(item.entity.region.name, locale)
+          }}</span>
         </template>
-        <template #cell-entity="{ item }">
-          {{ localizedText(item.entity?.name, locale) }}
-          <span v-if="item.entity?.region" class="request-queue__muted">{{ localizedText(item.entity.region.name, locale) }}</span>
+        <template #cell-state="{ item }">
+          <StatusBadge :status="item.status" />
         </template>
-        <template #cell-cycle="{ item }">{{ item.awardCycle ? localizedText(item.awardCycle.name, locale) : t(`requests.paths.${item.path}`) }}</template>
-        <template #cell-status="{ item }"><StatusBadge :status="item.status" /></template>
-        <template #cell-assignedAt="{ item }"><DateStamp :value="item.assignedAt" :with-time="false" /></template>
+        <template #cell-assignedAt="{ item }">
+          <DateStamp v-if="item.assignedAt" :value="item.assignedAt" :with-time="false" />
+        </template>
         <template #cell-dueAt="{ item }">
           <span class="request-queue__due">
             <DateStamp :value="item.completionDeadline ?? item.dueAt" :with-time="false" />
             <OverdueBadge v-if="item.dueAt && !item.completedAt" :overdue="item.isOverdue" />
           </span>
         </template>
+        <template #cell-progress="{ item }">
+          <AssignedRequestProgress :progress="item.reviewProgress" />
+        </template>
+        <template #cell-path="{ item }">
+          <PathBadge :path="item.path" :label="item.pathLabel" />
+        </template>
+        <template #cell-cycle="{ item }"
+          >{{ localizedText(item.awardCycle?.name, locale) }}
+          <bdi v-if="item.awardCycle?.year" class="u-ltr">{{ item.awardCycle.year }}</bdi></template
+        >
+        <template v-for="key in EXTRA_DATES" :key="key" #[`cell-${key}`]="{ item }">
+          <DateStamp :value="item[key]" :with-time="false" />
+        </template>
+        <template #cell-entityReference="{ item }">
+          <bdi class="u-ltr">{{ item.entity?.reference }}</bdi>
+        </template>
+        <template #cell-actions="{ item }">
+          <AssignedRequestActions
+            :request-id="item.id"
+            :request-number="item.number"
+            :status="item.status"
+          />
+        </template>
       </DataTable>
-      <Pagination v-if="status === 'success' && pagination.lastPage > 1" :page="pagination.page" :last-page="pagination.lastPage" @update:page="setPage($event)" />
-    </Card>
+      <template #footer>
+        <Pagination
+          v-if="status === 'success' && pagination.lastPage > 1"
+          :page="pagination.page"
+          :last-page="pagination.lastPage"
+          @update:page="setPage($event)"
+        />
+      </template>
+    </DataListCard>
   </section>
 </template>

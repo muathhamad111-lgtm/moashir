@@ -1,0 +1,38 @@
+@use 'tokens' as *;
+
+.lp-loader {
+  position: fixed;
+  inset: 0;
+  z-index: 300;
+  display: grid;
+  place-items: center;
+  background: var(--lp-bg);
+  // The shared waiting mark (components/_app-loading.scss) in the landing's colours.
+  --brand-loader-track: var(--lp-line);
+  --brand-loader-ring: #{$lp-teal};
+  --brand-loader-star: var(--lp-ink);
+  transition:
+    opacity 0.7s ease,
+    visibility 0.7s;
+
+  &.is-leaving {
+    opacity: 0;
+    visibility: hidden;
+  }
+
+  &__mark {
+    width: clamp(92px, 12vw, 128px);
+    height: auto;
+    overflow: visible;
+    transition: scale 0.7s $lp-ease;
+
+    .is-leaving & {
+      scale: 1.12;
+    }
+  }
+}
+
+[data-theme='dark'] .lp .lp-loader {
+  --brand-loader-ring: var(--lp-aqua);
+  --brand-loader-star: var(--lp-aqua);
+}

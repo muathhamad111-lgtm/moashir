@@ -2,6 +2,8 @@ import { defineStore } from 'pinia'
 import { authService, UNAUTHENTICATED_STATUS } from '@/services/authService'
 import { ROLES } from '@/constants/roles'
 import { LOGIN_STEPS } from '@/constants/loginSteps'
+import { NATIONAL_ID_STATES } from '@/constants/identityChanges'
+import { forgetRecentSearches } from '@/utils/recentSearchesStorage'
 
 let pendingSessionCheck = null
 
@@ -19,6 +21,7 @@ export const useAuthStore = defineStore('auth', {
     isEntity: (state) => (state.user?.roles ?? []).includes(ROLES.ENTITY),
     profileCompleted: (state) => Boolean(state.user?.profileCompleted),
     accountStatus: (state) => state.user?.status ?? null,
+    nationalIdStatus: (state) => state.user?.nationalIdStatus ?? NATIONAL_ID_STATES.NOT_REQUIRED,
   },
   actions: {
     setUser(user) {
@@ -28,10 +31,37 @@ export const useAuthStore = defineStore('auth', {
     clearSession() {
       this.user = null
       this.sessionChecked = true
+      forgetRecentSearches()
     },
     patchUser(patch) {
       if (!this.user) return
       this.user = { ...this.user, ...patch }
+    },
+    applyNationalIdStatus({ nationalIdStatus, nationalIdMasked = null }) {
+      this.patchUser({
+        nationalIdStatus,
+        hasNationalId: nationalIdMasked !== null,
+        nationalIdMasked,
+      })
+    },
+    // A cancelled or rejected first entry leaves the account where the setting puts it.
+    clearPendingNationalId() {
+      if (this.user?.nationalIdStatus !== NATIONAL_ID_STATES.PENDING) return
+      this.patchUser({
+        nationalIdStatus: this.user.nationalIdRequired
+          ? NATIONAL_ID_STATES.MISSING
+          : NATIONAL_ID_STATES.NOT_REQUIRED,
+      })
+    },
+    completeGender() {
+      this.patchUser({ genderMissing: false })
+    },
+    applyAvatar(avatar) {
+      this.patchUser({ avatar: avatar ?? null })
+    },
+    async refreshAvatar() {
+      const session = await authService.session().catch(() => null)
+      if (session) this.applyAvatar(session.data?.avatar)
     },
     ensureSession() {
       if (this.sessionChecked) return Promise.resolve(this.user)
@@ -56,17 +86,21 @@ export const useAuthStore = defineStore('auth', {
       if (outcome.step === LOGIN_STEPS.AUTHENTICATED && outcome.user) this.setUser(outcome.user)
       return outcome
     },
+    async acceptInvitation(token, payload) {
+      const { data } = await authService.acceptInvitation(token, payload)
+      return this.applyOutcome(data)
+    },
     async register(payload) {
       const { data } = await authService.register(payload)
+      return this.applyOutcome(data)
+    },
+    async signIn(credentials) {
+      const { data } = await authService.signIn(credentials)
+      return this.applyOutcome(data)
+    },
+    async requestSignInCode(request) {
+      const { data } = await authService.requestSignInCode(request)
       return data
-    },
-    async loginWithPassword(credentials) {
-      const { data } = await authService.loginWithPassword(credentials)
-      return this.applyOutcome(data)
-    },
-    async requestLoginOtp(request) {
-      const { data } = await authService.requestLoginOtp(request)
-      return this.applyOutcome(data)
     },
     async verifyOtp(attempt) {
       const { data } = await authService.verifyOtp(attempt)

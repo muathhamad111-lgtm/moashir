@@ -1,0 +1,129 @@
+@use 'tokens' as *;
+
+.lp-paths__row {
+  display: grid;
+  gap: 18px;
+}
+
+.lp-path {
+  display: grid;
+  align-content: start;
+  gap: 14px;
+  padding: 30px 28px;
+  border-radius: 18px;
+  background: var(--lp-surface);
+  border: 1px solid var(--lp-line);
+  transition:
+    background-color 0.3s,
+    border-color 0.3s,
+    translate 0.4s $lp-ease,
+    opacity 0.8s $lp-ease,
+    transform 0.8s $lp-ease;
+
+  &:hover {
+    background: var(--lp-surface-2);
+    border-color: var(--lp-line-strong);
+    translate: 0 -4px;
+  }
+
+  &--featured {
+    --lp-ink: #{$lp-dark};
+    --lp-ink-2: #355251;
+    --lp-ink-3: #4d6968;
+    --lp-line: rgba(10, 35, 37, 0.12);
+    --lp-line-strong: rgba(10, 35, 37, 0.22);
+    --lp-btn: #{$lp-dark};
+    --lp-btn-ink: #{$lp-pale};
+    --lp-accent: #{$lp-teal-ink};
+
+    background: $lp-pale;
+    color: $lp-dark;
+
+    &:hover {
+      background: #cdf2f1;
+    }
+  }
+
+  &__top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    min-height: 32px;
+
+    svg {
+      width: 30px;
+      height: 30px;
+      color: var(--lp-accent);
+    }
+  }
+
+  &__badge {
+    padding: 3px 12px;
+    border-radius: 99px;
+    font-size: 0.8rem;
+    font-weight: var(--fw-emphasis);
+    background: $lp-dark;
+    color: $lp-pale;
+  }
+
+  &:not(&--featured) &__badge {
+    background: color-mix(in srgb, var(--lp-aqua) 22%, transparent);
+    color: var(--lp-ink);
+  }
+
+  h3 {
+    margin-block-start: 6px;
+    font-size: 1.3rem;
+  }
+
+  &__brief {
+    color: var(--lp-ink-2);
+  }
+
+  &__idea {
+    display: grid;
+    gap: 4px;
+    padding-block: 16px;
+    border-block: 1px solid var(--lp-line);
+    color: var(--lp-ink-2);
+    font-size: 0.93rem;
+
+    b {
+      color: var(--lp-ink);
+      font-size: 0.85rem;
+    }
+  }
+
+  &__cost {
+    display: grid;
+    font-size: 0.98rem;
+
+    b {
+      font-weight: var(--fw-emphasis);
+
+      small {
+        font-weight: var(--fw-body);
+        font-size: 0.78rem;
+        color: var(--lp-ink-3);
+      }
+    }
+  }
+
+  &__cost-label,
+  &__vat {
+    font-weight: var(--fw-body);
+    font-size: 0.8rem;
+    color: var(--lp-ink-3);
+  }
+
+  .lp-btn {
+    justify-self: start;
+    margin-block-start: 8px;
+  }
+}
+
+@media (min-width: 940px) {
+  .lp-paths__row {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}

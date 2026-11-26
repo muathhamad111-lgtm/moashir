@@ -5,9 +5,7 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Api\V1\Finance;
 
 use App\Actions\Finance\IssueRefundEvidenceDownload;
-use App\Actions\Finance\ListRefunds;
 use App\Actions\Finance\RecordRefund;
-use App\Http\Requests\Finance\IndexRefundsRequest;
 use App\Http\Requests\Finance\RecordRefundRequest;
 use App\Http\Resources\Files\SignedDownloadResource;
 use App\Http\Resources\Finance\RefundResource;
@@ -21,16 +19,11 @@ use Illuminate\Http\Response;
 
 final class RefundController
 {
-    public function index(IndexRefundsRequest $request, ListRefunds $listRefunds): JsonResponse
-    {
-        return ApiResponse::paginated($listRefunds->handle($request->filters()), RefundResource::class);
-    }
-
     public function store(RecordRefundRequest $request, Payment $payment, #[CurrentUser] User $actor, RecordRefund $recordRefund): JsonResponse
     {
         $refund = $recordRefund->handle($actor, $payment, $request->instruction());
 
-        return ApiResponse::resource(new RefundResource($refund->load(ListRefunds::RELATIONS)), Response::HTTP_CREATED);
+        return ApiResponse::resource(new RefundResource($refund->load(RefundResource::RELATIONS)), Response::HTTP_CREATED);
     }
 
     public function show(Refund $refund): JsonResponse

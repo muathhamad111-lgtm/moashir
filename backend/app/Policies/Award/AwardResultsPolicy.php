@@ -6,7 +6,6 @@ namespace App\Policies\Award;
 
 use App\Enums\Award\CycleMemberRole;
 use App\Enums\Identity\PermissionKey;
-use App\Enums\Identity\RoleKey;
 use App\Models\Assessments\Assessment;
 use App\Models\Award\AwardCycle;
 use App\Models\Entities\Region;
@@ -20,7 +19,7 @@ final readonly class AwardResultsPolicy
 
     public function view(User $actor, AwardCycle $cycle): Response
     {
-        $reads = $this->scope->allows($actor, $cycle, PermissionKey::AwardResultsView, [RoleKey::SystemAdmin], [CycleMemberRole::AwardSecretary]);
+        $reads = $this->scope->allows($actor, $cycle, PermissionKey::AwardResultsView, CycleRoleScope::AWARD_READER_ROLES, [CycleMemberRole::AwardSecretary]);
 
         return $this->scope->respond($reads, $actor, $cycle, PermissionKey::AwardResultsView);
     }

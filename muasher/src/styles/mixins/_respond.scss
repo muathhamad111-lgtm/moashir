@@ -10,3 +10,24 @@
     @content;
   }
 }
+
+// Below a breakpoint (the complement of respond-to): phones get the app shell below md.
+@mixin respond-below($breakpoint) {
+  $size: map.get($breakpoints, $breakpoint);
+  @if $size == null {
+    @error 'Unknown breakpoint: #{$breakpoint}. Known: #{map.keys($breakpoints)}';
+  }
+  @media (max-width: ($size - 0.02px)) {
+    @content;
+  }
+}
+
+@mixin respond-to-block($breakpoint) {
+  $size: map.get($block-breakpoints, $breakpoint);
+  @if $size == null {
+    @error 'Unknown block breakpoint: #{$breakpoint}. Known: #{map.keys($block-breakpoints)}';
+  }
+  @media (min-height: $size) {
+    @content;
+  }
+}

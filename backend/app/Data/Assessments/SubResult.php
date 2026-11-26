@@ -31,6 +31,7 @@ final readonly class SubResult
             'code' => $this->sub->code,
             'weight' => $this->sub->weight->toDecimal(),
             'evaluation_type' => $this->sub->evaluationType->value,
+            'scoring_type' => ($this->raw->type ?? $this->sub->scoringType)->value,
             'raw_value' => $this->raw?->toDecimal(),
             'percent' => $this->percent->toDecimal(),
             'earned' => $this->earned->toDecimal(),

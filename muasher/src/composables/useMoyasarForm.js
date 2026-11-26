@@ -27,10 +27,15 @@ export function useMoyasarForm({ onVerified, onVerifyFailed }) {
 
   async function mount(element, { payment, checkout }) {
     state.value = FORM_STATES.LOADING
-    logger.breadcrumb('payments', 'checkout.mountForm', { mode: checkout.mode, pattern: checkout.pattern })
+    logger.breadcrumb('payments', 'checkout.mountForm', {
+      mode: checkout.mode,
+      pattern: checkout.pattern,
+    })
     try {
       const moyasar = await loadMoyasarForm(moyasarAssetsOf(checkout))
-      moyasar.init(moyasarConfigOf(checkout, { element, onCompleted: completedHandler(payment.id) }))
+      moyasar.init(
+        moyasarConfigOf(checkout, { element, onCompleted: completedHandler(payment.id) }),
+      )
       state.value = FORM_STATES.READY
     } catch (error) {
       logger.error(error, { action: 'payments.checkout.mountForm' })

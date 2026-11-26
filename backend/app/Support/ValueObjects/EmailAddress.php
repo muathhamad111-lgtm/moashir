@@ -27,4 +27,9 @@ final readonly class EmailAddress
 
         return mb_substr($local, 0, 1).'***@'.$domain;
     }
+
+    public function domain(): string
+    {
+        return explode('@', $this->value, 2)[1];
+    }
 }

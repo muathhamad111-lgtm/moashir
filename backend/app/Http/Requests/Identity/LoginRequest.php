@@ -4,44 +4,41 @@ declare(strict_types=1);
 
 namespace App\Http\Requests\Identity;
 
-use App\Enums\Identity\LoginMode;
-use App\Enums\Identity\OtpChannel;
-use App\Support\ValueObjects\EmailAddress;
+use App\Rules\RecognisedSignInIdentifier;
+use App\Support\ValueObjects\SignInIdentifier;
 use Illuminate\Foundation\Http\FormRequest;
-use Illuminate\Validation\Rule;
+use LogicException;
 
 final class LoginRequest extends FormRequest
 {
+    public const string LEGACY_EMAIL_FIELD = 'email';
+
     /**
      * @return array<string, mixed>
      */
     public function rules(): array
     {
         return [
-            'email' => ['required', 'string', 'email:filter', 'max:254'],
-            'mode' => ['required', Rule::enum(LoginMode::class)],
-            'password' => ['required_if:mode,password', 'nullable', 'string', 'max:128'],
-            'channel' => ['nullable', Rule::enum(OtpChannel::class)],
+            'identifier' => ['required', 'string', 'max:254', new RecognisedSignInIdentifier],
+            'password' => ['required', 'string', 'max:128'],
         ];
     }
 
-    public function email(): EmailAddress
+    public function identifier(): SignInIdentifier
     {
-        return new EmailAddress($this->string('email')->toString());
-    }
-
-    public function mode(): LoginMode
-    {
-        return $this->enum('mode', LoginMode::class) ?? LoginMode::Password;
-    }
-
-    public function channel(): OtpChannel
-    {
-        return $this->enum('channel', OtpChannel::class) ?? OtpChannel::Email;
+        return SignInIdentifier::tryParse($this->string('identifier')->toString())
+            ?? throw new LogicException('The identifier is validated before it is read.');
     }
 
     public function password(): string
     {
         return $this->string('password')->toString();
+    }
+
+    protected function prepareForValidation(): void
+    {
+        if (! $this->has('identifier') && $this->has(self::LEGACY_EMAIL_FIELD)) {
+            $this->merge(['identifier' => $this->input(self::LEGACY_EMAIL_FIELD)]);
+        }
     }
 }
